@@ -51,7 +51,7 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
 
 A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Earth to Mars together. Each player also has their own idle game with upgrades. Once a day someone has to Ping the probe or it drops into safe mode. The crew votes on route choices, and when the probe arrives they vote on the next destination. There are individual and country leaderboards.
 
-- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (placeholder page until Nav deploys phase 2). The pixel kit is at `/kit` (not linked, noindex).
+- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (phase 2: launching-soon page, deployed 2026-11-18 from 8fc6a83). The pixel kit is at `/kit` (not linked, noindex).
 - **Hosting:** Cloudflare Worker `onesmallclick`. No bindings yet.
 - **Code:** GitHub `Naveess/onesmallclick` (private), branch `main`. GitHub is blocked at work, so pushes may have to wait until I'm home.
 - **Started from** the site-starter template (`Naveess/site-starter`).

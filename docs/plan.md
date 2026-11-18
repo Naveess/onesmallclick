@@ -5,7 +5,7 @@ The live phase list. Every phase ends deployed on workers.dev (https://onesmallc
 Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and design/sprites/README.md. Phases are ticked as they're built.
 
 - [x] **Phase 1: Scaffold.** Site-starter template filled in, brief saved, placeholder page live on workers.dev, code on GitHub.
-- [x] **Phase 2: App shell and pixel kit** (built 2026-11-18; Nav deploys)
+- [x] **Phase 2: App shell and pixel kit** (deployed 8fc6a83 and approved, 2026-11-18)
 - [ ] **Phase 3: Game home with fake data**
 - [ ] **Phase 4: The shared probe**
 - [ ] **Phase 5: Signal, Ping and safe mode**
