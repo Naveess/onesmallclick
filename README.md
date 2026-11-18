@@ -9,8 +9,11 @@ A shared global clicker on Cloudflare Workers. Started from the [site-starter](h
 ```
 CLAUDE.md            standing rules for Claude Code (+ Project notes at the bottom)
 PRODUCT.md           product context for design work
-wrangler.jsonc       Worker config, serves ./public
-public/              what the Worker serves (placeholder page + sprites for now)
+wrangler.jsonc       Worker config (Cloudflare Vite plugin)
+index.html           the app's HTML shell (theme script, font preloads)
+src/                 the React + TypeScript app: pixel kit components and pages
+worker/              the Worker (only /api/* for now)
+public/              served as-is: sprites, icons, self-hosted fonts
 docs/brief.md        what we're building
 docs/plan.md         phase plan
 docs/changelog.md    one line per finished phase
@@ -21,9 +24,11 @@ design/              Claude Design export and PixelLab sprites
 ## Commands
 
 ```sh
+npm install           # once per clone
 npx wrangler login    # once per machine
-npx wrangler dev      # local preview at http://localhost:8787
-npx wrangler deploy   # deploy to https://onesmallclick.naveessharma.workers.dev
+npm run dev           # app + Worker at http://localhost:5173 (pixel kit at /kit)
+npm run build         # type-check and build to dist/
+npm run deploy        # build, then deploy to https://onesmallclick.naveessharma.workers.dev
 ```
 
 View the design file: `cd design && python -m http.server 8000`, then open http://localhost:8000/OneSmallClick.dc.html.

@@ -1,0 +1,48 @@
+/* A window onto a horizontal sprite sheet. The sheet slides left one frame at a time
+   with steps(), so it flips frames like pixel art instead of sliding. */
+
+.sprite {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.sprite__sheet,
+.sprite__still {
+  display: block;
+  max-width: none;
+  image-rendering: pixelated;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.sprite__sheet {
+  animation-name: sprite-play;
+  /* duration, steps(n) and loop count are set per sprite in Sprite.tsx */
+}
+
+@keyframes sprite-play {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* The design's gentle bob for the probe (osc-bob 2.4s steps(2)). */
+.sprite--bob {
+  animation: sprite-bob 2.4s steps(2) infinite;
+}
+
+@keyframes sprite-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}

@@ -1,0 +1,215 @@
+/* Theme colours: every colour in docs/tokens.css (the locked palette) under a readable name.
+   Each comment gives the design file's token (kf- = fill, ki- = text), so a colour seen in
+   design/OneSmallClick.dc.html maps straight across. Generated from docs/tokens.css on 2026-11-18.
+   Dark (the night sky) is the default. Light is "daylight mission control".
+   Both blocks also work on any element, so one part of a page can show the other theme (/kit does).
+   A token with no light value keeps its dark value in both themes, as in the design. */
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Page and lines */
+  --page: #02040b; /* kf-02040b · behind everything */
+  --outline: #04060f; /* kf-04060f · the dark outer outline on windows */
+  --line-dim: #1b2a55; /* kf-1b2a55 · tab bar top border, device frame */
+  --line: #3c5a8e; /* kf-3c5a8e · outline-button border, dividers */
+  --line-blue: #2b4c86; /* kf-2b4c86 · chip borders, track line, ad slot dashes */
+  --dash: #3c4560; /* kf-3c4560 · dashed lost-signal line (safe mode) */
+  --dash-solid: #6a7aa0; /* kf-6a7aa0 · dimmed progress bar (safe mode) */
+
+  /* Sky: the night (game home and most screens), top to bottom */
+  --sky-1: #0e1a40; /* kf-0e1a40 */
+  --sky-2: #0c1738; /* kf-0c1738 */
+  --sky-3: #0a1430; /* kf-0a1430 */
+  --sky-4: #081128; /* kf-081128 */
+  --sky-5: #070d20; /* kf-070d20 */
+  --sky-6: #05091a; /* kf-05091a */
+
+  /* Sky: safe mode (1f), top to bottom */
+  --sky-safe-1: #121522; /* kf-121522 */
+  --sky-safe-2: #10131f; /* kf-10131f · also the muted window bottom */
+  --sky-safe-3: #0e111b; /* kf-0e111b */
+  --sky-safe-4: #0b0e17; /* kf-0b0e17 */
+  --sky-safe-5: #090b13; /* kf-090b13 */
+  --sky-safe-6: #06080e; /* kf-06080e */
+
+  /* Sky: milestone moment (1e), then sky-6 */
+  --sky-milestone-1: #2a1a2a; /* kf-2a1a2a */
+  --sky-milestone-2: #1e1630; /* kf-1e1630 */
+  --sky-milestone-3: #141436; /* kf-141436 */
+  --sky-milestone-4: #0c1232; /* kf-0c1232 */
+  --sky-milestone-5: #081028; /* kf-081028 · also arrival step 5 */
+
+  /* Sky: arrival (1k), then sky-milestone-5 and sky-6 */
+  --sky-arrival-1: #2a1420; /* kf-2a1420 */
+  --sky-arrival-2: #22132a; /* kf-22132a */
+  --sky-arrival-3: #181430; /* kf-181430 */
+  --sky-arrival-4: #0f1232; /* kf-0f1232 */
+
+  /* Windows and surfaces */
+  --window-top: #13285a; /* kf-13285a · window gradient top; outline-button hover */
+  --window-bottom: #0b1838; /* kf-0b1838 */
+  --window-border: #7fb0e6; /* kf-7fb0e6 · the 2px light border */
+  --window-inset: #06102a; /* kf-06102a · the 2px inset */
+  --window-active-top: #1a3670; /* kf-1a3670 · highlighted window (your row) */
+  --window-active-bottom: #0f2150; /* kf-0f2150 */
+  --window-orange-top: #2a170b; /* kf-2a170b · signal and milestone windows */
+  --window-orange-bottom: #160c06; /* kf-160c06 */
+  --window-muted-top: #1a1f30; /* kf-1a1f30 · locked or quiet windows */
+  --window-muted-border: #4a5170; /* kf-4a5170 */
+  --window-muted-bottom: #10131f; /* kf-10131f · same colour as sky-safe-2 */
+  --sheet-mid: #0a1533; /* kf-0a1533 · upgrades sheet gradient middle */
+  --tabbar: #060a1c; /* kf-060a1c · bottom tab bar */
+  --field: #060d24; /* kf-060d24 · text inputs, log markers */
+  --well: #0a1636; /* kf-0a1636 · blue button face, chips */
+  --postcard-sky: #0a1028; /* kf-0a1028 · postcard image area */
+  --row-me: #1f3463; /* kf-1f3463 · your pinned leaderboard row */
+  --white: #eef3ff; /* kf-eef3ff · white fills (number tiles) */
+
+  /* Light blue: action and the probe's path */
+  --blue: #8ccfff; /* kf-8ccfff · blue fills and borders */
+  --blue-deep: #5aa4e0; /* kf-5aa4e0 · stripes in blue bars */
+  --blue-hover: #13305e; /* kf-13305e · blue button hover face */
+  --blue-shadow: #2b5a8f; /* kf-2b5a8f · blue button drop shadow */
+  --blue-text-shadow: #1c3a6e; /* kf-1c3a6e · shadow under big numbers */
+  --vote-bar: #1a3566; /* kf-1a3566 · vote tally bar */
+
+  /* Light orange: signal, milestones and celebration */
+  --orange: #ffb37a; /* kf-ffb37a · orange fills and borders */
+  --orange-deep: #e8894a; /* kf-e8894a · stripes in orange bars, confetti */
+  --orange-well: #1f0f08; /* kf-1f0f08 · orange button face */
+  --orange-hover: #3a1e10; /* kf-3a1e10 · orange button hover face */
+  --orange-shadow: #8a4620; /* kf-8a4620 · orange button drop shadow */
+  --orange-text-shadow: #5a2c12; /* kf-5a2c12 · shadow under big orange numbers */
+  --orange-inset: #1a0d06; /* kf-1a0d06 · urgent window inset */
+  --orange-track: #3a2414; /* kf-3a2414 · prestige progress track */
+  --vote-bar-picked: #4a2c18; /* kf-4a2c18 · your vote's tally bar */
+  --badge-well: #1f1408; /* kf-1f1408 · earned badge tile */
+  --badge-border: #5a3418; /* kf-5a3418 */
+  --stamp: #a8582a; /* kf-a8582a · postcard stamp border */
+
+  /* Paper (postcards) */
+  --paper: #efe6d6; /* kf-efe6d6 */
+  --paper-edge: #c9b89c; /* kf-c9b89c */
+
+  /* Text */
+  --text: #eef3ff; /* ki-eef3ff · main text */
+  --text-soft: #c9d4ee; /* ki-c9d4ee · body copy */
+  --text-muted: #a8b6d6; /* ki-a8b6d6 · labels, captions */
+  --text-faint: #8b98ba; /* ki-8b98ba · struck-out dates, muted icons */
+  --text-dim: #6f7ca0; /* ki-6f7ca0 · ad labels */
+  --text-blue: #8ccfff; /* ki-8ccfff · blue text, links, blue icons */
+  --text-blue-bright: #b9e2ff; /* ki-b9e2ff · link hover */
+  --text-orange: #ffb37a; /* ki-ffb37a · orange text and icons */
+  --text-orange-soft: #ffd9a8; /* ki-ffd9a8 · badge names, milestone notes */
+  --text-orange-bright: #ffe0bd; /* ki-ffe0bd · urgent countdown pulse */
+  --text-warm: #f3e4d6; /* ki-f3e4d6 · body copy on orange windows */
+  --text-warm-soft: #e6d2c0; /* ki-e6d2c0 · small print on orange windows */
+  --text-warm-muted: #c9a888; /* ki-c9a888 · captions on orange windows */
+  --text-on-blue: #05081a; /* ki-05081a · text on blue or white fills */
+  --text-ink: #3a2a1a; /* ki-3a2a1a · handwriting on postcards */
+  --text-stamp: #a8582a; /* ki-a8582a · postcard stamp text */
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Page and lines */
+  --page: #e9eef7; /* kf-02040b · behind everything */
+  --outline: #14244a; /* kf-04060f · the dark outer outline on windows */
+  --line-dim: #c9dcf2; /* kf-1b2a55 · tab bar top border, device frame */
+  --line: #8fb3dd; /* kf-3c5a8e · outline-button border, dividers */
+  --line-blue: #9cc4ee; /* kf-2b4c86 · chip borders, track line, ad slot dashes */
+  --dash: #cacfde; /* kf-3c4560 · dashed lost-signal line (safe mode) */
+  --dash-solid: #515e7f; /* kf-6a7aa0 · dimmed progress bar (safe mode) */
+
+  /* Sky: the night (game home and most screens), top to bottom */
+  --sky-1: #b8dcff; /* kf-0e1a40 */
+  --sky-2: #c4e2ff; /* kf-0c1738 */
+  --sky-3: #d0e8ff; /* kf-0a1430 */
+  --sky-4: #dcefff; /* kf-081128 */
+  --sky-5: #eaf4ff; /* kf-070d20 */
+  --sky-6: #fff0e2; /* kf-05091a */
+
+  /* Sky: safe mode (1f), top to bottom */
+  --sky-safe-1: #eceef5; /* kf-121522 */
+  --sky-safe-2: #eef0f6; /* kf-10131f · also the muted window bottom */
+  --sky-safe-3: #f0f2f7; /* kf-0e111b */
+  --sky-safe-4: #f2f4f9; /* kf-0b0e17 */
+  --sky-safe-5: #f5f6fa; /* kf-090b13 */
+  --sky-safe-6: #f7f8fc; /* kf-06080e */
+
+  /* Sky: milestone moment (1e), then sky-6 */
+  --sky-milestone-1: #f1e8f1; /* kf-2a1a2a */
+  --sky-milestone-2: #e9e5f3; /* kf-1e1630 */
+  --sky-milestone-3: #e1e1f4; /* kf-141436 */
+  --sky-milestone-4: #e4e7f8; /* kf-0c1232 */
+  --sky-milestone-5: #e9edfb; /* kf-081028 · also arrival step 5 */
+
+  /* Sky: arrival (1k), then sky-milestone-5 and sky-6 */
+  --sky-arrival-1: #f4e8ee; /* kf-2a1420 */
+  --sky-arrival-2: #f0e8f5; /* kf-22132a */
+  --sky-arrival-3: #e7e5f4; /* kf-181430 */
+  --sky-arrival-4: #e4e5f7; /* kf-0f1232 */
+
+  /* Windows and surfaces */
+  --window-top: #ffffff; /* kf-13285a · window gradient top; outline-button hover */
+  --window-bottom: #eaf4ff; /* kf-0b1838 */
+  --window-border: #3f86d6; /* kf-7fb0e6 · the 2px light border */
+  --window-inset: #d2e8ff; /* kf-06102a · the 2px inset */
+  --window-active-top: #c1d1f1; /* kf-1a3670 · highlighted window (your row) */
+  --window-active-bottom: #d3ddf7; /* kf-0f2150 */
+  --window-orange-top: #f9eee8; /* kf-2a170b · signal and milestone windows */
+  --window-orange-bottom: #fcf6f3; /* kf-160c06 */
+  --window-muted-top: #e5e7f1; /* kf-1a1f30 · locked or quiet windows */
+  --window-muted-border: #c1c5d6; /* kf-4a5170 */
+  --window-muted-bottom: #eef0f6; /* kf-10131f · same colour as sky-safe-2 */
+  --sheet-mid: #e3e9fa; /* kf-0a1533 · upgrades sheet gradient middle */
+  --tabbar: #f0f2fc; /* kf-060a1c · bottom tab bar */
+  --field: #e6f1ff; /* kf-060d24 · text inputs, log markers */
+  --well: #f2f8ff; /* kf-0a1636 · blue button face, chips */
+  --postcard-sky: #e9ecf9; /* kf-0a1028 · postcard image area */
+  --row-me: #c9d4ee; /* kf-1f3463 · your pinned leaderboard row */
+  --white: #ffffff; /* kf-eef3ff · white fills (number tiles) */
+
+  /* Light blue: action and the probe's path */
+  --blue: #5ab4f5; /* kf-8ccfff · blue fills and borders */
+  --blue-deep: #2783ce; /* kf-5aa4e0 · stripes in blue bars */
+  --blue-hover: #dcecff; /* kf-13305e · blue button hover face */
+  --blue-shadow: #bcd8f5; /* kf-2b5a8f · blue button drop shadow */
+  --blue-text-shadow: #bfdcfa; /* kf-1c3a6e · shadow under big numbers */
+  --vote-bar: #cfe4fb; /* kf-1a3566 · vote tally bar */
+
+  /* Light orange: signal, milestones and celebration */
+  --orange: #ff9d55; /* kf-ffb37a · orange fills and borders */
+  --orange-deep: #d4651b; /* kf-e8894a · stripes in orange bars, confetti */
+  --orange-well: #fbf2ee; /* kf-1f0f08 · orange button face */
+  --orange-hover: #f6e7df; /* kf-3a1e10 · orange button hover face */
+  --orange-shadow: #edc8b3; /* kf-8a4620 · orange button drop shadow */
+  --orange-text-shadow: #f5dccd; /* kf-5a2c12 · shadow under big orange numbers */
+  --orange-inset: #fcf5f1; /* kf-1a0d06 · urgent window inset */
+  --orange-track: #f4e8df; /* kf-3a2414 · prestige progress track */
+  --vote-bar-picked: #ffd9bd; /* kf-4a2c18 · your vote's tally bar */
+  --badge-well: #fbf5ee; /* kf-1f1408 · earned badge tile */
+  --badge-border: #f2ddce; /* kf-5a3418 */
+  --stamp: #e8bca3; /* kf-a8582a · postcard stamp border */
+
+  /* Paper (postcards) */
+  --paper-edge: #ad9469; /* kf-c9b89c */
+
+  /* Text */
+  --text: #14244a; /* ki-eef3ff · main text */
+  --text-soft: #2b3b62; /* ki-c9d4ee · body copy */
+  --text-muted: #44557d; /* ki-a8b6d6 · labels, captions */
+  --text-faint: #56648a; /* ki-8b98ba · struck-out dates, muted icons */
+  --text-dim: #56648a; /* ki-6f7ca0 · ad labels */
+  --text-blue: #1765b0; /* ki-8ccfff · blue text, links, blue icons */
+  --text-blue-bright: #0f5596; /* ki-b9e2ff · link hover */
+  --text-orange: #a84a0c; /* ki-ffb37a · orange text and icons */
+  --text-orange-soft: #94450e; /* ki-ffd9a8 · badge names, milestone notes */
+  --text-orange-bright: #643500; /* ki-ffe0bd · urgent countdown pulse */
+  --text-warm: #462d15; /* ki-f3e4d6 · body copy on orange windows */
+  --text-warm-soft: #543921; /* ki-e6d2c0 · small print on orange windows */
+  --text-warm-muted: #7c5a38; /* ki-c9a888 · captions on orange windows */
+}

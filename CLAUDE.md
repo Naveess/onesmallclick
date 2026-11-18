@@ -5,8 +5,13 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
 ## Stack
 
 - **Decided for this project (2026-11-18): Vite + React + TypeScript**, served by **Cloudflare Workers with static assets**. This overrides the template default of plain HTML/CSS/vanilla JS.
-  - Config lives in `wrangler.jsonc`. Until the app is scaffolded, everything served lives in `./public`. Once Vite is added, the assets directory becomes Vite's build output.
-  - Local dev: `npx wrangler dev`. Deploy: `npx wrangler deploy`. Update both commands here once Vite is added.
+  - Scaffolded in phase 2 (2026-11-18) with the **Cloudflare Vite plugin**. Worker config is `wrangler.jsonc`; the Worker is `worker/index.ts` and only answers `/api/*`. Everything else is the React app (`src/`), built by Vite into `dist/client/`. Unknown paths get `index.html` (single-page-application mode) and `src/App.tsx` picks the page.
+  - `npm run dev`: the app and the Worker together at http://localhost:5173.
+  - `npm run build`: type-checks (`tsc -b`, must pass with no errors) and builds to `dist/`.
+  - `npm run deploy`: builds, then `wrangler deploy`. Nav runs it.
+  - `npm run cf-typegen`: regenerates `worker/worker-configuration.d.ts` after any change to `wrangler.jsonc`.
+  - No `@vitejs/plugin-react`: Vite compiles the JSX itself, so edits reload the page instead of hot-swapping components. Adding it would need Nav's OK (dependency rule).
+  - npm blocks install scripts by default here. `workerd` and `esbuild` are approved in `package.json` (`allowScripts`); after a version bump run `npm approve-scripts workerd esbuild`.
 - Add Durable Objects, D1, KV, R2 or Turnstile only when docs/brief.md asks for them and docs/plan.md has reached that phase (see "Data & storage" in the brief).
 - Keep npm dependencies few. Reach for a small, well-known library only when writing it yourself would clearly be worse, and say why.
 
@@ -46,7 +51,7 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
 
 A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Earth to Mars together. Each player also has their own idle game with upgrades. Once a day someone has to Ping the probe or it drops into safe mode. The crew votes on route choices, and when the probe arrives they vote on the next destination. There are individual and country leaderboards.
 
-- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (placeholder page).
+- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (placeholder page until Nav deploys phase 2). The pixel kit is at `/kit` (not linked, noindex).
 - **Hosting:** Cloudflare Worker `onesmallclick`. No bindings yet.
 - **Code:** GitHub `Naveess/onesmallclick` (private), branch `main`. GitHub is blocked at work, so pushes may have to wait until I'm home.
 - **Started from** the site-starter template (`Naveess/site-starter`).
@@ -60,7 +65,9 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 | `design/assets/` | The sprites the design file uses (Earth 8 frames, Mars 4, probe 4, burst 6). Kept only so the design file opens. Not shipped. |
 | `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md. **This is the set that ships** (decided 2026-11-18). See design/sprites/README.md. |
 | `design/icons/` | The design's ten 9×9 UI icons as `currentColor` SVGs, with their theme colours in its README. |
-| `public/sprites/`, `public/icons/` | Copies of `design/sprites/` (sheets and stills, plus `nebula-tile.png`) and `design/icons/`, ready for the app. |
+| `src/` | The React app. `components/` holds the pixel kit (Window, PixelButton, Sprite, PixelIcon, Sky, ThemeToggle); `pages/` holds `/` (launching soon) and `/kit`; `styles/theme.css` is docs/tokens.css under readable names; `sprites.ts` lists every sprite with its retimed duration; `theme.ts` handles the theme toggle. |
+| `worker/` | The Worker (`index.ts`, only `/api/*`) and its generated types. |
+| `public/` | Served as-is at the site root: `sprites/` and `icons/` (copies of `design/sprites/` and `design/icons/`, unchanged), and `fonts/` (Pixelify Sans and VT323, self-hosted, with their OFL licences). |
 | `docs/todo.md` | Loose ends and decisions that aren't a phase yet. |
 | `docs/design-brief.md` | Screens, game rules and numbers from the design phase. |
 | `docs/tokens.css` | Every colour in the design, for both dark and light mode. |

@@ -3,8 +3,14 @@
   "name": "onesmallclick",
   // The date this project started.
   "compatibility_date": "2026-11-18",
+  // The Worker. It only answers /api/* for now; everything else is the React app's static files.
+  "main": "./worker/index.ts",
   "assets": {
-    "directory": "./public"
-  }
+    // The Cloudflare Vite plugin fills in the directory (Vite's build output) at build time.
+    // Unknown paths such as /kit get index.html, and the app picks the page.
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true }
   // Add D1 / KV / R2 / Durable Object bindings here only when docs/brief.md and docs/plan.md call for them.
 }

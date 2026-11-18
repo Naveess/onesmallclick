@@ -1,0 +1,89 @@
+/* The sky behind every screen: the design's stepped gradient, the painted nebula,
+   and two star layers drifting down for parallax (far 140 s, near 70 s, as in the design).
+   The drift moves in steps of 2px (one art pixel at 2×) rather than gliding, so the layers
+   stay crisp and move like pixel art. */
+
+/* The light theme's treatment of the nebula and stars, straight from the design
+   (docs/tokens.css, "Light mode extras"). Set per theme so a nested theme gets its own. */
+:root,
+[data-theme="dark"] {
+  --nebula-filter: none;
+  --nebula-opacity: 0.6;
+  --stars-opacity: 1;
+}
+[data-theme="light"] {
+  --nebula-filter: invert(1) hue-rotate(180deg) saturate(0.6);
+  --nebula-opacity: 0.35;
+  --stars-opacity: 0;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--sky-1) 0 12%,
+    var(--sky-2) 12% 24%,
+    var(--sky-3) 24% 38%,
+    var(--sky-4) 38% 54%,
+    var(--sky-5) 54% 72%,
+    var(--sky-6) 72% 100%
+  );
+}
+
+.sky--fixed {
+  position: fixed;
+}
+
+.sky__nebula,
+.sky__stars {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-repeat: repeat;
+  image-rendering: pixelated;
+  will-change: transform;
+}
+
+/* nebula-tile.png is 512px, shown at 2×. */
+.sky__nebula {
+  top: -1024px;
+  background-image: url("/sprites/nebula-tile.png");
+  background-size: 1024px 1024px;
+  opacity: var(--nebula-opacity);
+  filter: var(--nebula-filter);
+  animation: sky-drift-nebula 420s steps(512) infinite;
+}
+
+/* stars-far.png and stars-near.png are 128px, shown at 2×. */
+.sky__stars {
+  top: -256px;
+  background-size: 256px 256px;
+  opacity: var(--stars-opacity);
+}
+
+.sky__stars--far {
+  background-image: url("/sprites/stars-far.png");
+  animation: sky-drift 140s steps(128) infinite;
+}
+
+.sky__stars--near {
+  background-image: url("/sprites/stars-near.png");
+  animation: sky-drift 70s steps(128) infinite;
+}
+
+@keyframes sky-drift {
+  to {
+    transform: translateY(256px);
+  }
+}
+
+@keyframes sky-drift-nebula {
+  to {
+    transform: translateY(1024px);
+  }
+}

@@ -1,0 +1,74 @@
+/* The design's three button styles. Blue = action, orange = signal, outline = secondary.
+   Blue and orange sit on a 4px drop shadow and press down into it. */
+
+.pbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  font: 600 16px/1.1 var(--font-ui);
+  text-align: center;
+  text-decoration: none;
+  border: 2px solid;
+  border-radius: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pbtn--lg {
+  min-height: 52px;
+  font-size: 18px;
+}
+
+.pbtn--block {
+  display: flex;
+  width: 100%;
+}
+
+.pbtn--blue {
+  color: var(--text-blue);
+  background: var(--well);
+  border-color: var(--blue);
+  box-shadow: 0 4px 0 var(--blue-shadow);
+}
+
+.pbtn--orange {
+  color: var(--text-orange);
+  background: var(--orange-well);
+  border-color: var(--orange);
+  box-shadow: 0 4px 0 var(--orange-shadow);
+}
+
+.pbtn--outline {
+  font-weight: 500;
+  color: var(--text);
+  background: transparent;
+  border-color: var(--line);
+}
+
+@media (hover: hover) {
+  .pbtn--blue:hover:not(:disabled) {
+    background: var(--blue-hover);
+  }
+  .pbtn--orange:hover:not(:disabled) {
+    background: var(--orange-hover);
+  }
+  .pbtn--outline:hover:not(:disabled) {
+    background: var(--window-top);
+  }
+}
+
+.pbtn--blue:active:not(:disabled),
+.pbtn--orange:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+.pbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

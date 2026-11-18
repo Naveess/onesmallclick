@@ -1,0 +1,33 @@
+/* The design's double-bordered window: a 2px light border, a 2px dark outline outside it,
+   and a 2px inset inside it. Leave at least 2px of room around a window for the outline. */
+
+.window {
+  position: relative;
+  padding: 16px;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--window-top), var(--window-bottom));
+  border: 2px solid var(--window-border);
+  outline: 2px solid var(--outline);
+  box-shadow: inset 0 0 0 2px var(--window-inset);
+}
+
+/* Signal and milestone windows. The design gives these no inset. */
+.window--orange {
+  background: linear-gradient(180deg, var(--window-orange-top), var(--window-orange-bottom));
+  border-color: var(--orange);
+  box-shadow: none;
+}
+
+/* Locked or quiet windows (e.g. a badge not earned yet). */
+.window--muted {
+  background: linear-gradient(180deg, var(--window-muted-top), var(--window-muted-bottom));
+  border-color: var(--window-muted-border);
+  box-shadow: none;
+}
+
+/* Highlighted window (your own row on a board). The glow is the design's, the same in both themes. */
+.window--active {
+  background: linear-gradient(180deg, var(--window-active-top), var(--window-active-bottom));
+  border-color: var(--blue);
+  box-shadow: 0 0 18px rgba(140, 207, 255, 0.25);
+}

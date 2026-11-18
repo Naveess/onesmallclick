@@ -1,11 +1,11 @@
 # Plan
 
-The live phase list. Every phase ends deployed on workers.dev (https://onesmallclick.naveessharma.workers.dev). After each one: a changelog line, a commit and push, a deploy, then a stop for your OK (see CLAUDE.md). Nav runs `npx wrangler deploy` (Claude's deploy command is blocked in auto mode).
+The live phase list. Every phase ends deployed on workers.dev (https://onesmallclick.naveessharma.workers.dev). After each one: a changelog line, a commit and push, a deploy, then a stop for your OK (see CLAUDE.md). Nav runs `npm run deploy` (from phase 2; it builds, then runs `wrangler deploy`). Claude's deploy command is blocked in auto mode.
 
-Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and design/sprites/README.md. Nothing in it is built yet.
+Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and design/sprites/README.md. Phases are ticked as they're built.
 
 - [x] **Phase 1: Scaffold.** Site-starter template filled in, brief saved, placeholder page live on workers.dev, code on GitHub.
-- [ ] **Phase 2: App shell and pixel kit**
+- [x] **Phase 2: App shell and pixel kit** (built 2026-11-18; Nav deploys)
 - [ ] **Phase 3: Game home with fake data**
 - [ ] **Phase 4: The shared probe**
 - [ ] **Phase 5: Signal, Ping and safe mode**
