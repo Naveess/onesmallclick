@@ -23,7 +23,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
 ### Then
-- [ ] Propose the full phase plan (docs/plan.md "Next").
+- [x] Phase plan proposed in docs/plan.md (18 Nov). Next: answer the "Before phase 2" decisions there.
 
 ## At the end
 - [ ] **Postcard photos.** Pick a real space photo for each of the six milestones, check each licence (prefer public-domain NASA/JPL) and note the credit line. Decide whether to keep them as photos or convert them to pixel art (open question in the brief).
