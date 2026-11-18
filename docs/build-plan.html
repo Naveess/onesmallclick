@@ -1,0 +1,178 @@
+<title>OneSmallClick Build Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600&family=VT323&display=swap">
+<style>
+/* Layout: one mission-checklist column; each stage is a double-bordered pixel window, prompts sit in console blocks. */
+:root{
+  --bg:#05081a; --panel:#0e1a40; --panel-2:#0a1636; --line:#7fb0e6; --outline:#04060f;
+  --text:#eef3ff; --muted:#a8b6d6; --blue:#8ccfff; --orange:#ffb37a; --on-accent:#05081a;
+  --console:#04060f; --console-text:#c9e6ff;
+  --f-ui:'Pixelify Sans',ui-monospace,Menlo,monospace; --f-num:'VT323',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --bg:#e6f2ff; --panel:#ffffff; --panel-2:#f2f8ff; --line:#3f86d6; --outline:#14244a;
+  --text:#14244a; --muted:#44557d; --blue:#1765b0; --orange:#a84a0c; --on-accent:#ffffff;
+  --console:#14244a; --console-text:#e3f1ff; color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#e6f2ff; --panel:#ffffff; --panel-2:#f2f8ff; --line:#3f86d6; --outline:#14244a;
+  --text:#14244a; --muted:#44557d; --blue:#1765b0; --orange:#a84a0c; --on-accent:#ffffff;
+  --console:#14244a; --console-text:#e3f1ff; color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--f-ui);font-size:16px;line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+header{display:flex;flex-direction:column;gap:6px}
+.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+h1{font-weight:600;font-size:clamp(28px,6vw,40px);line-height:1.05;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.meter{display:flex;align-items:center;gap:12px;margin-top:8px}
+.track{flex:1;height:10px;background:var(--panel-2);border:2px solid var(--line);outline:2px solid var(--outline);position:relative}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--blue);width:0;transition:width .3s steps(6)}
+.count{font-family:var(--f-num);font-size:24px;color:var(--blue);font-variant-numeric:tabular-nums;white-space:nowrap}
+.win{background:var(--panel);border:2px solid var(--line);outline:2px solid var(--outline);box-shadow:inset 0 0 0 2px var(--panel-2);padding:18px;display:flex;flex-direction:column;gap:14px}
+.win.tonight{border-color:var(--orange)}
+.shead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.sno{font-family:var(--f-num);font-size:26px;color:var(--blue);line-height:1}
+h2{font-size:20px;font-weight:600;margin:0}
+.tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border:2px solid var(--orange);color:var(--orange)}
+.tag.later{border-color:var(--muted);color:var(--muted)}
+.why{margin:0;color:var(--muted);font-size:14px}
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.task{display:flex;flex-direction:column;gap:8px}
+.task label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.task input{appearance:none;flex:none;width:20px;height:20px;margin:2px 0 0;border:2px solid var(--line);background:var(--panel-2);cursor:pointer;display:grid;place-items:center}
+.task input:checked{background:var(--blue);border-color:var(--blue)}
+.task input:checked::after{content:"";width:8px;height:8px;background:var(--on-accent)}
+.task input:focus-visible,.copy:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.task.done .ttl{text-decoration:line-through;color:var(--muted)}
+.ttl{font-weight:500}
+.note{font-size:13px;color:var(--muted);margin-left:30px}
+.prompt{margin-left:30px;background:var(--console);color:var(--console-text);border:2px solid var(--line);position:relative;min-width:0}
+.prompt pre{margin:0;padding:12px 14px 14px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow:auto}
+.pbar{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 14px;border-bottom:2px solid var(--line);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--console-text)}
+.copy{font-family:var(--f-ui);font-size:13px;padding:4px 10px;background:var(--blue);color:var(--on-accent);border:0;cursor:pointer}
+.copy.ok{background:var(--orange)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.9em;background:var(--panel-2);padding:1px 5px}
+footer{color:var(--muted);font-size:13px}
+@media (max-width:480px){.prompt,.note{margin-left:0}}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="kicker">Probe OSC-1 · Build log</div>
+  <h1>OneSmallClick Build Plan</h1>
+  <p class="lede">Unzip <code>onesmallclick.zip</code> at home, then work down the list. Stages 0 to 3 are tonight. Each prompt is written to paste straight into Claude Code. Your ticks are saved in this browser.</p>
+  <div class="meter"><div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div><span class="count" id="count">0 / 0</span></div>
+</header>
+<main id="stages"></main>
+<footer>The design file in <code>design/</code> is the source of truth for the look. <code>CLAUDE.md</code> and <code>docs/design-brief.md</code> hold the rules and numbers, so Claude Code reads them on its own.</footer>
+</div>
+
+<script>
+const STAGES = [
+{n:0, title:"Set up at home", tonight:true, why:"Get the files into a git repo with a GitHub backup before writing any code.", tasks:[
+ {t:"Unzip onesmallclick.zip into your projects folder", note:"You get CLAUDE.md, design/, docs/ and public/sprites/."},
+ {t:"Open the design locally to check it works", p:"cd onesmallclick/design && python3 -m http.server 8000\n# then open http://localhost:8000/OneSmallClick.dc.html", label:"Terminal"},
+ {t:"Create a private GitHub repo called onesmallclick and push", p:"cd onesmallclick\ngit init && git add . && git commit -m \"Design handoff from Claude Design\"\ngh repo create onesmallclick --private --source=. --push", label:"Terminal"},
+ {t:"Start Claude Code in the folder and run /impeccable init", note:"Same as your usual workflow. It picks up CLAUDE.md automatically."}
+]},
+{n:1, title:"Scaffold the app", tonight:true, why:"Set up the skeleton on Cloudflare before any screens are built.", tasks:[
+ {t:"Plan the stack (Claude Code plans, you approve)", label:"Claude Code prompt", p:`Read CLAUDE.md and docs/design-brief.md, and skim design/OneSmallClick.dc.html.
+
+We're building OneSmallClick as a real web game hosted on Cloudflare. Propose a stack and project structure before writing code. My starting point:
+- Frontend: Vite + React + TypeScript, mobile-first, served as static assets from a Cloudflare Worker
+- One Durable Object that holds the shared probe state (global distance, signal timer, today's vote) and pushes live updates over WebSockets
+- D1 for players, upgrades, leaderboards, pings, votes and the mission log
+- Auth later (email magic link + Google), so leave room for it
+
+Tell me what you'd change and why, list the folders and files you'll create, and wait for my OK before scaffolding.`},
+ {t:"Scaffold it and get Hello OneSmallClick running locally", label:"Claude Code prompt", p:`Go ahead and scaffold the project as agreed. Keep design/ untouched as reference. Move the sprites from public/sprites into the app's public folder.
+
+Set up wrangler.toml, a dev script that runs the Worker and Vite together, and a placeholder page that shows "OneSmallClick" in Pixelify Sans on the night-sky background. Run it locally and tell me the URL. Add a README with the commands. Then commit.`},
+ {t:"First deploy to a workers.dev URL", label:"Claude Code prompt", p:`Deploy what we have to Cloudflare Workers (workers.dev is fine for now; onesmallclick.io comes later). Walk me through any login step. Then commit and push to GitHub.`}
+]},
+{n:2, title:"Look and themes", tonight:true, why:"Build the reusable pixel-art pieces once, so every screen afterwards is quick to make.", tasks:[
+ {t:"Turn the colours into a theme system with light and dark", label:"Claude Code prompt", p:`Use docs/tokens.css as the source for colours. The token names are the original dark-mode hex values (--kf-* for fills and borders, --ki-* for text). Rename them to semantic names (sky gradient stops, panel, panel-inset, border, outline, text, text-muted, accent-blue, accent-orange and so on) and keep the exact values for both themes.
+
+Theme behaviour: follow prefers-color-scheme by default, add a toggle that saves the player's choice in localStorage, and set data-theme on <html>. Light mode hides the star layers and shows the nebula inverted and faint, exactly as in tokens.css. The THRUST and PING buttons look the same in both themes.`},
+ {t:"Build the pixel UI kit", label:"Claude Code prompt", p:`Build the shared pixel-art components, matching design/OneSmallClick.dc.html exactly (open it in the browser to compare):
+- Window (the double-bordered panel: 2px light border, 2px dark outline, 2px inset)
+- PixelButton variants (accent fill, outline, orange)
+- Sprite (plays a horizontal sprite sheet with steps(): earth 8 frames, mars 4, probe 4, burst 6; only 1x or 2x)
+- SkyBackground (stepped gradient + drifting nebula + two parallax star layers)
+- PixelIcon: export the 9x9 icons from buildIcons() in the design file to static SVGs
+- Fonts: Pixelify Sans for UI, VT323 for numbers
+
+Every animation uses steps() and respects prefers-reduced-motion. Make a /kit dev page that shows all of them in both themes. Commit when done.`}
+]},
+{n:3, title:"Game home screen (static)", tonight:true, why:"Get the main screen looking right with fake data. Making it live comes next.", tasks:[
+ {t:"Build screen 1a, the phone game home", label:"Claude Code prompt", p:`Build the game home screen to match screen 1a in design/OneSmallClick.dc.html at 390px: header with players online, live arrival estimate, the Earth→Mars track with the probe, the THRUST button with particles and the +km popup, the signal countdown and Ping card, today's route vote, an ad slot placeholder, and the bottom tab bar.
+
+Use mock data from a single local store for now (no server yet), but shape it like the real game state from docs/design-brief.md. Tapping THRUST should feel exactly like the design. Check both themes. Commit.`},
+ {t:"Add the desktop layout, screen 1b", label:"Claude Code prompt", p:`Now add the wide layout from screen 1b (desktop 1440) using the same components. Breakpoints: the phone layout up to about 900px, then 1b. Make sure nothing scrolls sideways at any width. Commit and push.`}
+]},
+{n:4, title:"The shared probe (backend)", tonight:false, why:"This makes it one shared game: every player sees the same probe move.", tasks:[
+ {t:"Global probe Durable Object with live updates", label:"Claude Code prompt", p:`Build the ProbeState Durable Object: global distance, crew speed, arrival estimate, and players online. Clients connect over WebSocket and receive a tick every second.
+
+Taps: the client batches taps and sends them about every 2 seconds. The server validates each batch (rate limit per device, cap on taps per second), adds the km, and replies with the player's credited km. Never trust a client total. Persist to storage regularly. Wire screen 1a to it in place of the mock store.`},
+ {t:"Device identity (playing without an account)", label:"Claude Code prompt", p:`Give each device an anonymous player id (a signed cookie or token) stored in D1 with a display name like orbit_otter. Everything a player owns (taps, credits, pings) hangs off this id, so a later sign-in can attach the id to an account.`}
+]},
+{n:5, title:"Idle game and upgrades", tonight:false, why:"Each player's own progression on top of the shared mission.", tasks:[
+ {t:"Upgrades bottom sheet (1c) plus server-side economy", label:"Claude Code prompt", p:`Build the upgrades bottom sheet (screen 1c) and its server logic using the numbers in docs/design-brief.md: Cold-gas jets, Ion drive and Solar sail for auto-thrust; Steady hands and Crew chant for taps; cost x1.55 per level. Credits come in at the same rate as km. Buying happens on the server. Add Prestige ("Hand over the shift" → 3 Mission Patches, +10% thrust each).`},
+ {t:"Offline catch-up (1d) with the 8-hour cap", label:"Claude Code prompt", p:`When a player returns, work out their auto-thrust while they were away on the server, capped at 8 hours, and show the Welcome back screen (1d) with "counted" and "not counted" exactly as designed.`}
+]},
+{n:6, title:"Signal, Ping and safe mode", tonight:false, why:"The daily ritual that brings everyone back each day.", tasks:[
+ {t:"Signal countdown, Ping, safe mode (1f)", label:"Claude Code prompt", p:`Implement the signal: a 24-hour countdown held in the Durable Object. Any player's Ping resets it. Each device or account gets one Ping per UTC day. The last 60 seconds use the urgent pulse styling. If it hits zero the probe enters safe mode (screen 1f): speed drops, and every quiet hour adds about 10 hours to the trip, until someone pings. Log saves to the mission log ("Saved with 9 seconds left, pinged by mira_t").`}
+]},
+{n:7, title:"Votes, milestones, mission log", tonight:false, why:"Gives the crew shared decisions and moments to celebrate.", tasks:[
+ {t:"Daily route vote + mission log (1h)", label:"Claude Code prompt", p:`Build the daily route vote (3 options, one vote per player, closes 00:00 UTC, result applied to the trip) and the mission log screen (1h) showing votes, results, milestones, postcards and signal saves as a timeline.`},
+ {t:"Milestones and postcards (1e)", label:"Claude Code prompt", p:`Add the 6 milestones along the 480M km route (halfway = milestone 4 at 240M km). When one is reached, every connected player sees the Milestone moment (1e): burst sprites, confetti, the postcard and the flight-deck fact. Postcards use public-domain NASA images. Make a list of suggested images with links for me to approve.`}
+]},
+{n:8, title:"Accounts, leaderboards, profile", tonight:false, why:"Required for launch: sign-in, competition and badges.", tasks:[
+ {t:"Sign in (1i): email magic link + Google", label:"Claude Code prompt", p:`Add sign-in as in screen 1i: email magic link and Google OAuth. Signing in attaches the current device's player id to the account, so no progress is lost. Recommend an email sender that works on Cloudflare, and list the secrets I need to set.`},
+ {t:"Leaderboards (1g) and Profile (1j)", label:"Claude Code prompt", p:`Build the leaderboards (1g): Players and Countries tabs, top 3 coloured, the player's own row pinned. Country comes from Cloudflare's request.cf.country. Then build the Profile screen (1j): badges, total distance and the 30-day ping history grid. Add the theme toggle on Profile too.`}
+]},
+{n:9, title:"Launch", tonight:false, why:"The finishing screens, ads and the real domain.", tasks:[
+ {t:"Arrival & credits (1k) + How to play (1l)", label:"Claude Code prompt", p:`Build the Arrival & credits screen (1k): scrolling crew credits, then the vote on the next destination (Europa, Psyche, Venus flyby). Then build How to play (1l). After Mars, reset the route to whichever destination wins.`},
+ {t:"Ads, SEO, domain", label:"Claude Code prompt", p:`Get ready for AdSense: real ad slots where the design shows them, a privacy policy and cookie consent page, meta tags and Open Graph image, sitemap and robots.txt. Then connect onesmallclick.io to the Worker and tell me the DNS steps.`}
+]}
+];
+const KEY='osc-plan-v1';
+let done={}; try{done=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(done))}catch(e){}};
+const root=document.getElementById('stages');
+const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+let total=0;
+STAGES.forEach(s=>{
+  const w=el('section','win'+(s.tonight?' tonight':''));
+  const h=el('div','shead');
+  h.append(el('span','sno',String(s.n).padStart(2,'0')),el('h2',null,s.title),el('span','tag'+(s.tonight?'':' later'),s.tonight?'Tonight':'Later'));
+  w.append(h,el('p','why',s.why));
+  const ul=el('ul','tasks');
+  s.tasks.forEach((t,i)=>{
+    total++;
+    const id='s'+s.n+'t'+i, li=el('li','task'), lab=el('label'), cb=document.createElement('input');
+    cb.type='checkbox'; cb.id=id; cb.checked=!!done[id];
+    li.classList.toggle('done',cb.checked);
+    cb.addEventListener('change',()=>{done[id]=cb.checked;li.classList.toggle('done',cb.checked);save();meter()});
+    lab.htmlFor=id; lab.append(cb,el('span','ttl',t.t)); li.append(lab);
+    if(t.note) li.append(el('div','note',t.note));
+    if(t.p){
+      const box=el('div','prompt'), bar=el('div','pbar'), btn=el('button','copy','Copy'), pre=el('pre',null,t.p);
+      btn.type='button'; btn.setAttribute('aria-label','Copy: '+t.t);
+      btn.addEventListener('click',()=>{
+        const ok=()=>{btn.textContent='Copied';btn.classList.add('ok');setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},1600)};
+        const fallback=()=>{const r=document.createRange();r.selectNodeContents(pre);const sel=getSelection();sel.removeAllRanges();sel.addRange(r);btn.textContent='Selected, press Ctrl+C'};
+        try{navigator.clipboard.writeText(t.p).then(ok,fallback)}catch(e){fallback()}
+      });
+      bar.append(el('span',null,t.label||'Prompt'),btn); box.append(bar,pre); li.append(box);
+    }
+    ul.append(li);
+  });
+  w.append(ul); root.append(w);
+});
+root.style.cssText='display:flex;flex-direction:column;gap:22px';
+function meter(){const n=Object.values(done).filter(Boolean).length;document.getElementById('count').textContent=n+' / '+total;document.getElementById('fill').style.width=(n/total*100)+'%'}
+meter();
+</script>

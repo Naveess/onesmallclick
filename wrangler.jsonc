@@ -1,0 +1,10 @@
+{
+  // Worker name (lowercase, hyphens).
+  "name": "onesmallclick",
+  // The date this project started.
+  "compatibility_date": "2026-11-18",
+  "assets": {
+    "directory": "./public"
+  }
+  // Add D1 / KV / R2 / Durable Object bindings here only when docs/brief.md and docs/plan.md call for them.
+}

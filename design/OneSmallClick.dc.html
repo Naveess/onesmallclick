@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="_ds/nocturne-44b57adc-7258-43da-9ab1-f8bdcc096bf1/styles.css">
+<script src="_ds/nocturne-44b57adc-7258-43da-9ab1-f8bdcc096bf1/_ds_bundle.js"></script>
+<script src="./image-slot.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&amp;family=VT323&amp;display=swap">
+<style>
+:root{--color-accent:#8ccfff;--color-bg:#05081a;--color-surface:#0e1530;--color-text:#eef3ff;--color-divider:rgba(170,195,255,.16);--font-heading:'Pixelify Sans',monospace;--font-body:'Pixelify Sans',monospace}
+body{margin:0;background:#02040b;font-family:'Pixelify Sans',monospace;color:#eef3ff}
+a{color:var(--ki-8ccfff)}a:hover{color:var(--ki-b9e2ff)}
+button{font-family:'Pixelify Sans',monospace}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(170,195,255,.1);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 24px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:var(--kf-8ccfff);color:var(--ki-05081a);border-radius:4px;text-decoration:none}
+.dv-tname{font:500 14px/1.2 'Pixelify Sans',monospace;color:var(--ki-eef3ff)}
+.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(170,195,255,.14);color:var(--ki-eef3ff);border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 13px/1.3 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)}
+.dv-opt:target .dv-oid{background:var(--kf-ffb37a);color:var(--ki-05081a)}
+.dv-next{margin:28px 0 0;font:13px/1.5 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)}
+@keyframes osc-drift{from{transform:translateY(0)}to{transform:translateY(256px)}}
+@keyframes osc-sheet{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+@keyframes osc-drift-neb{from{transform:translateY(0)}to{transform:translateY(1024px)}}
+@keyframes osc-orbit{0%{transform:translate(0,0)}25%{transform:translate(10px,-4px)}50%{transform:translate(0,-8px)}75%{transform:translate(-10px,-4px)}100%{transform:translate(0,0)}}
+@keyframes osc-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes osc-breathe{0%,100%{opacity:.3;transform:scale(.95)}50%{opacity:1;transform:scale(1.02)}}
+@keyframes osc-blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
+@keyframes osc-urgent{0%,100%{color:var(--ki-ffb37a);text-shadow:3px 3px 0 var(--kf-5a2c12)}50%{color:var(--ki-ffe0bd);text-shadow:3px 3px 0 var(--kf-5a2c12),0 0 22px rgba(255,179,122,.9)}}
+@keyframes osc-urgent-box{0%,100%{box-shadow:inset 0 0 0 2px var(--kf-1a0d06),0 0 0 rgba(255,179,122,0)}50%{box-shadow:inset 0 0 0 2px var(--kf-1a0d06),0 0 28px rgba(255,179,122,.5)}}
+@keyframes osc-roll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+@keyframes osc-flicker{0%,100%{opacity:1}50%{opacity:.5}}
+/* Theme tokens: --kf-* = fills/borders/shadows, --ki-* = text. Dark is the original night sky; light is daylight mission control. */
+.dv-turn{color-scheme:dark;background:var(--kf-02040b);--kf-02040b:#02040b;--kf-04060f:#04060f;--kf-05091a:#05091a;--kf-06080e:#06080e;--kf-060a1c:#060a1c;--kf-060d24:#060d24;--kf-06102a:#06102a;--kf-070d20:#070d20;--kf-081028:#081028;--kf-081128:#081128;--kf-090b13:#090b13;--kf-0a1028:#0a1028;--kf-0a1430:#0a1430;--kf-0a1533:#0a1533;--kf-0a1636:#0a1636;--kf-0b0e17:#0b0e17;--kf-0b1838:#0b1838;--kf-0c1232:#0c1232;--kf-0c1738:#0c1738;--kf-0e111b:#0e111b;--kf-0e1a40:#0e1a40;--kf-0f1232:#0f1232;--kf-0f2150:#0f2150;--kf-10131f:#10131f;--kf-121522:#121522;--kf-13285a:#13285a;--kf-13305e:#13305e;--kf-141436:#141436;--kf-160c06:#160c06;--kf-181430:#181430;--kf-1a0d06:#1a0d06;--kf-1a1f30:#1a1f30;--kf-1a3566:#1a3566;--kf-1a3670:#1a3670;--kf-1b2a55:#1b2a55;--kf-1c3a6e:#1c3a6e;--kf-1e1630:#1e1630;--kf-1f0f08:#1f0f08;--kf-1f1408:#1f1408;--kf-1f3463:#1f3463;--kf-22132a:#22132a;--kf-2a1420:#2a1420;--kf-2a170b:#2a170b;--kf-2a1a2a:#2a1a2a;--kf-2b4c86:#2b4c86;--kf-2b5a8f:#2b5a8f;--kf-3a1e10:#3a1e10;--kf-3a2414:#3a2414;--kf-3c4560:#3c4560;--kf-3c5a8e:#3c5a8e;--kf-4a2c18:#4a2c18;--kf-4a5170:#4a5170;--kf-5a2c12:#5a2c12;--kf-5a3418:#5a3418;--kf-5aa4e0:#5aa4e0;--kf-6a7aa0:#6a7aa0;--kf-7fb0e6:#7fb0e6;--kf-8a4620:#8a4620;--kf-8ccfff:#8ccfff;--kf-a8582a:#a8582a;--kf-c9b89c:#c9b89c;--kf-e8894a:#e8894a;--kf-eef3ff:#eef3ff;--kf-efe6d6:#efe6d6;--kf-ffb37a:#ffb37a;--ki-05081a:#05081a;--ki-3a2a1a:#3a2a1a;--ki-6f7ca0:#6f7ca0;--ki-8b98ba:#8b98ba;--ki-8ccfff:#8ccfff;--ki-a8582a:#a8582a;--ki-a8b6d6:#a8b6d6;--ki-b9e2ff:#b9e2ff;--ki-c9a888:#c9a888;--ki-c9d4ee:#c9d4ee;--ki-e6d2c0:#e6d2c0;--ki-eef3ff:#eef3ff;--ki-f3e4d6:#f3e4d6;--ki-ffb37a:#ffb37a;--ki-ffd9a8:#ffd9a8;--ki-ffe0bd:#ffe0bd}
+.dv-turn[data-theme=light]{color-scheme:light;--kf-02040b:#e9eef7;--kf-04060f:#14244a;--kf-05091a:#fff0e2;--kf-06080e:#f7f8fc;--kf-060a1c:#f0f2fc;--kf-060d24:#e6f1ff;--kf-06102a:#d2e8ff;--kf-070d20:#eaf4ff;--kf-081028:#e9edfb;--kf-081128:#dcefff;--kf-090b13:#f5f6fa;--kf-0a1028:#e9ecf9;--kf-0a1430:#d0e8ff;--kf-0a1533:#e3e9fa;--kf-0a1636:#f2f8ff;--kf-0b0e17:#f2f4f9;--kf-0b1838:#eaf4ff;--kf-0c1232:#e4e7f8;--kf-0c1738:#c4e2ff;--kf-0e111b:#f0f2f7;--kf-0e1a40:#b8dcff;--kf-0f1232:#e4e5f7;--kf-0f2150:#d3ddf7;--kf-10131f:#eef0f6;--kf-121522:#eceef5;--kf-13285a:#ffffff;--kf-13305e:#dcecff;--kf-141436:#e1e1f4;--kf-160c06:#fcf6f3;--kf-181430:#e7e5f4;--kf-1a0d06:#fcf5f1;--kf-1a1f30:#e5e7f1;--kf-1a3566:#cfe4fb;--kf-1a3670:#c1d1f1;--kf-1b2a55:#c9dcf2;--kf-1c3a6e:#bfdcfa;--kf-1e1630:#e9e5f3;--kf-1f0f08:#fbf2ee;--kf-1f1408:#fbf5ee;--kf-1f3463:#c9d4ee;--kf-22132a:#f0e8f5;--kf-2a1420:#f4e8ee;--kf-2a170b:#f9eee8;--kf-2a1a2a:#f1e8f1;--kf-2b4c86:#9cc4ee;--kf-2b5a8f:#bcd8f5;--kf-3a1e10:#f6e7df;--kf-3a2414:#f4e8df;--kf-3c4560:#cacfde;--kf-3c5a8e:#8fb3dd;--kf-4a2c18:#ffd9bd;--kf-4a5170:#c1c5d6;--kf-5a2c12:#f5dccd;--kf-5a3418:#f2ddce;--kf-5aa4e0:#2783ce;--kf-6a7aa0:#515e7f;--kf-7fb0e6:#3f86d6;--kf-8a4620:#edc8b3;--kf-8ccfff:#5ab4f5;--kf-a8582a:#e8bca3;--kf-c9b89c:#ad9469;--kf-e8894a:#d4651b;--kf-eef3ff:#ffffff;--kf-ffb37a:#ff9d55;--ki-6f7ca0:#56648a;--ki-8b98ba:#56648a;--ki-8ccfff:#1765b0;--ki-a8b6d6:#44557d;--ki-b9e2ff:#0f5596;--ki-c9a888:#7c5a38;--ki-c9d4ee:#2b3b62;--ki-e6d2c0:#543921;--ki-eef3ff:#14244a;--ki-f3e4d6:#462d15;--ki-ffb37a:#a84a0c;--ki-ffd9a8:#94450e;--ki-ffe0bd:#643500}
+.dv-turn[data-theme=light] .osc-neb{filter:invert(1) hue-rotate(180deg) saturate(.6);opacity:.35 !important}
+.dv-turn[data-theme=light] .osc-stars{opacity:0}
+.dv-theme{margin-left:auto;font:500 12px 'Pixelify Sans',monospace;padding:5px 10px;background:transparent;color:var(--ki-eef3ff);border:2px solid var(--kf-3c5a8e);cursor:pointer}
+.dv-theme:hover{border-color:var(--kf-8ccfff)}
+@media (prefers-reduced-motion:reduce){[data-anim]{animation:none !important}}
+</style>
+</helmet>
+<section class="dv-turn" id="t1" data-theme="{{ theme }}">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">OneSmallClick · 16-bit mission control · all 10 screens</span><button type="button" class="dv-theme" onClick="{{ toggleTheme }}">{{ themeLabel }}</button></div>
+<div class="dv-opts">
+
+<div class="dv-opt" style="width:380px">
+<div class="dv-olabel">Art kit &amp; notes</div>
+<div style="width:380px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:20px;display:flex;flex-direction:column;gap:16px">
+<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ki-a8b6d6)">Sprites · PixelLab 16-bit, 1× and 2× only</div>
+<div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap">
+<div data-anim role="img" aria-label="Earth" style="width:128px;height:128px;overflow:hidden"><img data-anim src="assets/earth-sheet.png" alt="" style="display:block;width:800%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 4s steps(8) infinite"></div>
+<img src="assets/moon.png" alt="Moon sprite" style="width:64px;height:64px;image-rendering:pixelated">
+<div data-anim role="img" aria-label="Probe sprite" style="animation:osc-bob 2.4s steps(2) infinite;width:128px;height:80px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div>
+<div data-anim role="img" aria-label="Mars" style="width:128px;height:128px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
+</div>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<img src="{{ ic.up.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.signal.o }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.bolt.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.trophy.o }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.log.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.user.w }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.star.o }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.check.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.clock.w }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<img src="{{ ic.mail.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px">
+<div style="height:28px;background:var(--kf-04060f);outline:2px solid var(--kf-1b2a55)"></div>
+<div style="height:28px;background:var(--kf-0e1a40)"></div>
+<div style="height:28px;background:var(--kf-13285a)"></div>
+<div style="height:28px;background:var(--kf-8ccfff)"></div>
+<div style="height:28px;background:var(--kf-ffb37a)"></div>
+<div style="height:28px;background:var(--kf-eef3ff)"></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font:600 22px 'Pixelify Sans',monospace">Pixelify Sans · UI &amp; headings</div>
+<div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">VT323 · 14 MARCH 2027 · 04:12:39</div>
+</div>
+<div style="font-size:13px;line-height:1.55;color:var(--ki-c9d4ee);display:flex;flex-direction:column;gap:6px">
+<div>Painted nebula sky with two parallax star layers; Earth, Mars and the probe loop on sprite sheets, double-bordered windows. Light blue = action &amp; path; orange = signal, milestones, celebration.</div>
+<div>Live: tap THRUST, Ping, vote, buy upgrades, switch leaderboard tabs. Tweaks: signal state, crew size, ads.</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Game home · phone (scrolls to vote + ad)</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0 0 72px 0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font:600 17px 'Pixelify Sans',monospace;letter-spacing:.02em">OneSmallClick</div>
+<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ki-a8b6d6)">Probe OSC-1 · Mission day 41</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+<div style="display:flex;align-items:center;gap:6px;padding:3px 8px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86)">
+<span data-anim style="width:6px;height:6px;background:var(--kf-8ccfff);animation:osc-blink 1.6s steps(1) infinite"></span>
+<span style="font:20px/1 VT323,monospace">{{ online }}</span>
+<span style="font-size:12px;color:var(--ki-a8b6d6)">here now</span>
+</div>
+<sc-if value="{{ handful }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:var(--ki-a8b6d6)">+ 48,206 thrusters idling</div></sc-if>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:2px;padding:4px 2px 0">
+<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ki-a8b6d6)">Live arrival estimate</div>
+<div style="font-size:16px;color:var(--ki-c9d4ee)">At this pace we arrive</div>
+<div style="font:48px/0.95 VT323,monospace;color:var(--ki-eef3ff);text-shadow:3px 3px 0 var(--kf-1c3a6e),0 0 18px rgba(140,207,255,.35)">{{ arrival }}</div>
+<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--ki-8ccfff)"><img src="{{ ic.up.b }}" alt="" style="width:12px;height:12px;image-rendering:pixelated">Your taps today: {{ saved }} sooner</div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px 12px 10px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><span>EARTH</span><span>{{ pct }}</span><span>MARS</span></div>
+<div style="position:relative;height:64px">
+<div data-anim role="img" aria-label="Earth" style="position:absolute;left:-6px;top:0;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/earth-sheet.png" alt="" style="display:block;width:800%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 4s steps(8) infinite"></div>
+<div data-anim role="img" aria-label="Mars" style="position:absolute;right:-6px;top:0;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
+<div style="position:absolute;left:62px;right:62px;top:12px;bottom:12px">
+<div style="position:absolute;left:0;right:0;top:19px;height:2px;background:repeating-linear-gradient(90deg,var(--kf-3c5a8e) 0 4px,transparent 4px 8px)"></div>
+<div style="position:absolute;left:0;top:18px;height:4px;width:{{ pct }};background:var(--kf-8ccfff);box-shadow:0 0 8px rgba(140,207,255,.6);transition:width 1s linear"></div>
+<div style="position:absolute;left:4.2%;top:14px;width:2px;height:12px;background:var(--kf-8ccfff)"></div>
+<div style="position:absolute;left:25%;top:14px;width:2px;height:12px;background:var(--kf-8ccfff)"></div>
+<div data-anim style="position:absolute;left:50%;top:12px;width:4px;height:16px;background:var(--kf-ffb37a);box-shadow:0 0 8px rgba(255,179,122,.7);animation:osc-flicker 1.4s steps(2) infinite"></div>
+<div style="position:absolute;left:89.6%;top:15px;width:2px;height:10px;background:var(--kf-3c5a8e)"></div>
+<div style="position:absolute;left:{{ pct }};top:20px;transform:translate(-50%,-50%);transition:left 1s linear"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 4px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px">
+<div><div style="font-size:11px;color:var(--ki-a8b6d6)">Travelled</div><div style="font:24px/1 VT323,monospace">{{ dist }} km</div></div>
+<div style="text-align:right"><div style="font-size:11px;color:var(--ki-ffb37a)">Next · Halfway</div><div style="font:24px/1 VT323,monospace;color:var(--ki-ffb37a)">{{ toNext }}</div></div>
+</div>
+</div>
+<sc-if value="{{ low }}" hint-placeholder-val="{{ false }}">
+<div data-anim style="background:linear-gradient(180deg,var(--kf-3a1e10),var(--kf-1f0f08));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;animation:osc-urgent-box 1s steps(4) infinite">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">SIGNAL FADING · PING NOW</div>
+<div data-anim style="font:44px/0.9 VT323,monospace;animation:osc-urgent 1s steps(4) infinite">{{ signal }}</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ki-ffd9a8)"><img src="{{ ic.star.o }}" alt="" style="width:11px;height:11px;image-rendering:pixelated">Signal Keeper III · 21 days</div>
+</div>
+<button onClick="{{ ping }}" style="min-width:96px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:var(--kf-1f0f08);border:2px solid var(--kf-ffb37a);box-shadow:0 4px 0 var(--kf-8a4620);cursor:pointer" style-hover="background:var(--kf-3a1e10)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-8a4620)"><img src="{{ ic.signal.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabel }}</button>
+</div>
+</sc-if>
+<sc-if value="{{ notLow }}" hint-placeholder-val="{{ true }}">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">KEEP THE SIGNAL ALIVE</div>
+<div style="font:44px/0.9 VT323,monospace;text-shadow:3px 3px 0 var(--kf-1c3a6e)">{{ signal }}</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ki-ffd9a8)"><img src="{{ ic.star.o }}" alt="" style="width:11px;height:11px;image-rendering:pixelated">Signal Keeper III · 21 days</div>
+</div>
+<button onClick="{{ ping }}" disabled="{{ pinged }}" style="min-width:96px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ pingOp }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ pingIcon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabel }}</button>
+</div>
+</sc-if>
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:6px">
+<div style="position:relative;width:216px;height:216px;display:grid;place-items:center">
+<div data-anim style="position:absolute;inset:0;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:rgba(140,207,255,.12);animation:osc-breathe 2.8s steps(5) infinite"></div>
+<button onClick="{{ thrust }}" aria-label="Thrust" style="position:relative;width:184px;height:184px;border:0;padding:0;background:#b9e2ff;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);cursor:pointer;transition:transform 80ms steps(2)" style-active="transform:translateY(4px) scale(.96)">
+<span style="position:absolute;inset:4px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:#04060f"></span>
+<span style="position:absolute;inset:8px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:radial-gradient(circle at 50% 28%,#4a8fe0 0 16%,#3474c4 16% 32%,#25599f 32% 50%,#1a427c 50% 68%,#11305c 68% 84%,#0c2448 84%)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+<img src="{{ icD.up.w }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<span style="font:600 24px 'Pixelify Sans',monospace;letter-spacing:.16em;color:#eef3ff;text-shadow:2px 2px 0 #0c2448">THRUST</span>
+<span style="font-size:12px;color:#d6ecff">tap to push</span>
+</span>
+</button>
+</div>
+<div style="display:flex;gap:16px;align-items:baseline">
+<div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per tap</span></div>
+<div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto</span></div>
+</div>
+<div style="font-size:12px;color:var(--ki-a8b6d6)">{{ afford }} upgrades affordable · {{ credits }} cr</div>
+</div>
+<div style="height:24px"></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TODAY'S CREW VOTE</span><span style="font:18px VT323,monospace;color:var(--ki-a8b6d6)">closes {{ voteLeft }}</span></div>
+<div style="font:500 18px 'Pixelify Sans',monospace">Which way today?</div>
+<sc-for list="{{ voteOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px;padding:6px 10px;text-align:left;font:14px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:{{ o.bar }};border:2px solid {{ o.border }};cursor:pointer" style-hover="border-color:var(--kf-8ccfff)"><span style="display:flex;flex-direction:column;gap:1px"><span>{{ o.label }}</span><span style="font-size:10px;letter-spacing:.12em;color:var(--ki-ffb37a)">{{ o.mark }}</span></span><span style="font:24px VT323,monospace">{{ o.pct }}</span></button>
+</sc-for>
+<div style="font-size:11px;color:var(--ki-a8b6d6)">{{ voteTotal }} votes · result goes in the mission log</div>
+</div>
+<sc-if value="{{ showAds }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:10px">
+<div style="font-size:10px;letter-spacing:.14em;color:var(--ki-6f7ca0)">ADVERTISEMENT</div>
+<div style="width:320px;height:50px;display:grid;place-items:center;border:2px dashed var(--kf-2b4c86);font:18px VT323,monospace;color:var(--ki-6f7ca0)">AD SLOT · 320×50</div>
+</div>
+</sc-if>
+<div style="display:flex;justify-content:center;gap:18px;font-size:12px;color:var(--ki-a8b6d6);padding-top:8px"><span>How to play</span><span>Mission log</span><span>Sign in</span></div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:var(--kf-060a1c);border-top:2px solid var(--kf-1b2a55);display:grid;grid-template-columns:repeat(4,1fr)">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-8ccfff);font-size:12px;box-shadow:inset 0 2px 0 var(--kf-8ccfff)"><img src="{{ sp.earthS }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Mission</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.bolt.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Upgrades</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.log.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Log</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.trophy.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Ranks</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Game home · desktop 1440</div>
+<div style="position:relative;width:1440px;height:1000px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 10%,var(--kf-0c1738) 10% 22%,var(--kf-0a1430) 22% 36%,var(--kf-081128) 36% 52%,var(--kf-070d20) 52% 70%,var(--kf-05091a) 70% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:relative;display:flex;flex-direction:column;gap:22px;padding:20px 48px 0">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;background:linear-gradient(90deg,transparent,var(--kf-2b4c86) 48px,var(--kf-2b4c86) calc(100% - 48px),transparent) bottom/100% 2px no-repeat">
+<div style="display:flex;align-items:baseline;gap:16px"><span style="font:600 22px 'Pixelify Sans',monospace">OneSmallClick</span><span style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">PROBE OSC-1 · MISSION DAY 41</span></div>
+<div style="display:flex;align-items:center;gap:22px;font-size:14px;color:var(--ki-c9d4ee)">
+<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86)"><span data-anim style="width:6px;height:6px;background:var(--kf-8ccfff);animation:osc-blink 1.6s steps(1) infinite"></span><span style="font:22px/1 VT323,monospace;color:var(--ki-eef3ff)">{{ online }}</span><span style="font-size:12px;color:var(--ki-a8b6d6)">here now</span></div>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.bolt.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Upgrades</span>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.log.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Log</span>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.trophy.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Ranks</span>
+<span>How to play</span>
+<button style="min-height:36px;padding:0 14px;font:500 14px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 3px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)">Sign in</button>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:40px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">LIVE ARRIVAL ESTIMATE</div>
+<div style="font-size:20px;color:var(--ki-c9d4ee)">At this pace we arrive</div>
+<div style="font:88px/0.9 VT323,monospace;text-shadow:4px 4px 0 var(--kf-1c3a6e),0 0 28px rgba(140,207,255,.35)">{{ arrival }}</div>
+<div style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ki-8ccfff)"><img src="{{ ic.up.b }}" alt="" style="width:12px;height:12px;image-rendering:pixelated">Your taps today: {{ saved }} sooner</div>
+</div>
+<div style="display:flex;gap:40px;padding-bottom:6px">
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TRAVELLED</div><div style="font:36px/1 VT323,monospace">{{ dist }} km</div></div>
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">PROBE SPEED</div><div style="font:36px/1 VT323,monospace">{{ speed }} km/s</div></div>
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TO GO</div><div style="font:36px/1 VT323,monospace">{{ toGo }} km</div></div>
+</div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:16px 20px 14px">
+<div style="position:relative;height:86px">
+<div data-anim role="img" aria-label="Earth" style="position:absolute;left:0;top:4px;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/earth-sheet.png" alt="" style="display:block;width:800%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 4s steps(8) infinite"></div>
+<img data-anim src="assets/moon.png" alt="Moon" style="position:absolute;left:58px;top:0;width:16px;height:16px;image-rendering:pixelated;animation:osc-orbit 12s steps(12) infinite">
+<div data-anim role="img" aria-label="Mars" style="position:absolute;right:0;top:4px;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
+<div style="position:absolute;left:76px;right:70px;top:0;bottom:0">
+<div style="position:absolute;left:0;right:0;top:35px;height:2px;background:repeating-linear-gradient(90deg,var(--kf-3c5a8e) 0 6px,transparent 6px 12px)"></div>
+<div style="position:absolute;left:0;top:34px;height:4px;width:{{ pct }};background:var(--kf-8ccfff);box-shadow:0 0 10px rgba(140,207,255,.6);transition:width 1s linear"></div>
+<div style="position:absolute;left:4.2%;top:28px;width:2px;height:16px;background:var(--kf-8ccfff)"></div>
+<div style="position:absolute;left:4.2%;top:52px;font-size:12px;color:var(--ki-c9d4ee);white-space:nowrap">Earth–Moon portrait<div style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">20M km</div></div>
+<div style="position:absolute;left:25%;top:28px;width:2px;height:16px;background:var(--kf-8ccfff)"></div>
+<div style="position:absolute;left:25%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-c9d4ee);white-space:nowrap">Mid-course burn<div style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">120M km</div></div>
+<div data-anim style="position:absolute;left:50%;top:24px;width:4px;height:24px;background:var(--kf-ffb37a);box-shadow:0 0 10px rgba(255,179,122,.7);animation:osc-flicker 1.4s steps(2) infinite"></div>
+<div style="position:absolute;left:50%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-ffb37a);white-space:nowrap">Next · Halfway<div style="font:16px VT323,monospace">in {{ toNext }}</div></div>
+<div style="position:absolute;left:89.6%;top:30px;width:2px;height:12px;background:var(--kf-3c5a8e)"></div>
+<div style="position:absolute;left:89.6%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-a8b6d6);white-space:nowrap">Phobos in view<div style="font:16px VT323,monospace">430M km</div></div>
+<div style="position:absolute;left:{{ pct }};top:36px;transform:translate(-50%,-50%);transition:left 1s linear"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div></div>
+</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:360px minmax(0,1fr) 360px;gap:32px;align-items:start;padding-top:6px">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ ic.signal.o }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">KEEP THE SIGNAL ALIVE</div>
+<sc-if value="{{ low }}" hint-placeholder-val="{{ false }}"><div data-anim style="font:80px/0.85 VT323,monospace;animation:osc-urgent 1s steps(4) infinite">{{ signal }}</div></sc-if>
+<sc-if value="{{ notLow }}" hint-placeholder-val="{{ true }}"><div style="font:80px/0.85 VT323,monospace;text-shadow:4px 4px 0 var(--kf-1c3a6e)">{{ signal }}</div></sc-if>
+<div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">If this hits zero the probe goes quiet. Anyone can reset it, once a day each.</div>
+<button onClick="{{ ping }}" disabled="{{ pinged }}" style="min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 17px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ pingOp }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ pingIcon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabelLong }}</button>
+<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--kf-1f1408);border:2px solid var(--kf-5a3418)"><img src="{{ ic.star.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"><div><div style="font-size:14px;color:var(--ki-ffd9a8)">Signal Keeper III</div><div style="font-size:11px;color:var(--ki-c9a888)">21-day ping streak · 4 days to IV</div></div></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+<div style="position:relative;width:280px;height:280px;display:grid;place-items:center">
+<div data-anim style="position:absolute;inset:0;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:rgba(140,207,255,.12);animation:osc-breathe 2.8s steps(5) infinite"></div>
+<button onClick="{{ thrust }}" aria-label="Thrust" style="position:relative;width:240px;height:240px;border:0;padding:0;background:#b9e2ff;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);cursor:pointer;transition:transform 80ms steps(2)" style-active="transform:translateY(4px) scale(.96)">
+<span style="position:absolute;inset:5px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:#04060f"></span>
+<span style="position:absolute;inset:10px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:radial-gradient(circle at 50% 28%,#4a8fe0 0 16%,#3474c4 16% 32%,#25599f 32% 50%,#1a427c 50% 68%,#11305c 68% 84%,#0c2448 84%)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+<img src="{{ icD.up.w }}" alt="" style="width:36px;height:36px;image-rendering:pixelated">
+<span style="font:600 32px 'Pixelify Sans',monospace;letter-spacing:.16em;color:#eef3ff;text-shadow:3px 3px 0 #0c2448">THRUST</span>
+<span style="font-size:13px;color:#d6ecff">click or press space</span>
+</span>
+</button>
+</div>
+<div style="display:flex;gap:24px;align-items:baseline">
+<div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per click</span></div>
+<div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto-thrust</span></div>
+</div>
+<button style="min-height:40px;padding:0 16px;display:flex;align-items:center;gap:8px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="background:var(--kf-13285a)"><img src="{{ ic.bolt.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">Upgrades · {{ afford }} affordable · {{ credits }} cr</button>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ ic.check.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">TODAY'S CREW VOTE</span><span style="font:20px VT323,monospace;color:var(--ki-a8b6d6)">{{ voteLeft }}</span></div>
+<div style="font:500 20px 'Pixelify Sans',monospace">Which way today?</div>
+<sc-for list="{{ voteOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:6px 12px;text-align:left;font:14px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:{{ o.bar }};border:2px solid {{ o.border }};cursor:pointer" style-hover="border-color:var(--kf-8ccfff)"><span style="display:flex;flex-direction:column;gap:1px"><span>{{ o.label }}</span><span style="font-size:10px;letter-spacing:.12em;color:var(--ki-ffb37a)">{{ o.mark }}</span></span><span style="font:26px VT323,monospace">{{ o.pct }}</span></button>
+</sc-for>
+<div style="font-size:12px;color:var(--ki-a8b6d6)">{{ voteTotal }} votes · result goes in the mission log</div>
+</div>
+</div>
+<sc-if value="{{ showAds }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:28px">
+<div style="font-size:10px;letter-spacing:.14em;color:var(--ki-6f7ca0)">ADVERTISEMENT</div>
+<div style="width:728px;height:90px;display:grid;place-items:center;border:2px dashed var(--kf-2b4c86);font:22px VT323,monospace;color:var(--ki-6f7ca0)">AD SLOT · 728×90</div>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Upgrades · bottom sheet (buy works)</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:18px 18px;opacity:.4;display:flex;flex-direction:column;gap:6px">
+<div style="font:600 17px 'Pixelify Sans',monospace">OneSmallClick</div>
+<div style="font-size:16px;color:var(--ki-c9d4ee);margin-top:10px">At this pace we arrive</div>
+<div style="font:48px/0.95 VT323,monospace">{{ arrival }}</div>
+</div>
+<div style="position:absolute;inset:0;background:rgba(3,5,14,.55)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;top:150px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0a1533) 40%,var(--kf-081128));border-top:2px solid var(--kf-7fb0e6);box-shadow:0 -2px 0 var(--kf-04060f),inset 0 2px 0 var(--kf-06102a);display:flex;flex-direction:column">
+<div style="display:flex;justify-content:center;padding:8px 0 4px"><div style="width:44px;height:4px;background:var(--kf-3c5a8e)"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;padding:6px 18px 10px">
+<div><div style="font:500 24px 'Pixelify Sans',monospace">Upgrades</div><div style="font-size:12px;color:var(--ki-a8b6d6)">1 credit for every km you push</div></div>
+<div style="text-align:right"><div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">BALANCE</div><div style="font:32px/1 VT323,monospace;color:var(--ki-8ccfff)">{{ credits }} cr</div></div>
+</div>
+<div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:0 18px 20px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 2px;background:linear-gradient(90deg,var(--kf-2b4c86),var(--kf-2b4c86) calc(100% - 48px),transparent) bottom/100% 2px no-repeat"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">AUTO-THRUSTERS · PUSH WHILE YOU'RE AWAY</span><span style="font:18px VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }}/s</span></div>
+<sc-for list="{{ autos }}" as="u" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0">
+<div style="width:40px;height:40px;display:grid;place-items:center;background:var(--kf-0a1636);border:2px solid var(--kf-3c5a8e)"><img src="{{ u.icon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div style="min-width:0"><div style="display:flex;gap:8px;align-items:baseline"><span style="font-size:15px">{{ u.name }}</span><span style="font:18px VT323,monospace;color:var(--ki-8ccfff)">{{ u.lv }}</span></div><div style="font-size:12px;color:var(--ki-a8b6d6)">{{ u.eff }}</div></div>
+<button onClick="{{ u.buy }}" disabled="{{ u.dis }}" style="min-width:100px;min-height:42px;font:22px VT323,monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 3px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ u.op }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(3px);box-shadow:0 0 0 var(--kf-2b5a8f)">{{ u.cost }} cr</button>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 2px;background:linear-gradient(90deg,var(--kf-2b4c86),var(--kf-2b4c86) calc(100% - 48px),transparent) bottom/100% 2px no-repeat"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TAP POWER</span><span style="font:18px VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km/tap</span></div>
+<sc-for list="{{ taps }}" as="u" hint-placeholder-count="2">
+<div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 0">
+<div style="width:40px;height:40px;display:grid;place-items:center;background:var(--kf-0a1636);border:2px solid var(--kf-3c5a8e)"><img src="{{ u.icon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div style="min-width:0"><div style="display:flex;gap:8px;align-items:baseline"><span style="font-size:15px">{{ u.name }}</span><span style="font:18px VT323,monospace;color:var(--ki-8ccfff)">{{ u.lv }}</span></div><div style="font-size:12px;color:var(--ki-a8b6d6)">{{ u.eff }}</div></div>
+<button onClick="{{ u.buy }}" disabled="{{ u.dis }}" style="min-width:100px;min-height:42px;font:22px VT323,monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 3px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ u.op }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(3px);box-shadow:0 0 0 var(--kf-2b5a8f)">{{ u.cost }} cr</button>
+</div>
+</sc-for>
+<div style="margin-top:12px;background:linear-gradient(180deg,var(--kf-2a170b),var(--kf-160c06));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:8px"><img src="{{ ic.star.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">PRESTIGE</span></div>
+<div style="font:500 18px 'Pixelify Sans',monospace">Hand over the shift</div>
+<div style="font-size:12px;line-height:1.5;color:var(--ki-e6d2c0)">Reset your upgrades and credits for 3 Mission Patches. Each patch is +10% thrust, forever.</div>
+<div style="height:8px;background:var(--kf-3a2414);position:relative"><div style="position:absolute;inset:0 40% 0 0;background:repeating-linear-gradient(90deg,var(--kf-ffb37a) 0 6px,var(--kf-e8894a) 6px 8px)"></div></div>
+<div style="display:flex;justify-content:space-between;font:18px VT323,monospace;color:var(--ki-ffd9a8)"><span>1,204,880 / 2,000,000 km</span><span>60%</span></div>
+<button disabled="{{ true }}" style="min-height:42px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:transparent;border:2px solid var(--kf-ffb37a);opacity:.45;cursor:not-allowed">Unlocks at 2,000,000 km pushed</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1d">
+<div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Welcome back · offline summary</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:64px 18px 24px;display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;justify-content:center"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 8px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:128px;height:80px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:14px">
+<div><div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">WELCOME BACK, ORBIT_OTTER</div><div style="font:500 22px 'Pixelify Sans',monospace;margin-top:2px">While you were away</div><div style="font:20px VT323,monospace;color:var(--ki-a8b6d6)">11 h 32 m offline</div></div>
+<div><div style="font:56px/0.9 VT323,monospace;color:var(--ki-8ccfff);text-shadow:3px 3px 0 var(--kf-1c3a6e)">+10,368 km</div><div style="font-size:13px;color:var(--ki-c9d4ee)">pushed by your thrusters · +10,368 cr</div></div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;height:14px;border:2px solid var(--kf-3c5a8e);background:var(--kf-060d24)"><div style="width:69%;background:repeating-linear-gradient(90deg,var(--kf-8ccfff) 0 8px,var(--kf-5aa4e0) 8px 10px)"></div><div style="flex:1;background:repeating-linear-gradient(45deg,var(--kf-1b2a55) 0 3px,transparent 3px 6px)"></div></div>
+<div style="display:flex;justify-content:space-between;font:18px VT323,monospace;color:var(--ki-a8b6d6)"><span style="color:var(--ki-8ccfff)">8 h counted</span><span>3 h 32 m not counted</span></div>
+<div style="font-size:12px;line-height:1.5;color:var(--ki-c9d4ee)">Offline thrust is capped at 8 hours. Check in twice a day to keep every kilometre.</div>
+</div>
+<div style="display:flex;flex-direction:column">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;background:linear-gradient(90deg,transparent,var(--kf-2b4c86) 48px,var(--kf-2b4c86) calc(100% - 48px),transparent) top/100% 2px no-repeat"><span style="font-size:13px;color:var(--ki-c9d4ee)">The crew pushed</span><span style="font:22px VT323,monospace">1,204,330 km</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;background:linear-gradient(90deg,transparent,var(--kf-2b4c86) 48px,var(--kf-2b4c86) calc(100% - 48px),transparent) top/100% 2px no-repeat"><span style="font-size:13px;color:var(--ki-c9d4ee)">Arrival moved</span><span style="font:22px VT323,monospace;color:var(--ki-8ccfff)">1 day sooner</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;background:linear-gradient(90deg,transparent,var(--kf-2b4c86) 48px,var(--kf-2b4c86) calc(100% - 48px),transparent) top/100% 2px no-repeat"><span style="font-size:13px;color:var(--ki-c9d4ee)">Signal kept alive by</span><span style="font:22px VT323,monospace;color:var(--ki-ffb37a)">mira_t · 03:14</span></div>
+</div>
+<button style="min-height:50px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 17px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Collect &amp; keep pushing</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1e">
+<div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Milestone moment · postcard + fact</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-2a1a2a) 0 10%,var(--kf-1e1630) 10% 22%,var(--kf-141436) 22% 36%,var(--kf-0c1232) 36% 54%,var(--kf-081028) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:30px 18px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">MILESTONE 4 OF 6 REACHED</div>
+<div style="font:600 34px/1 'Pixelify Sans',monospace;text-shadow:3px 3px 0 var(--kf-8a4620)">Halfway to Mars!</div>
+<div style="font:22px VT323,monospace;color:var(--ki-ffd9a8)">240,000,000 km · mission day 63</div>
+</div>
+<div style="align-self:center;transform:rotate(-2deg);background:var(--kf-efe6d6);padding:10px 10px 12px;box-shadow:4px 4px 0 var(--kf-04060f);display:flex;flex-direction:column;gap:8px;width:318px">
+<div style="position:relative;width:298px;height:184px;background:var(--kf-0a1028)">
+<image-slot id="postcard-04" shape="rect" placeholder="Postcard photo: a real space image (e.g. a public-domain NASA Mars shot)"></image-slot>
+<div style="position:absolute;top:6px;right:6px;width:46px;height:54px;background:var(--kf-efe6d6);padding:3px;box-shadow:0 0 0 2px var(--kf-efe6d6);outline:2px dashed var(--kf-c9b89c);outline-offset:-2px;display:grid;place-items:center;pointer-events:none"><img src="assets/mars.png" alt="" style="width:32px;height:32px;image-rendering:pixelated"></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-3a2a1a)">Wish you were here. — OSC-1</span><span style="font:16px VT323,monospace;color:var(--ki-a8582a);border:2px solid var(--kf-a8582a);padding:0 5px">POSTCARD 04</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-2a170b),var(--kf-160c06));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;flex-direction:column;gap:4px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">FROM THE FLIGHT DECK</div>
+<div style="font-size:14px;line-height:1.5;color:var(--ki-f3e4d6)">A radio ping from here takes about 7 minutes to reach Earth.</div>
+<div style="font-size:14px;line-height:1.5;color:var(--ki-f3e4d6)">Every Ping you send is already history when it lands.</div>
+</div>
+<div style="background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);padding:10px 12px;font:20px/1.1 VT323,monospace;color:var(--ki-c9d4ee)">OneSmallClick · Day 63<br>▰▰▰▰▰▱▱▱▱▱ 50% to Mars<br>I pushed 12,904 km today<br>Arrival: 14 Mar 2027</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<button style="min-height:46px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:var(--kf-1f0f08);border:2px solid var(--kf-ffb37a);box-shadow:0 4px 0 var(--kf-8a4620);cursor:pointer" style-hover="background:var(--kf-3a1e10)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-8a4620)">Share result</button>
+<button onClick="{{ celebrate }}" style="min-height:46px;font:500 16px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="background:var(--kf-13285a)">Keep flying</button>
+</div>
+</div>
+<div ref="{{ celebRef }}" style="position:absolute;inset:0;pointer-events:none;overflow:hidden"></div>
+</div>
+</div>
+
+<div class="dv-opt" id="1f">
+<div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Safe mode · signal lost (a setback, not game over)</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-121522) 0 12%,var(--kf-10131f) 12% 24%,var(--kf-0e111b) 24% 38%,var(--kf-0b0e17) 38% 54%,var(--kf-090b13) 54% 72%,var(--kf-06080e) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.25;filter:grayscale(1);animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" style="position:absolute;left:0;right:0;top:0;height:900px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;opacity:.4;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:18px 16px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font:600 17px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">OneSmallClick</div>
+<div style="display:flex;align-items:center;gap:6px;padding:3px 8px;border:2px solid var(--kf-ffb37a);background:var(--kf-1f0f08)"><span data-anim style="width:6px;height:6px;background:var(--kf-ffb37a);animation:osc-blink 1.2s steps(1) infinite"></span><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">SAFE MODE</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:2px;padding:4px 2px 0">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">SIGNAL LOST 12 MIN AGO</div>
+<div style="font-size:16px;color:var(--ki-c9d4ee)">The probe has gone quiet. We now arrive</div>
+<div style="font:48px/0.95 VT323,monospace;color:var(--ki-ffb37a);text-shadow:3px 3px 0 var(--kf-5a2c12)">19 March 2027</div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font:20px VT323,monospace;color:var(--ki-8b98ba);text-decoration:line-through">14 March 2027</span><span style="font:18px VT323,monospace;color:var(--ki-ffb37a);border:2px solid var(--kf-ffb37a);padding:0 5px">+5 DAYS</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-1a1f30),var(--kf-10131f));border:2px solid var(--kf-4a5170);outline:2px solid var(--kf-04060f);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="position:relative;height:64px;filter:saturate(.2) brightness(.75)">
+<img src="assets/earth.png" alt="Earth" style="position:absolute;left:-6px;top:0;width:64px;height:64px;image-rendering:pixelated">
+<img src="assets/mars.png" alt="Mars" style="position:absolute;right:-6px;top:0;width:64px;height:64px;image-rendering:pixelated">
+<div style="position:absolute;left:62px;right:62px;top:12px;bottom:12px">
+<div style="position:absolute;left:0;right:0;top:19px;height:2px;background:repeating-linear-gradient(90deg,var(--kf-3c4560) 0 4px,transparent 4px 8px)"></div>
+<div style="position:absolute;left:0;top:18px;height:4px;width:38%;background:var(--kf-6a7aa0)"></div>
+<div style="position:absolute;left:38%;top:20px;transform:translate(-50%,-50%)"><img src="assets/probe.png" alt="Probe, quiet" style="display:block;width:64px;height:40px;image-rendering:pixelated;filter:grayscale(1) brightness(.8)"></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ki-a8b6d6)"><span>Coasting · thrusters asleep</span><span style="font:18px VT323,monospace">0 km/s from crew</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-1a1f30),var(--kf-10131f));border:2px solid var(--kf-4a5170);outline:2px solid var(--kf-04060f);padding:12px;display:flex;justify-content:space-between;align-items:center">
+<div><div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">SIGNAL</div><div style="font:44px/0.9 VT323,monospace;color:var(--ki-6f7ca0)">00:00:00</div></div>
+<div style="text-align:right;font-size:12px;line-height:1.5;color:var(--ki-c9d4ee);max-width:170px">Every quiet hour adds about 10 hours to the trip.</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:4px">
+<div style="position:relative;width:200px;height:200px;display:grid;place-items:center">
+<div data-anim style="position:absolute;inset:0;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:rgba(255,179,122,.14);animation:osc-breathe 2s steps(5) infinite"></div>
+<button style="position:relative;width:170px;height:170px;border:0;padding:0;background:#ffd2ad;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);cursor:pointer" style-active="transform:translateY(4px) scale(.96)">
+<span style="position:absolute;inset:4px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:#04060f"></span>
+<span style="position:absolute;inset:8px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:radial-gradient(circle at 50% 28%,#e8945a 0 16%,#c8743e 16% 32%,#a2582a 32% 50%,#7c401c 50% 68%,#5a2c12 68% 84%,#3e1e0c 84%)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+<img src="{{ icD.signal.w }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<span style="font:600 24px 'Pixelify Sans',monospace;letter-spacing:.16em;color:#fff4ea;text-shadow:2px 2px 0 #3e1e0c">PING</span>
+<span style="font-size:12px;color:#ffe6d2">wake the probe</span>
+</span>
+</button>
+</div>
+<div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee);text-align:center;max-width:300px">Nothing is lost. The distance is safe. One ping from anyone brings it back. You have 1 left today.</div>
+</div>
+</div>
+<div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(3,4,10,.35),transparent 30%,transparent 70%,rgba(3,4,10,.45))"></div>
+</div>
+</div>
+
+<div class="dv-opt" id="1g">
+<div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>Leaderboards · tabs switch, you pinned</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0 0 72px 0;padding:22px 16px 0;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px"><img src="{{ ic.trophy.o }}" alt="" style="width:27px;height:27px;image-rendering:pixelated"><div><div style="font:500 24px 'Pixelify Sans',monospace">Leaderboards</div><div style="font-size:12px;color:var(--ki-a8b6d6)">Distance pushed today · resets 00:00 UTC</div></div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--kf-3c5a8e);outline:2px solid var(--kf-04060f)">
+<button onClick="{{ tabPlayers }}" style="min-height:42px;font:500 15px 'Pixelify Sans',monospace;color:{{ tabPC }};background:{{ tabPB }};border:0;cursor:pointer">Players</button>
+<button onClick="{{ tabCountries }}" style="min-height:42px;font:500 15px 'Pixelify Sans',monospace;color:{{ tabCC }};background:{{ tabCB }};border:0;border-left:2px solid var(--kf-3c5a8e);cursor:pointer">Countries</button>
+</div>
+<div style="display:flex;flex-direction:column;overflow:hidden">
+<sc-for list="{{ lbRows }}" as="r" hint-placeholder-count="10">
+<div style="display:grid;grid-template-columns:36px 34px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:46px;background:linear-gradient(90deg,transparent,var(--kf-1f3463) 48px,var(--kf-1f3463) calc(100% - 48px),transparent) bottom/100% 2px no-repeat">
+<span style="font:26px VT323,monospace;color:{{ r.rc }}">{{ r.rank }}</span>
+<span style="font:16px VT323,monospace;color:var(--ki-c9d4ee);border:2px solid var(--kf-3c5a8e);text-align:center">{{ r.cc }}</span>
+<span style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</span>
+<span style="font:22px VT323,monospace">{{ r.km }} km</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="position:absolute;left:12px;right:12px;bottom:84px;background:linear-gradient(180deg,var(--kf-1a3670),var(--kf-0f2150));border:2px solid var(--kf-8ccfff);outline:2px solid var(--kf-04060f);box-shadow:0 0 18px rgba(140,207,255,.25);display:grid;grid-template-columns:auto 34px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:52px;padding:0 10px">
+<span style="font:24px VT323,monospace;color:var(--ki-8ccfff)">{{ youRank }}</span>
+<span style="font:16px VT323,monospace;color:var(--ki-c9d4ee);border:2px solid var(--kf-3c5a8e);text-align:center">GB</span>
+<span style="font-size:15px">{{ youName }}</span>
+<span style="font:22px VT323,monospace;color:var(--ki-8ccfff)">{{ youKm }} km</span>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:var(--kf-060a1c);border-top:2px solid var(--kf-1b2a55);display:grid;grid-template-columns:repeat(4,1fr)">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ sp.earthS }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Mission</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.bolt.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Upgrades</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.log.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Log</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-8ccfff);font-size:12px;box-shadow:inset 0 2px 0 var(--kf-8ccfff)"><img src="{{ ic.trophy.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Ranks</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1h">
+<div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>Mission log · votes, milestones, postcards</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0 0 72px 0;overflow-y:auto;scrollbar-width:none;padding:22px 16px 20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><img src="{{ ic.log.b }}" alt="" style="width:27px;height:27px;image-rendering:pixelated"><div><div style="font:500 24px 'Pixelify Sans',monospace">Mission log</div><div style="font-size:12px;color:var(--ki-a8b6d6)">Everything the crew has decided and seen</div></div></div>
+<div style="position:relative;display:flex;flex-direction:column;gap:16px;padding-left:30px">
+<div style="position:absolute;left:9px;top:6px;bottom:0;width:2px;background:repeating-linear-gradient(180deg,var(--kf-3c5a8e) 0 4px,transparent 4px 8px)"></div>
+<sc-for list="{{ log }}" as="e" hint-placeholder-count="5">
+<div style="position:relative;display:flex;flex-direction:column;gap:4px">
+<div style="position:absolute;left:-30px;top:0;width:20px;height:20px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid {{ e.col }}"><img src="{{ e.icon }}" alt="" style="width:12px;height:12px;image-rendering:pixelated"></div>
+<div style="display:flex;gap:8px;align-items:baseline"><span style="font:18px VT323,monospace;color:var(--ki-a8b6d6)">{{ e.day }}</span><span style="font-size:10px;letter-spacing:.12em;color:{{ e.col }}">{{ e.kind }}</span></div>
+<div style="font:500 16px 'Pixelify Sans',monospace">{{ e.title }}</div>
+<div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">{{ e.body }}</div>
+<sc-if value="{{ e.postcard }}" hint-placeholder-val="{{ false }}"><div style="width:200px;height:124px;background:var(--kf-efe6d6);padding:6px;box-shadow:3px 3px 0 var(--kf-04060f);transform:rotate(-1.5deg);margin-top:4px"><image-slot id="{{ e.slot }}" shape="rect" placeholder="Postcard photo"></image-slot></div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:var(--kf-060a1c);border-top:2px solid var(--kf-1b2a55);display:grid;grid-template-columns:repeat(4,1fr)">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ sp.earthS }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Mission</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.bolt.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Upgrades</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-8ccfff);font-size:12px;box-shadow:inset 0 2px 0 var(--kf-8ccfff)"><img src="{{ ic.log.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Log</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.trophy.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Ranks</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1i">
+<div class="dv-olabel"><a class="dv-oid" href="#1i">1i</a>Sign in · email link or Google</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:110px 22px 30px;display:flex;flex-direction:column;gap:18px">
+<div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 8px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:128px;height:80px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div>
+<div><div style="font:500 32px/1.05 'Pixelify Sans',monospace">Join the crew</div><div style="font-size:14px;line-height:1.5;color:var(--ki-c9d4ee);margin-top:6px">Your taps count either way. Sign in to keep your badges, your ping streak and your name in the credits.</div></div>
+<div class="field" style="display:flex;flex-direction:column;gap:6px"><label style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">EMAIL</label><input class="input" type="email" placeholder="you@example.com" style="min-height:48px;font:22px VT323,monospace;background:var(--kf-060d24);border:2px solid var(--kf-3c5a8e);border-radius:0;color:var(--ki-eef3ff)"></div>
+<button style="min-height:50px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 17px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ ic.mail.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Email me a sign-in link</button>
+<div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ki-8b98ba)"><div style="flex:1;height:2px;background:linear-gradient(90deg,transparent,var(--kf-2b4c86))"></div>or<div style="flex:1;height:2px;background:linear-gradient(90deg,var(--kf-2b4c86),transparent)"></div></div>
+<button style="min-height:50px;display:flex;align-items:center;justify-content:center;gap:10px;font:500 16px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="background:var(--kf-13285a)"><span style="width:22px;height:22px;display:grid;place-items:center;background:var(--kf-eef3ff);color:var(--ki-05081a);font:700 14px 'Pixelify Sans',monospace">G</span>Continue with Google</button>
+<div style="font-size:12px;line-height:1.5;color:var(--ki-a8b6d6)">No password. We never post anything for you.</div>
+<div style="margin-top:auto;text-align:center;font-size:14px;color:var(--ki-8ccfff)">Keep playing as guest · Crew #48,213</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1j">
+<div class="dv-olabel"><a class="dv-oid" href="#1j">1j</a>Profile · badges, distance, ping history</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:26px 16px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:64px;height:64px;display:grid;place-items:center;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f)"><img src="{{ ic.user.b }}" alt="" style="width:36px;height:36px;image-rendering:pixelated"></div>
+<div><div style="font:500 24px 'Pixelify Sans',monospace">orbit_otter</div><div style="font-size:12px;color:var(--ki-a8b6d6)">Crew since day 3 · United Kingdom</div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);padding:10px"><div style="font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TOTAL PUSHED</div><div style="font:26px/1 VT323,monospace;color:var(--ki-8ccfff)">1.20M km</div></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);padding:10px"><div style="font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TODAY</div><div style="font:26px/1 VT323,monospace">{{ youKm }} km</div></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);padding:10px"><div style="font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">PINGS</div><div style="font:26px/1 VT323,monospace;color:var(--ki-ffb37a)">26 / 30</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">BADGES · 4 OF 6</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<sc-for list="{{ badges }}" as="b" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;text-align:center;background:var(--kf-0a1636);border:2px solid {{ b.bd }};opacity:{{ b.op }}"><img src="{{ b.icon }}" alt="" style="width:27px;height:27px;image-rendering:pixelated"><div style="font-size:12px;line-height:1.2">{{ b.n }}</div><div style="font-size:10px;line-height:1.3;color:var(--ki-a8b6d6)">{{ b.d }}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><span>PING HISTORY · LAST 30 DAYS</span><span style="color:var(--ki-ffb37a)">21-DAY STREAK</span></div>
+<div style="display:grid;grid-template-columns:repeat(15,1fr);gap:4px">
+<sc-for list="{{ pings }}" as="p" hint-placeholder-count="30"><div style="aspect-ratio:1;background:{{ p.bg }};box-shadow:{{ p.sh }}"></div></sc-for>
+</div>
+<div style="display:flex;gap:14px;font-size:11px;color:var(--ki-a8b6d6)"><span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--kf-ffb37a)"></span>Pinged</span><span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;background:var(--kf-1b2a55)"></span>Missed</span></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:4px">
+<button style="min-height:46px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Share my mission card</button>
+<button style="min-height:46px;padding:0 14px;font:500 14px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6);background:transparent;border:0;cursor:pointer" style-hover="color:var(--ki-eef3ff)">Sign out</button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1k">
+<div class="dv-olabel"><a class="dv-oid" href="#1k">1k</a>Arrival &amp; credits · then vote the next destination</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-2a1420) 0 10%,var(--kf-22132a) 10% 22%,var(--kf-181430) 22% 36%,var(--kf-0f1232) 36% 54%,var(--kf-081028) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding:22px 16px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="position:relative;height:264px;display:grid;place-items:center">
+<div data-anim role="img" aria-label="Mars" style="filter:drop-shadow(0 0 24px rgba(255,140,80,.35));width:256px;height:256px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
+<div data-anim role="img" aria-label="Probe OSC-1 in orbit" style="position:absolute;right:6px;top:18px;filter:drop-shadow(0 0 6px rgba(140,207,255,.8));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">MARS ORBIT REACHED</div>
+<div style="font:600 34px/1 'Pixelify Sans',monospace;text-shadow:3px 3px 0 var(--kf-8a4620)">We made it.</div>
+<div style="font:24px VT323,monospace;color:var(--ki-ffd9a8)">14 March 2027 · 06:12 UTC</div>
+<div style="font-size:13px;color:var(--ki-c9d4ee)">157 days · 2,412,446 crew · 31.4 billion taps</div>
+</div>
+<div style="position:relative;height:170px;overflow:hidden;background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);outline:2px solid var(--kf-04060f);-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)">
+<div data-anim style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;animation:osc-roll 36s linear infinite">
+<sc-for list="{{ creditNames }}" as="c" hint-placeholder-count="12"><div style="display:flex;gap:10px;align-items:baseline"><span style="font-size:15px">{{ c.n }}</span><span style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">{{ c.cc }}</span></div></sc-for>
+</div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">WHERE NEXT?</span><span style="font:18px VT323,monospace;color:var(--ki-a8b6d6)">closes 23:59:12</span></div>
+<sc-for list="{{ nextOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:48px;padding:6px 10px;text-align:left;font:14px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:{{ o.bar }};border:2px solid {{ o.border }};cursor:pointer" style-hover="border-color:var(--kf-8ccfff)"><span style="display:flex;flex-direction:column;gap:1px"><span>{{ o.label }}</span><span style="font-size:11px;color:var(--ki-a8b6d6)">{{ o.sub }}</span></span><span style="font:24px VT323,monospace">{{ o.pct }}</span></button>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1l">
+<div class="dv-olabel"><a class="dv-oid" href="#1l">1l</a>How to play</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0;padding:30px 18px 26px;display:flex;flex-direction:column;gap:14px">
+<div><div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">HOW TO PLAY</div><div style="font:500 30px/1.05 'Pixelify Sans',monospace;margin-top:4px">One probe.<br>Everyone's taps.</div></div>
+<div style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;padding:12px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f)">
+<div style="width:44px;height:44px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid var(--kf-8ccfff)"><img src="{{ ic.up.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div><div style="font:500 16px 'Pixelify Sans',monospace"><span style="font:20px VT323,monospace;color:var(--ki-8ccfff)">1</span> Tap THRUST</div><div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">Every tap from every player pushes the same probe toward Mars.</div></div>
+</div>
+<div style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;padding:12px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f)">
+<div style="width:44px;height:44px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid var(--kf-ffb37a)"><img src="{{ ic.signal.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div><div style="font:500 16px 'Pixelify Sans',monospace"><span style="font:20px VT323,monospace;color:var(--ki-ffb37a)">2</span> Keep the signal alive</div><div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">If the timer hits zero the probe goes quiet. Anyone can Ping once a day to reset it.</div></div>
+</div>
+<div style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;padding:12px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f)">
+<div style="width:44px;height:44px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid var(--kf-8ccfff)"><img src="{{ ic.check.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div><div style="font:500 16px 'Pixelify Sans',monospace"><span style="font:20px VT323,monospace;color:var(--ki-8ccfff)">3</span> Vote the route</div><div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">One crew vote a day: faster, safer, or a detour for a postcard.</div></div>
+</div>
+<div style="display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;padding:12px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f)">
+<div style="width:44px;height:44px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid var(--kf-8ccfff)"><img src="{{ ic.bolt.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></div>
+<div><div style="font:500 16px 'Pixelify Sans',monospace"><span style="font:20px VT323,monospace;color:var(--ki-8ccfff)">4</span> Upgrade your thrusters</div><div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">They keep pushing while you're away, for up to 8 hours.</div></div>
+</div>
+<div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">The big date on the home screen moves with all of us. More play, sooner arrival.</div>
+<button style="margin-top:auto;min-height:52px;font:600 18px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Start pushing</button>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "make the windows feel more like a CRT console" · "show 1a with the signal in its final seconds" · "export the sprites as a sheet"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;signalState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;healthy&quot;,&quot;final seconds&quot;],&quot;default&quot;:&quot;healthy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;crew&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;busy&quot;,&quot;handful&quot;],&quot;default&quot;:&quot;busy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;showAds&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;particles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  state = { dist: 182406311, myToday: 9640, clicks: 0, elapsed: 0, signal: 15159, pinged: false, vote: null, votes: [12840, 11590, 6890], credits: 5320, lv: { cold: 6, ion: 3, sail: 0, hands: 4, chant: 1 }, tab: 'players', nv: null, nvotes: [41204, 62118, 29870], theme: null };
+  B = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+  celebRef = React.createRef();
+  sp = this.buildSprites();
+  ic = this.buildIcons();
+
+  componentDidMount() {
+    this.reduce = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+    if (this.isFinal()) this.setState({ signal: 47 });
+    this.iv = setInterval(() => this.tick(), 1000);
+    this.ct = setTimeout(() => this.celebrate(), 1200);
+  }
+  componentDidUpdate(pp) { if (pp.theme !== this.props.theme) this.setState({ theme: null }); if (pp.signalState !== this.props.signalState) this.setState({ signal: this.isFinal() ? 47 : 15159, pinged: false }); }
+  componentWillUnmount() { clearInterval(this.iv); clearTimeout(this.ct); }
+  theme() { return this.state.theme ?? this.props.theme ?? 'dark'; }
+  toggleTheme = () => this.setState({ theme: this.theme() === 'light' ? 'dark' : 'light' });
+  isFinal() { return (this.props.signalState ?? 'healthy') === 'final seconds'; }
+  busy() { return (this.props.crew ?? 'busy') === 'busy'; }
+  auto(s) { return 0.02 * s.lv.cold + 0.08 * s.lv.ion + 0.3 * s.lv.sail; }
+  tapKm(s) { return Math.round((4 + 2 * s.lv.hands) * (1 + 0.25 * s.lv.chant)); }
+  speed(s) { return 21 + (this.busy() ? 8.26 : 5.9) + this.auto(s); }
+  tick() {
+    this.setState(s => {
+      let sig = s.signal - 1; if (sig < 0) sig = this.isFinal() ? 59 : 0;
+      const a = this.auto(s);
+      return { elapsed: s.elapsed + 1, dist: s.dist + this.speed(s), myToday: s.myToday + a, credits: s.credits + a, signal: sig };
+    });
+  }
+
+  // --- pixel art ---
+  px(w, h, fn) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); return c.toDataURL(); }
+  hash(x, y, s) { let n = (x * 374761393 + y * 668265263 + s * 1442695041) | 0; n = Math.imul(n ^ (n >>> 13), 1274126177); return ((n ^ (n >>> 16)) >>> 0) / 4294967295; }
+  noise(x, y, s) {
+    const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    const a = this.hash(xi, yi, s), b = this.hash(xi + 1, yi, s), c = this.hash(xi, yi + 1, s), d = this.hash(xi + 1, yi + 1, s);
+    const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  }
+  fbm(x, y, s) { return this.noise(x, y, s) * .55 + this.noise(x * 2, y * 2, s + 1) * .3 + this.noise(x * 4, y * 4, s + 2) * .15; }
+  planet(R, kind, seed) {
+    const P = {
+      ocean: ['#081530', '#0f2a5a', '#1a4a8e', '#2d6fbc', '#5aa4e6'],
+      land: ['#0f2016', '#1d4227', '#346f36', '#6c9c46', '#b9b874'],
+      cloud: ['#2c3a5c', '#6e82aa', '#b4c6e6', '#e4ecfb', '#eef3ff'],
+      rust: ['#220c08', '#4e1f12', '#8c3c1f', '#c8683a', '#f0a468'],
+      dark: ['#1a0906', '#371609', '#5f2a14', '#8a4424', '#b56c40'],
+      cap: ['#4a3e48', '#958a96', '#d8d0d6', '#f2ece8', '#f6f1ec'],
+      grey: ['#1c2030', '#3c4258', '#6c7390', '#a3a9c0', '#d6dae8'],
+      greyD: ['#141824', '#2a3044', '#4c5470', '#787f9c', '#a6abc2']
+    };
+    const S = R * 2 + 2;
+    return this.px(S, S, g => {
+      for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+        const dx = (x + .5 - (R + 1)) / R, dy = (y + .5 - (R + 1)) / R, d2 = dx * dx + dy * dy;
+        if (d2 > 1) continue;
+        const dz = Math.sqrt(1 - d2);
+        let l = Math.max(0, -0.55 * dx - 0.5 * dy + 0.67 * dz); l = Math.min(1, Math.pow(l, .85) * 1.05);
+        const lon = Math.atan2(dx, dz) + seed, lat = Math.asin(dy);
+        const n = this.fbm(lon * 1.7 + seed * 3, lat * 2.3 + 7, seed);
+        let i = Math.floor((l + (this.B[y % 4][x % 4] / 16 - .5) * .3) * 5); i = Math.max(0, Math.min(4, i));
+        let pal;
+        if (kind === 'earth') {
+          const cl = this.fbm(lon * 2.6 + 11, lat * 5 + 3, seed + 9);
+          pal = Math.abs(lat) > 1.2 ? P.cloud : cl > .63 ? P.cloud : n > .54 ? P.land : P.ocean;
+        } else if (kind === 'mars') {
+          pal = lat < -1.12 ? P.cap : n > .57 ? P.dark : P.rust;
+        } else pal = n > .58 ? P.greyD : P.grey;
+        let col = pal[i];
+        if (kind === 'earth' && d2 > .8 && l > .2) col = i > 2 ? '#9fd8ff' : '#4f8fd8';
+        if (kind === 'mars' && d2 > .86 && l > .25) col = '#ffb37a';
+        g.fillStyle = col; g.fillRect(x, y, 1, 1);
+      }
+    });
+  }
+  rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  stars(seed, count, bright) {
+    const r = this.rng(seed);
+    return this.px(128, 128, g => {
+      for (let i = 0; i < count; i++) {
+        const t = r(); g.fillStyle = t < .55 ? '#24315a' : t < .82 ? '#4a5c94' : t < .96 ? '#9aa9cc' : '#ffb37a';
+        g.fillRect(Math.floor(r() * 128), Math.floor(r() * 128), 1, 1);
+      }
+      for (let i = 0; i < bright; i++) {
+        const x = 3 + Math.floor(r() * 122), y = 3 + Math.floor(r() * 122), big = r() > .6;
+        g.fillStyle = '#5f7fc0'; g.fillRect(x - 1, y, 3, 1); g.fillRect(x, y - 1, 1, 3);
+        if (big) { g.fillStyle = '#2f4680'; g.fillRect(x - 2, y, 1, 1); g.fillRect(x + 2, y, 1, 1); g.fillRect(x, y - 2, 1, 1); g.fillRect(x, y + 2, 1, 1); }
+        g.fillStyle = '#eef3ff'; g.fillRect(x, y, 1, 1);
+      }
+    });
+  }
+  grid(rows, pal) {
+    return this.px(rows[0].length, rows.length, g => rows.forEach((row, y) => [...row].forEach((ch, x) => { if (pal[ch]) { g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1); } })));
+  }
+  buildSprites() {
+    const probe = this.grid([
+      '........kkkkk........',
+      '.......kwwwwWk.......',
+      '........kWWWk........',
+      '.........kgk.........',
+      'kkkkkk..kkgkk..kkkkkk',
+      'kPpPpkkkGgggGkkkpPpPk',
+      'kpPpPk.kgGGggk.kPpPpk',
+      'kPpPpkkkggggGkkkpPpPk',
+      'kkkkkk..kgggk..kkkkkk',
+      '.........kok.........',
+      '..........o..........'
+    ], { k: '#050817', p: '#2d6fbc', P: '#8ccfff', g: '#c8902e', G: '#ffd27a', w: '#eef3ff', W: '#9fb2d6', o: '#ffb37a' });
+    return {
+      earthS: this.planet(7, 'earth', 1.3), stars1: this.stars(7, 90, 0), stars2: this.stars(19, 14, 5)
+    };
+  }
+  buildIcons() {
+    const G = {
+      up: ['....#....', '...###...', '..#####..', '.#######.', '...###...', '...###...', '...###...', '...###...', '.........'],
+      bolt: ['.....##..', '....##...', '...##....', '..######.', '.....##..', '....##...', '...##....', '..##.....', '.........'],
+      trophy: ['#########', '#.#####.#', '#.#####.#', '.#######.', '..#####..', '....#....', '....#....', '..#####..', '.........'],
+      log: ['.#######.', '.#.....#.', '.#.###.#.', '.#.....#.', '.#.###.#.', '.#.....#.', '.#.##..#.', '.#######.', '.........'],
+      user: ['...###...', '..#####..', '..#####..', '...###...', '.........', '.#######.', '#########', '#########', '.........'],
+      signal: ['..#...#..', '.#..#..#.', '#..###..#', '.#..#..#.', '..#.#.#..', '....#....', '...###...', '..#####..', '.........'],
+      clock: ['..#####..', '.#.....#.', '#...#...#', '#...#...#', '#...###.#', '#.......#', '.#.....#.', '..#####..', '.........'],
+      check: ['.........', '........#', '.......##', '#.....##.', '##...##..', '.##.##...', '..###....', '...#.....', '.........'],
+      star: ['....#....', '....#....', '...###...', '#########', '.#######.', '..#####..', '..##.##..', '.##...##.', '.........'],
+      mail: ['#########', '##.....##', '#.#...#.#', '#..#.#..#', '#...#...#', '#.......#', '#########', '.........', '.........']
+    };
+    const mk = C => { const out = {}; Object.keys(G).forEach(k => { out[k] = {}; Object.keys(C).forEach(c => { out[k][c] = this.grid(G[k], { '#': C[c] }); }); }); return out; };
+    const out = mk({ b: '#8ccfff', o: '#ffb37a', w: '#eef3ff', m: '#8b98ba' });
+    out.light = mk({ b: '#1765b0', o: '#a84a0c', w: '#14244a', m: '#56648a' });
+    return out;
+  }
+
+  // --- interactions ---
+  thrust = (e) => {
+    const host = e.currentTarget.parentElement, km = this.tapKm(this.state);
+    this.setState(s => ({ dist: s.dist + km, myToday: s.myToday + km, credits: s.credits + km, clicks: s.clicks + 1 }));
+    if (this.reduce || this.props.particles === false || !host) return;
+    const w = host.offsetWidth, h = host.offsetHeight, cols = ['var(--ki-8ccfff)', 'var(--ki-eef3ff)', 'var(--ki-b9e2ff)', 'var(--ki-ffb37a)'];
+    for (let i = 0; i < 10; i++) {
+      const p = document.createElement('span'), z = i % 3 ? 4 : 6;
+      p.style.cssText = `position:absolute;left:${w / 2 - z / 2 + (Math.random() - .5) * 40}px;top:${h * .25}px;width:${z}px;height:${z}px;background:${cols[i % 4]};pointer-events:none;z-index:3`;
+      host.appendChild(p);
+      const dx = (Math.random() - .5) * 120, dy = -(110 + Math.random() * 120);
+      p.animate([{ transform: 'translate(0,0)', opacity: 1 }, { transform: `translate(${dx}px,${dy}px)`, opacity: 0 }], { duration: 650 + Math.random() * 350, easing: 'steps(9)' }).onfinish = () => p.remove();
+    }
+    const t = document.createElement('span'); t.textContent = '+' + km + ' km';
+    t.style.cssText = 'position:absolute;left:50%;top:0;font:30px VT323,monospace;color:var(--ki-eef3ff);text-shadow:2px 2px 0 var(--kf-1c3a6e);pointer-events:none;z-index:4;white-space:nowrap';
+    host.appendChild(t);
+    t.animate([{ transform: 'translate(-50%,0)', opacity: 1 }, { transform: 'translate(-50%,-40px)', opacity: 0 }], { duration: 800, easing: 'steps(8)' }).onfinish = () => t.remove();
+  };
+  celebrate = () => {
+    const host = this.celebRef.current; if (!host || this.reduce) return;
+    const w = host.offsetWidth, cols = ['var(--kf-ffb37a)', 'var(--ki-ffd9a8)', 'var(--kf-8ccfff)', 'var(--ki-eef3ff)', 'var(--kf-e8894a)'];
+    [[.2, 70, 0], [.78, 40, 260], [.55, 150, 520], [.15, 260, 820], [.85, 230, 1080]].forEach(([fx, y, d]) => {
+      const b = document.createElement('div'), z = 128;
+      b.style.cssText = `position:absolute;left:${fx * w - z / 2}px;top:${y}px;width:${z}px;height:${z}px;overflow:hidden;opacity:0`;
+      const im = document.createElement('img'); im.src = 'assets/burst-sheet.png';
+      im.style.cssText = 'display:block;width:600%;max-width:none;height:100%;image-rendering:pixelated';
+      b.appendChild(im); host.appendChild(b);
+      im.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-100%)' }], { duration: 720, delay: d, easing: 'steps(6)', fill: 'both' });
+      b.animate([{ opacity: 1, transform: 'scale(.5)' }, { opacity: 1, transform: 'scale(1)', offset: .6 }, { opacity: 0, transform: 'scale(1.1)' }], { duration: 760, delay: d, easing: 'steps(6)', fill: 'both' }).onfinish = () => b.remove();
+    });
+    for (let i = 0; i < 48; i++) {
+      const p = document.createElement('span'), z = [4, 6, 8][i % 3];
+      p.style.cssText = `position:absolute;left:${Math.random() * w}px;top:-10px;width:${z}px;height:${z}px;background:${cols[i % 5]}`;
+      host.appendChild(p);
+      p.animate([{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 }, { transform: `translate(${(Math.random() - .5) * 90}px,${320 + Math.random() * 480}px) rotate(${Math.random() > .5 ? 180 : -180}deg)`, opacity: 0 }], { duration: 1700 + Math.random() * 1200, delay: Math.random() * 450, easing: 'steps(16)' }).onfinish = () => p.remove();
+    }
+  };
+  ping = () => this.setState({ pinged: true, signal: 86400 });
+  castVote = (i) => this.setState(s => s.vote !== null ? null : { vote: i, votes: s.votes.map((v, j) => j === i ? v + 1 : v) });
+  castNext = (i) => this.setState(s => s.nv !== null ? null : { nv: i, nvotes: s.nvotes.map((v, j) => j === i ? v + 1 : v) });
+  buy = (k, cost) => this.setState(s => s.credits < cost ? null : { credits: s.credits - cost, lv: { ...s.lv, [k]: s.lv[k] + 1 } });
+
+  renderVals() {
+    const s = this.state, spd = this.speed(s), auto = this.auto(s), tap = this.tapKm(s);
+    const ROUTE = 480e6, pct = Math.min(100, s.dist / ROUTE * 100);
+    const NOW = Date.UTC(2026, 10, 18, 9, 0, 0);
+    const arr = new Date(NOW + (s.elapsed + (ROUTE - s.dist) / spd) * 1000);
+    const n = x => Math.floor(x).toLocaleString('en-GB');
+    const hms = t => [Math.floor(t / 3600), Math.floor(t % 3600 / 60), t % 60].map(v => String(v).padStart(2, '0')).join(':');
+    const sv = Math.round(134 + s.clicks * tap / spd);
+    const low = s.signal < 60 && !s.pinged;
+    const mkVote = (labels, subs, votes, mine, pick) => {
+      const tot = votes.reduce((a, b) => a + b, 0);
+      return labels.map((l, i) => {
+        const p = Math.round(votes[i] / tot * 100), sel = mine === i;
+        return { label: l, sub: subs ? subs[i] : '', pct: p + '%', bar: `linear-gradient(90deg,${sel ? 'var(--kf-4a2c18)' : 'var(--kf-1a3566)'} ${p}%,transparent ${p}%)`, border: sel ? 'var(--kf-ffb37a)' : 'var(--kf-3c5a8e)', mark: sel ? 'YOUR VOTE' : '', pick: () => pick(i) };
+      });
+    };
+    const light = this.theme() === 'light', icSet = light ? this.ic.light : this.ic;
+    const defs = [
+      { k: 'cold', g: 'a', name: 'Cold-gas jets', eff: '+0.02 km/s each', base: 150, icon: 'bolt' },
+      { k: 'ion', g: 'a', name: 'Ion drive', eff: '+0.08 km/s each', base: 900, icon: 'bolt' },
+      { k: 'sail', g: 'a', name: 'Solar sail', eff: '+0.30 km/s each', base: 12000, icon: 'star' },
+      { k: 'hands', g: 'c', name: 'Steady hands', eff: '+2 km per tap', base: 300, icon: 'up' },
+      { k: 'chant', g: 'c', name: 'Crew chant', eff: '+25% tap power', base: 4000, icon: 'up' }
+    ];
+    const ups = defs.map(d => {
+      const lv = s.lv[d.k], cost = Math.round(d.base * Math.pow(1.55, lv)), ok = s.credits >= cost;
+      return { g: d.g, name: d.name, eff: d.eff, lv: 'LV ' + lv, cost: n(cost), dis: !ok, op: ok ? '1' : '.45', icon: icSet[d.icon].b, buy: () => this.buy(d.k, cost) };
+    });
+    const players = [['kestrel_ana', 'PT', 482190], ['mira_t', 'PT', 455020], ['dr_halley', 'US', 431880], ['quietcomet', 'JP', 398400], ['ngozi.k', 'NG', 377115], ['p1xelpilot', 'BR', 351760], ['lunchbreak_lu', 'DE', 330204], ['sol_r', 'MX', 318990], ['tamsin.b', 'GB', 301477], ['rov3r', 'IN', 298100]];
+    const countries = [['India', 'IN', 48204331], ['United States', 'US', 41880902], ['Brazil', 'BR', 30117420], ['Indonesia', 'ID', 22408115], ['United Kingdom', 'GB', 19662030], ['Japan', 'JP', 18004112], ['Germany', 'DE', 15550980], ['Nigeria', 'NG', 12880441], ['Mexico', 'MX', 11203990], ['Philippines', 'PH', 10776215]];
+    const isP = s.tab === 'players';
+    const lbRows = (isP ? players : countries).map((r, i) => ({ rank: i + 1, cc: r[1], name: r[0], km: n(r[2] + (isP ? 0 : s.myToday - 9640)), rc: i === 0 ? 'var(--ki-ffb37a)' : i < 3 ? 'var(--ki-8ccfff)' : 'var(--ki-a8b6d6)' }));
+    const ic = icSet;
+    const log = [
+      { day: 'DAY 41', kind: 'VOTE OPEN', title: 'Which way today?', body: 'Detour for a postcard, burn hard, or hold steady. Closes 00:00 UTC.', icon: ic.check.b, col: 'var(--ki-8ccfff)', postcard: false },
+      { day: 'DAY 40', kind: 'VOTE RESULT', title: 'Crew chose: hold steady', body: '52% of 31,904 votes. Fuel saved for Mars orbit.', icon: ic.check.b, col: 'var(--ki-8ccfff)', postcard: false },
+      { day: 'DAY 38', kind: 'MILESTONE', title: 'Mid-course burn complete', body: '120,000,000 km from Earth. Arrival pulled in by 3 days.', icon: ic.star.o, col: 'var(--ki-ffb37a)', postcard: false },
+      { day: 'DAY 38', kind: 'POSTCARD 03', title: 'Earth and Moon from 20M km', body: 'Unlocked by the crew at milestone 3.', icon: ic.star.o, col: 'var(--ki-ffb37a)', postcard: true, slot: 'log-postcard-03' },
+      { day: 'DAY 36', kind: 'SIGNAL', title: 'Saved with 9 seconds left', body: 'Pinged by mira_t in Lisbon at 03:14 UTC.', icon: ic.signal.o, col: 'var(--ki-ffb37a)', postcard: false },
+      { day: 'DAY 35', kind: 'VOTE RESULT', title: 'Crew chose: photograph the Moon', body: '61% of 28,410 votes. +1 day, +1 postcard.', icon: ic.check.b, col: 'var(--ki-8ccfff)', postcard: false }
+    ];
+    const badges = [
+      { n: 'Signal Keeper III', d: '21-day ping streak', icon: ic.signal.o, on: 1 },
+      { n: 'First Ping', d: 'Saved the signal once', icon: ic.star.o, on: 1 },
+      { n: 'Night Shift', d: 'Pushed at 3am', icon: ic.clock.b, on: 1 },
+      { n: 'Voter ×30', d: '30 route votes', icon: ic.check.b, on: 1 },
+      { n: 'Halfway Crew', d: 'Reach 240M km', icon: ic.trophy.m, on: 0 },
+      { n: 'Mission Patch', d: 'Prestige once', icon: ic.star.m, on: 0 }
+    ].map(b => ({ ...b, op: b.on ? '1' : '.45', bd: b.on ? 'var(--kf-3c5a8e)' : 'var(--kf-1b2a55)' }));
+    const hist = '111011111111101111111111111110';
+    const pings = [...hist].map((c, i) => {
+      const today = i === 29, on = today ? s.pinged : c === '1';
+      return { bg: on ? 'var(--kf-ffb37a)' : 'var(--kf-1b2a55)', sh: today ? '0 0 0 2px var(--ki-eef3ff)' : 'none' };
+    });
+    const names = ['kestrel_ana', 'mira_t', 'dr_halley', 'quietcomet', 'ngozi.k', 'p1xelpilot', 'lunchbreak_lu', 'sol_r', 'tamsin.b', 'rov3r', 'orbit_otter', 'hana.s', 'deltavee', 'marco_p', 'ifeoma', 'tinyburn', 'kai.w', 'astrid_l', 'yusuf', 'paperplane', 'lena_r', 'chidi', 'moonmoth', 'rafa'];
+    const ccs = ['PT', 'PT', 'US', 'JP', 'NG', 'BR', 'DE', 'MX', 'GB', 'IN', 'GB', 'JP', 'US', 'IT', 'NG', 'CA', 'NZ', 'SE', 'TR', 'FR', 'DE', 'NG', 'AU', 'ES'];
+    const one = names.map((nm, i) => ({ n: nm, cc: ccs[i] }));
+    return {
+      sp: this.sp, ic, icD: this.ic, theme: light ? 'light' : 'dark', toggleTheme: this.toggleTheme, themeLabel: light ? '☾ Switch to dark' : '☀ Switch to light',
+      online: this.busy() ? '12,481' : '7', handful: !this.busy(),
+      arrival: arr.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }),
+      saved: Math.floor(sv / 60) + ' min ' + (sv % 60) + ' s',
+      dist: n(s.dist), pct: pct.toFixed(2) + '%', toGo: n(ROUTE - s.dist),
+      toNext: ((240e6 - s.dist) / 1e6).toFixed(2) + 'M km', speed: spd.toFixed(2),
+      tap, auto: auto.toFixed(2), credits: n(s.credits), afford: ups.filter(u => !u.dis).length,
+      signal: hms(s.signal), low, notLow: !low, pinged: s.pinged,
+      pingOp: s.pinged ? '.5' : '1', pingIcon: s.pinged ? ic.check.b : ic.signal.b,
+      pingLabel: s.pinged ? 'Pinged' : 'Ping', pingLabelLong: s.pinged ? 'Pinged · next one tomorrow' : 'Ping · 1 left today',
+      ping: this.ping, thrust: this.thrust, celebrate: this.celebrate, celebRef: this.celebRef,
+      voteOpts: mkVote(['Detour past asteroid 2026 QX for a postcard', 'Burn hard: arrive about a day sooner', 'Hold steady and save fuel for Mars'], null, s.votes, s.vote, this.castVote),
+      voteTotal: n(s.votes.reduce((a, b) => a + b, 0)), voteLeft: hms(Math.max(0, 20892 - s.elapsed)),
+      nextOpts: mkVote(['Europa', 'Asteroid Psyche', 'Venus flyby'], ['Ice moon of Jupiter · about 6 years', 'A metal world · about 3 years', 'Quick and bright · about 5 months'], s.nvotes, s.nv, this.castNext),
+      autos: ups.filter(u => u.g === 'a'), taps: ups.filter(u => u.g === 'c'),
+      showAds: this.props.showAds ?? true,
+      lbRows, tabPlayers: () => this.setState({ tab: 'players' }), tabCountries: () => this.setState({ tab: 'countries' }),
+      tabPC: isP ? 'var(--ki-05081a)' : 'var(--ki-c9d4ee)', tabPB: isP ? 'var(--kf-8ccfff)' : 'transparent', tabCC: isP ? 'var(--ki-c9d4ee)' : 'var(--ki-05081a)', tabCB: isP ? 'transparent' : 'var(--kf-8ccfff)',
+      youRank: isP ? '#1,284' : '#5', youName: isP ? 'orbit_otter (you)' : 'United Kingdom (yours)', youKm: n(isP ? s.myToday : 19662030 + s.myToday - 9640),
+      log, badges, pings, creditNames: one.concat(one)
+    };
+  }
+}
+</script>
+</body>
+</html>
