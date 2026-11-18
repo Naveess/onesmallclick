@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "public/index.html"
+        ],
+        "createdAt": "2026-11-18T17:45:52.947Z",
+        "reason": "Claude triage: .probe img 'sheet' animation is a 4-frame pixel sprite-sheet loop (steps(4)), same technique as design/OneSmallClick.dc.html osc-sheet; not scrolling content"
+      }
+    ]
+  }
+}
