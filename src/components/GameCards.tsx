@@ -1,5 +1,5 @@
 import { hms, int, longDate, minSec } from "../game/format";
-import type { VoteOption } from "../game/fakeStore";
+import type { VoteOption } from "../game/store";
 import { PixelButton } from "./PixelButton";
 import { PixelIcon } from "./PixelIcon";
 import { Window } from "./Window";

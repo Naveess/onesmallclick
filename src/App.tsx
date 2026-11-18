@@ -1,3 +1,4 @@
+import { AdminPage } from "./pages/AdminPage";
 import { GamePage } from "./pages/GamePage";
 import { KitPage } from "./pages/KitPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -13,6 +14,8 @@ export function App() {
       return <GamePage />;
     case "/kit":
       return <KitPage />;
+    case "/admin":
+      return <AdminPage />;
     case "/log":
       return (
         <StubPage

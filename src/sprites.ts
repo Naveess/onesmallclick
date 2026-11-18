@@ -60,6 +60,17 @@ export const SPRITES = {
     loop: true,
     design: marsDesign,
   },
+  /** The same turning Mars drawn at 64px, for the game home track (decided 2026-11-18: no half-scaling). */
+  marsSmall: {
+    name: "Rotating Mars, 64px",
+    src: "/sprites/mars-rotating-64-sheet.png",
+    frameWidth: 64,
+    frameHeight: 64,
+    frames: 5,
+    durationMs: retime(5, marsDesign), // 4000 ms
+    loop: true,
+    design: marsDesign,
+  },
   burst: {
     name: "Firework burst",
     src: "/sprites/firework-burst-sheet.png",

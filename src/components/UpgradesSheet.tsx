@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { GameView } from "../game/fakeStore";
+import type { GameView } from "../game/store";
 import { int } from "../game/format";
 import type { UpgradeKey } from "../game/rules";
 import { PixelButton } from "./PixelButton";

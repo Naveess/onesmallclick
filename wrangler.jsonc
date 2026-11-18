@@ -3,7 +3,7 @@
   "name": "onesmallclick",
   // The date this project started.
   "compatibility_date": "2026-11-18",
-  // The Worker. It only answers /api/* for now; everything else is the React app's static files.
+  // The Worker. It only answers /api/*; everything else is the React app's static files.
   "main": "./worker/index.ts",
   "assets": {
     // The Cloudflare Vite plugin fills in the directory (Vite's build output) at build time.
@@ -11,6 +11,25 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  "observability": { "enabled": true }
-  // Add D1 / KV / R2 / Durable Object bindings here only when docs/brief.md and docs/plan.md call for them.
+  "observability": { "enabled": true },
+
+  // Phase 4: the shared probe. One Durable Object (SQLite-backed) holds the live distance;
+  // every browser opens a WebSocket to it through /api/probe.
+  "durable_objects": {
+    "bindings": [{ "name": "PROBE", "class_name": "Probe" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Probe"] }],
+
+  // Phase 4: devices, missions and km per day. Schema in migrations/.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "onesmallclick",
+      "database_id": "a772545d-83b9-4468-8b63-7691b9359dd4",
+      "migrations_dir": "migrations"
+    }
+  ]
+
+  // Secrets (not in this file): ADMIN_KEY and DEVICE_SECRET.
+  // Production: npx wrangler secret put ADMIN_KEY / DEVICE_SECRET. Local: .dev.vars (git-ignored).
 }

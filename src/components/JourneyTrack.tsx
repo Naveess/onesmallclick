@@ -65,10 +65,10 @@ export function JourneyTrack({
           <Sprite sprite={SPRITES.earth} scale={1} label="Earth" />
         </div>
         {wide && (
-          <img className="track__moon" src={STILLS.moon.src} alt="Moon" width={16} height={16} />
+          <img className="track__moon" src={STILLS.moon.src} alt="Moon" width={32} height={32} />
         )}
         <div className="track__mars">
-          <Sprite sprite={SPRITES.mars} scale={0.5} label="Mars" />
+          <Sprite sprite={SPRITES.marsSmall} scale={1} label="Mars" />
         </div>
 
         <div className="track__route" ref={routeRef}>

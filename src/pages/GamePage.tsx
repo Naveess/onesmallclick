@@ -3,13 +3,13 @@ import { GameShell } from "../components/GameShell";
 import { JourneyTrack } from "../components/JourneyTrack";
 import { PixelIcon } from "../components/PixelIcon";
 import { ThrustButton } from "../components/ThrustButton";
-import { castVote, ping, switches, thrust, useGame } from "../game/fakeStore";
+import { castVote, ping, switches, thrust, useGame } from "../game/store";
 import { int } from "../game/format";
 import { MILESTONES } from "../game/rules";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
 
-/** "/": the game home (1a phone, 1b wide), running on the fake store until phase 4. */
+/** "/": the game home (1a phone, 1b wide), the shared probe is live from phase 4 (store.ts says what is still fake). */
 export function GamePage() {
   useDocumentTitle("OneSmallClick · push one probe to Mars together");
   const { probe, player, view } = useGame();

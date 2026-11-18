@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { buyUpgrade, useGame } from "../game/fakeStore";
+import { buyUpgrade, useGame } from "../game/store";
 import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";

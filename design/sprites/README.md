@@ -41,7 +41,8 @@ The stills are not copies of frame 0 of the matching animation. They are separat
 |---|---|---|---|---|---|
 | Thruster | `sheets/thruster-sheet.png` | 320×40 | 5 | 64×40 | The probe flying: the engine flame flickers and the solar panels tilt. Game home (phone and desktop), Welcome back, Sign in, and Arrival (in orbit). |
 | Rotating Earth | `sheets/earth-rotating-sheet.png` | 576×64 | 9 | 64×64 | Earth turning on the game home journey (phone and desktop). |
-| Rotating Mars | `sheets/mars-rotating-sheet.png` | 640×128 | 5 | 128×128 | Mars turning on the game home journey (phone and desktop) and the Arrival & credits screen. |
+| Rotating Mars | `sheets/mars-rotating-sheet.png` | 640×128 | 5 | 128×128 | Mars turning on the Arrival & credits screen. |
+| Rotating Mars, 64px | `sheets/mars-rotating-64-sheet.png` | 320×64 | 5 | 64×64 | Mars on the game home track (phone and desktop). Made 2026-11-18 from the 128px sheet: each 2×2 block became its most common colour (ties go to the darker one, so the outline and the shadow side survive), with mostly see-through blocks left see-through. Replaces the design's half-scaling, since sprites only scale by whole numbers. |
 | Firework burst | `sheets/firework-burst-sheet.png` | 448×64 | 7 | 64×64 | Pixel confetti for celebrations. In the design it plays once when a milestone is reached (the Milestone moment screen). Not looped. |
 
 The separate frames match the sheets frame for frame:

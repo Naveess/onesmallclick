@@ -1,0 +1,92 @@
+/* /admin: a plain tool page built from the kit's windows and buttons. */
+
+.admin {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 40rem);
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin__title {
+  font-weight: 600;
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.admin__lede,
+.admin__note {
+  color: var(--text-soft);
+}
+
+.admin__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.admin__h2 {
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.admin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.admin__field input {
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 10px;
+  font: 22px/1 var(--font-num);
+  color: var(--text);
+  background: var(--field);
+  border: 2px solid var(--window-border);
+  border-radius: 0;
+}
+
+.admin__field input:focus-visible {
+  outline: 2px solid var(--text-blue);
+  outline-offset: 2px;
+}
+
+.admin__stats {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.admin__stats div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+
+.admin__stats dt {
+  color: var(--text-muted);
+}
+
+.admin__stats dd {
+  font-size: 20px;
+  overflow-wrap: anywhere;
+}
+
+.admin__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin__error {
+  color: var(--text-orange);
+  font-weight: 600;
+}

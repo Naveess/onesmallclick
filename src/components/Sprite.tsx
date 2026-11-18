@@ -3,12 +3,8 @@ import type { SpriteSheet, Still } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
 import "./Sprite.css";
 
-/**
- * Whole-number scales, so every art pixel stays a square of screen pixels.
- * 0.5 is the one exception: exact halving of 128px art to 64px (Mars) and 32px to 16px (the Moon),
- * which the design does on the game home track. Use it only there.
- */
-export type PixelScale = 0.5 | 1 | 2 | 3 | 4;
+/** Whole-number scales only, so every art pixel stays a square of screen pixels. */
+export type PixelScale = 1 | 2 | 3 | 4;
 
 interface SpriteProps {
   sprite: SpriteSheet;
@@ -29,7 +25,7 @@ interface SpriteProps {
 /** Plays a horizontal sprite sheet with CSS steps(). Stops on frame 1 with reduced motion. */
 export function Sprite({ sprite, scale = 2, label, playing = true, bob = false, still, onEnd, className }: SpriteProps) {
   const reduceMotion = usePrefersReducedMotion();
-  if (import.meta.env.DEV && !Number.isInteger(scale) && scale !== 0.5) {
+  if (import.meta.env.DEV && !Number.isInteger(scale)) {
     console.warn(`Sprite "${sprite.name}": scale ${scale} is not a whole number`);
   }
 

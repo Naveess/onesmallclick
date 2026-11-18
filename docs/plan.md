@@ -6,8 +6,8 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 - [x] **Phase 1: Scaffold.** Site-starter template filled in, brief saved, placeholder page live on workers.dev, code on GitHub.
 - [x] **Phase 2: App shell and pixel kit** (deployed 8fc6a83 and approved, 2026-11-18)
-- [x] **Phase 3: Game home with fake data** (built and deployed 2026-11-18 from 52b688b; awaiting Nav's OK)
-- [ ] **Phase 4: The shared probe**
+- [x] **Phase 3: Game home with fake data** (deployed 52b688b, THRUST lag fix d9cda91 deployed, approved 2026-11-18)
+- [x] **Phase 4: The shared probe** (built 2026-11-18; Nav sets the two secrets and deploys)
 - [ ] **Phase 5: Signal, Ping and safe mode**
 - [ ] **Phase 6: Idle upgrades and offline thrust**
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages**
@@ -127,6 +127,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - Way out: the server can tell browsers to batch less often, and phase 9's load test decides whether to add relay objects.
 - **D1 writes per batch would be slow and costly.** The object totals taps in memory and writes to D1 every few seconds.
 - **Time must come from the server clock**, never the device.
+
+**As built (2026-11-18)**
+- Updates go out when something changes, at most once a second, with no ticking timer. A once-a-second timer would keep the object awake all day (about 86,400 wake-ups against the free plan's 100,000 requests a day). Between updates each browser moves the probe on by coasting, using the server's clock.
+- The cap is a token bucket per device: 15 taps a second, up to 45 banked. `scripts/tap-flood.mjs` checks it (local or live).
+- The object saves to its own SQLite at most every 5 s and to D1 every 30 s, so a crash loses at most 5 s of distance and 30 s of daily km.
+- Credits, upgrades, the signal and the vote stay fake until their phases (see `src/game/store.ts`). The "+km" popup shows the server's flat 4 km.
 
 ## Phase 5: Signal, Ping and safe mode
 
@@ -297,10 +303,12 @@ My recommendation is in brackets. Items marked *(brief)* come from the open ques
 2. ~~**Fonts**~~ **Decided: self-host** Pixelify Sans and VT323 (no Google Fonts request).
 3. ~~**Content pages**~~ **Decided: plain HTML pages** for How to play, the fact pages and the legal pages. The game is the React app.
 
-### Before phase 4
-4. **First mission length at launch traffic** *(brief)*. In the design's numbers the probe coasts at 21 km/s, and a busy crew adds about 8 km/s more. At that pace the 480M km trip takes about 6 months. Pick a target: 3, 6 or 12 months? *(About 6 months, as the design has it.)*
-5. **Does the probe always coast, so it arrives eventually even with no players?** *(Yes. That fits "setbacks, never wipes".)*
-6. **Wipe all workers.dev test data at launch?** *(Yes.)*
+### Before phase 4 (all decided 2026-11-18)
+4. ~~**First mission length**~~ **Decided: keep the design's numbers.** Coasting at 21 km/s plus the crew's pace: about 6 months with a busy crew, about 8.8 months coasting alone.
+5. ~~**Does the probe always coast?**~~ **Decided: yes.** It arrives eventually even with no players.
+6. ~~**Wipe all workers.dev test data at launch?**~~ **Decided: yes.**
+
+Also decided with phase 4 (2026-11-18): **people here counts devices**, so five tabs on one phone count once. **THRUST below the fold on 375×667 is fine.** **No half-scaled sprites:** the track's Mars is a 64px sheet made from the 128px one, and the Moon shows at its full 32px.
 
 ### Before phase 5
 7. **Signal window at launch** *(brief)*. The design uses 24 hours. Should it be longer (say 48 hours) while the crew is small? Does the red tier stay at the final 60 seconds? *(48 hours at launch, red stays at 60 s.)*

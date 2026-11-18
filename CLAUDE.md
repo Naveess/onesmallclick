@@ -10,6 +10,9 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
   - `npm run build`: type-checks (`tsc -b`, must pass with no errors) and builds to `dist/`.
   - `npm run deploy`: builds, then `wrangler deploy`. Nav runs it.
   - `npm run cf-typegen`: regenerates `worker/worker-configuration.d.ts` after any change to `wrangler.jsonc`.
+  - **Server state (phase 4):** the `Probe` Durable Object (`worker/probe.ts`, SQLite-backed, WebSocket hibernation) holds the live probe; D1 `onesmallclick` (binding `DB`, schema in `migrations/`) holds devices, missions and km per day. Secrets `ADMIN_KEY` and `DEVICE_SECRET`: `npx wrangler secret put` in production, `.dev.vars` locally (git-ignored).
+  - **Local first run:** `npx wrangler d1 migrations apply onesmallclick --local`, and a `.dev.vars` with both secrets. New migrations go to production with `--remote` before the deploy that needs them; Nav runs that (Claude's remote D1 commands are blocked in auto mode).
+  - `node scripts/tap-flood.mjs [url]` checks the tap cap (local by default, or the live URL).
   - No `@vitejs/plugin-react`: Vite compiles the JSX itself, so edits reload the page instead of hot-swapping components. Adding it would need Nav's OK (dependency rule).
   - npm blocks install scripts by default here. `workerd` and `esbuild` are approved in `package.json` (`allowScripts`); after a version bump run `npm approve-scripts workerd esbuild`.
 - Add Durable Objects, D1, KV, R2 or Turnstile only when docs/brief.md asks for them and docs/plan.md has reached that phase (see "Data & storage" in the brief).
@@ -51,8 +54,8 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
 
 A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Earth to Mars together. Each player also has their own idle game with upgrades. Once a day someone has to Ping the probe or it drops into safe mode. The crew votes on route choices, and when the probe arrives they vote on the next destination. There are individual and country leaderboards.
 
-- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (phase 3, the game home with fake data, deployed 2026-11-18 from 52b688b, version a9c8b202; waiting for Nav's OK before phase 4). The pixel kit is at `/kit` (not linked, noindex).
-- **Hosting:** Cloudflare Worker `onesmallclick`. No bindings yet.
+- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (phase 3 plus the THRUST lag fix, d9cda91; phase 4 built 2026-11-18 and waiting for Nav's deploy). The pixel kit is at `/kit` and the test controls at `/admin` (neither linked, both noindex).
+- **Hosting:** Cloudflare Worker `onesmallclick`, with the `PROBE` Durable Object and the D1 database `onesmallclick` (id a772545d-83b9-4468-8b63-7691b9359dd4, created by Nav 2026-11-18).
 - **Code:** GitHub `Naveess/onesmallclick` (private), branch `main`. GitHub is blocked at work, so pushes may have to wait until I'm home.
 - **Started from** the site-starter template (`Naveess/site-starter`).
 
@@ -65,8 +68,11 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 | `design/assets/` | The sprites the design file uses (Earth 8 frames, Mars 4, probe 4, burst 6). Kept only so the design file opens. Not shipped. |
 | `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md. **This is the set that ships** (decided 2026-11-18). See design/sprites/README.md. |
 | `design/icons/` | The design's ten 9×9 UI icons as `currentColor` SVGs, with their theme colours in its README. |
-| `src/` | The React app. `components/` holds the pixel kit (Window, PixelButton, Sprite, PixelIcon, Sky, ThemeToggle) and the game home pieces (ThrustButton, JourneyTrack, GameCards, UpgradesSheet, GameShell); `pages/` holds `/` (game home), the "coming soon" stubs (`/log`, `/ranks`, `/how-to-play`, `/sign-in`) and `/kit`; `game/` holds the rules (`rules.ts`) and the phase-3 fake store (`fakeStore.ts`, shaped like the real state; test switches `?signal=final`, `?crew=handful`, `?ads=off`); `router.ts` is a tiny in-app router; `styles/theme.css` is docs/tokens.css under readable names; `sprites.ts` lists every sprite with its retimed duration; `theme.ts` handles the theme toggle. |
-| `worker/` | The Worker (`index.ts`, only `/api/*`) and its generated types. |
+| `src/` | The React app. `components/` holds the pixel kit (Window, PixelButton, Sprite, PixelIcon, Sky, ThemeToggle) and the game home pieces (ThrustButton, JourneyTrack, GameCards, UpgradesSheet, GameShell); `pages/` holds `/` (game home), the "coming soon" stubs (`/log`, `/ranks`, `/how-to-play`, `/sign-in`) and `/kit`; `game/` holds the rules (`rules.ts`), the store (`store.ts`: the shared probe and your km today are real from phase 4, and it marks what is still fake; test switches `?signal=final`, `?crew=handful`, `?ads=off`) and the WebSocket client (`probeClient.ts`); `pages/AdminPage.tsx` is `/admin`; `router.ts` is a tiny in-app router; `styles/theme.css` is docs/tokens.css under readable names; `sprites.ts` lists every sprite with its retimed duration; `theme.ts` handles the theme toggle. |
+| `worker/` | The Worker: `index.ts` (only `/api/*`: health, session, the probe WebSocket, admin), `probe.ts` (the `Probe` Durable Object), `device.ts` (the signed device cookie and generated names), and its generated types. |
+| `shared/` | Code both the app and the Worker use: `mission.ts` (route, coasting speed, tap power, cap, and the WebSocket message types). |
+| `migrations/` | D1 schema migrations (`0001_init.sql`: devices, missions, daily_km). |
+| `scripts/` | `tap-flood.mjs`, the tap-cap check. |
 | `public/` | Served as-is at the site root: `sprites/` and `icons/` (copies of `design/sprites/` and `design/icons/`, unchanged), and `fonts/` (Pixelify Sans and VT323, self-hosted, with their OFL licences). |
 | `docs/todo.md` | Loose ends and decisions that aren't a phase yet. |
 | `docs/design-brief.md` | Screens, game rules and numbers from the design phase. |
@@ -85,7 +91,7 @@ To view the design locally, run `cd design && python -m http.server 8000`, then 
 
 ### Visual rules
 
-- 16-bit SNES pixel-art look. Always set `image-rendering: pixelated`. Scale sprites only by whole numbers.
+- 16-bit SNES pixel-art look. Always set `image-rendering: pixelated`. Scale sprites only by whole numbers, never halve them (decided 2026-11-18): where the design shows art smaller than its file, make a sprite at that size (as with `mars-rotating-64-sheet.png`).
 - Fonts: **Pixelify Sans** for UI and headings, **VT323** for numbers, dates and timers Both are self-hosted with the app, not loaded from Google Fonts (decided 2026-11-18).
 - Colour meaning: **light blue = action and the probe's path**, **light orange = signal, milestones and celebration**.
 - Windows have a double border: a 2px light border, a 2px dark outer outline and a 2px inset.

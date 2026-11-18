@@ -1,10 +1,8 @@
 // Game rules and numbers from docs/design-brief.md and the design file's mock-up.
 // Phase 6 moves the authority for these to the server; the formulas stay the same.
 
-export const ROUTE_KM = 480_000_000;
-
-/** The probe coasts at this speed even with nobody tapping. */
-export const COAST_KM_S = 21;
+// The route, coasting speed and base tap power are shared with the Worker.
+export { COAST_KM_S, ROUTE_KM } from "../../shared/mission";
 
 export type UpgradeKey = "cold" | "ion" | "sail" | "hands" | "chant";
 export type UpgradeLevels = Record<UpgradeKey, number>;

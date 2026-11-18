@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ICON_NAMES, type IconName } from "../components/iconPaths";
 import { PixelButton } from "../components/PixelButton";
 import { PixelIcon, type IconTone } from "../components/PixelIcon";
@@ -12,7 +12,7 @@ import { Window } from "../components/Window";
 import { MILESTONES, ROUTE_KM } from "../game/rules";
 import { SPRITES, STILLS, type SpriteSheet, type Still } from "../sprites";
 import { useTheme, type Theme } from "../theme";
-import { useDocumentTitle } from "./useDocumentTitle";
+import { useDocumentTitle, useNoIndex } from "./useDocumentTitle";
 import "./KitPage.css";
 
 /** /kit: every piece of the pixel kit, in both themes side by side. Not linked from the site. */
@@ -52,16 +52,6 @@ export function KitPage() {
       </div>
     </div>
   );
-}
-
-function useNoIndex() {
-  useEffect(() => {
-    const meta = document.createElement("meta");
-    meta.name = "robots";
-    meta.content = "noindex";
-    document.head.appendChild(meta);
-    return () => meta.remove();
-  }, []);
 }
 
 function KitSheet({ theme, title }: { theme: Theme; title: string }) {
@@ -251,6 +241,7 @@ function SpritesSection() {
     { sprite: SPRITES.thruster, scales: [1, 2], bob: true },
     { sprite: SPRITES.earth, scales: [1, 2] },
     { sprite: SPRITES.mars, scales: [1, 2] },
+    { sprite: SPRITES.marsSmall, scales: [1, 2] },
   ];
 
   return (
