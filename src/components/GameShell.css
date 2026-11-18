@@ -1,0 +1,194 @@
+/* The frame around every game page: header, content, phone tab bar. */
+
+.game {
+  position: relative;
+  z-index: 1;
+  min-height: 100svh;
+}
+
+.game__main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  /* leave room for the fixed tab bar */
+  padding: 18px 16px calc(28px + 72px + env(safe-area-inset-bottom));
+}
+
+.game--wide .game__main {
+  max-width: 1440px;
+  gap: 22px;
+  padding: 20px 24px 40px;
+}
+
+@media (min-width: 1200px) {
+  .game--wide .game__main {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+/* --- Phone header --- */
+.game-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.game-head__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-head__title {
+  margin: 0;
+  font: 600 17px/1.2 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+
+.game-head__title a {
+  display: inline-block;
+  /* a 44px tap target without changing the layout */
+  padding: 12px 0;
+  margin: -12px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.game-head__sub {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* --- Wide header --- */
+.game-head--wide {
+  align-items: center;
+  padding-bottom: 14px;
+  background: linear-gradient(90deg, transparent, var(--line-blue) 48px, var(--line-blue) calc(100% - 48px), transparent)
+    bottom / 100% 2px no-repeat;
+}
+
+.game-head--wide .game-head__brand {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.game-head--wide .game-head__title {
+  font-size: 22px;
+}
+
+.game-head--wide .game-head__sub {
+  font-size: 12px;
+}
+
+.game-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px 18px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.game-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  font: 400 14px/1 var(--font-ui);
+  color: var(--text-soft);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.game-nav__item:hover {
+  color: var(--text);
+}
+
+.game-nav__item[aria-current="page"] {
+  color: var(--text-blue);
+}
+
+.game-nav__signin {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 3px 0 var(--blue-shadow);
+}
+
+/* --- Phone footer links --- */
+.game-foot {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  padding-top: 8px;
+}
+
+.game-foot a,
+.game-foot button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  font: 400 12px/1 var(--font-ui);
+  color: var(--text-muted);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.game-foot a:hover,
+.game-foot button:hover {
+  color: var(--text);
+}
+
+/* --- Phone tab bar --- */
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  height: calc(72px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--tabbar);
+  border-top: 2px solid var(--line-dim);
+}
+
+.tabbar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  font: 400 12px/1 var(--font-ui);
+  color: var(--text-muted);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabbar__item[aria-current="page"] {
+  color: var(--text-blue);
+  box-shadow: inset 0 2px 0 var(--blue);
+}
+
+.tabbar__item img {
+  display: block;
+}

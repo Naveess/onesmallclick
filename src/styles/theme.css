@@ -213,3 +213,23 @@
   --text-warm-soft: #543921; /* ki-e6d2c0 · small print on orange windows */
   --text-warm-muted: #7c5a38; /* ki-c9a888 · captions on orange windows */
 }
+
+/* Fixed colours: the same in both themes (agreed 2026-11-18, prompt 11).
+   THRUST is hard-coded in the design so it looks identical in dark and light. */
+:root {
+  --thrust-rim: #b9e2ff; /* outer rim */
+  --thrust-gap: #04060f; /* dark ring between rim and face */
+  --thrust-1: #4a8fe0; /* face, stepped from the highlight outwards */
+  --thrust-2: #3474c4;
+  --thrust-3: #25599f;
+  --thrust-4: #1a427c;
+  --thrust-5: #11305c;
+  --thrust-6: #0c2448; /* face edge; also the label's shadow */
+  --thrust-label: #eef3ff;
+  --thrust-hint: #d6ecff;
+
+  /* See-through glows. The design uses the dark theme's blue and orange in both themes. */
+  --glow-blue: 140 207 255; /* use as rgb(var(--glow-blue) / 0.35) */
+  --glow-orange: 255 179 122;
+  --scrim: 2 4 11; /* --page (dark), behind the upgrades sheet */
+}

@@ -6,7 +6,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 - [x] **Phase 1: Scaffold.** Site-starter template filled in, brief saved, placeholder page live on workers.dev, code on GitHub.
 - [x] **Phase 2: App shell and pixel kit** (deployed 8fc6a83 and approved, 2026-11-18)
-- [ ] **Phase 3: Game home with fake data**
+- [x] **Phase 3: Game home with fake data** (built 2026-11-18; Nav deploys)
 - [ ] **Phase 4: The shared probe**
 - [ ] **Phase 5: Signal, Ping and safe mode**
 - [ ] **Phase 6: Idle upgrades and offline thrust**

@@ -1,0 +1,36 @@
+.stub {
+  display: flex;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.stub__card {
+  width: min(100%, 30rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 20px 24px;
+  text-align: center;
+}
+
+.stub__title {
+  font: 600 28px/1.1 var(--font-ui);
+}
+
+.stub__soon {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-orange);
+}
+
+.stub__note {
+  max-width: 34ch;
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.stub__card .pbtn {
+  margin-top: 8px;
+}

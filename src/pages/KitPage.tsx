@@ -5,7 +5,11 @@ import { PixelIcon, type IconTone } from "../components/PixelIcon";
 import { Sky } from "../components/Sky";
 import { Sprite, type PixelScale } from "../components/Sprite";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AdSlot, HereNow } from "../components/GameCards";
+import { JourneyTrack } from "../components/JourneyTrack";
+import { ThrustButton } from "../components/ThrustButton";
 import { Window } from "../components/Window";
+import { MILESTONES, ROUTE_KM } from "../game/rules";
 import { SPRITES, STILLS, type SpriteSheet, type Still } from "../sprites";
 import { useTheme, type Theme } from "../theme";
 import { useDocumentTitle } from "./useDocumentTitle";
@@ -70,6 +74,7 @@ function KitSheet({ theme, title }: { theme: Theme; title: string }) {
           {title}
         </h2>
         <ArtKit />
+        <GamePiecesSection />
         <WindowsSection />
         <ButtonsSection />
         <SpritesSection />
@@ -137,6 +142,41 @@ function KitSection({ title, children }: { title: string; children: ReactNode })
       <h3 className="label">{title}</h3>
       {children}
     </Window>
+  );
+}
+
+/* Phase 3 pieces of the game home, with fixed sample numbers. */
+function GamePiecesSection() {
+  const [taps, setTaps] = useState(0);
+  const sampleKm = 182_406_311;
+  return (
+    <KitSection title="Game home pieces · phase 3">
+      <div className="kit-row kit-row--center">
+        <ThrustButton
+          onThrust={() => {
+            setTaps((t) => t + 1);
+            return 12;
+          }}
+        />
+      </div>
+      <p className="kit-note">
+        <span className="kit-strong">ThrustButton.</span> The same in both themes (fixed --thrust-* colours). 184px here, 240px on
+        the wide layout. Taps on this sample: <span className="num kit-blue">{taps}</span>
+      </p>
+      <JourneyTrack
+        progress={sampleKm / ROUTE_KM}
+        distanceKm={sampleKm}
+        routeKm={ROUTE_KM}
+        milestones={MILESTONES}
+        nextMilestone={MILESTONES[2]}
+        toNextKm={MILESTONES[2].km - sampleKm}
+      />
+      <div className="kit-row">
+        <HereNow online={12_481} idling={null} />
+        <HereNow online={7} idling={48_206} />
+      </div>
+      <AdSlot width={320} height={50} />
+    </KitSection>
   );
 }
 

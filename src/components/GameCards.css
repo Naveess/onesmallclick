@@ -1,0 +1,415 @@
+/* Game home cards: here now, arrival, signal, vote, ad slot. Sizes are the design's (1a phone, 1b wide). */
+
+/* --- Here now --- */
+.here-now {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.here-now__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+.here-now--wide .here-now__chip {
+  padding: 4px 10px;
+}
+
+.here-now__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--blue);
+  animation: here-blink 1.6s steps(1) infinite;
+}
+
+@keyframes here-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.here-now__count {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.here-now--wide .here-now__count {
+  font-size: 22px;
+}
+
+.here-now__word {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.here-now__idling {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- Arrival estimate --- */
+.arrival {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px 0;
+}
+
+.arrival__label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.arrival__lede {
+  font-size: 16px;
+  color: var(--text-soft);
+}
+
+.arrival__date {
+  margin: 0;
+  font: 48px/0.95 var(--font-num);
+  color: var(--text);
+  text-shadow:
+    3px 3px 0 var(--blue-text-shadow),
+    0 0 18px rgb(var(--glow-blue) / 0.35);
+}
+
+.arrival__saved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-blue);
+}
+
+.arrival--wide {
+  padding: 0;
+}
+.arrival--wide .arrival__label {
+  font-size: 12px;
+}
+.arrival--wide .arrival__lede {
+  font-size: 20px;
+}
+.arrival--wide .arrival__date {
+  font-size: 88px;
+  line-height: 0.9;
+  text-shadow:
+    4px 4px 0 var(--blue-text-shadow),
+    0 0 28px rgb(var(--glow-blue) / 0.35);
+}
+.arrival--wide .arrival__saved {
+  margin-top: 0;
+  font-size: 14px;
+}
+
+/* --- Signal --- */
+.signal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+
+.signal__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.signal__label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.signal__timer {
+  font: 44px/0.9 var(--font-num);
+  color: var(--text);
+  text-shadow: 3px 3px 0 var(--blue-text-shadow);
+}
+
+.signal__streak {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-orange-soft);
+}
+
+.signal__ping {
+  flex-direction: column;
+  gap: 2px;
+  min-width: 96px;
+  min-height: 52px;
+  padding: 0 12px;
+}
+
+.signal__ping:disabled {
+  opacity: 0.5;
+}
+
+/* The final 60 seconds: the card turns orange and pulses (the design's osc-urgent). */
+.window.signal--urgent {
+  background: linear-gradient(180deg, var(--orange-hover), var(--orange-well));
+  border-color: var(--orange);
+  animation: signal-urgent-box 1s steps(4) infinite;
+}
+
+.signal--urgent .signal__label {
+  color: var(--text-orange);
+}
+
+.signal__timer--urgent {
+  animation: signal-urgent 1s steps(4) infinite;
+}
+
+@keyframes signal-urgent-box {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 0 0 2px var(--orange-inset),
+      0 0 0 rgb(var(--glow-orange) / 0);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px var(--orange-inset),
+      0 0 28px rgb(var(--glow-orange) / 0.5);
+  }
+}
+
+@keyframes signal-urgent {
+  0%,
+  100% {
+    color: var(--text-orange);
+    text-shadow: 3px 3px 0 var(--orange-text-shadow);
+  }
+  50% {
+    color: var(--text-orange-bright);
+    text-shadow:
+      3px 3px 0 var(--orange-text-shadow),
+      0 0 22px rgb(var(--glow-orange) / 0.9);
+  }
+}
+
+/* Wide layout: a tall card with the big timer */
+.signal--wide {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 18px;
+}
+
+.signal--wide .signal__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.signal--wide .signal__timer {
+  font-size: 80px;
+  line-height: 0.85;
+  text-shadow: 4px 4px 0 var(--blue-text-shadow);
+}
+
+@media (max-width: 1199px) {
+  .signal--wide .signal__timer {
+    font-size: 64px;
+  }
+}
+
+.signal--wide .signal__timer--urgent {
+  text-shadow: none;
+}
+
+.signal__note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.signal--wide .signal__ping {
+  flex-direction: row;
+  gap: 8px;
+  min-height: 48px;
+  font-size: 17px;
+}
+
+.signal__badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--badge-well);
+  border: 2px solid var(--badge-border);
+}
+
+.signal__badge-name {
+  font-size: 14px;
+  color: var(--text-orange-soft);
+}
+
+.signal__badge-note {
+  font-size: 11px;
+  color: var(--text-warm-muted);
+}
+
+/* --- Vote --- */
+.vote {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.vote__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.vote__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.vote__left {
+  font: 18px/1 var(--font-num);
+  color: var(--text-muted);
+}
+
+.vote__question {
+  margin: 0;
+  font: 500 18px/1.3 var(--font-ui);
+}
+
+.vote__options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vote__option {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 10px;
+  text-align: left;
+  font: 14px/1.3 var(--font-ui);
+  color: var(--text);
+  border: 2px solid var(--line);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (hover: hover) {
+  .vote__option:hover:not(:disabled) {
+    border-color: var(--blue);
+  }
+}
+
+.vote__option:disabled {
+  cursor: default;
+}
+
+.vote__option--mine {
+  border-color: var(--orange);
+}
+
+.vote__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.vote__mine {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.vote__pct {
+  font: 24px/1 var(--font-num);
+}
+
+.vote__foot {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.vote--wide {
+  gap: 10px;
+  padding: 18px;
+}
+.vote--wide .vote__label {
+  font-size: 12px;
+}
+.vote--wide .vote__left {
+  font-size: 20px;
+}
+.vote--wide .vote__question {
+  font-size: 20px;
+}
+.vote--wide .vote__option {
+  min-height: 52px;
+  padding: 6px 12px;
+}
+.vote--wide .vote__pct {
+  font-size: 26px;
+}
+.vote--wide .vote__foot {
+  font-size: 12px;
+}
+
+/* --- Ad slot placeholder (AdSense in phase 9). Keep it at least 150px from THRUST. --- */
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ad-slot__label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+.ad-slot__box {
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+  border: 2px dashed var(--line-blue);
+  font: 18px/1 var(--font-num);
+  color: var(--text-dim);
+}
+
+.ad-slot--wide {
+  gap: 6px;
+}
+.ad-slot--wide .ad-slot__box {
+  font-size: 22px;
+}

@@ -2,7 +2,7 @@ import { PixelIcon } from "../components/PixelIcon";
 import { Sky } from "../components/Sky";
 import { Window } from "../components/Window";
 import { useDocumentTitle } from "./useDocumentTitle";
-import "./LaunchPage.css";
+import "./SimplePage.css";
 
 /** Any path the app doesn't know. */
 export function NotFoundPage() {

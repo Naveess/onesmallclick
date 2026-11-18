@@ -1,0 +1,271 @@
+/* The upgrades bottom sheet (1c). On phones it rises from the bottom and stops 150px from the top;
+   on the wide layout it's a panel of the same design, 480px wide, at the bottom centre. */
+
+.sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  width: 100%;
+  max-width: 100%;
+  height: calc(100svh - 150px);
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  background: linear-gradient(180deg, var(--window-top), var(--sheet-mid) 40%, var(--sky-4));
+  border: 0;
+  border-top: 2px solid var(--window-border);
+  box-shadow:
+    0 -2px 0 var(--outline),
+    inset 0 2px 0 var(--window-inset);
+  overflow: hidden;
+}
+
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+  animation: sheet-rise 200ms steps(4);
+}
+
+.sheet::backdrop {
+  background: rgb(var(--scrim) / 0.55);
+}
+
+@keyframes sheet-rise {
+  from {
+    transform: translateY(40%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 900px) {
+  .sheet {
+    left: 50%;
+    right: auto;
+    width: 480px;
+    height: min(720px, calc(100svh - 120px));
+    transform: translateX(-50%);
+    border: 2px solid var(--window-border);
+    outline: 2px solid var(--outline);
+    bottom: 24px;
+  }
+  @keyframes sheet-rise {
+    from {
+      transform: translate(-50%, 40%);
+    }
+    to {
+      transform: translate(-50%, 0);
+    }
+  }
+}
+
+/* The grabber doubles as a close button (44px tall to tap). */
+.sheet__grab {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sheet__grab span {
+  width: 44px;
+  height: 4px;
+  background: var(--line);
+}
+
+.sheet__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 18px 10px;
+}
+
+.sheet__title {
+  margin: 0;
+  font: 500 24px/1.2 var(--font-ui);
+}
+
+.sheet__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.sheet__balance {
+  text-align: right;
+}
+
+.sheet__balance-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.sheet__balance-value {
+  font: 32px/1 var(--font-num);
+  color: var(--text-blue);
+}
+
+.sheet__body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  padding: 0 18px calc(20px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheet__group {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0 2px;
+  background: linear-gradient(90deg, var(--line-blue), var(--line-blue) calc(100% - 48px), transparent) bottom / 100% 2px
+    no-repeat;
+}
+
+.sheet__group + .upgrade,
+.sheet__group {
+  margin: 0;
+}
+
+.sheet__group--gap {
+  padding-top: 12px;
+}
+
+.sheet__group-name {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.sheet__group-rate {
+  font: 18px/1 var(--font-num);
+  color: var(--text-blue);
+}
+
+.upgrade {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.upgrade__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: var(--well);
+  border: 2px solid var(--line);
+}
+
+.upgrade__name {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 15px;
+}
+
+.upgrade__level {
+  font: 18px/1 var(--font-num);
+  color: var(--text-blue);
+}
+
+.upgrade__effect {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* The buy button: the blue button at the design's smaller size (3px shadow, VT323 price). */
+.upgrade__buy {
+  min-width: 100px;
+  min-height: 44px;
+  padding: 0 10px;
+  font: 22px/1 var(--font-num);
+  box-shadow: 0 3px 0 var(--blue-shadow);
+}
+
+.upgrade__buy:active:not(:disabled) {
+  transform: translateY(3px);
+}
+
+/* Prestige: shown, locked, as in the design. */
+.prestige {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+}
+
+.prestige__tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.prestige__title {
+  margin: 0;
+  font: 500 18px/1.3 var(--font-ui);
+}
+
+.prestige__note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-warm-soft);
+}
+
+.prestige__bar {
+  position: relative;
+  height: 8px;
+  background: var(--orange-track);
+}
+
+.prestige__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: repeating-linear-gradient(90deg, var(--orange) 0 6px, var(--orange-deep) 6px 8px);
+}
+
+.prestige__numbers {
+  display: flex;
+  justify-content: space-between;
+  font: 18px/1 var(--font-num);
+  color: var(--text-orange-soft);
+}
+
+.prestige__locked {
+  min-height: 44px;
+  font: 500 15px/1.2 var(--font-ui);
+  color: var(--text-orange);
+  background: transparent;
+  border: 2px solid var(--orange);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sheet__note {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Keep the grabber's focus ring inside it, clear of the heading below. */
+.sheet__grab:focus-visible {
+  outline-offset: -4px;
+}

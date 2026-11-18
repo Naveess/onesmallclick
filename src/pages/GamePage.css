@@ -1,0 +1,149 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.home--wide {
+  gap: 22px;
+}
+
+/* THRUST with its rates underneath */
+.home__thrust {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.home__rates {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+  align-items: baseline;
+}
+
+.home__rates > span {
+  white-space: nowrap;
+}
+
+.home__rates .num {
+  font-size: 24px;
+  line-height: 1;
+  color: var(--text-blue);
+}
+
+.home__rates small {
+  font: 12px var(--font-ui);
+  color: var(--text-muted);
+}
+
+.home__afford {
+  min-height: 44px;
+  padding: 0 8px;
+  font: 12px/1 var(--font-ui);
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.home__afford:hover {
+  color: var(--text);
+}
+
+.home__spacer {
+  height: 24px;
+}
+
+/* --- Wide layout (1b) --- */
+.home__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+
+.home__stats {
+  display: flex;
+  gap: 40px;
+  margin: 0;
+  padding-bottom: 6px;
+}
+
+.home__stats dt {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.home__stats dd {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1;
+}
+
+.home__columns {
+  display: grid;
+  grid-template-columns: minmax(250px, 360px) minmax(280px, 1fr) minmax(250px, 360px);
+  gap: 32px;
+  align-items: start;
+  padding-top: 6px;
+}
+
+@media (max-width: 1199px) {
+  .home__columns {
+    gap: 20px;
+  }
+  .home__stats {
+    gap: 24px;
+  }
+}
+
+.home__thrust--wide {
+  gap: 12px;
+  padding-top: 0;
+}
+
+.home__thrust--wide .home__rates {
+  gap: 24px;
+}
+
+.home__thrust--wide .home__rates .num {
+  font-size: 30px;
+}
+
+.home__thrust--wide .home__rates small {
+  font-size: 13px;
+}
+
+.home__upgrades {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  font: 500 15px/1.2 var(--font-ui);
+  text-align: center;
+  color: var(--text);
+  background: transparent;
+  border: 2px solid var(--line);
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .home__upgrades:hover {
+    background: var(--window-top);
+  }
+}
+
+/* 28px under the columns, as in the design. That keeps the ad about 190px below the THRUST
+   button at 1440px wide; CLAUDE.md asks for at least 150px. */
+.home__ad {
+  padding-top: 28px;
+  display: flex;
+  justify-content: center;
+}

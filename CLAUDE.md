@@ -51,7 +51,7 @@ Standing rules for this project. They apply to every task unless docs/brief.md o
 
 A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Earth to Mars together. Each player also has their own idle game with upgrades. Once a day someone has to Ping the probe or it drops into safe mode. The crew votes on route choices, and when the probe arrives they vote on the next destination. There are individual and country leaderboards.
 
-- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (phase 2: launching-soon page, deployed 2026-11-18 from 8fc6a83). The pixel kit is at `/kit` (not linked, noindex).
+- **Domain:** onesmallclick.io (planned, not connected). **Live now:** https://onesmallclick.naveessharma.workers.dev (phase 2 deployed 2026-11-18 from 8fc6a83; phase 3, the game home with fake data, is pushed and waiting for Nav's deploy). The pixel kit is at `/kit` (not linked, noindex).
 - **Hosting:** Cloudflare Worker `onesmallclick`. No bindings yet.
 - **Code:** GitHub `Naveess/onesmallclick` (private), branch `main`. GitHub is blocked at work, so pushes may have to wait until I'm home.
 - **Started from** the site-starter template (`Naveess/site-starter`).
@@ -65,7 +65,7 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 | `design/assets/` | The sprites the design file uses (Earth 8 frames, Mars 4, probe 4, burst 6). Kept only so the design file opens. Not shipped. |
 | `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md. **This is the set that ships** (decided 2026-11-18). See design/sprites/README.md. |
 | `design/icons/` | The design's ten 9×9 UI icons as `currentColor` SVGs, with their theme colours in its README. |
-| `src/` | The React app. `components/` holds the pixel kit (Window, PixelButton, Sprite, PixelIcon, Sky, ThemeToggle); `pages/` holds `/` (launching soon) and `/kit`; `styles/theme.css` is docs/tokens.css under readable names; `sprites.ts` lists every sprite with its retimed duration; `theme.ts` handles the theme toggle. |
+| `src/` | The React app. `components/` holds the pixel kit (Window, PixelButton, Sprite, PixelIcon, Sky, ThemeToggle) and the game home pieces (ThrustButton, JourneyTrack, GameCards, UpgradesSheet, GameShell); `pages/` holds `/` (game home), the "coming soon" stubs (`/log`, `/ranks`, `/how-to-play`, `/sign-in`) and `/kit`; `game/` holds the rules (`rules.ts`) and the phase-3 fake store (`fakeStore.ts`, shaped like the real state; test switches `?signal=final`, `?crew=handful`, `?ads=off`); `router.ts` is a tiny in-app router; `styles/theme.css` is docs/tokens.css under readable names; `sprites.ts` lists every sprite with its retimed duration; `theme.ts` handles the theme toggle. |
 | `worker/` | The Worker (`index.ts`, only `/api/*`) and its generated types. |
 | `public/` | Served as-is at the site root: `sprites/` and `icons/` (copies of `design/sprites/` and `design/icons/`, unchanged), and `fonts/` (Pixelify Sans and VT323, self-hosted, with their OFL licences). |
 | `docs/todo.md` | Loose ends and decisions that aren't a phase yet. |
@@ -90,7 +90,7 @@ To view the design locally, run `cd design && python -m http.server 8000`, then 
 - Colour meaning: **light blue = action and the probe's path**, **light orange = signal, milestones and celebration**.
 - Windows have a double border: a 2px light border, a 2px dark outer outline and a 2px inset.
 - Animations use `steps()` timing so they move like pixel art, never smoothly. Respect `prefers-reduced-motion`.
-- Colours: docs/tokens.css is the locked palette (decided 2026-11-18). Don't add colours outside it without asking.
+- Colours: docs/tokens.css is the locked palette (decided 2026-11-18). Don't add colours outside it without asking. Agreed exceptions (2026-11-18): THRUST's fixed `--thrust-*` colours, and see-through versions of palette colours (`--glow-blue`, `--glow-orange`, `--scrim`), all at the end of `src/styles/theme.css`.
 - Content pages (How to play, milestone fact pages, privacy, terms, contact) are plain HTML pages built at deploy time, so search engines and AdSense can read them. The game itself is the React app.
 - Two themes: dark (the night sky, which is the default) and light ("daylight mission control"). Follow the system setting by default, with a toggle that's saved per player. The THRUST and PING buttons look the same in both themes.
 - Accessibility: use real `<button>` elements, put aria-labels on icon-only buttons, and keep text contrast at 4.5:1 or better in both themes.

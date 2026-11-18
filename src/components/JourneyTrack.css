@@ -1,0 +1,247 @@
+/* The Earth → Mars track (game home, 1a phone and 1b wide). Positions are the design's. */
+
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 10px;
+}
+
+.track--wide {
+  padding: 16px 20px 14px;
+}
+
+.track__ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.track__lane {
+  position: relative;
+  height: 64px;
+}
+
+.track--wide .track__lane {
+  height: 86px;
+}
+
+.track__earth,
+.track__mars,
+.track__moon {
+  position: absolute;
+}
+
+.track__earth {
+  left: -6px;
+  top: 0;
+}
+.track__mars {
+  right: -6px;
+  top: 0;
+}
+
+.track--wide .track__earth {
+  left: 0;
+  top: 4px;
+}
+.track--wide .track__mars {
+  right: 0;
+  top: 4px;
+}
+
+.track__moon {
+  left: 58px;
+  top: 0;
+  animation: track-orbit 12s steps(12) infinite;
+}
+
+@keyframes track-orbit {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, -4px);
+  }
+  50% {
+    transform: translate(0, -8px);
+  }
+  75% {
+    transform: translate(-10px, -4px);
+  }
+}
+
+/* The route between the planets. */
+.track__route {
+  position: absolute;
+  left: 62px;
+  right: 62px;
+  top: 12px;
+  bottom: 12px;
+}
+
+.track--wide .track__route {
+  left: 76px;
+  right: 70px;
+  top: 0;
+  bottom: 0;
+}
+
+.track__dash {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 19px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 8px);
+}
+
+.track--wide .track__dash {
+  top: 35px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 12px);
+}
+
+.track__done {
+  position: absolute;
+  left: 0;
+  top: 18px;
+  height: 4px;
+  background: var(--blue);
+  box-shadow: 0 0 8px rgb(var(--glow-blue) / 0.6);
+}
+
+.track--wide .track__done {
+  top: 34px;
+  box-shadow: 0 0 10px rgb(var(--glow-blue) / 0.6);
+}
+
+/* Milestone ticks: passed (blue), next (orange, flickering), still to come (dim). */
+.track__tick {
+  position: absolute;
+  top: 14px;
+  width: 2px;
+  height: 12px;
+  background: var(--blue);
+}
+
+.track__tick--next {
+  top: 12px;
+  width: 4px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--orange);
+  box-shadow: 0 0 8px rgb(var(--glow-orange) / 0.7);
+  animation: track-flicker 1.4s steps(2) infinite;
+}
+
+.track__tick--ahead {
+  top: 15px;
+  height: 10px;
+  background: var(--line);
+}
+
+.track--wide .track__tick {
+  top: 28px;
+  height: 16px;
+}
+.track--wide .track__tick--next {
+  top: 24px;
+  height: 24px;
+  box-shadow: 0 0 10px rgb(var(--glow-orange) / 0.7);
+}
+.track--wide .track__tick--ahead {
+  top: 30px;
+  height: 12px;
+}
+
+@keyframes track-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.track__label {
+  position: absolute;
+  top: 52px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--text-soft);
+  white-space: nowrap;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.track__label--start {
+  transform: none;
+  text-align: left;
+}
+
+.track__label--next {
+  color: var(--text-orange);
+}
+
+.track__label--ahead {
+  color: var(--text-muted);
+}
+
+.track__label .num {
+  display: block;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.track__label--next .num {
+  color: var(--text-orange);
+}
+
+.track__probe {
+  position: absolute;
+  top: 20px;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 4px rgb(var(--glow-blue) / 0.7));
+}
+
+.track--wide .track__probe {
+  top: 36px;
+  filter: drop-shadow(0 0 6px rgb(var(--glow-blue) / 0.7));
+}
+
+.track__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.track__foot .label-sm {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.track__foot .num {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.track__foot-next {
+  text-align: right;
+  color: var(--text-orange);
+}
+.track__foot-next .label-sm {
+  color: var(--text-orange);
+}
+
+/* Sprite wrappers: no inline line box, so the boxes are exactly the sprite's size. */
+.track__earth,
+.track__mars,
+.track__probe {
+  display: flex;
+  line-height: 0;
+}
