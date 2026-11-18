@@ -1,0 +1,10 @@
+{
+  // Replace {{project-name}} with the Worker name (lowercase, hyphens).
+  "name": "{{project-name}}",
+  // Set this to the date you start the project.
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./public"
+  }
+  // Add D1 / KV / R2 bindings here only if docs/brief.md asks for them.
+}
