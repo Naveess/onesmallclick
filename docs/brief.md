@@ -84,7 +84,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - Ready: probe, thruster (5 frames), Earth, rotating Earth (9 frames), Mars, rotating Mars (5 frames), Moon, starfield, firework, firework burst (7 frames), milestone flag, signal badge (blue, orange and red tiers)
 - Animation sheets are one horizontal row of equal-sized frames
 - Master copies are backed up in Google Drive (OneSmallClick folder); back up any new sprite there too
-- Still to make: static exports of the 9×9 UI icons and star layers, and any extra badge art (see docs/todo.md)
+- Still to make: profile badge sprites (First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch, Signal Keeper I–IV); see docs/todo.md
 
 ## Open questions
 - Prestige: what resets, and when (e.g. at each mission arrival)?

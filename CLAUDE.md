@@ -57,9 +57,10 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 |---|---|
 | `docs/brief.md` | What we're building: features, pages, data, monetisation, open questions. |
 | `design/OneSmallClick.dc.html` | **The source of truth for the look.** All 12 screens from Claude Design, plus working interactions and the light/dark theme. Open it through a local server (see below). |
-| `design/assets/` | The sprites the design file uses. Sheets are horizontal strips: Earth 8 frames, Mars 4, probe 4, burst 6. |
-| `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md, not design/assets. Ask which set to ship before building sprite animations. |
-| `public/sprites/` | Copies of `design/assets/`, ready for the app. |
+| `design/assets/` | The sprites the design file uses (Earth 8 frames, Mars 4, probe 4, burst 6). Kept only so the design file opens. Not shipped. |
+| `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md. **This is the set that ships** (decided 2026-11-18). See design/sprites/README.md. |
+| `design/icons/` | The design's ten 9×9 UI icons as `currentColor` SVGs, with their theme colours in its README. |
+| `public/sprites/`, `public/icons/` | Copies of `design/sprites/` (sheets and stills, plus `nebula-tile.png`) and `design/icons/`, ready for the app. |
 | `docs/todo.md` | Loose ends and decisions that aren't a phase yet. |
 | `docs/design-brief.md` | Screens, game rules and numbers from the design phase. |
 | `docs/tokens.css` | Every colour in the design, for both dark and light mode. |
@@ -73,7 +74,7 @@ To view the design locally, run `cd design && python -m http.server 8000`, then 
 
 - Copy the layout, spacing, sizes, colours, fonts and pixel-art details exactly. The game logic inside the file (in `class Component`) is a mock-up. It's useful as a reference for the numbers, but don't port it as-is. The real game state lives on the server.
 - The file is written in a Claude Design format (`{{ holes }}`, `<sc-if>`, `<sc-for>`). Rebuild it as normal components. Don't try to run that format in production.
-- Some icons are drawn on a canvas in code (`buildIcons()`, as 9×9 pixel grids) and the star layers are generated too (`buildSprites()`). Turn these into static PNG or SVG files.
+- The icons, star layers and small Earth that the design draws in code (`buildIcons()`, `buildSprites()`) are already exported: `design/icons/*.svg`, plus `stars-far.png`, `stars-near.png` and `earth-small.png` in `design/sprites/stills/`. Use those files.
 
 ### Visual rules
 

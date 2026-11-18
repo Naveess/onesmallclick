@@ -17,7 +17,10 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/mars.png` | 128×128 | Mars, the destination. The design uses the still on the Milestone moment card and the Safe mode screen. |
 | `stills/moon.png` | 32×32 | The Moon. The design places it near Earth on the desktop game home and on How to play. |
 | `stills/firework.png` | 64×64 | One full firework. Not used in the design. Could stand in for the burst when reduced motion is on. |
-| `stills/starfield.png` | 256×256 | Nebula and starfield background tile. Not used in the design, which tiles `../assets/nebula-tile.png` (512×512) and adds code-drawn star layers. |
+| `stills/starfield.png` | 256×256 | Nebula and starfield background tile. Not shipped: the design's sky is `nebula-tile.png` with `stars-far.png` and `stars-near.png` on top. |
+| `stills/stars-far.png` | 128×128 | Added 2026-11-18. The design's far star layer, exported exactly from `buildSprites()` (`stars(7, 90, 0)`). Tile at 2× (256px) over the nebula and drift it slowly (140s loop in the design). |
+| `stills/stars-near.png` | 128×128 | Added 2026-11-18. The design's near star layer, with brighter cross-shaped stars (`stars(19, 14, 5)`). Tile at 2× and drift it twice as fast (70s) for parallax. |
+| `stills/earth-small.png` | 16×16 | Added 2026-11-18. The small Earth on the "Mission" tab in the bottom bar, exported exactly from `buildSprites()` (`planet(7, 'earth', 1.3)`). The design shows it at 18px. Show it at 16px or 32px to keep whole-number scaling. |
 
 | `stills/milestone-flag.png` | 32×32 | Added 2026-11-18. An orange pennant with a white star, planted in a Moon rock. Marks each of the six milestones on the route and goes on milestone cards and log entries. |
 | `stills/signal-badge-blue.png` | 32×32 | Added 2026-11-18. Ping badge, calm tier: pinged with plenty of time left. |
@@ -52,6 +55,8 @@ The separate frames match the sheets frame for frame:
 
 ## How this set differs from `../assets/`
 
+**Decided 2026-11-18: this set ships** (5/9/5/7 frames). `public/sprites/` now holds it. `assets/` stays only so the design file still opens.
+
 The Claude Design file (`../OneSmallClick.dc.html`) loads its sprites from `../assets/`, not from here. The frame sizes match, but the frame counts don't:
 
 | Animation | Here (`sprites/`, matches docs/brief.md) | Design file (`assets/`) |
@@ -61,13 +66,11 @@ The Claude Design file (`../OneSmallClick.dc.html`) loads its sprites from `../a
 | Mars | 5 frames, 640×128 | 4 frames, `mars-sheet.png` 512×128 |
 | Firework burst | 7 frames, 448×64 | 6 frames, `burst-sheet.png` 384×64 |
 
-`assets/` also has `nebula-tile.png` (512×512), which the design uses as the sky on every screen. Decide which set ships before building the sprite animations. `public/sprites/` currently holds copies of `assets/`.
+`assets/` also has `nebula-tile.png` (512×512), which the design uses as the sky on every screen. `nebula-tile.png` ships too, copied into `public/sprites/`.
 
 ## Not here yet
 
 The milestone flag and signal badge were made on 2026-11-18 (see Stills). Still missing:
 
 - **Other profile badges.** First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch and Signal Keeper I–IV still use the design's code-drawn 9×9 icons.
-- **UI icons.** The design draws ten 9×9 icons in code (`buildIcons()`: up, bolt, trophy, log, user, signal, clock, check, star, mail), each in four colours plus a light-theme set. They need exporting as static PNG or SVG files.
-- **Star layers.** The design generates two parallax star layers in code (`buildSprites()`). They need exporting as static files, or replacing with `stills/starfield.png`.
 - **Postcard photos.** The design leaves image slots for real space photos (e.g. `postcard-04`). They aren't sprites, but they're still to find and licence-check.

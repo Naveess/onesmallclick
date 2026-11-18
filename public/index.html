@@ -90,11 +90,11 @@
     }
     .probe img {
       display: block;
-      width: 400%;
+      width: 500%;
       height: 100%;
       max-width: none;
       image-rendering: pixelated;
-      animation: sheet .6s steps(4) infinite;
+      animation: sheet .75s steps(5) infinite;
     }
     @keyframes bob { 50% { transform: translateY(-4px); } }
     @keyframes sheet { to { transform: translateX(-100%); } }
@@ -123,7 +123,7 @@
 <body>
   <main>
     <div class="probe" role="img" aria-label="Pixel-art probe OSC-1 with its thruster firing">
-      <img src="/sprites/probe-sheet.png" alt="" width="256" height="40">
+      <img src="/sprites/thruster-sheet.png" alt="" width="320" height="40">
     </div>
     <h1>OneSmallClick: <span>launching soon</span></h1>
     <p>The whole world flies one real probe to Mars, one small click at a time.</p>
