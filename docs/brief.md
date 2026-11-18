@@ -79,7 +79,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 
 ## Art assets
 - Made with PixelLab, tidied in a pixel editor if needed
-- One locked palette used for every asset
+- One locked palette used for every asset: the design's colours in docs/tokens.css (decided 2026-11-18)
 - Export at actual size; scale on the site only by whole numbers (2×, 3×, 4×) with crisp pixel rendering, never blurred
 - Ready: probe, thruster (5 frames), Earth, rotating Earth (9 frames), Mars, rotating Mars (5 frames), Moon, starfield, firework, firework burst (7 frames), milestone flag, signal badge (blue, orange and red tiers)
 - Animation sheets are one horizontal row of equal-sized frames
@@ -96,5 +96,4 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - Display names: how are rude names filtered out?
 - How long should the first Mars mission take at launch traffic levels?
 - Postcards: keep real space photos as a contrast, or convert them to pixel art?
-- Which palette (must include light blue and light orange)?
 - Confirm the .io domain is bought

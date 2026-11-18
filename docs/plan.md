@@ -292,10 +292,10 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 My recommendation is in brackets. Items marked *(brief)* come from the open questions in docs/brief.md.
 
-### Before phase 2
-1. **Palette** *(brief)*: lock the design's colours in docs/tokens.css as the palette? *(Yes. They already include the light blue and light orange, and the sprites use them.)*
-2. **Fonts:** self-host Pixelify Sans and VT323, or load them from Google Fonts as CLAUDE.md says? *(Self-host: faster, and no third-party request to explain in the privacy policy.)*
-3. **Content pages:** build How to play, the fact pages and the legal pages as plain HTML pages, with the game as the React app? *(Yes. Search engines and AdSense need to read them.)*
+### Before phase 2 (all decided 2026-11-18)
+1. ~~**Palette**~~ **Decided: yes.** The design's colours in docs/tokens.css are the locked palette.
+2. ~~**Fonts**~~ **Decided: self-host** Pixelify Sans and VT323 (no Google Fonts request).
+3. ~~**Content pages**~~ **Decided: plain HTML pages** for How to play, the fact pages and the legal pages. The game is the React app.
 
 ### Before phase 4
 4. **First mission length at launch traffic** *(brief)*. In the design's numbers the probe coasts at 21 km/s, and a busy crew adds about 8 km/s more. At that pace the 480M km trip takes about 6 months. Pick a target: 3, 6 or 12 months? *(About 6 months, as the design has it.)*

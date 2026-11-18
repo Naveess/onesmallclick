@@ -79,10 +79,12 @@ To view the design locally, run `cd design && python -m http.server 8000`, then 
 ### Visual rules
 
 - 16-bit SNES pixel-art look. Always set `image-rendering: pixelated`. Scale sprites only by whole numbers.
-- Fonts: **Pixelify Sans** for UI and headings, **VT323** for numbers, dates and timers (both from Google Fonts).
+- Fonts: **Pixelify Sans** for UI and headings, **VT323** for numbers, dates and timers Both are self-hosted with the app, not loaded from Google Fonts (decided 2026-11-18).
 - Colour meaning: **light blue = action and the probe's path**, **light orange = signal, milestones and celebration**.
 - Windows have a double border: a 2px light border, a 2px dark outer outline and a 2px inset.
 - Animations use `steps()` timing so they move like pixel art, never smoothly. Respect `prefers-reduced-motion`.
+- Colours: docs/tokens.css is the locked palette (decided 2026-11-18). Don't add colours outside it without asking.
+- Content pages (How to play, milestone fact pages, privacy, terms, contact) are plain HTML pages built at deploy time, so search engines and AdSense can read them. The game itself is the React app.
 - Two themes: dark (the night sky, which is the default) and light ("daylight mission control"). Follow the system setting by default, with a toggle that's saved per player. The THRUST and PING buttons look the same in both themes.
 - Accessibility: use real `<button>` elements, put aria-labels on icon-only buttons, and keep text contrast at 4.5:1 or better in both themes.
 - Leave space for ads where the design shows an ad slot, because the aim is Google AdSense. Keep ads at least 150px from THRUST.

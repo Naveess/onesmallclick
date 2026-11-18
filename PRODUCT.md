@@ -38,7 +38,7 @@ One shared probe on a real Earth–Mars route, flown by everyone at once. The he
 - Safe mode is a setback, never a wipe.
 - Ads: never on or near the thrust button (at least 150px away), no anchor or floating ads on the game page, never rewarded or hinted at. A rewarded thrust boost is a later idea only, and never for pings.
 - Terminology: probe OSC-1, THRUST, Ping, signal, safe mode, crew, mission log, milestone, postcard, mission credits, Mission Patches (prestige).
-- Undecided (see the brief's Open questions): prestige reset rules, vote close time and number of options, safe-mode setback size, signal window at launch, email provider, how leaderboard country is set, display-name filtering, target first-mission length, whether postcards stay photographic or become pixel art, final locked palette, domain purchase.
+- Undecided (see the brief's Open questions): prestige reset rules, vote close time and number of options, safe-mode setback size, signal window at launch, email provider, how leaderboard country is set, display-name filtering, target first-mission length, whether postcards stay photographic or become pixel art, domain purchase. (Decided 2026-11-18: the palette is the design's colours in docs/tokens.css; fonts are self-hosted; content pages are plain HTML.)
 
 ## Brand Commitments
 
