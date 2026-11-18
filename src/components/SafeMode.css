@@ -1,0 +1,182 @@
+/* Safe mode (1f). Sizes, colours and filters are the design's. */
+
+.safe {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* On the wide layout the same screen sits in a centred column. */
+.safe--wide {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding-top: 8px;
+}
+
+/* The design darkens the top and bottom of the screen. */
+.safe__vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(var(--scrim) / 0.35), transparent 30%, transparent 70%, rgb(var(--scrim) / 0.45));
+}
+
+.safe > :not(.safe__vignette) {
+  position: relative;
+  z-index: 1;
+}
+
+.safe__label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.safe__lost {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px 0;
+}
+
+.safe__lede {
+  font-size: 16px;
+  color: var(--text-soft);
+}
+
+.safe__date {
+  font: 48px/0.95 var(--font-num);
+  color: var(--text-orange);
+  text-shadow: 3px 3px 0 var(--orange-text-shadow);
+}
+
+.safe__was {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.safe__old {
+  font: 20px var(--font-num);
+  color: var(--text-faint);
+}
+
+.safe__later {
+  font: 18px var(--font-num);
+  color: var(--text-orange);
+  border: 2px solid var(--orange);
+  padding: 0 5px;
+}
+
+.safe__track.window {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.safe__lane {
+  position: relative;
+  height: 64px;
+  filter: saturate(0.2) brightness(0.75);
+}
+
+.safe__earth,
+.safe__mars {
+  position: absolute;
+  top: 0;
+}
+
+.safe__earth {
+  left: -6px;
+}
+
+.safe__mars {
+  right: -6px;
+  display: flex;
+  line-height: 0;
+}
+
+.safe__route {
+  position: absolute;
+  left: 62px;
+  right: 62px;
+  top: 12px;
+  bottom: 12px;
+}
+
+.safe__dash {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 19px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--dash) 0 4px, transparent 4px 8px);
+}
+
+.safe__bar {
+  position: absolute;
+  left: 0;
+  top: 18px;
+  height: 4px;
+  background: var(--dash-solid);
+}
+
+.safe__probe {
+  position: absolute;
+  top: 20px;
+  transform: translate(-50%, -50%);
+  filter: grayscale(1) brightness(0.8);
+}
+
+.safe__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.safe__foot .num {
+  font-size: 18px;
+}
+
+.safe__signal.window {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.safe__timer {
+  font: 44px/0.9 var(--font-num);
+  color: var(--text-dim);
+}
+
+.safe__rule {
+  max-width: 170px;
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.safe__wake {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.safe__note {
+  max-width: 300px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}

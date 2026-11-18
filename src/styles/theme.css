@@ -228,6 +228,18 @@
   --thrust-label: #eef3ff;
   --thrust-hint: #d6ecff;
 
+  /* PING (safe mode, 1f): hard-coded in the design like THRUST, the same in both themes.
+     Agreed with Nav 2026-11-18. The dark ring between rim and face is --thrust-gap. */
+  --ping-rim: #ffd2ad; /* outer rim */
+  --ping-1: #e8945a; /* face, stepped from the highlight outwards */
+  --ping-2: #c8743e;
+  --ping-3: #a2582a;
+  --ping-4: #7c401c;
+  --ping-5: #5a2c12;
+  --ping-6: #3e1e0c; /* face edge; also the label's shadow */
+  --ping-label: #fff4ea;
+  --ping-hint: #ffe6d2;
+
   /* See-through glows. The design uses the dark theme's blue and orange in both themes. */
   --glow-blue: 140 207 255; /* use as rgb(var(--glow-blue) / 0.35) */
   --glow-orange: 255 179 122;

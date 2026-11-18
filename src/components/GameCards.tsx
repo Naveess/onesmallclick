@@ -20,6 +20,17 @@ export function HereNow({ online, idling, wide = false }: { online: number; idli
   );
 }
 
+/* ---------- Safe mode (1f header) ---------- */
+
+export function SafeChip() {
+  return (
+    <div className="safe-chip">
+      <span className="safe-chip__dot" aria-hidden="true" />
+      <span className="safe-chip__word">SAFE MODE</span>
+    </div>
+  );
+}
+
 /* ---------- Live arrival estimate ---------- */
 
 export function ArrivalEstimate({ arrivalAt, savedS, wide = false }: { arrivalAt: number; savedS: number; wide?: boolean }) {
@@ -44,12 +55,15 @@ interface SignalCardProps {
   leftS: number;
   urgent: boolean;
   pinged: boolean;
+  /** A ping is on its way (bot check, then the server). */
+  pinging?: boolean;
   streakDays: number;
   onPing: () => void;
   wide?: boolean;
 }
 
-export function SignalCard({ leftS, urgent, pinged, streakDays, onPing, wide = false }: SignalCardProps) {
+export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays, onPing, wide = false }: SignalCardProps) {
+  const days = `${streakDays} day${streakDays === 1 ? "" : "s"}`;
   const timer = (
     <div
       className={urgent ? "signal__timer signal__timer--urgent" : "signal__timer"}
@@ -70,14 +84,15 @@ export function SignalCard({ leftS, urgent, pinged, streakDays, onPing, wide = f
         </h2>
         {timer}
         <p className="signal__note">If this hits zero the probe goes quiet. Anyone can reset it, once a day each.</p>
-        <PixelButton className="signal__ping" onClick={onPing} disabled={pinged} icon={pingIcon}>
-          {pinged ? "Pinged · next one tomorrow" : "Ping · 1 left today"}
+        <PixelButton className="signal__ping" onClick={onPing} disabled={pinged || pinging} icon={pingIcon}>
+          {pinged ? "Pinged · next one tomorrow" : pinging ? "Pinging…" : "Ping · 1 left today"}
         </PixelButton>
         <div className="signal__badge">
           <PixelIcon name="star" size={18} tone="orange" />
           <div>
             <div className="signal__badge-name">Signal Keeper III</div>
             <div className="signal__badge-note">{streakDays}-day ping streak · 4 days to IV</div>
+            {/* The badge name and "days to IV" stay the design's until badges arrive in phase 8. */}
           </div>
         </div>
       </Window>
@@ -93,17 +108,17 @@ export function SignalCard({ leftS, urgent, pinged, streakDays, onPing, wide = f
         {timer}
         <div className="signal__streak">
           <PixelIcon name="star" size={9} tone="orange" />
-          Signal Keeper III · {streakDays} days
+          Signal Keeper III · {days}
         </div>
       </div>
       <PixelButton
         className="signal__ping"
         variant={urgent ? "orange" : "blue"}
         onClick={onPing}
-        disabled={pinged}
+        disabled={pinged || pinging}
         icon={pingIcon}
       >
-        {pinged ? "Pinged" : "Ping"}
+        {pinged ? "Pinged" : pinging ? "Pinging…" : "Ping"}
       </PixelButton>
     </Window>
   );

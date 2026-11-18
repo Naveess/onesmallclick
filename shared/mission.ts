@@ -19,6 +19,34 @@ export const BATCH_MS = 2_000;
 /** Crew pace is the tap km of the last few minutes, averaged. */
 export const PACE_WINDOW_MIN = 5;
 
+// ---------- The signal (phase 5) ----------
+
+/** A ping keeps the probe talking this long (decision 7: 48 hours at launch). */
+export const SIGNAL_WINDOW_MS = 48 * 3_600_000;
+/** The final stretch: the countdown pulses and a ping earns the red badge. */
+export const SIGNAL_URGENT_S = 60;
+/** Under this much time left, a ping earns the orange badge. */
+export const SIGNAL_ORANGE_S = 6 * 3600;
+/** In safe mode every quiet hour adds this many hours to the trip (decision 8)… */
+export const SETBACK_HOURS_PER_QUIET_HOUR = 10;
+/** …capped per outage (decision 8). */
+export const SETBACK_CAP_MS = 7 * 86_400_000;
+
+export type BadgeTier = "blue" | "orange" | "red";
+
+/** The badge a ping earns, from the time that was left. Waking the probe from safe mode earns red. */
+export function tierFor(secondsLeft: number): BadgeTier {
+  if (secondsLeft <= SIGNAL_URGENT_S) return "red";
+  if (secondsLeft < SIGNAL_ORANGE_S) return "orange";
+  return "blue";
+}
+
+/** How much later the probe arrives because of the current outage, in ms of travel. */
+export function setbackMs(safeSince: number | null, now: number): number {
+  if (safeSince === null) return 0;
+  return Math.min(SETBACK_CAP_MS, Math.max(0, now - safeSince) * SETBACK_HOURS_PER_QUIET_HOUR);
+}
+
 /** What everyone sees. Times are the server's clock (epoch ms). */
 export interface ProbeSnapshot {
   missionId: number;
@@ -34,13 +62,34 @@ export interface ProbeSnapshot {
   /** Devices connected right now (several tabs on one device count once). */
   online: number;
   tapKm: number;
+  /** When the signal runs out unless someone pings. */
+  signalDeadline: number;
+  /** When safe mode began, or null while the probe is talking. */
+  safeSince: number | null;
 }
 
 /** This device's own numbers for today (UTC). */
 export interface DeviceToday {
   kmToday: number;
   tapKmToday: number;
+  pingedToday: boolean;
+  /** Consecutive days with a ping, up to today or yesterday. */
+  pingStreakDays: number;
 }
+
+/** What POST /api/ping answers. */
+export type PingResult =
+  | {
+      ok: true;
+      tier: BadgeTier;
+      secondsLeft: number;
+      /** True when this ping woke the probe from safe mode. */
+      woke: boolean;
+      /** The setback made permanent by waking it, in ms of travel. */
+      setbackMs: number;
+      pingStreakDays: number;
+    }
+  | { ok: false; reason: "already-pinged" | "just-saved" | "bot-check" | "no-device" | "unavailable" };
 
 /** Browser → server. */
 export type ClientMessage = { t: "taps"; n: number; seq: number };
@@ -54,6 +103,8 @@ export type ServerMessage =
 /** The /admin page's view of the probe. */
 export interface AdminState {
   probe: ProbeSnapshot;
+  /** The current outage's setback so far (ms of travel). */
+  setbackMs: number;
   serverNow: number;
   clockOffsetMs: number;
   sockets: number;

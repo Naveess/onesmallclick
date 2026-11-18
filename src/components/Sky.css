@@ -87,3 +87,26 @@
     transform: translateY(1024px);
   }
 }
+
+/* Safe mode (1f): a grey sky, the nebula drained of colour (opacity .25 in the design, against .6),
+   and the stars at 40%. */
+.sky--safe {
+  background: linear-gradient(
+    180deg,
+    var(--sky-safe-1) 0 12%,
+    var(--sky-safe-2) 12% 24%,
+    var(--sky-safe-3) 24% 38%,
+    var(--sky-safe-4) 38% 54%,
+    var(--sky-safe-5) 54% 72%,
+    var(--sky-safe-6) 72% 100%
+  );
+}
+
+.sky--safe .sky__nebula {
+  opacity: calc(var(--nebula-opacity) * 0.42);
+  filter: var(--nebula-filter) grayscale(1);
+}
+
+.sky--safe .sky__stars {
+  opacity: calc(var(--stars-opacity) * 0.4);
+}

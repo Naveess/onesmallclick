@@ -1,6 +1,7 @@
 import { AdSlot, ArrivalEstimate, SignalCard, VoteCard } from "../components/GameCards";
 import { GameShell } from "../components/GameShell";
 import { JourneyTrack } from "../components/JourneyTrack";
+import { SafeMode } from "../components/SafeMode";
 import { PixelIcon } from "../components/PixelIcon";
 import { ThrustButton } from "../components/ThrustButton";
 import { castVote, ping, switches, thrust, useGame } from "../game/store";
@@ -17,6 +18,22 @@ export function GamePage() {
   return (
     <GameShell tab="mission">
       {({ wide, openUpgrades }) => {
+        if (view.safe) {
+          return (
+            <SafeMode
+              wide={wide}
+              quietS={view.quietS}
+              arrivalAt={view.arrivalAt}
+              arrivalBeforeAt={view.arrivalBeforeAt}
+              setbackMs={view.setbackMs}
+              progress={view.progress}
+              pinged={player.pingedToday}
+              pinging={player.pinging}
+              onPing={() => void ping()}
+            />
+          );
+        }
+
         const track = (
           <JourneyTrack
             wide={wide}
@@ -34,8 +51,9 @@ export function GamePage() {
             leftS={view.signalLeftS}
             urgent={view.signalUrgent}
             pinged={player.pingedToday}
+            pinging={player.pinging}
             streakDays={player.pingStreakDays}
-            onPing={ping}
+            onPing={() => void ping()}
           />
         );
         const vote = (

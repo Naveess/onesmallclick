@@ -26,4 +26,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Phase plan proposed in docs/plan.md (18 Nov). Next: answer the "Before phase 2" decisions there.
 
 ## At the end
+- [ ] **Privacy page (phase 9) must mention Cloudflare Turnstile**, which runs on Ping, and the device cookie (`osc_device`, HttpOnly, 400 days).
+- [ ] **Signal Keeper badge names (phase 8).** The signal card still shows the design's "Signal Keeper III · 4 days to IV"; only the streak number is real. Set the I–IV streak thresholds with the badges.
+- [ ] **Add onesmallclick.io to the Turnstile widget's hostnames** when the domain is connected, or Ping will fail there.
 - [ ] **Postcard photos.** Pick a real space photo for each of the six milestones, check each licence (prefer public-domain NASA/JPL) and note the credit line. Decide whether to keep them as photos or convert them to pixel art (open question in the brief).

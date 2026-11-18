@@ -28,7 +28,7 @@ export function usePath(): string {
   );
 }
 
-/** Keep the test switches (?signal=final etc.) when moving between pages. */
+/** Keep the test switches (?crew=handful, ?ads=off) when moving between pages. */
 function withSearch(href: string): string {
   return href.startsWith("/") && !href.includes("?") ? href + window.location.search : href;
 }

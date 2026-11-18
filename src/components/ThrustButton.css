@@ -1,9 +1,7 @@
 /* THRUST: the 8-sided pixel button. It looks the same in both themes (fixed --thrust-* colours). */
 
 .thrust {
-  --oct: polygon(30% 0, 70% 0, 70% 4%, 82% 4%, 82% 9%, 90% 9%, 90% 18%, 96% 18%, 96% 30%, 100% 30%, 100% 70%, 96% 70%,
-    96% 82%, 90% 82%, 90% 91%, 82% 91%, 82% 96%, 70% 96%, 70% 100%, 30% 100%, 30% 96%, 18% 96%, 18% 91%, 10% 91%, 10% 82%,
-    4% 82%, 4% 70%, 0 70%, 0 30%, 4% 30%, 4% 18%, 10% 18%, 10% 9%, 18% 9%, 18% 4%, 30% 4%);
+  --oct: var(--octagon);
   position: relative;
   display: grid;
   place-items: center;

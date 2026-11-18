@@ -56,7 +56,4 @@ export const MILESTONES: Milestone[] = [
   { n: 6, name: "Phobos in view", km: 430_000_000 },
 ];
 
-/** The signal needs a Ping at least this often. */
-export const SIGNAL_WINDOW_S = 24 * 60 * 60;
-/** The countdown pulses in the final minute. */
-export const SIGNAL_URGENT_S = 60;
+// The signal's numbers (window, red zone, setback) live in shared/mission.ts: the server keeps the signal.

@@ -4,9 +4,10 @@ import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
 import { WIDE_QUERY, useMediaQuery } from "../useMediaQuery";
-import { HereNow } from "./GameCards";
+import { HereNow, SafeChip } from "./GameCards";
 import { PixelIcon } from "./PixelIcon";
 import { Sky } from "./Sky";
+import { Toast } from "./Toast";
 import { UpgradesSheet } from "./UpgradesSheet";
 import "./GameShell.css";
 import "./PixelButton.css";
@@ -22,15 +23,16 @@ interface GameShellProps {
 export function GameShell({ tab, children }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
-  const { probe, player, view } = useGame();
+  const { probe, player, view, toast } = useGame();
+  const safe = view.safe;
   const openUpgrades = () => setUpgradesOpen(true);
 
   return (
     <>
-      <Sky fixed />
+      <Sky fixed safe={safe} />
       <div className={wide ? "game game--wide" : "game"}>
         <div className="game__main">
-          <header className={wide ? "game-head game-head--wide" : "game-head"}>
+          <header className={["game-head", wide && "game-head--wide", safe && "game-head--safe"].filter(Boolean).join(" ")}>
             <div className="game-head__brand">
               <p className="game-head__title">
                 <Link href="/">OneSmallClick</Link>
@@ -39,7 +41,7 @@ export function GameShell({ tab, children }: GameShellProps) {
             </div>
             {wide ? (
               <nav className="game-nav" aria-label="Game">
-                <HereNow online={probe.online} idling={probe.idling} wide />
+                {safe ? <SafeChip /> : <HereNow online={probe.online} idling={probe.idling} wide />}
                 <button type="button" className="game-nav__item" onClick={openUpgrades} aria-haspopup="dialog">
                   <PixelIcon name="bolt" size={18} tone="muted" />
                   Upgrades
@@ -60,6 +62,8 @@ export function GameShell({ tab, children }: GameShellProps) {
                   Sign in
                 </Link>
               </nav>
+            ) : safe ? (
+              <SafeChip />
             ) : (
               <HereNow online={probe.online} idling={probe.idling} />
             )}
@@ -98,6 +102,8 @@ export function GameShell({ tab, children }: GameShellProps) {
           </nav>
         )}
       </div>
+
+      <Toast toast={toast} wide={wide} />
 
       <UpgradesSheet
         open={upgradesOpen}

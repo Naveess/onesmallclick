@@ -65,6 +65,15 @@
   color: var(--text-muted);
 }
 
+/* Safe mode (1f): the name goes quiet, and on phones the mission line steps aside for the chip. */
+.game-head--safe .game-head__title {
+  color: var(--text-muted);
+}
+
+.game-head--safe:not(.game-head--wide) .game-head__sub {
+  display: none;
+}
+
 /* --- Wide header --- */
 .game-head--wide {
   align-items: center;

@@ -30,6 +30,6 @@
     }
   ]
 
-  // Secrets (not in this file): ADMIN_KEY and DEVICE_SECRET.
-  // Production: npx wrangler secret put ADMIN_KEY / DEVICE_SECRET. Local: .dev.vars (git-ignored).
+  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET and TURNSTILE_SECRET.
+  // Production: npx wrangler secret put <NAME>. Local: .dev.vars (git-ignored).
 }

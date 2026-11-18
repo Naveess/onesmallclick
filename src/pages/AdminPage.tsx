@@ -53,6 +53,7 @@ export function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [km, setKm] = useState("");
   const [hours, setHours] = useState("24");
+  const [seconds, setSeconds] = useState("70");
 
   const run = async (action: string, body?: object, k = key) => {
     setBusy(true);
@@ -90,7 +91,9 @@ export function AdminPage() {
 
   const p = state?.probe;
   const speed = p ? p.coastKmS + p.crewKmS : 0;
-  const arrival = p && state ? state.serverNow + ((p.routeKm - p.distanceKm) / speed) * 1000 : 0;
+  const setbackKm = p && state ? (state.setbackMs / 1000) * p.coastKmS : 0;
+  const arrival = p && state ? state.serverNow + ((p.routeKm + setbackKm - p.distanceKm) / speed) * 1000 : 0;
+  const signalLeftS = p && state ? Math.max(0, (p.signalDeadline - state.serverNow) / 1000) : 0;
 
   return (
     <>
@@ -142,6 +145,14 @@ export function AdminPage() {
                 <div>
                   <dt>Arrival</dt>
                   <dd className="num">{when(arrival)}</dd>
+                </div>
+                <div>
+                  <dt>Signal</dt>
+                  <dd className="num">
+                    {p!.safeSince !== null
+                      ? `SAFE MODE since ${when(p!.safeSince)} · setback so far ${(state.setbackMs / 3_600_000).toFixed(1)} h`
+                      : `${Math.floor(signalLeftS / 3600)} h ${Math.floor((signalLeftS % 3600) / 60)} min ${Math.floor(signalLeftS % 60)} s left`}
+                  </dd>
                 </div>
                 <div>
                   <dt>Devices here</dt>
@@ -220,11 +231,41 @@ export function AdminPage() {
               </PixelButton>
             </Window>
 
+            <Window
+              as="form"
+              className="admin__card"
+              aria-labelledby="admin-signal"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                void run("signal", { seconds: Number(seconds) });
+              }}
+            >
+              <h2 id="admin-signal" className="admin__h2">
+                Set the signal timer
+              </h2>
+              <p className="admin__note">
+                Seconds until the signal runs out. 70 shows the final-minute pulse from 60; 0 drops the probe into safe
+                mode now. A value above 0 also ends safe mode without a setback (a test override, not a ping).
+              </p>
+              <label className="admin__field">
+                <span className="label">Seconds</span>
+                <input inputMode="numeric" value={seconds} onChange={(e) => setSeconds(e.target.value)} required />
+              </label>
+              <div className="admin__row">
+                <PixelButton type="submit" disabled={busy}>
+                  Set timer
+                </PixelButton>
+                <PixelButton variant="outline" disabled={busy} onClick={() => void run("clear-ping", {})}>
+                  Let this browser ping again today
+                </PixelButton>
+              </div>
+            </Window>
+
             <Window as="section" tone="orange" className="admin__card" aria-labelledby="admin-reset">
               <h2 id="admin-reset" className="admin__h2">
                 Reset the mission
               </h2>
-              <p className="admin__note">Starts mission {p!.missionId + 1} at 0 km and puts the clock back to real time.</p>
+              <p className="admin__note">Starts mission {p!.missionId + 1} at 0 km with a full signal, and puts the clock back to real time.</p>
               <PixelButton
                 variant="orange"
                 disabled={busy}

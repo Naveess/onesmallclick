@@ -3,6 +3,10 @@
 :root {
   --font-ui: "Pixelify Sans", ui-monospace, Menlo, monospace; /* UI and headings */
   --font-num: "VT323", ui-monospace, Menlo, monospace; /* numbers, dates, timers */
+  /* The 8-sided pixel shape of THRUST and PING (and their glows). */
+  --octagon: polygon(30% 0, 70% 0, 70% 4%, 82% 4%, 82% 9%, 90% 9%, 90% 18%, 96% 18%, 96% 30%, 100% 30%, 100% 70%, 96% 70%,
+    96% 82%, 90% 82%, 90% 91%, 82% 91%, 82% 96%, 70% 96%, 70% 100%, 30% 100%, 30% 96%, 18% 96%, 18% 91%, 10% 91%, 10% 82%,
+    4% 82%, 4% 70%, 0 70%, 0 30%, 4% 30%, 4% 18%, 10% 18%, 10% 9%, 18% 9%, 18% 4%, 30% 4%);
 }
 
 *,

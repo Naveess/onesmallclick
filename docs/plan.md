@@ -8,7 +8,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 2: App shell and pixel kit** (deployed 8fc6a83 and approved, 2026-11-18)
 - [x] **Phase 3: Game home with fake data** (deployed 52b688b, THRUST lag fix d9cda91 deployed, approved 2026-11-18)
 - [x] **Phase 4: The shared probe** (deployed c189904 and approved, 2026-11-18)
-- [ ] **Phase 5: Signal, Ping and safe mode**
+- [x] **Phase 5: Signal, Ping and safe mode** (built 2026-11-18; Nav applies migration 0002 and deploys)
 - [ ] **Phase 6: Idle upgrades and offline thrust**
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages**
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
@@ -163,6 +163,15 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **The Turnstile widget on small phones.** Its invisible mode avoids a visible box.
 - **One person pinging from many devices.** Phase 9 adds the per-network cap.
 
+**As built (2026-11-18)**
+- The deadline lives in the `Probe` object with an alarm (alarms run on real time, so the /admin clock offset is taken off). If the alarm is late, any message checks the deadline too.
+- `POST /api/ping` checks the Turnstile token, then the object records the ping in D1 `pings` (one row per device per UTC day). Any ping resets the timer to the full 48 hours. A ping within 5 s of another is told "just saved" and keeps its daily ping.
+- Waking the probe earns the red badge. The setback (quiet time × 10, capped at 7 days) is added to the route as km at coasting speed.
+- Log entries go to D1 `log_entries` only for notable moments: signal lost, signal restored, and saves in the final 60 seconds. Shown in phase 7.
+- The badge shows as a toast for now (an orange window with the badge sprite); the design has no toast, so it's built from the kit.
+- `/admin` can set the signal timer (0 = safe mode now) and let the admin's own browser ping again today.
+- Ping streaks are real (from `pings`); the "Signal Keeper" badge names stay the design's until phase 8.
+
 ## Phase 6: Idle upgrades and offline thrust
 
 **Goal:** each player's own idle game, with every purchase and payout decided on the server.
@@ -310,9 +319,11 @@ My recommendation is in brackets. Items marked *(brief)* come from the open ques
 
 Also decided with phase 4 (2026-11-18): **people here counts devices**, so five tabs on one phone count once. **THRUST below the fold on 375×667 is fine.** **No half-scaled sprites:** the track's Mars is a 64px sheet made from the 128px one, and the Moon shows at its full 32px.
 
-### Before phase 5
-7. **Signal window at launch** *(brief)*. The design uses 24 hours. Should it be longer (say 48 hours) while the crew is small? Does the red tier stay at the final 60 seconds? *(48 hours at launch, red stays at 60 s.)*
-8. **Safe-mode setback** *(brief)*. The design says every quiet hour adds about 10 hours; the brief asks how many days the date jumps back. Use the design's rate, with a cap per outage? *(Yes, capped at 7 days per outage.)*
+### Before phase 5 (all decided 2026-11-18)
+7. ~~**Signal window at launch**~~ **Decided: 48 hours**, with the red tier at the final 60 seconds.
+8. ~~**Safe-mode setback**~~ **Decided: the design's rate** (every quiet hour adds about 10 hours), **capped at 7 days per outage.**
+
+Also decided with phase 5 (2026-11-18): **the setback lengthens the route** (the probe drifted off course: the distance is kept and the real arrival really is later); **taps don't count in safe mode** (the design's "0 km/s from crew"); **PING's fixed `--ping-*` colours** are agreed, like THRUST's. Turnstile widget made by Nav (site key `0x4AAAAAAGHp999jPtmZ4xYE`, invisible).
 
 ### Before phase 6
 9. **Do idle players move the shared probe?** That means auto-thrust while connected, plus the offline catch-up (up to 8 hours) added when they come back. *(Yes to both. That's what the design shows.)*

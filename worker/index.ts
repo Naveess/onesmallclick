@@ -4,11 +4,15 @@
 //   GET  /api/health          { ok: true }
 //   GET  /api/session         sets the signed device cookie if needed; returns { name }
 //   GET  /api/probe           WebSocket to the shared Probe (needs the device cookie)
-//   GET  /api/admin/state     } /admin's test controls, behind
-//   POST /api/admin/distance  }   Authorization: Bearer <ADMIN_KEY>
-//   POST /api/admin/clock     }
-//   POST /api/admin/reset     }
+//   POST /api/ping            { token } (Turnstile) → today's Ping for this device
+//   GET  /api/admin/state       } /admin's test controls, behind
+//   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
+//   POST /api/admin/clock       }
+//   POST /api/admin/signal      }
+//   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
+//   POST /api/admin/reset       }
 
+import type { PingResult } from "../shared/mission";
 import { deviceCookie, generateName, readDevice } from "./device";
 
 export { Probe } from "./probe";
@@ -31,6 +35,7 @@ export default {
     if (path === "/api/health") return json({ ok: true });
     if (path === "/api/session" && request.method === "GET") return session(request, env);
     if (path === "/api/probe") return connect(request, env, url);
+    if (path === "/api/ping" && request.method === "POST") return ping(request, env);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
     return json({ error: "Not found" }, 404);
@@ -82,6 +87,42 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
   return probe(env).fetch(new Request(request.url, { headers }));
 }
 
+/** Checks the invisible Turnstile token with Cloudflare. */
+async function turnstileOk(token: string, request: Request, env: Env): Promise<boolean> {
+  const form = new FormData();
+  form.append("secret", env.TURNSTILE_SECRET);
+  form.append("response", token);
+  const ip = request.headers.get("CF-Connecting-IP");
+  if (ip) form.append("remoteip", ip);
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
+    const out = (await res.json()) as { success?: boolean; action?: string };
+    return out.success === true && (!out.action || out.action === "ping");
+  } catch (err) {
+    console.error("turnstile check failed", err);
+    return false;
+  }
+}
+
+/** Today's Ping for this device: bot check, then the Probe decides (once a day, first one wins). */
+async function ping(request: Request, env: Env): Promise<Response> {
+  const fail = (reason: Extract<PingResult, { ok: false }>["reason"], status: number) =>
+    json({ ok: false, reason } satisfies PingResult, status);
+  if (!env.DEVICE_SECRET || !env.TURNSTILE_SECRET) return fail("unavailable", 503);
+  const origin = request.headers.get("Origin");
+  if (origin && new URL(origin).host !== new URL(request.url).host) return fail("no-device", 403);
+
+  const id = await readDevice(request, env.DEVICE_SECRET);
+  if (!id) return fail("no-device", 401);
+  const body = (await request.json().catch(() => ({}))) as { token?: unknown };
+  if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env))) {
+    return fail("bot-check", 403);
+  }
+  const row = await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
+  const result = await probe(env).ping(id, row?.name ?? "a crew member");
+  return json(result);
+}
+
 const enc = new TextEncoder();
 
 /** Compares the key in constant time (both sides hashed first, so lengths match). */
@@ -114,6 +155,18 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
       return json({ error: "hours must be between 0 and 8784" }, 400);
     }
     return json(await stub.adminMoveClock(hours));
+  }
+  if (action === "signal") {
+    const seconds = Number((body as { seconds?: unknown }).seconds);
+    if (!Number.isFinite(seconds) || seconds < 0 || seconds > 30 * 86_400) {
+      return json({ error: "seconds must be between 0 and 2592000" }, 400);
+    }
+    return json(await stub.adminSetSignal(seconds));
+  }
+  if (action === "clear-ping") {
+    const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
+    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
+    return json(await stub.adminClearPing(id));
   }
   if (action === "reset") return json(await stub.adminResetMission());
   return json({ error: "Not found" }, 404);
