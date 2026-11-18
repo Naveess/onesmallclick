@@ -19,6 +19,17 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/firework.png` | 64×64 | One full firework. Not used in the design. Could stand in for the burst when reduced motion is on. |
 | `stills/starfield.png` | 256×256 | Nebula and starfield background tile. Not used in the design, which tiles `../assets/nebula-tile.png` (512×512) and adds code-drawn star layers. |
 
+| `stills/milestone-flag.png` | 32×32 | Added 2026-11-18. An orange pennant with a white star, planted in a Moon rock. Marks each of the six milestones on the route and goes on milestone cards and log entries. |
+| `stills/signal-badge-blue.png` | 32×32 | Added 2026-11-18. Ping badge, calm tier: pinged with plenty of time left. |
+| `stills/signal-badge-orange.png` | 32×32 | Added 2026-11-18. Ping badge, low tier: the timer was running low. |
+| `stills/signal-badge-red.png` | 32×32 | Added 2026-11-18. Ping badge, critical tier: saved at the last moment (e.g. the final 60 seconds, when the countdown pulses). |
+
+The four sprites added on 2026-11-18 use only colours from the design and the existing sprites:
+- The flag's cloth is the design's orange ramp (`#ffd27a`, `#ffb37a`, `#e8894a`), its star is `#eef3ff`, and its pole and rock use the Moon sprite's greys. The pole and rock started as a PixelLab Pixen generation. The cloth was redrawn by hand in the PixelLab workbench.
+- The badges were drawn in the PixelLab workbench. Each one is the design's 9×9 signal icon at 2× on a `#13285a` face, with a 2px rim and a `#050817` outline. The tier colours are the design's blue ramp (`#b9e2ff` to `#2d6fbc`), its orange ramp (`#ffd27a` to `#a8582a`) and the Mars sprite's reds (`#f85a35` to `#5b102a`).
+- The timer thresholds for each tier aren't decided yet (see docs/todo.md).
+- Master copies are in Google Drive, OneSmallClick › Sprites.
+
 The stills are not copies of frame 0 of the matching animation. They are separate exports.
 
 ## Animations
@@ -54,8 +65,9 @@ The Claude Design file (`../OneSmallClick.dc.html`) loads its sprites from `../a
 
 ## Not here yet
 
-- **Milestone flag.** The brief lists it under "Still to make". In the design, milestones show the code-drawn 9×9 star icon.
-- **Signal badge.** Also "Still to make". The brief wants it coloured by how low the timer was when you pinged. The design's badges use the code-drawn 9×9 signal, star, clock, check and trophy icons in fixed colours.
+The milestone flag and signal badge were made on 2026-11-18 (see Stills). Still missing:
+
+- **Other profile badges.** First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch and Signal Keeper I–IV still use the design's code-drawn 9×9 icons.
 - **UI icons.** The design draws ten 9×9 icons in code (`buildIcons()`: up, bolt, trophy, log, user, signal, clock, check, star, mail), each in four colours plus a light-theme set. They need exporting as static PNG or SVG files.
 - **Star layers.** The design generates two parallax star layers in code (`buildSprites()`). They need exporting as static files, or replacing with `stills/starfield.png`.
 - **Postcard photos.** The design leaves image slots for real space photos (e.g. `postcard-04`). They aren't sprites, but they're still to find and licence-check.

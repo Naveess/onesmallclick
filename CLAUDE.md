@@ -60,6 +60,7 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 | `design/assets/` | The sprites the design file uses. Sheets are horizontal strips: Earth 8 frames, Mars 4, probe 4, burst 6. |
 | `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md, not design/assets. Ask which set to ship before building sprite animations. |
 | `public/sprites/` | Copies of `design/assets/`, ready for the app. |
+| `docs/todo.md` | Loose ends and decisions that aren't a phase yet. |
 | `docs/design-brief.md` | Screens, game rules and numbers from the design phase. |
 | `docs/tokens.css` | Every colour in the design, for both dark and light mode. |
 | `docs/build-plan.html` | The earlier stage-by-stage build plan with prompts. Reference only; docs/plan.md is the live phase list. |
