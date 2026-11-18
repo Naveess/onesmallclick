@@ -22,7 +22,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - "Keep the signal alive" timer: any player's daily ping resets it
   - One ping a day per device, or per account when signed in
   - If it hits zero, the probe drops into safe mode and the arrival date jumps back (a setback, never a wipe)
-  - Each ping earns a badge coloured by how low the timer was
+  - Each ping earns a badge coloured by how low the timer was: blue with more than 6 hours left, orange under 6 hours, red in the final 60 seconds
   - Launch with a longer window than 60 seconds until traffic grows
 - Full idle upgrades for your own thrust: auto-thrusters, offline progress and prestige
 - Offline thrust capped at about 8 hours and checked by the server, never trusted from the browser

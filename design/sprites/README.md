@@ -23,14 +23,14 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/earth-small.png` | 16×16 | Added 2026-11-18. The small Earth on the "Mission" tab in the bottom bar, exported exactly from `buildSprites()` (`planet(7, 'earth', 1.3)`). The design shows it at 18px. Show it at 16px or 32px to keep whole-number scaling. |
 
 | `stills/milestone-flag.png` | 32×32 | Added 2026-11-18. An orange pennant with a white star, planted in a Moon rock. Marks each of the six milestones on the route and goes on milestone cards and log entries. |
-| `stills/signal-badge-blue.png` | 32×32 | Added 2026-11-18. Ping badge, calm tier: pinged with plenty of time left. |
-| `stills/signal-badge-orange.png` | 32×32 | Added 2026-11-18. Ping badge, low tier: the timer was running low. |
-| `stills/signal-badge-red.png` | 32×32 | Added 2026-11-18. Ping badge, critical tier: saved at the last moment (e.g. the final 60 seconds, when the countdown pulses). |
+| `stills/signal-badge-blue.png` | 32×32 | Added 2026-11-18. Ping badge, calm tier: pinged with more than 6 hours left on the signal timer. |
+| `stills/signal-badge-orange.png` | 32×32 | Added 2026-11-18. Ping badge, low tier: pinged with under 6 hours left. |
+| `stills/signal-badge-red.png` | 32×32 | Added 2026-11-18. Ping badge, critical tier: pinged in the final 60 seconds, while the countdown pulses. |
 
 The four sprites added on 2026-11-18 use only colours from the design and the existing sprites:
 - The flag's cloth is the design's orange ramp (`#ffd27a`, `#ffb37a`, `#e8894a`), its star is `#eef3ff`, and its pole and rock use the Moon sprite's greys. The pole and rock started as a PixelLab Pixen generation. The cloth was redrawn by hand in the PixelLab workbench.
 - The badges were drawn in the PixelLab workbench. Each one is the design's 9×9 signal icon at 2× on a `#13285a` face, with a 2px rim and a `#050817` outline. The tier colours are the design's blue ramp (`#b9e2ff` to `#2d6fbc`), its orange ramp (`#ffd27a` to `#a8582a`) and the Mars sprite's reds (`#f85a35` to `#5b102a`).
-- The timer thresholds for each tier aren't decided yet (see docs/todo.md).
+- Tier cut-offs (decided 2026-11-18): blue = more than 6 hours left, orange = under 6 hours, red = the final 60 seconds.
 - Master copies are in Google Drive, OneSmallClick › Sprites.
 
 The stills are not copies of frame 0 of the matching animation. They are separate exports.
