@@ -153,7 +153,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ paceBar }};background:{{ paceFill }}"></div></div><span style="font:16px/1 VT323,monospace;color:var(--ki-a8b6d6);white-space:nowrap">{{ paceGap }}</span></div>
 </div>
 </div>
-<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;height:254px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;flex:none;height:254px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
 <div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 60s steps(64) infinite"></div>
 <div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 24s steps(64) infinite"></div>
 <sc-if value="{{ flP.engineOn }}" hint-placeholder-val="{{ true }}"><div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flP.streaks }});background-size:256px 128px;image-rendering:pixelated;opacity:.55;animation:osc-scroll-x 3s steps(32) infinite"></div>
@@ -333,7 +333,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TO GO</div><div style="font:36px/1 VT323,monospace">{{ toGo }} km</div></div>
 </div>
 </div>
-<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;height:344px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;flex:none;height:344px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
 <div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 60s steps(64) infinite"></div>
 <div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 24s steps(64) infinite"></div>
 <sc-if value="{{ flD.engineOn }}" hint-placeholder-val="{{ true }}"><div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flD.streaks }});background-size:256px 128px;image-rendering:pixelated;opacity:.55;animation:osc-scroll-x 3s steps(32) infinite"></div>
@@ -775,7 +775,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="font:24px VT323,monospace;color:var(--ki-ffd9a8)">14 March 2027 · 06:12 UTC</div>
 <div style="font-size:13px;color:var(--ki-c9d4ee)">157 days · 2,412,446 crew · 31.4 billion taps</div>
 </div>
-<div style="position:relative;height:170px;overflow:hidden;background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);outline:2px solid var(--kf-04060f);-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)">
+<div style="position:relative;flex:none;height:170px;overflow:hidden;background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);outline:2px solid var(--kf-04060f);-webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)">
 <div data-anim style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;animation:osc-roll 36s linear infinite">
 <sc-for list="{{ creditNames }}" as="c" hint-placeholder-count="12"><div style="display:flex;gap:10px;align-items:baseline"><span style="font-size:15px">{{ c.n }}</span><span style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">{{ c.cc }}</span></div></sc-for>
 </div>
@@ -863,7 +863,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="font:28px VT323,monospace;color:var(--ki-ffd9a8)">14 March 2027 · 06:12 UTC</div>
 <div style="font-size:14px;color:var(--ki-c9d4ee)">157 days · 2,412,446 crew · 31.4 billion taps</div>
 </div>
-<div style="position:relative;height:300px;overflow:hidden;background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);outline:2px solid var(--kf-04060f);-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent)">
+<div style="position:relative;flex:none;height:300px;overflow:hidden;background:var(--kf-060d24);border:2px solid var(--kf-2b4c86);outline:2px solid var(--kf-04060f);-webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent)">
 <div data-anim style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0;animation:osc-roll 36s linear infinite">
 <sc-for list="{{ creditNames }}" as="c" hint-placeholder-count="12"><div style="display:flex;gap:10px;align-items:baseline"><span style="font-size:16px">{{ c.n }}</span><span style="font:17px VT323,monospace;color:var(--ki-a8b6d6)">{{ c.cc }}</span></div></sc-for>
 </div>
@@ -1208,7 +1208,7 @@ button{font-family:'Pixelify Sans',monospace}
 <sc-if value="{{ revealOn }}" hint-placeholder-val="{{ true }}">
 <div style="position:absolute;inset:0;padding:30px 18px 22px;display:flex;flex-direction:column;gap:12px">
 <div class="osc-in" style="animation-delay:.1s;font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">NEW MISSION · JUPITER SYSTEM</div>
-<div style="position:relative;height:250px;display:grid;place-items:center">
+<div style="position:relative;flex:none;height:250px;display:grid;place-items:center">
 <img src="assets/europa.png" alt="Europa" style="position:absolute;left:50%;top:150px;transform:translateX(-50%);width:128px;height:128px;image-rendering:pixelated;max-width:none">
 <div class="osc-fly" style="position:relative;display:flex;flex-direction:column;align-items:center;margin-top:-40px">
 <img src="assets/probe-europa-lander.png" alt="OSC-3 Europa Lander" style="width:128px;height:128px;image-rendering:pixelated;max-width:none;filter:drop-shadow(0 0 8px rgba(140,207,255,.6))">
@@ -1415,7 +1415,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ paceBar }};background:{{ paceFill }}"></div></div><span style="font:16px/1 VT323,monospace;color:var(--ki-a8b6d6);white-space:nowrap">{{ paceGap }}</span></div>
 </div>
 </div>
-<div role="img" aria-label="Transfer orbit from Earth to Mars. The probe is {{ pct }} of the way; the next crew vote is Ceres or Vesta" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);position:relative;height:236px;padding:0;overflow:hidden">
+<div role="img" aria-label="Transfer orbit from Earth to Mars. The probe is {{ pct }} of the way; the next crew vote is Ceres or Vesta" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);position:relative;flex:none;height:236px;padding:0;overflow:hidden">
 <div style="position:absolute;left:0;top:0;width:354px;height:236px">
 <img src="{{ orbP.rings }}" alt="" style="position:absolute;left:0;top:0;width:354px;height:236px;max-width:none;image-rendering:pixelated">
 <div style="position:absolute;right:6px;bottom:6px;padding:2px 6px;font-size:10px;letter-spacing:.08em;color:var(--ki-8b98ba);border:2px solid var(--kf-1b2a55);background:var(--kf-060a1c)">Jupiter ›</div>
