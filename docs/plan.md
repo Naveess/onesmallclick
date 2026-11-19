@@ -12,7 +12,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 6: Idle upgrades and offline thrust** (deployed from 3faffe7 and approved 2026-11-19)
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
   - [x] **7a: The daily vote and the mission log** (deployed from d80f813 and approved 2026-11-19)
-  - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (built 2026-11-19; Nav applies migration 0005 and deploys)
+  - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 
@@ -249,7 +249,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Every fact must be true and checked** (Product principle 5).
 
 **As built: 7a (2026-11-19)**
-- The pool is `content/vote-options.json` (a DRAFT for Nav's approval): 30 options, 10 each of faster (6 to 24 hours sooner), steady (no change) and detour (6 to 24 hours later, each with a true fact and its source). Rules in `shared/votes.ts`.
+- The pool is `content/vote-options.json` (approved by Nav 2026-11-19): 30 options, 10 each of faster (6 to 24 hours sooner), steady (no change) and detour (6 to 24 hours later, each with a true fact and its source). Rules in `shared/votes.ts`.
 - Each round the `Probe` object picks one option of each kind, in a shuffled order, avoiding the last 3 rounds' picks. A round is a UTC day; one closed early from /admin gets ".2", ".3".
 - Voting: `POST /api/vote` behind the invisible Turnstile check (action "vote"), one vote per device per round (D1 `votes`). The object keeps the live tallies in its own SQLite and sends them with every update (at most once a second).
 - Closing: one alarm covers both the signal and 00:00 UTC; any message or /admin clock move also checks. The winner's hours are applied to the route at coasting speed, the result goes in the log (with the fact for a detour), and D1 `vote_days` keeps the record (migration 0004). A tie goes to steady, then detour; no votes means no change ("No votes today").
@@ -258,7 +258,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - The open vote is shown as "DAY n" of the mission (mission days count from launch, not from midnight).
 
 **As built: 7b (2026-11-19)**
-- The six milestones are `content/milestones.json` (a DRAFT for Nav's approval), via `shared/milestones.ts`. Each fact was checked against the NASA/JPL pages listed with it:
+- The six milestones are `content/milestones.json` (approved by Nav 2026-11-19), via `shared/milestones.ts`. Each fact was checked against the NASA/JPL pages listed with it:
   1. Past the Moon (384,400 km);
   2. Webb's neighbourhood (1.5M km);
   3. Mid-course burn (120M km, the design's);

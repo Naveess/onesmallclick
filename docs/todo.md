@@ -16,7 +16,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Backup: everything on GitHub; the five sprites made since 18 Nov (`mars-32`, `mars-rotating-64-sheet`, `earth-small`, `stars-far`, `stars-near`) added to Drive (OneSmallClick › Sprites).
 
 ## Next
-- [ ] **Deploy 7b** (Nav): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
+- [x] **Deploy 7b** (Nav, 19 Nov; the live bundle matches 31172c3 and migration 0005 is applied): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
 
 ## Before phase 8 (badges)
 
@@ -31,8 +31,8 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
 ## Before launch
-- [ ] **Approve the six milestones** (`content/milestones.json`): names, distances, the moment's fact and sub-line, the fact pages' text, and the sources. Drafted and checked on 19 Nov; still a draft until you say so.
-- [ ] **Approve the vote pool** (`content/vote-options.json`): wording, effects, and each detour's fact against its source link. It's a draft until you say so.
+- [x] **Approve the six milestones** (`content/milestones.json`): names, distances, the moment's fact and sub-line, the fact pages' text, and the sources. Approved 19 Nov.
+- [x] **Approve the vote pool** (`content/vote-options.json`): wording, effects, and each detour's fact against its source link. Approved 19 Nov.
 
 ## At the end
 - [ ] **Privacy page (phase 9) must mention Cloudflare Turnstile**, which runs on Ping, and the device cookie (`osc_device`, HttpOnly, 400 days).

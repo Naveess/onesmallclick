@@ -1,5 +1,5 @@
 {
-  "_about": "DRAFT for Nav's approval (phase 7a). The daily crew vote's pool. Each day the server picks one 'faster', one 'steady' and one 'detour' option, avoiding the last 3 days' picks. hours: the effect on the arrival date (negative = sooner), applied to the route at coasting speed. Detours carry a true fact for the mission log; every fact must be checked against its source before launch (Product principle 5). A tie goes to the steady option.",
+  "_about": "Approved by Nav on 2026-11-19 (phase 7a). The daily crew vote's pool. Each day the server picks one 'faster', one 'steady' and one 'detour' option, avoiding the last 3 days' picks. hours: the effect on the arrival date (negative = sooner), applied to the route at coasting speed. Detours carry a true fact for the mission log; every fact must be checked against its source before launch (Product principle 5). A tie goes to the steady option.",
   "question": "Which way today?",
   "options": [
     { "id": "burn-hard", "kind": "faster", "hours": -24, "label": "Burn hard: arrive about a day sooner", "result": "Arrival pulled in by about a day." },

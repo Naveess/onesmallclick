@@ -1,5 +1,5 @@
 {
-  "_about": "DRAFT for Nav's approval (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances.",
+  "_about": "Approved by Nav on 2026-11-19 (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances.",
   "milestones": [
     {
       "n": 1,
