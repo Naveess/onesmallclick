@@ -218,7 +218,6 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Connections:** a tab hidden for 5 minutes closes its line, so it counts as away and the 8-hour cap applies. The browser sends a heartbeat every 30 s; Cloudflare answers it without waking the object. A socket silent for 90 s (a phone that lost signal) is treated as gone, and its device is paid only up to its last heartbeat. Leaving the page closes the line straight away.
 - "+N thrusters idling" is real: devices away within the last 8 hours with auto-thrust, shown when 20 or fewer are here.
 - `/admin` shows the crew push before the ceiling and how much of it counts, and can give this browser km (credits and prestige progress) for testing.
-- **Prestige rules** aren't decided yet (decision 10).
 
 ## Phase 7: Votes, mission log, milestones and fact pages
 

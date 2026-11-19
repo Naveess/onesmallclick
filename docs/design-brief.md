@@ -34,7 +34,7 @@ Read the design's files from that link. Match how it looks, using this codebase'
   - Each upgrade's cost goes up by ×1.55 per level. Tap km = (4 + 2×hands) × (1 + 0.25×chant).
   - **Prestige**: "Hand over the shift". This resets upgrades and credits in exchange for 3 Mission Patches, each worth +10% thrust forever.
 - **Offline thrust is capped at 8 hours** and checked by the server.
-- **The signal**: the probe needs a Ping at least every 24 hours or it goes into safe mode. Every quiet hour adds about 10 hours to the trip. Each player gets one Ping a day, tied to their device and, if they're signed in, their account. The last 60 seconds of the countdown pulse urgently (in the style of Reddit's "The Button").
+- **The signal**: the probe needs a Ping at least every 24 hours or it goes into safe mode. *(Changed 2026-11-18: the window at launch is 48 hours; docs/plan.md decision 7.)* Every quiet hour adds about 10 hours to the trip. Each player gets one Ping a day, tied to their device and, if they're signed in, their account. The last 60 seconds of the countdown pulse urgently (in the style of Reddit's "The Button").
 - **Daily route vote**: three options, closes at 00:00 UTC. The result is written to the mission log.
 - **Leaderboards**: individual players and countries.
 - **Accounts at launch**: sign-in by email magic link or Google. Playing without an account still works, tied to the device.

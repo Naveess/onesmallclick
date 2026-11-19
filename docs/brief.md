@@ -81,19 +81,20 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - Made with PixelLab, tidied in a pixel editor if needed
 - One locked palette used for every asset: the design's colours in docs/tokens.css (decided 2026-11-18)
 - Export at actual size; scale on the site only by whole numbers (2×, 3×, 4×) with crisp pixel rendering, never blurred
-- Ready: probe, thruster (5 frames), Earth, rotating Earth (9 frames), Mars, rotating Mars (5 frames), Moon, starfield, firework, firework burst (7 frames), milestone flag, signal badge (blue, orange and red tiers)
+- Ready: probe, thruster (5 frames), Earth, rotating Earth (9 frames), Mars, rotating Mars (5 frames), Moon, starfield, firework, firework burst (7 frames), milestone flag, signal badge (blue, orange and red tiers); plus smaller copies made from them for where the design shows art at a smaller size (Mars at 64px and 32px, the small Earth)
 - Animation sheets are one horizontal row of equal-sized frames
 - Master copies are backed up in Google Drive (OneSmallClick folder); back up any new sprite there too
 - Still to make: profile badge sprites (First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch, Signal Keeper I–IV); see docs/todo.md
 
 ## Open questions
-- Prestige: what resets, and when (e.g. at each mission arrival)?
-- Daily vote: what time does it close, and how many options?
-- Safe mode: how many days does the arrival date jump back?
-- Signal timer: how long is the window at launch?
-- Which email service sends the magic-link sign-in emails?
-- Country for leaderboards: detected automatically, or chosen by the player?
-- Display names: how are rude names filtered out?
-- How long should the first Mars mission take at launch traffic levels?
-- Postcards: keep real space photos as a contrast, or convert them to pixel art?
-- Confirm the .io domain is bought
+Answered ones point to the decision in docs/plan.md ("Decisions").
+- ~~Prestige: what resets, and when?~~ **Decided:** upgrades and credits reset when you hand over the shift, any time after pushing 2,000,000 km since your last handover, for 3 Mission Patches (decision 10).
+- ~~Daily vote: what time does it close, and how many options?~~ **Decided:** 3 options, closing at 00:00 UTC (decision 11). The pool of options is a draft waiting for approval (docs/todo.md).
+- ~~Safe mode: how many days does the arrival date jump back?~~ **Decided:** every quiet hour adds about 10 hours, capped at 7 days per outage (decision 8).
+- ~~Signal timer: how long is the window at launch?~~ **Decided:** 48 hours (decision 7).
+- ~~How long should the first Mars mission take at launch traffic levels?~~ **Decided:** the design's numbers, about 6 months with a busy crew and never faster than about 4½ months (decision 4 and the crew-speed ceiling).
+- Which email service sends the magic-link sign-in emails? (Recommended: Cloudflare Email Service; decision 14.)
+- Country for leaderboards: detected automatically, or chosen by the player? (Recommended: detected, changeable once; decision 16.)
+- Display names: how are rude names filtered out? (Recommended: generated names only at launch; decision 17.)
+- Postcards: keep real space photos as a contrast, or convert them to pixel art? (Decision 13; can wait.)
+- Confirm the .io domain is bought (needed before phase 8).

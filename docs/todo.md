@@ -10,7 +10,15 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Deployed `bf10eaf` (Nav ran it) and checked: every file in public/ matches the commit.
 - [x] The design's two star layers and its small Earth exported as PNGs (`stars-far.png`, `stars-near.png`, `earth-small.png`).
 
-## Tomorrow (19 Nov 2026)
+## Done 19 Nov 2026
+- [x] Phases 5 (signal, Ping, safe mode), 6 (idle upgrades) and 7a (daily vote, mission log) deployed and approved.
+- [x] Phase 7b (milestones, fact pages, How to play) built and pushed (`31172c3`).
+- [x] Backup: everything on GitHub; the five sprites made since 18 Nov (`mars-32`, `mars-rotating-64-sheet`, `earth-small`, `stars-far`, `stars-near`) added to Drive (OneSmallClick › Sprites).
+
+## Next
+- [ ] **Deploy 7b** (Nav): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
+
+## Before phase 8 (badges)
 
 ### Make with PixelLab (once the generations refresh)
 - [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:
@@ -21,9 +29,6 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Mission Patch
   - Signal Keeper I, II, III, IV (ping streaks; one design that gets grander at each level)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
-
-### Then
-- [x] Phase plan proposed in docs/plan.md (18 Nov). Next: answer the "Before phase 2" decisions there.
 
 ## Before launch
 - [ ] **Approve the six milestones** (`content/milestones.json`): names, distances, the moment's fact and sub-line, the fact pages' text, and the sources. Drafted and checked on 19 Nov; still a draft until you say so.
