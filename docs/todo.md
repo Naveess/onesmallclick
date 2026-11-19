@@ -19,7 +19,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] **Deploy 7b** (Nav, 19 Nov; the live bundle matches 31172c3 and migration 0005 is applied): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
 
 ## Before phase 8
-- [ ] **The retune** (prompts 27-28): built and pushed 19 Nov. Nav: apply migration 0006, deploy, run the checks, then approve. 8a starts once it's approved.
+- [ ] **The retune** (prompts 27-28): built and pushed 19 Nov; migration 0006 applied and deployed from c132a88 (Claude ran both at Nav's request; the live bundle matches the build). Nav: run the checks, then approve. 8a starts once it's approved.
 - [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, next payday Friday). Then switch on Workers Paid for Email Service.
 - [ ] **A Google OAuth client** (Nav, before 8a is tested): I'll list the steps when 8a starts.
 
