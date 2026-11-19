@@ -13,7 +13,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
   - [x] **7a: The daily vote and the mission log** (deployed from d80f813 and approved 2026-11-19)
   - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
-- [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
+- [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
+  - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
+  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Target: built and deployed tonight.
+  - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges)
+  - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
+  - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 
 ## What changed from the order in prompt 06
@@ -297,14 +302,48 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **`/admin`:** shows today's pace, the crew push and what it moves the probe, when the probe will pause (or that it's paused), and "Reset mission (keep players)" (decision 6): a new mission now on real time, 0 km, a full signal, no milestones, a fresh vote round (the open one ends with no effect) and an empty log; devices, pings, streaks, progress, credits, upgrades and patches are kept. Not to be run on live data without Nav's say-so.
 - **Checked locally** with two scripted runs (taps, ping, reset, a 9-hour and a 50-hour clock jump, wake, vote, safe mode during a pause): all checks passed.
 
+## Flight view (before 8b; added 2026-11-19)
+
+**Goal:** the game home (1a phone, 1b desktop) uses the design's flight view instead of the straight Earth→Mars track (`JourneyTrack`), and THRUST gets "You've clicked" with real per-player click counts from the server.
+
+**Decided 2026-11-19 (evening):** the flight view is chosen for the game home. The curved transfer-orbit view (design 2a/2b) was rejected and stays in the design unused. Click badges: Steady Finger (1,500 clicks), Iron Thumb (5,000) and Ten Thousand Club (10,000), awarded once 8b's badge system exists.
+
+**What gets built**
+- **The flight view** (design file, game home, commits abc10c7, 1357c54 and fcb448c):
+  - a side-on 16-bit window where the probe flies right, Mars grows as the crew closes in and Earth shrinks behind;
+  - stars and speed lines stream past;
+  - THRUST makes the probe boost, with the "+km" pop;
+  - crew sparks show other players' taps (driven by the live crew pace; no per-tap broadcast);
+  - a beacon marks the next milestone;
+  - a route strip shows the Ceres/Vesta split after Mars, with a tiny pixel probe;
+  - the probe travels across the window as progress grows, with a glowing trail behind and a dashed path ahead to Mars;
+  - it reacts to the final seconds, safe mode, a small crew, the idle pause and reduced motion;
+  - the window stays deep space in light mode.
+  - **Phone fix from the design (fcb448c):** the flight window needs `flex: none`, or it squashes to a line.
+- **"You've clicked"** under THRUST: today's clicks as an odometer, the all-time total, and a bar to the next click badge.
+- **Art drawn in code for now** (PixelLab later, see docs/todo.md): the horizontal exhaust flame, the comet, speed lines, Mars and Earth at growing sizes (whole-number sizes only), the Sun and a small Vesta.
+
+**Data changes**
+- **Per-player click counts** (the player key: the account when signed in, else the device): credited taps only, so capped taps don't count. Today's count and the all-time total, kept by the `Probe` object and copied to D1 with the other numbers (e.g. a `taps` column on `daily_km` in migration 0008; all-time is the sum).
+
+**How you test it**
+- Open `/` at 375px, 390px and 1440px next to the design file, in both themes. The flight window keeps its height on phones and stays deep space in light mode.
+- Tap THRUST: the probe boosts, "+km" pops, and today's count goes up. Reload: the counts are kept. Signed in on two devices, the counts are shared.
+- In `/admin`, set the distance near a milestone and near Mars: the beacon, Mars's size and the probe's position follow.
+- Safe mode, the final 60 seconds, the idle pause and `?crew=handful` all show their states. Reduced motion stops the streaming.
+
+**Main risks**
+- **Performance on phones.** Many moving layers; keep them to CSS transforms and `steps()`, and cap the sparks and particles.
+- **Whole-number scaling** of Mars and Earth as they grow: use a few fixed sizes rather than smooth scaling.
+
 ## Phase 8: Accounts, leaderboards, profile and arrival
 
 **Goal:** optional sign-in so progress follows you across devices, plus the leaderboards and the end of the mission.
 
 **Split in three (agreed 2026-11-19).** The retune came first and was approved; 8a was built on 2026-11-19.
 - **8a: Accounts and sign-in (1i).** Email link and Google sign-in, linking the device and merging its progress, sign-out, generated names, country, delete account and the privacy page. Migration 0007 (0006 went to the retune). Email sign-in goes live once onesmallclick.io is set up in Email Service; Google works as soon as its redirect address is accepted.
-- **8b: Leaderboards (1g), profile (1j) and badges.** Needs the profile badge sprites (todo).
-- **8c: Arrival and credits (1k).** The credits, the next-destination vote (Europa, Psyche or a Venus flyby) and the new mission. The next routes and their distances are drafted with checked facts for Nav's approval.
+- **8b: Leaderboards (1g), profile (1j) and badges.** Needs the profile badge sprites (todo); placeholders until they're made. Also awards the click badges (Steady Finger 1,500, Iron Thumb 5,000, Ten Thousand Club 10,000) from the flight view phase's click counts.
+- **8c: Arrival and credits (1k).** The credits, the next-destination vote and the new mission. **Changed 2026-11-19:** the vote becomes the Grand Tour's two-way branch (Ceres or Vesta), read from content/campaign.json once E0 is approved; the Venus flyby moves into the daily vote pool as a detour. The arrival rewards (medal, planet tech, passport stamp, cosmetic) and the landing burn are planned in E0.
 
 **8a as built (2026-11-19, prompt 30; deployed from 02849c8 with migration 0007, waiting for Nav's checks)**
 - **Answers (prompt 30):** signed in, pings and votes are once per account per day; signing out leaves the browser as a brand-new guest device (progress stays with the account); one of the three name offers is the device's own name; delete account is included; the privacy page lists privacy@onesmallclick.io; the screens the design lacks are built from the kit in 1i's style.
@@ -429,6 +468,8 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 16. ~~**Country for leaderboards**~~ **Decided: detected** from Cloudflare's location header when the account is made, **and changeable once.** Free changes would make country boards easy to game.
 17. ~~**Rude names**~~ **Decided: generated names only at launch**, like `orbit_otter`, **picked from three offers.** Custom names with a blocklist and a report button can come later.
 18. ~~**Two devices, one account**~~ **Decided:** when progress merges, **keep the higher level of each upgrade and the higher patch count, and add credits and km together.**
+
+Also decided 2026-11-19 (evening): **the flight view** replaces the straight track on the game home (the transfer-orbit view, design 2a/2b, was rejected); **click badges** Steady Finger 1,500, Iron Thumb 5,000 and Ten Thousand Club 10,000; **the medal colours** are approved; **the Grand Tour rules** are agreed (docs/todo.md). **The domain:** onesmallclick.io, bought on payday Friday (.com is taken and .co.uk reads as UK-only).
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*

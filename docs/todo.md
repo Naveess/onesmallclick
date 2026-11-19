@@ -20,17 +20,22 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 
 ## Before phase 8
 - [x] **The retune** (prompts 27-28): deployed from c132a88 with migration 0006, approved by Nav 19 Nov.
-- [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, next payday Friday). Then switch on Workers Paid for Email Service.
+- [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, payday Friday; .com is taken and .co.uk reads as UK-only, so .io it is). Then switch on Workers Paid for Email Service.
 - [x] **A Google OAuth client** (Nav, 19 Nov): made, with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the Cloudflare dashboard.
 - [x] **Deploy 8a**: migration 0007 applied and 02849c8 deployed 19 Nov (Claude ran both at Nav's request).
 - [ ] **The 8a checks** (Nav): Google on phone and laptop (one account, merged), once-per-account ping, sign out, email says "opens soon", read /privacy.
 - [ ] **Email sign-in on the live site** (after the domain): onboard onesmallclick.io in Email Service, switch on Workers Paid, then add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc).
 - [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing, once the domain is on Cloudflare).
 
+### Tonight (19 Nov)
+- [ ] **The 8a checks** (above).
+- [ ] **Flight view phase** (docs/plan.md): plan, build, deploy and check. The game home's flight view replaces `JourneyTrack`, plus "You've clicked" with per-player click counts on the server.
+- [ ] **8b planning**, if there's time.
+
 ### Before 8b (badges)
 - [ ] **Signal Keeper I–IV thresholds and what "Night Shift" means**: Claude proposes them at the start of 8b, Nav approves.
 
-### Make with PixelLab (once the generations refresh)
+### Make with PixelLab (once 10 generations are banked, or after the PixelLab upgrade)
 - [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:
   - First Ping
   - Night Shift
@@ -38,6 +43,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Halfway Crew
   - Mission Patch
   - Signal Keeper I, II, III, IV (ping streaks; one design that gets grander at each level)
+  - Steady Finger, Iron Thumb, Ten Thousand Club (click badges: 1,500 / 5,000 / 10,000 clicks; added 19 Nov)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
 ## Expansion: the Grand Tour (planned 19 Nov 2026)
@@ -63,7 +69,7 @@ Agreed rules (19 Nov):
 - Cosmetic unlocks: skies, THRUST trails and probe paint.
 - Landing burn: 2,000,000 km in one hour, never a punishment.
 
-### Design handoff (next, at home)
+### Design handoff (done 19 Nov)
 - [x] **Copy the updated design file into design/** (4569032, 19 Nov). It adds 1m Campaign map, 1n New probe reveal and 1o Landing burn, and updates 1a/1b, 1j, 1k and the Art kit. Light and dark are done across every screen.
 - [x] **Add the five new PixelLab sprites to design/sprites/stills/** (Europa Lander, Ganymede Orbiter, Jupiter, Saturn, Europa), with rows in design/sprites/README.md (19 Nov).
 - [ ] **Back up the five new sprites to Drive** (Nav; OneSmallClick › Sprites).
@@ -85,7 +91,7 @@ Agreed rules (19 Nov):
 
 ### E2: PixelLab art for the expansion
 The design (E1) has settled the probes and map art, so the list below replaces the earlier draft. The current probe is the style reference. Made 19 Nov: Europa Lander, Ganymede Orbiter, Jupiter, Saturn and Europa.
-- [ ] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor), for the first branch vote about 30 days after launch.
+- [ ] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor), for the first branch vote about 30 days after launch. Make them, and the profile badges, once 10 generations are banked.
 
 ### Art the design draws in code or leaves as placeholders (added 19 Nov)
 Cheapest route: `create_1_direction_object` with `item_descriptions` makes a whole set in one call for 10 generations (64 items at 42px or smaller, 16 items at 43–64px). Back up the masters to Drive (OneSmallClick › Sprites).
@@ -131,6 +137,13 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
 - [ ] **Europa Lander thruster flame**, 3 frames of 10×12 (drawn in code), for the New probe reveal (1n).
 - [ ] **THRUST trail particles**, 32×8: blue sparks (default) and red dust (drawn in code).
 - [ ] **Cosmetic skies:** Mars-dust and Salt-glow versions of `nebula-tile.png` (512×512). The design only shows them as colour gradients.
+- [ ] **Flight view art (drawn in code for now, added 19 Nov evening):**
+  - horizontal exhaust flame, 3 frames of 12×6
+  - comet, 18×5
+  - speed lines
+  - Mars and Earth at growing sizes (a few fixed whole-number sizes)
+  - the Sun, 20×20
+  - small Vesta, 16×14
 - [ ] **UI icons, 9×9: map, flag, share, close** (drawn in code). Export to SVG like the other ten in `design/icons/`; not PixelLab.
 - [ ] **Whole-number scaling:** the campaign map and the desktop arrival (1k) show `mars.png` at half size. Use the 64px Mars instead.
 
