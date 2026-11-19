@@ -23,7 +23,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, payday Friday; .com is taken and .co.uk reads as UK-only, so .io it is). Then switch on Workers Paid for Email Service.
 - [x] **A Google OAuth client** (Nav, 19 Nov): made, with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the Cloudflare dashboard.
 - [x] **Deploy 8a**: migration 0007 applied and 02849c8 deployed 19 Nov (Claude ran both at Nav's request).
-- [ ] **The 8a checks** (Nav): Google on phone and laptop (one account, merged), once-per-account ping, sign out, email says "opens soon", read /privacy.
+- [x] **The 8a checks** (Nav, 19 Nov: all fine, approved): Google on phone and laptop (one account, merged), once-per-account ping, sign out, email says "opens soon", read /privacy.
 - [ ] **Email sign-in on the live site** (after the domain): onboard onesmallclick.io in Email Service, switch on Workers Paid, then add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc).
 - [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing, once the domain is on Cloudflare).
 
