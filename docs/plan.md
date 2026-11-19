@@ -9,7 +9,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 3: Game home with fake data** (deployed 52b688b, THRUST lag fix d9cda91 deployed, approved 2026-11-18)
 - [x] **Phase 4: The shared probe** (deployed c189904 and approved, 2026-11-18)
 - [x] **Phase 5: Signal, Ping and safe mode** (deployed from 7261f30 and approved 2026-11-19)
-- [x] **Phase 6: Idle upgrades and offline thrust** (built 2026-11-19; Nav applies migration 0003 and deploys)
+- [x] **Phase 6: Idle upgrades and offline thrust** (deployed from 3faffe7 and approved 2026-11-19)
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages**
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
