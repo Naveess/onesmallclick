@@ -28,6 +28,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing, once the domain is on Cloudflare).
 
 ### Before 8b (badges)
+- [ ] **Signal Keeper I–IV thresholds and what "Night Shift" means**: Claude proposes them at the start of 8b, Nav approves.
 
 ### Make with PixelLab (once the generations refresh)
 - [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:
@@ -38,6 +39,115 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Mission Patch
   - Signal Keeper I, II, III, IV (ping streaks; one design that gets grander at each level)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
+
+## Expansion: the Grand Tour (planned 19 Nov 2026)
+
+The idea: a visible campaign beyond Mars, so players always have a "what's next".
+- **A star-chart map** of the whole route: Mars, the asteroid belt, Jupiter's moons, Saturn, the ice giants, the Kuiper belt, the heliopause, then an endless interstellar leg.
+- **A two-way crew vote** at each stop.
+- **A new probe per mission**: a new PixelLab sprite and new upgrade names, with the same systems and numbers.
+- **About 30 days per leg**, using the self-balancing thrust.
+- **Collective rewards for reaching each planet:**
+  - arrival medals (Gold / Silver / Bronze by arrival day);
+  - planet tech, a small permanent crew-wide perk that never touches trip speed;
+  - a passport stamp and a cosmetic for everyone who helped that leg;
+  - a one-hour "landing burn" finale.
+- **Fun facts:** a daily "Destination file" fact about where we're heading, which is shareable, shown on the map, and collected on a page per destination.
+
+Draft route (to be checked in E0; the E1 design has since moved to Ceres or Vesta for the asteroid belt, with its own probe names. See the art list below):
+- Mars
+- Psyche or Ceres
+- Europa or Ganymede
+- Titan or Enceladus
+- Uranus or Neptune
+- Pluto or Arrokoth
+- the heliopause
+- interstellar
+
+### E0: plan the campaign (after 8b, before 8c)
+- [ ] **Run the expansion planning prompt** (plan only, from Nav's build hub). It writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds phases E1–E5 to docs/plan.md.
+- [ ] **Nav approves**:
+  - the route and branch pairs;
+  - what carries between missions (suggested: everything, with upgrades renamed rather than reset);
+  - what the map shows (suggested: the whole chart, future stops dimmed, untaken branches greyed);
+  - signature perks per probe, or none;
+  - the medal days, each stop's planet tech (with a sim of the stacked totals), and who counts as "helped";
+  - the 30 Mars facts;
+  - whether medals and the facts card come before launch.
+
+### E1: design (Claude Design, in progress 19 Nov)
+- [ ] **First pass:** the campaign map (1m), the two-way branch vote on arrival (1k) and the new probe reveal (1n).
+- [ ] **Follow-up:**
+  - medals on the game home;
+  - the Destination file card;
+  - the landing burn (1o);
+  - the arrival rewards screen;
+  - planet tech on the branch vote and the map;
+  - the passport and cosmetics on the profile (1j).
+- [ ] **Approve the gold, silver and bronze colours** (new, outside the locked palette).
+- [ ] **Export the updated design** into design/ and hand it over, as before.
+
+### E2: PixelLab art for the expansion
+The design (E1) has settled the probes and map art, so the list below replaces the earlier draft (Psyche, Europa and Ganymede probes). The current probe is the style reference.
+- [ ] **First needed:** the OSC-2 pair, for the first branch vote about 30 days after launch.
+
+### Art the design draws in code or leaves as placeholders (added 19 Nov)
+Cheapest route: `create_1_direction_object` with `item_descriptions` makes a whole set in one call for 10 generations (64 items at 42px or smaller, 16 items at 43–64px). Back up the masters to Drive (OneSmallClick › Sprites).
+
+- [ ] **Probes, 64×64 (placeholder boxes in the design), one 16-item call:**
+  - OSC-2 Ceres Hopper (also replaces the OSC-1 stand-in on the map's probe line)
+  - OSC-2 Vesta Surveyor
+  - OSC-4 Titan Glider
+  - OSC-4 Plume Diver
+  - OSC-5 Cliff Climber
+  - OSC-5 Titania Lander
+  - OSC-6 Heart Lander
+  - OSC-6 Snowman Flyby
+  - OSC-7 Long Voyager
+- [ ] **Gold foil probe paint**, 64×40, OSC-1 repainted (placeholder box; cosmetic unlocked by Gold at Mars).
+- [ ] **Campaign-map moons and planets (drawn in code), one 64-item call at 42px, scale up the bigger ones:**
+  - Ceres 38×38
+  - Vesta 34×29
+  - Ganymede 54×54
+  - Titan 50×50
+  - Enceladus 34×34
+  - Uranus 54×54
+  - Miranda 30×30
+  - Titania 36×36
+  - Neptune 54×54
+  - Pluto 38×38
+  - Arrokoth 46×28
+- [ ] **Small planet icons, 16×16 (drawn in code), for passport stamps and the Destination file card:**
+  - Mars (or reuse `mars-32.png`, which is the design's 2× size)
+  - Ceres
+  - Jupiter
+  - Saturn
+  - Uranus
+  - Neptune
+  - heliopause
+  - a "branch not chosen yet" icon
+- [ ] **Medals, 10×15: Gold, Silver, Bronze** (drawn in code). Approve the colours first (Art kit), then tidy by hand in the free workbench.
+- [ ] **Map extras (drawn in code):**
+  - heliopause ring 58×58
+  - probe-position ring 36×36 (shown at 2×)
+  - asteroid-belt strip 256×26
+  - Kuiper-belt strip 256×26
+- [ ] **Europa Lander thruster flame**, 3 frames of 10×12 (drawn in code), for the New probe reveal (1n).
+- [ ] **THRUST trail particles**, 32×8: blue sparks (default) and red dust (drawn in code).
+- [ ] **Cosmetic skies:** Mars-dust and Salt-glow versions of `nebula-tile.png` (512×512). The design only shows them as colour gradients.
+- [ ] **UI icons, 9×9: map, flag, share, close** (drawn in code). Export to SVG like the other ten in `design/icons/`; not PixelLab.
+- [ ] **Whole-number scaling:** the campaign map and the desktop arrival (1k) show `mars.png` at half size. Use the 64px Mars instead.
+
+### Before each new leg (monthly, about a week before arrival)
+- [ ] Both branches' probes, thruster sheets and map icons.
+- [ ] Upgrade names and descriptions for both probes.
+- [ ] Planet tech, medal days and cosmetics for both branches.
+- [ ] 4–6 milestones per branch, with checked facts.
+- [ ] 30 checked fun facts per branch.
+- [ ] A daily vote pool per branch.
+- [ ] Passport stamps and cosmetic sprites.
+- [ ] Postcard photos with licences and credits.
+- [ ] A social post: "Next stop: the crew decides".
 
 ## Before launch
 - [x] **Approve the six milestones** (`content/milestones.json`): names, distances, the moment's fact and sub-line, the fact pages' text, and the sources. Approved 19 Nov.
