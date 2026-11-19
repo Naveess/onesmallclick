@@ -65,7 +65,7 @@ A shared global clicker. Everyone taps THRUST to push one probe, OSC-1, from Ear
 | Path | What it is |
 |---|---|
 | `docs/brief.md` | What we're building: features, pages, data, monetisation, open questions. |
-| `design/OneSmallClick.dc.html` | **The source of truth for the look.** All 12 screens from Claude Design, plus working interactions and the light/dark theme. Open it through a local server (see below). |
+| `design/OneSmallClick.dc.html` | **The source of truth for the look.** Screens 1a–1o from Claude Design (updated 2026-11-19 with 1m Campaign map, 1n New probe reveal, 1o Landing burn, the arrival rewards and medals, plus desktop versions), with working interactions and the light/dark theme. Open it through a local server (see below). |
 | `design/assets/` | The sprites the design file uses (Earth 8 frames, Mars 4, probe 4, burst 6). Kept only so the design file opens. Not shipped. |
 | `design/sprites/` | The full PixelLab export (`frames/`, `sheets/`, `stills/`): rotating Earth 9 frames, rotating Mars 5, thruster 5, firework burst 7, plus stills. These frame counts match docs/brief.md. **This is the set that ships** (decided 2026-11-18). See design/sprites/README.md. |
 | `design/icons/` | The design's ten 9×9 UI icons as `currentColor` SVGs, with their theme colours in its README. |
