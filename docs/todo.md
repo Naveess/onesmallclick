@@ -64,9 +64,10 @@ Agreed rules (19 Nov):
 - Landing burn: 2,000,000 km in one hour, never a punishment.
 
 ### Design handoff (next, at home)
-- [ ] **Copy the updated design file into design/**. It adds 1m Campaign map, 1n New probe reveal and 1o Landing burn, and updates 1a/1b, 1j, 1k and the Art kit. Light and dark are done across every screen.
-- [ ] **Add the five new PixelLab sprites to design/sprites/** (Europa Lander, Ganymede Orbiter, Jupiter, Saturn, Europa) and back them up to Drive.
-- [ ] **Add the medal colours to docs/tokens.css** as an agreed exception.
+- [x] **Copy the updated design file into design/** (4569032, 19 Nov). It adds 1m Campaign map, 1n New probe reveal and 1o Landing burn, and updates 1a/1b, 1j, 1k and the Art kit. Light and dark are done across every screen.
+- [x] **Add the five new PixelLab sprites to design/sprites/stills/** (Europa Lander, Ganymede Orbiter, Jupiter, Saturn, Europa), with rows in design/sprites/README.md (19 Nov).
+- [ ] **Back up the five new sprites to Drive** (Nav; OneSmallClick › Sprites).
+- [x] **Add the medal colours to docs/tokens.css** as an agreed exception (`--medal-*`, 19 Nov; CLAUDE.md updated). They go into src/styles/theme.css with the first phase that uses them.
 - [ ] **Check the design's fun facts against sources** (in E0).
 
 ### E0: plan the campaign (after 8b, before 8c)

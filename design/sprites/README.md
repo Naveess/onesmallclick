@@ -27,6 +27,11 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/signal-badge-blue.png` | 32×32 | Added 2026-11-18. Ping badge, calm tier: pinged with more than 6 hours left on the signal timer. |
 | `stills/signal-badge-orange.png` | 32×32 | Added 2026-11-18. Ping badge, low tier: pinged with under 6 hours left. |
 | `stills/signal-badge-red.png` | 32×32 | Added 2026-11-18. Ping badge, critical tier: pinged in the final 60 seconds, while the countdown pulses. |
+| `stills/probe-europa-lander.png` | 64×64 | Added 2026-11-19 (PixelLab). OSC-3 Europa Lander, legs down. The New probe reveal (1n), the map's Europa stop and its vote. |
+| `stills/probe-ganymede-orbiter.png` | 64×64 | Added 2026-11-19 (PixelLab). OSC-3 Ganymede Orbiter, the other branch at Jupiter. The map's Ganymede stop and its vote. |
+| `stills/jupiter.png` | 96×96 | Added 2026-11-19 (PixelLab). Jupiter with the Great Red Spot. The campaign map (1m) and the reveal's backdrop (shown at 2× and 4×). |
+| `stills/saturn.png` | 128×80 | Added 2026-11-19 (PixelLab). Saturn with its rings. The campaign map (1m). |
+| `stills/europa.png` | 64×64 | Added 2026-11-19 (PixelLab). Jupiter's moon Europa. The campaign map (1m) and the reveal (1n, at 2×). |
 
 The four sprites added on 2026-11-18 use only colours from the design and the existing sprites:
 - The flag's cloth is the design's orange ramp (`#ffd27a`, `#ffb37a`, `#e8894a`), its star is `#eef3ff`, and its pole and rock use the Moon sprite's greys. The pole and rock started as a PixelLab Pixen generation. The cloth was redrawn by hand in the PixelLab workbench.

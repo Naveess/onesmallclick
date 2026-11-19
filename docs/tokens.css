@@ -172,3 +172,20 @@
 /* Light mode extras */
 [data-theme="light"] .osc-neb   { filter: invert(1) hue-rotate(180deg) saturate(.6); opacity: .35 !important; }
 [data-theme="light"] .osc-stars { opacity: 0; }
+
+/* Medal colours (approved by Nav 2026-11-19, agreed exception to the locked palette).
+   Arrival medals, the passport stamps, the gold postcard frame and the landing-burn bar.
+   Fills look the same in both themes, like THRUST and PING; only medal-coloured text changes in light mode. */
+:root {
+  /* gold: highlight, base, mid, shadow, outline */
+  --medal-gold-1: #fff1b0; --medal-gold-2: #ffd27a; --medal-gold-3: #e0a83a; --medal-gold-4: #9a6418; --medal-gold-5: #4a2c0a;
+  /* silver: all existing palette greys */
+  --medal-silver-1: #eef3ff; --medal-silver-2: #c9d4ee; --medal-silver-3: #8b98ba; --medal-silver-4: #4a5170; --medal-silver-5: #1a1f30;
+  /* bronze */
+  --medal-bronze-1: #f0b98a; --medal-bronze-2: #c8743e; --medal-bronze-3: #8a4620; --medal-bronze-4: #4a2410; --medal-bronze-5: #1f0f08;
+  /* medal-coloured text (dark mode) */
+  --medal-gold-text: #ffd27a; --medal-silver-text: #c9d4ee; --medal-bronze-text: #f0b98a;
+}
+[data-theme="light"] {
+  --medal-gold-text: #7a5000; --medal-silver-text: #2b3b62; --medal-bronze-text: #8a4620;
+}
