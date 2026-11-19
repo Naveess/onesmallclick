@@ -26,6 +26,7 @@ export function GamePage() {
               arrivalAt={view.arrivalAt}
               arrivalBeforeAt={view.arrivalBeforeAt}
               setbackMs={view.setbackMs}
+              paused={view.paused}
               progress={view.progress}
               pinged={player.pingedToday}
               pinging={player.pinging}

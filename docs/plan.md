@@ -168,7 +168,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 **As built (2026-11-18)**
 - The deadline lives in the `Probe` object with an alarm (alarms run on real time, so the /admin clock offset is taken off). If the alarm is late, any message checks the deadline too.
 - `POST /api/ping` checks the Turnstile token, then the object records the ping in D1 `pings` (one row per device per UTC day). Any ping resets the timer to the full 48 hours. A ping within 5 s of another is told "just saved" and keeps its daily ping.
-- Waking the probe earns the red badge. The setback (quiet time × 10, capped at 7 days) is added to the route as km at coasting speed.
+- Waking the probe earns the red badge. The setback (quiet time × 10, capped at 7 days) is added to the route as km at coasting speed. *(Retuned: × 2, capped at 1 day, at today's pace; see "Retune".)*
 - Log entries go to D1 `log_entries` only for notable moments: signal lost, signal restored, and saves in the final 60 seconds. Shown in phase 7.
 - The badge shows as a toast for now (an orange window with the badge sprite); the design has no toast, so it's built from the kit.
 - `/admin` can set the signal timer (0 = safe mode now) and let the admin's own browser ping again today.
@@ -206,7 +206,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - The rules live in `shared/upgrades.ts`, so the app and the server use one copy. Buy and handover requests go over the WebSocket. The server checks the credits (or the 2,000,000 km), then replies; a refused request just gets the real balance back. Faked messages (30 solar sails at once, an unknown upgrade, extra fields) were refused in testing.
 - Taps credit at the device's own tap power: (4 + 2×hands) × (1 + 0.25×chant) × (1 + 0.1×patches), rounded. Auto-thrust is the design's per-level km/s × the same patch boost.
 - **Auto-thrust while connected** moves the shared probe continuously (each device once, whatever its tabs) and pays the device in full. **Offline**: when a device comes back, up to 8 hours of its auto-thrust is paid and added to the probe in one go. Time in safe mode doesn't pay.
-- **The crew-speed ceiling** (decided 2026-11-19): what the crew adds to the shared probe counts in full up to 10 km/s, then flattens towards 21 km/s (`crewEffective` in `shared/mission.ts`). A busy crew still reaches Mars in about 179 days; no crew can make it faster than about 132 days. The ceiling looks at the last hour of taps and catch-ups plus connected auto-thrust. Your own km and credits always count in full; "+N km/s from crew" and "your taps got us there X sooner" show what actually moved the probe.
+- **The crew-speed ceiling** (decided 2026-11-19): what the crew adds to the shared probe counts in full up to 10 km/s, then flattens towards 21 km/s (`crewEffective` in `shared/mission.ts`). A busy crew still reaches Mars in about 179 days; no crew can make it faster than about 132 days. The ceiling looks at the last hour of taps and catch-ups plus connected auto-thrust. Your own km and credits always count in full; "+N km/s from crew" and "your taps got us there X sooner" show what actually moved the probe. *(Replaced by self-balancing thrust in the retune.)*
 - **Welcome back (1d)** shows after 30 minutes or more away with some auto-thrust. It shows:
   - how long you were away, the km and credits earned, and counted / not counted;
   - the crew's km while you were away;
@@ -276,6 +276,24 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - their stylesheet `/content.css`, made from the game's own styles plus `src/content/pages.css`.
 
   The text is in the HTML source. They have ad-slot placeholders only. The theme follows the saved choice, else the system setting, live. In dev, a small Vite middleware serves them at the same clean addresses as production.
+
+## Retune: a 30-day mission, the idle pause, a launch that keeps players (before phase 8)
+
+**Goal:** Nav's decisions of 18–19 Nov (prompts 27 and 28): about 30 days to Mars with self-balancing thrust, an 8-hour idle pause, and a launch reset that keeps everyone's progress. Decisions 4, 5 and 6 below were changed; 8 (the setback) and the vote effects were retuned to fit a 30-day trip.
+
+**As built (2026-11-19)**
+- **Every balance number is in `shared/balance.ts`** (re-exported by `shared/mission.ts`). `npm run sim` (`scripts/sim.mjs`) runs missions minute by minute with the real upgrade rules and prints the days for 1 to 10,000 players.
+- **Self-balancing thrust** replaces the phase 6 ceiling. The crew's raw push R (last hour's taps and catch-ups plus connected auto-thrust, km/s) moves the probe `crewSpeed(R) = 337 × R / (R + 90)` km/s on top of 21 km/s coasting. A tiny crew's km each move the probe about 3.7 km; a crowd's far less. It never reaches 337, so no crowd beats 15.5 days with no votes, or about 14 if "faster" wins every vote. Your own km, credits and prestige progress always count in full.
+- **The sim** (no votes, no safe mode): 35 typical players (about 5 minutes a day) take about 30 days; 20 take 38; 50 take 26; 200 take 19; 10,000 take 15.5. One player alone takes 120 to 260 days. The same crew gets faster mission by mission as upgrades grow (35 typical players: 30, 25, 24, 23, 23 days), because progress is kept.
+- **Today's pace:** the probe's average speed over its last 24 hours of moving (paused time left out), from track samples every 10 minutes of moving in the object's SQLite. The arrival date uses it, so a burst of taps no longer swings the date. Vote effects and setbacks are hours at this pace. For the first 10 minutes of a mission it's coasting plus the crew's live push.
+- **"Your taps today got us there X sooner"** is what your taps actually moved the probe today (D1 `daily_km.tap_moved_km`, migration 0006) at today's pace. "+N km/s from crew" and the wide view's probe speed are the live push.
+- **The idle pause (decision 5):** with no tap batch and no connected auto-thrust for 8 hours, an alarm pauses the probe where it is. The signal timer and any safe-mode setback wait with it, and no milestone can fire. A tap batch wakes it; so does connecting or buying with auto-thrust (connected auto-thrust is activity) or a ping (safe mode shows no THRUST button). The log gets "Probe idle" and "Probe woken by <name>". The home screen's arrival card says "Probe idle: tap to wake it" with the date "On hold"; safe mode and the milestone share text show "on hold" too. A clock jump in `/admin` pauses it part-way (8 hours after the last activity).
+- **Safe-mode setback:** 2 hours per quiet hour, capped at 1 day per outage, added as hours at today's pace when someone pings. The safe-mode screen's line says "about 2 hours".
+- **Vote effects:** the old 6–24 hours divided by 6 (1–4 hours), labels and results reworded to match (approved by Nav, prompt 28), applied as hours at today's pace.
+- **"Past the Moon":** the fact page now says OSC-1 "coasts at 21 km a second even before anyone taps" instead of "never stops coasting" (approved, prompt 28).
+- **Welcome back's "arrival moved"** compares the arrival date (today's pace) when you left with now.
+- **`/admin`:** shows today's pace, the crew push and what it moves the probe, when the probe will pause (or that it's paused), and "Reset mission (keep players)" (decision 6): a new mission now on real time, 0 km, a full signal, no milestones, a fresh vote round (the open one ends with no effect) and an empty log; devices, pings, streaks, progress, credits, upgrades and patches are kept. Not to be run on live data without Nav's say-so.
+- **Checked locally** with two scripted runs (taps, ping, reset, a 9-hour and a 50-hour clock jump, wake, vote, safe mode during a pause): all checks passed.
 
 ## Phase 8: Accounts, leaderboards, profile and arrival
 
@@ -366,7 +384,7 @@ My recommendation is in brackets. Items marked *(brief)* come from the open ques
 3. ~~**Content pages**~~ **Decided: plain HTML pages** for How to play, the fact pages and the legal pages. The game is the React app.
 
 ### Before phase 4 (all decided 2026-11-18)
-4. ~~**First mission length**~~ **Decided (changed by Nav, 18–19 Nov; replaces "about 6 months, never under 4½ months"): about 30 days to Mars at launch traffic, with self-balancing thrust.** A small crew's push is boosted and a big crowd's is squeezed: more players always means sooner, but each extra player helps a bit less, and no crowd gets there in under about 14 days. Your own km, credits and prestige progress always count in full. The formula and its numbers are in `shared/balance.ts`; `npm run sim` prints the days for different crowds. *(Formula and numbers waiting for Nav's OK, prompt 27.)*
+4. ~~**First mission length**~~ **Decided (changed by Nav, 18–19 Nov; replaces "about 6 months, never under 4½ months"): about 30 days to Mars at launch traffic, with self-balancing thrust.** A small crew's push is boosted and a big crowd's is squeezed: more players always means sooner, but each extra player helps a bit less, and no crowd gets there in under about 14 days. Your own km, credits and prestige progress always count in full. The formula and its numbers are in `shared/balance.ts` (approved by Nav, prompt 28: fastest trip 15.5 days with no votes, so about 14 even if "faster" wins every vote); `npm run sim` prints the days for different crowds.
 5. ~~**Does the probe always coast?**~~ **Decided (changed by Nav, 18–19 Nov): it coasts on its own, but pauses after 8 hours with no player activity** (any tap batch, or auto-thrust from a connected player). The next tap wakes it. While paused the screen says "Probe idle: tap to wake it" and the arrival date shows as on hold. So coasting alone never finishes a mission.
 6. ~~**Wipe all workers.dev test data at launch?**~~ **Decided (changed by Nav, 18–19 Nov): reset only the mission** (distance, route, milestones reached, the current vote round and the mission log) and set the real start date. **Keep devices, pings, streaks, progress, credits, upgrades and patches.** `/admin` gets a "Reset mission (keep players)" action so this can be tested before launch.
 
@@ -374,7 +392,7 @@ Also decided with phase 4 (2026-11-18): **people here counts devices**, so five 
 
 ### Before phase 5 (all decided 2026-11-18)
 7. ~~**Signal window at launch**~~ **Decided: 48 hours**, with the red tier at the final 60 seconds.
-8. ~~**Safe-mode setback**~~ **Decided: the design's rate** (every quiet hour adds about 10 hours), **capped at 7 days per outage.**
+8. ~~**Safe-mode setback**~~ **Decided: the design's rate** (every quiet hour adds about 10 hours), **capped at 7 days per outage.** *(Retuned for a 30-day trip, prompt 28: every quiet hour adds about 2 hours, capped at 1 day per outage, at today's pace. The setback waits while the probe is paused.)*
 
 Also decided with phase 5 (2026-11-18): **the setback lengthens the route** (the probe drifted off course: the distance is kept and the real arrival really is later); **taps don't count in safe mode** (the design's "0 km/s from crew"); **PING's fixed `--ping-*` colours** are agreed, like THRUST's. Turnstile widget made by Nav (site key `0x4AAAAAAGHp999jPtmZ4xYE`, invisible).
 

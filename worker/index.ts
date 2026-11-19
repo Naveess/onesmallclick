@@ -15,7 +15,7 @@
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
 //   POST /api/admin/close-vote  }   (closes today's vote now; its effect applies)
 //   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
-//   POST /api/admin/reset       }
+//   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
 
 import type { PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";

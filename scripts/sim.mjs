@@ -20,6 +20,8 @@ registerHooks({
   },
 });
 
+import { readFileSync } from "node:fs";
+
 const B = await import("../shared/balance.ts");
 const U = await import("../shared/upgrades.ts");
 
@@ -35,6 +37,11 @@ const PROFILES = {
   typical: { label: "Typical (5 min a day)", sessions: 2, minutes: 2.5, tapsPerS: 4 },
   keen: { label: "Keen (16 min a day)", sessions: 4, minutes: 4, tapsPerS: 5 },
 };
+
+/** The daily vote's "faster" options (hours sooner, at today's pace), for the worst case: faster wins every day. */
+const FASTER = JSON.parse(readFileSync(new URL("../content/vote-options.json", import.meta.url), "utf-8"))
+  .options.filter((o) => o.kind === "faster")
+  .map((o) => -o.hours);
 
 const CROWDS = [1, 10, 20, 35, 50, 200, 1_000, 10_000];
 
@@ -79,15 +86,26 @@ function shop(p, prof) {
 }
 
 /** One mission from Earth to Mars. Returns the days it took and the players (to run a second mission). */
-function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer)) {
+function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), fasterVotes = false) {
   const rand = rng(seed);
   const window = new Float64Array(B.CREW_WINDOW_MIN); // raw crew km per minute, the last hour
   let windowSum = 0;
   let distance = 0;
   let lastActive = 0; // the mission starts with the launch crowd
+  let route = B.ROUTE_KM;
+  let dayStart = 0; // distance and moving minutes at the start of the day, for today's pace
+  let movingMin = 0;
+  let dayMoving = 0;
   for (const p of players) p.lastEnd = null;
 
   for (let day = 0; day < MAX_DAYS; day++) {
+    // The vote closes at midnight: "faster" wins, hours at today's pace.
+    if (fasterVotes && day > 0 && movingMin - dayMoving > 0) {
+      const pace = (distance - dayStart) / ((movingMin - dayMoving) * MIN);
+      route -= FASTER[Math.floor(rand() * FASTER.length)] * 3600 * pace;
+    }
+    dayStart = distance;
+    dayMoving = movingMin;
     // Today's sessions, in time order.
     const sessions = [];
     for (let i = 0; i < n; i++) {
@@ -118,8 +136,9 @@ function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer)) 
       window[slot] = raw;
       const rawKmS = windowSum / (window.length * MIN);
       const paused = t - lastActive > PAUSE_MIN;
+      if (!paused) movingMin++;
       distance += (paused ? 0 : B.COAST_KM_S * MIN) + raw * B.crewFactor(rawKmS);
-      if (distance >= B.ROUTE_KM) return { days: day + m / DAY_MIN, players };
+      if (distance >= route) return { days: day + m / DAY_MIN, players };
     }
   }
   return { days: Infinity, players };
@@ -141,7 +160,12 @@ for (const n of CROWDS) {
   const second = mission(n, PROFILES.typical, 2000 + n, first.players);
   console.log(pad(n.toLocaleString("en-GB"), 14) + cells.join("") + pad(fmt(second.days), 24));
 }
-console.log(`\nCoasting alone: ${fmt(mission(0, PROFILES.typical, 1).days)} days (it pauses after 8 hours).`);
+{
+  const worst = mission(10_000, PROFILES.keen, 4000, undefined, true);
+  const small = mission(35, PROFILES.typical, 4001, undefined, true);
+  console.log(`\nIf "faster" wins every day's vote: 10,000 keen players ${fmt(worst.days)} days; 35 typical players ${fmt(small.days)} days.`);
+}
+console.log(`Coasting alone: ${fmt(mission(0, PROFILES.typical, 1).days)} days (it pauses after 8 hours).`);
 
 // Progress is kept between missions (decision 6), so a crew that stays gets stronger.
 {

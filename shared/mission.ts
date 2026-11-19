@@ -4,12 +4,20 @@
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
 import type { ReachedMilestone } from "./milestones";
+import { SETBACK_CAP_MS, SETBACK_HOURS_PER_QUIET_HOUR } from "./balance";
 
-/** Earth to Mars, as the design has it. */
-export const ROUTE_KM = 480_000_000;
-
-/** The probe always coasts at this speed, even with nobody tapping (decision 5). */
-export const COAST_KM_S = 21;
+// Every number that sets the trip's length lives in shared/balance.ts (the retune); these are re-exported.
+export {
+  COAST_KM_S,
+  CREW_WINDOW_MIN,
+  IDLE_PAUSE_MS,
+  ROUTE_KM,
+  SETBACK_CAP_MS,
+  SETBACK_HOURS_PER_QUIET_HOUR,
+  SIGNAL_WINDOW_MS,
+  crewFactor,
+  crewSpeed,
+} from "./balance";
 
 /** Km per tap with no upgrades (shared/upgrades.ts has the formula). */
 export const BASE_TAP_KM = 4;
@@ -30,42 +38,12 @@ export const DEAD_SOCKET_MS = 90_000;
 /** Crew pace is the tap km of the last few minutes, averaged. */
 export const PACE_WINDOW_MIN = 5;
 
-// ---------- The crew-speed ceiling (phase 6) ----------
-// Everyone's own km and credits always count in full. What the crew adds to the SHARED probe
-// counts in full up to CREW_FULL_KM_S (the design's busy crew, about 6 months to Mars), then
-// flattens towards CREW_CEILING_KM_S, so the fastest trip is about 4½ months however big the crew.
-
-export const CREW_FULL_KM_S = 10;
-export const CREW_CEILING_KM_S = 21;
-/** The ceiling looks at the last hour, so one returning player's offline catch-up isn't squeezed. */
-export const CEILING_WINDOW_MIN = 60;
-
-/** The crew's raw push (km/s) → what actually moves the probe. */
-export function crewEffective(raw: number): number {
-  if (raw <= CREW_FULL_KM_S) return Math.max(0, raw);
-  const room = CREW_CEILING_KM_S - CREW_FULL_KM_S;
-  const over = raw - CREW_FULL_KM_S;
-  return CREW_FULL_KM_S + (room * over) / (over + room);
-}
-
-/** The share of each crew km that moves the shared probe right now (1 below the ceiling's knee). */
-export function crewFactor(raw: number): number {
-  return raw <= CREW_FULL_KM_S ? 1 : crewEffective(raw) / raw;
-}
-
 // ---------- The signal (phase 5) ----------
 
-/** A ping keeps the probe talking this long (decision 7: 48 hours at launch). */
-export const SIGNAL_WINDOW_MS = 48 * 3_600_000;
 /** The final stretch: the countdown pulses and a ping earns the red badge. */
 export const SIGNAL_URGENT_S = 60;
 /** Under this much time left, a ping earns the orange badge. */
 export const SIGNAL_ORANGE_S = 6 * 3600;
-/** In safe mode every quiet hour adds this many hours to the trip (decision 8)… */
-export const SETBACK_HOURS_PER_QUIET_HOUR = 10;
-/** …capped per outage (decision 8). */
-export const SETBACK_CAP_MS = 7 * 86_400_000;
-
 export type BadgeTier = "blue" | "orange" | "red";
 
 /** The badge a ping earns, from the time that was left. Waking the probe from safe mode earns red. */
@@ -75,7 +53,15 @@ export function tierFor(secondsLeft: number): BadgeTier {
   return "blue";
 }
 
-/** How much later the probe arrives because of the current outage, in ms of travel. */
+/**
+ * The probe's own clock: it stands still while the probe is paused (decision 5), so the signal
+ * timer and any setback wait with it.
+ */
+export function probeClock(p: { pausedSince: number | null }, now: number): number {
+  return p.pausedSince ?? now;
+}
+
+/** How much later the probe arrives because of the current outage, in ms of travel at today's pace. Pass the probe's clock. */
 export function setbackMs(safeSince: number | null, now: number): number {
   if (safeSince === null) return 0;
   return Math.min(SETBACK_CAP_MS, Math.max(0, now - safeSince) * SETBACK_HOURS_PER_QUIET_HOUR);
@@ -90,13 +76,18 @@ export interface ProbeSnapshot {
   /** Distance at `at`. Between updates the browser adds coasting and auto-thrust (distanceAt). */
   distanceKm: number;
   at: number;
+  /** COAST_KM_S, or 0 while the probe is paused. */
   coastKmS: number;
-  /** Everyone connected's auto-thrust, after the ceiling: it moves the probe continuously. */
+  /** Everyone connected's auto-thrust, as it moves the shared probe (self-balanced): it moves the probe continuously. */
   autoKmS: number;
-  /** What the crew adds (taps and catch-ups over the last PACE_WINDOW_MIN minutes, plus auto-thrust), after the ceiling. */
+  /** What the crew adds right now (taps over the last PACE_WINDOW_MIN minutes, plus auto-thrust), as it moves the probe. */
   crewKmS: number;
-  /** The share of a crew km that moves the shared probe (1 until the crew passes CREW_FULL_KM_S). */
+  /** How far each crew km moves the shared probe (shared/balance.ts): above 1 for a small crew, below 1 for a big one. */
   crewFactor: number;
+  /** Today's pace: the probe's average speed over its last 24 hours of moving (the arrival date, vote effects and setbacks use it). */
+  paceKmS: number;
+  /** When the probe paused for lack of players (decision 5), or null while it's moving. */
+  pausedSince: number | null;
   /** Devices connected right now (several tabs on one device count once). */
   online: number;
   /** Devices away within the last 8 hours whose thrusters are still earning ("+N thrusters idling"). */
@@ -117,6 +108,8 @@ export interface ProbeSnapshot {
 export interface DeviceToday {
   kmToday: number;
   tapKmToday: number;
+  /** What this device's taps moved the shared probe today, after balancing ("your taps today got us there X sooner"). */
+  tapMovedToday: number;
   pingedToday: boolean;
   /** Consecutive days with a ping, up to today or yesterday. */
   pingStreakDays: number;
@@ -162,9 +155,12 @@ export interface AdminState {
   sockets: number;
   lastSavedAt: number;
   lastD1FlushAt: number;
-  /** Before the ceiling: taps and catch-ups over the last hour, and connected auto-thrust (km/s). */
+  /** The crew's raw push before balancing: taps and catch-ups over the last hour, and connected auto-thrust (km/s). */
   crewRawKmS: number;
   autoRawKmS: number;
+  /** The last tap batch or connected auto-thrust, and when the probe pauses if nothing happens (null: it can't while auto-thrust is connected, or it's paused). */
+  lastActiveAt: number;
+  pausesAt: number | null;
   /** Devices with saved progress. */
   players: number;
 }
@@ -177,11 +173,18 @@ export function distanceAt(
   return Math.min(p.routeKm, p.distanceKm + ((p.coastKmS + (p.autoKmS ?? 0)) * Math.max(0, now - p.at)) / 1000);
 }
 
-/** The live arrival estimate: what's left (with the current outage's setback) at coasting plus the crew's pace. */
-export function arrivalAt(p: ProbeSnapshot, now: number): number {
-  const setbackKm = (setbackMs(p.safeSince, now) / 1000) * p.coastKmS;
-  const toGo = Math.max(0, p.routeKm + setbackKm - distanceAt(p, now));
-  return now + (toGo / (p.coastKmS + p.crewKmS)) * 1000;
+/**
+ * The arrival estimate: what's left at today's pace, plus the current outage's setback.
+ * Null while the probe is paused (the screen shows "on hold").
+ */
+export function arrivalAt(
+  p: Pick<ProbeSnapshot, "routeKm" | "paceKmS" | "pausedSince" | "safeSince">,
+  distanceKm: number,
+  now: number,
+): number | null {
+  if (p.pausedSince !== null) return null;
+  const toGo = Math.max(0, p.routeKm - distanceKm);
+  return now + (toGo / Math.max(1, p.paceKmS)) * 1000 + setbackMs(p.safeSince, now);
 }
 
 /** The UTC day, as YYYY-MM-DD. */

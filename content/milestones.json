@@ -12,7 +12,7 @@
       "description": "Milestone 1 of the OneSmallClick mission: the Moon's orbit, 384,400 km from Earth, and how long the Apollo crews took to get there.",
       "page": [
         "The first milestone is the Moon's orbit. On average the Moon is 384,400 km from Earth, but its orbit is not a perfect circle, so the real distance changes through the month.",
-        "The Apollo astronauts took about three days to cross this gap. OSC-1 never stops coasting at 21 km a second, so the crew passes the Moon's orbit within about five hours of launch: the first sign that everything is working."
+        "The Apollo astronauts took about three days to cross this gap. OSC-1 coasts at 21 km a second even before anyone taps, so the crew passes the Moon's orbit within about five hours of launch: the first sign that everything is working."
       ],
       "sources": [
         { "label": "NASA: Moon facts", "url": "https://science.nasa.gov/moon/facts/" },

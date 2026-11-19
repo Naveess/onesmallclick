@@ -16,7 +16,8 @@ interface Today {
   missionDay: number;
   progress: number;
   kmToday: number;
-  arrivalAt: number;
+  /** Null while the probe is paused. */
+  arrivalAt: number | null;
   now: number;
 }
 
@@ -38,7 +39,7 @@ function shareText(t: Today): string {
     `OneSmallClick · Day ${t.missionDay}`,
     `${"▰".repeat(cells)}${"▱".repeat(10 - cells)} ${pct}% to Mars`,
     `I pushed ${int(t.kmToday)} km today`,
-    `Arrival: ${shortDate.format(new Date(t.arrivalAt))}`,
+    `Arrival: ${t.arrivalAt === null ? "on hold" : shortDate.format(new Date(t.arrivalAt))}`,
   ].join("\n");
 }
 

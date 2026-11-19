@@ -34,6 +34,7 @@ npx wrangler login    # once per machine
 npx wrangler d1 migrations apply onesmallclick --local   # once, and after each new migration
 npm run dev           # app + Worker at http://localhost:5173 (pixel kit at /kit, test controls at /admin)
 npm run pages         # rebuild only the content pages (dev and build already do this)
+npm run sim           # days to Mars for different crowd sizes (shared/balance.ts)
 npm run build         # type-check and build to dist/
 npm run deploy        # build, then deploy to https://onesmallclick.naveessharma.workers.dev
                       # (never bare `wrangler deploy`: it skips the build)

@@ -37,14 +37,15 @@ export function SafeChip() {
 
 /* ---------- Live arrival estimate ---------- */
 
-export function ArrivalEstimate({ arrivalAt, savedS, wide = false }: { arrivalAt: number; savedS: number; wide?: boolean }) {
+/** `arrivalAt` is null while the probe is paused for lack of players (decision 5): the date is on hold. */
+export function ArrivalEstimate({ arrivalAt, savedS, wide = false }: { arrivalAt: number | null; savedS: number; wide?: boolean }) {
   return (
     <section className={wide ? "arrival arrival--wide" : "arrival"} aria-labelledby="arrival-label">
       <h2 id="arrival-label" className="arrival__label">
         Live arrival estimate
       </h2>
-      <p className="arrival__lede">At this pace we arrive</p>
-      <p className="arrival__date">{longDate(arrivalAt)}</p>
+      <p className="arrival__lede">{arrivalAt === null ? "Probe idle: tap to wake it" : "At this pace we arrive"}</p>
+      <p className="arrival__date">{arrivalAt === null ? "On hold" : longDate(arrivalAt)}</p>
       <p className="arrival__saved">
         <PixelIcon name="up" size={9} tone="blue" />
         Your taps today: {minSec(savedS)} sooner

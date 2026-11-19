@@ -8,6 +8,7 @@ import {
   SIGNAL_URGENT_S,
   SIGNAL_WINDOW_MS,
   distanceAt,
+  probeClock,
   setbackMs,
   type BadgeTier,
   type DeviceToday,
@@ -30,6 +31,8 @@ import { preloadTurnstile, turnstileToken } from "./turnstile";
 //                      decides every purchase; between messages credits tick up at your auto rate.
 //   REAL from phase 7a: today's crew vote (POST /api/vote, live tallies) and the mission log (/log).
 //   REAL from phase 7b: milestones, and the milestone moment when one is reached (shown once per browser).
+//   RETUNE (prompts 27-28): self-balancing thrust, today's pace for the arrival date, and the idle pause
+//                      ("Probe idle: tap to wake it", the date on hold); numbers in shared/balance.ts.
 // Time is the server's clock: every message carries it, and `now` below is Date.now() + that offset.
 
 export type VoteOption = LiveVote["options"][number];
@@ -41,13 +44,18 @@ export interface ProbeState {
   routeKm: number;
   /** What to show: the server's distance, plus coasting and auto-thrust since, plus this device's taps not yet credited. */
   distanceKm: number;
+  /** Coasting speed, or 0 while the probe is paused. */
   coastKmS: number;
-  /** Everyone connected's auto-thrust after the ceiling (it moves the probe continuously). */
+  /** Everyone connected's auto-thrust as it moves the probe (it moves the probe continuously). */
   autoKmS: number;
-  /** What the crew adds: recent taps plus auto-thrust, after the ceiling (0 in safe mode). */
+  /** What the crew adds right now: recent taps plus auto-thrust, as they move the probe (0 in safe mode or paused). */
   crewKmS: number;
-  /** The share of a crew km that moves the shared probe (the ceiling; 1 for a normal crew). */
+  /** How far each crew km moves the shared probe (self-balancing: above 1 for a small crew). */
   crewFactor: number;
+  /** Today's pace: the probe's average speed over its last 24 hours of moving (the arrival date uses it). */
+  paceKmS: number;
+  /** When the probe paused for lack of players, or null while it's moving. */
+  pausedSince: number | null;
   online: number;
   /** "+N thrusters idling": shown only when a handful are here (?crew=handful forces it, for the look). */
   idling: number | null;
@@ -80,8 +88,10 @@ export interface PlayerState {
   buying: UpgradeKey | "prestige" | null;
   /** Km this device pushed today (UTC). */
   kmToday: number;
-  /** Km from taps today; sets "your taps today got us there X sooner". */
+  /** Km from taps today (your own, in full). */
   tapKmToday: number;
+  /** What your taps moved the shared probe today; sets "your taps today got us there X sooner". */
+  tapMovedToday: number;
   pingedToday: boolean;
   /** True while a ping is on its way (bot check, then the server). */
   pinging: boolean;
@@ -144,7 +154,7 @@ const MAX_PENDING_TAPS = Math.round(MAX_TAPS_PER_S * (BATCH_MS / 1000) * 1.5);
 
 let server: ProbeSnapshot | null = readCache();
 let offsetMs = 0; // server clock − device clock
-let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, pingedToday: false, pingStreakDays: 0, vote: null };
+let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, tapMovedToday: 0, pingedToday: false, pingStreakDays: 0, vote: null };
 let pendingTaps = 0;
 const inFlight = new Map<number, number>(); // seq → taps sent, not yet credited
 let me: Progress | null = null;
@@ -199,6 +209,8 @@ function initialState(): GameState {
       autoKmS: server?.autoKmS ?? 0,
       crewKmS: server?.crewKmS ?? 0,
       crewFactor: server?.crewFactor ?? 1,
+      paceKmS: server?.paceKmS ?? COAST_KM_S,
+      pausedSince: server?.pausedSince ?? null,
       online: server?.online ?? 1,
       idling: switches.handful ? 48_206 : null,
       signalDeadline: server?.signalDeadline ?? now + SIGNAL_WINDOW_MS,
@@ -219,6 +231,7 @@ function initialState(): GameState {
       buying: null,
       kmToday: 0,
       tapKmToday: 0,
+      tapMovedToday: 0,
       pingedToday: false,
       pinging: false,
       voteChoice: null,
@@ -264,6 +277,8 @@ function compose(base: GameState, connection = base.connection): GameState {
         autoKmS: p.autoKmS ?? 0,
         crewKmS: p.crewKmS,
         crewFactor: p.crewFactor ?? 1,
+        paceKmS: p.paceKmS ?? p.coastKmS,
+        pausedSince: p.pausedSince ?? null,
         online: p.online,
         idling,
         signalDeadline: p.signalDeadline,
@@ -286,6 +301,7 @@ function compose(base: GameState, connection = base.connection): GameState {
       }),
       kmToday: serverToday.kmToday + optimisticKm,
       tapKmToday: serverToday.tapKmToday + optimisticKm,
+      tapMovedToday: serverToday.tapMovedToday + optimisticKm * (p?.crewFactor ?? 1),
       pingedToday: serverToday.pingedToday,
       pingStreakDays: serverToday.pingStreakDays,
       // Your vote counts only for the round it was cast in; a new round starts empty.
@@ -307,6 +323,7 @@ function onMessage(msg: ServerMessage) {
     serverToday = {
       kmToday: msg.kmToday,
       tapKmToday: msg.tapKmToday,
+      tapMovedToday: msg.tapMovedToday ?? 0,
       pingedToday: msg.pingedToday,
       pingStreakDays: msg.pingStreakDays,
       vote: msg.vote,
@@ -601,21 +618,25 @@ export function useGame() {
 
 /** Everything the screens show that is worked out from the state. */
 function derive({ now, probe, player }: GameState) {
-  // Coasting plus the crew's push (taps and auto-thrust, after the ceiling).
+  // Right now: coasting plus the crew's push (taps and auto-thrust, as they move the probe).
   const speedKmS = probe.coastKmS + probe.crewKmS;
   const safe = probe.safeSince !== null;
-  // The current outage's setback, as extra km to fly (it becomes permanent route when someone pings).
-  const setback = setbackMs(probe.safeSince, now);
-  const setbackKm = (setback / 1000) * probe.coastKmS;
-  const toGoKm = Math.max(0, probe.routeKm + setbackKm - probe.distanceKm);
-  const signalLeftS = safe ? 0 : Math.max(0, (probe.signalDeadline - now) / 1000);
+  const paused = probe.pausedSince !== null;
+  // The probe's clock stands still while it's paused: the signal and any setback wait with it.
+  const clock = probeClock(probe, now);
+  // The current outage's setback: hours of travel at today's pace (it becomes permanent route when someone pings).
+  const setback = setbackMs(probe.safeSince, clock);
+  const pace = Math.max(1, probe.paceKmS);
+  const toGoKm = Math.max(0, probe.routeKm - probe.distanceKm);
+  const signalLeftS = safe ? 0 : Math.max(0, (probe.signalDeadline - clock) / 1000);
   const next = MILESTONES.find((m) => m.km > probe.distanceKm) ?? null;
   const upgrades = UPGRADES.map((def) => {
     const level = player.levels[def.key];
     const cost = upgradeCost(def.key, level);
     return { def, level, cost, affordable: player.credits >= cost };
   });
-  const arrivalAt = now + (toGoKm / speedKmS) * 1000;
+  // At today's pace, plus the setback; null (on hold) while the probe is paused.
+  const arrivalAt = paused ? null : now + (toGoKm / pace) * 1000 + setback;
   return {
     missionDay: Math.floor((now - probe.missionStartedAt) / DAY_MS) + 1,
     speedKmS,
@@ -623,15 +644,17 @@ function derive({ now, probe, player }: GameState) {
     autoKmS: player.autoKmS,
     tapKm: player.tapKm,
     toGoKm,
-    progress: probe.distanceKm / (probe.routeKm + setbackKm), // 0..1
+    progress: probe.distanceKm / probe.routeKm, // 0..1
     arrivalAt,
     safe,
+    /** The probe is waiting for a tap (decision 5). */
+    paused,
     /** Safe mode: how long ago the signal was lost, and the arrival date before this outage. */
     quietS: safe ? Math.max(0, (now - probe.safeSince!) / 1000) : 0,
     setbackMs: setback,
-    arrivalBeforeAt: arrivalAt - (setbackKm / speedKmS) * 1000,
-    /** Seconds sooner thanks to your taps today (what they moved the shared probe, after the ceiling). */
-    savedS: (player.tapKmToday * probe.crewFactor) / speedKmS,
+    arrivalBeforeAt: arrivalAt === null ? null : arrivalAt - setback,
+    /** Seconds sooner thanks to your taps today: what they moved the shared probe, at today's pace. */
+    savedS: player.tapMovedToday / pace,
     signalLeftS,
     signalUrgent: !safe && signalLeftS < SIGNAL_URGENT_S && !player.pingedToday,
     nextMilestone: next,

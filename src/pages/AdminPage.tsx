@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { AdminState } from "../../shared/mission";
+import { IDLE_PAUSE_MS, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
 import { PixelButton } from "../components/PixelButton";
 import { Sky } from "../components/Sky";
 import { Window } from "../components/Window";
@@ -92,9 +92,10 @@ export function AdminPage() {
 
   const p = state?.probe;
   const speed = p ? p.coastKmS + p.crewKmS : 0;
-  const setbackKm = p && state ? (state.setbackMs / 1000) * p.coastKmS : 0;
-  const arrival = p && state ? state.serverNow + ((p.routeKm + setbackKm - p.distanceKm) / speed) * 1000 : 0;
-  const signalLeftS = p && state ? Math.max(0, (p.signalDeadline - state.serverNow) / 1000) : 0;
+  const arrival = p && state ? arrivalAt(p, p.distanceKm, state.serverNow) : null;
+  const signalLeftS = p && state ? Math.max(0, (p.signalDeadline - probeClock(p, state.serverNow)) / 1000) : 0;
+  const raw = state ? state.crewRawKmS + state.autoRawKmS : 0;
+  const hm = (ms: number) => `${Math.floor(ms / 3_600_000)} h ${Math.floor((ms % 3_600_000) / 60_000)} min`;
 
   return (
     <>
@@ -138,14 +139,30 @@ export function AdminPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt>Speed</dt>
+                  <dt>Speed now</dt>
                   <dd className="num">
-                    {p!.coastKmS} + {p!.crewKmS.toFixed(2)} crew = {speed.toFixed(2)} km/s
+                    {p!.coastKmS} coasting + {p!.crewKmS.toFixed(2)} crew = {speed.toFixed(2)} km/s
                   </dd>
                 </div>
                 <div>
+                  <dt>Today's pace</dt>
+                  <dd className="num">{p!.paceKmS.toFixed(2)} km/s (last 24 h of moving; the arrival date uses it)</dd>
+                </div>
+                <div>
                   <dt>Arrival</dt>
-                  <dd className="num">{when(arrival)}</dd>
+                  <dd className="num">{arrival === null ? "on hold (paused)" : when(arrival)}</dd>
+                </div>
+                <div>
+                  <dt>Idle pause</dt>
+                  <dd className="num">
+                    {p!.pausedSince !== null
+                      ? `PAUSED since ${when(p!.pausedSince)}: one tap wakes it`
+                      : state.pausesAt === null
+                        ? "can't pause: auto-thrust is connected"
+                        : `pauses ${when(state.pausesAt)} unless someone taps (last activity ${when(state.lastActiveAt)}, ${hm(
+                            Math.max(0, state.pausesAt - state.serverNow),
+                          )} left of ${IDLE_PAUSE_MS / 3_600_000} h)`}
+                  </dd>
                 </div>
                 <div>
                   <dt>Signal</dt>
@@ -156,10 +173,11 @@ export function AdminPage() {
                   </dd>
                 </div>
                 <div>
-                  <dt>Crew push (ceiling)</dt>
+                  <dt>Crew push (self-balancing)</dt>
                   <dd className="num">
-                    raw {(state.crewRawKmS + state.autoRawKmS).toFixed(2)} km/s (last hour's taps and catch-ups{" "}
-                    {state.crewRawKmS.toFixed(2)} + auto {state.autoRawKmS.toFixed(2)}) · {Math.round(p!.crewFactor * 100)}% counts
+                    raw {raw.toFixed(2)} km/s (last hour's taps and catch-ups {state.crewRawKmS.toFixed(2)} + auto{" "}
+                    {state.autoRawKmS.toFixed(2)}) → moves the probe {crewSpeed(raw).toFixed(2)} km/s · each crew km moves it{" "}
+                    {p!.crewFactor.toFixed(2)} km
                   </dd>
                 </div>
                 <div>
@@ -229,7 +247,10 @@ export function AdminPage() {
               <h2 id="admin-clock" className="admin__h2">
                 Move the clock forward
               </h2>
-              <p className="admin__note">The probe coasts through the hours you skip. Reset the mission to undo.</p>
+              <p className="admin__note">
+                The probe coasts through the hours you skip. With no tap and no connected auto-thrust (close the game
+                tabs, or have no auto-thrust) for 8 hours, it pauses part-way. Reset the mission to undo.
+              </p>
               <label className="admin__field">
                 <span className="label">Hours</span>
                 <input inputMode="decimal" value={hours} onChange={(e) => setHours(e.target.value)} required />
@@ -321,20 +342,22 @@ export function AdminPage() {
 
             <Window as="section" tone="orange" className="admin__card" aria-labelledby="admin-reset">
               <h2 id="admin-reset" className="admin__h2">
-                Reset the mission
+                Reset mission (keep players)
               </h2>
               <p className="admin__note">
-                Starts mission {p!.missionId + 1} at 0 km with a full signal, and puts the clock back to real time.
-                Everyone's credits, upgrades and patches are kept.
+                The launch reset (decision 6). Starts mission {p!.missionId + 1} now, on real time: 0 km, the full route,
+                a full signal, no milestones, a fresh vote round and an empty mission log. Devices, pings, streaks,
+                progress, credits, upgrades and patches are all kept.
               </p>
               <PixelButton
                 variant="orange"
                 disabled={busy}
                 onClick={() => {
-                  if (window.confirm(`Reset? Mission ${p!.missionId} ends and a new one starts at 0 km.`)) void run("reset", {});
+                  if (window.confirm(`Reset mission (keep players)? Mission ${p!.missionId} ends and mission ${p!.missionId + 1} starts now at 0 km.`))
+                    void run("reset", {});
                 }}
               >
-                Reset mission
+                Reset mission (keep players)
               </PixelButton>
             </Window>
 

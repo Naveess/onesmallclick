@@ -1,3 +1,4 @@
+import { SETBACK_HOURS_PER_QUIET_HOUR } from "../../shared/mission";
 import { longDate } from "../game/format";
 import { SPRITES, STILLS } from "../sprites";
 import { PingButton } from "./PingButton";
@@ -8,9 +9,12 @@ import "./SafeMode.css";
 interface SafeModeProps {
   wide: boolean;
   quietS: number;
-  arrivalAt: number;
-  arrivalBeforeAt: number;
+  /** Null while the probe is paused (the date is on hold). */
+  arrivalAt: number | null;
+  arrivalBeforeAt: number | null;
   setbackMs: number;
+  /** The probe is paused for lack of players: the setback waits too. */
+  paused: boolean;
   progress: number;
   pinged: boolean;
   pinging: boolean;
@@ -44,6 +48,7 @@ export function SafeMode({
   arrivalAt,
   arrivalBeforeAt,
   setbackMs,
+  paused,
   progress,
   pinged,
   pinging,
@@ -60,8 +65,8 @@ export function SafeMode({
           SIGNAL LOST {ago(quietS)}
         </h2>
         <p className="safe__lede">The probe has gone quiet. We now arrive</p>
-        <p className="safe__date">{longDate(arrivalAt)}</p>
-        {setbackMs > 0 && (
+        <p className="safe__date">{arrivalAt === null ? "On hold" : longDate(arrivalAt)}</p>
+        {setbackMs > 0 && arrivalBeforeAt !== null && (
           <p className="safe__was">
             <s className="safe__old">{longDate(arrivalBeforeAt)}</s>
             <span className="safe__later">{later(setbackMs)}</span>
@@ -82,7 +87,7 @@ export function SafeMode({
           </div>
         </div>
         <div className="safe__foot">
-          <span>Coasting · thrusters asleep</span>
+          <span>{paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
           <span className="num">0 km/s from crew</span>
         </div>
       </Window>
@@ -96,7 +101,7 @@ export function SafeMode({
             00:00:00
           </div>
         </div>
-        <p className="safe__rule">Every quiet hour adds about 10 hours to the trip.</p>
+        <p className="safe__rule">Every quiet hour adds about {SETBACK_HOURS_PER_QUIET_HOUR} hours to the trip.</p>
       </Window>
 
       <section className="safe__wake" aria-label="Wake the probe">

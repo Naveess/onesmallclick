@@ -90,7 +90,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 Answered ones point to the decision in docs/plan.md ("Decisions").
 - ~~Prestige: what resets, and when?~~ **Decided:** upgrades and credits reset when you hand over the shift, any time after pushing 2,000,000 km since your last handover, for 3 Mission Patches (decision 10).
 - ~~Daily vote: what time does it close, and how many options?~~ **Decided:** 3 options, closing at 00:00 UTC (decision 11). The pool of options is a draft waiting for approval (docs/todo.md).
-- ~~Safe mode: how many days does the arrival date jump back?~~ **Decided:** every quiet hour adds about 10 hours, capped at 7 days per outage (decision 8).
+- ~~Safe mode: how many days does the arrival date jump back?~~ **Decided:** every quiet hour adds about 2 hours, capped at 1 day per outage (decision 8, retuned 19 Nov for a 30-day trip).
 - ~~Signal timer: how long is the window at launch?~~ **Decided:** 48 hours (decision 7).
 - ~~How long should the first Mars mission take at launch traffic levels?~~ **Decided (changed 18–19 Nov):** about 30 days with a small crew, never under about 14 days however big the crowd, with self-balancing thrust (decision 4). The probe pauses after 8 hours with nobody playing (decision 5).
 - ~~Wipe the test data at launch?~~ **Decided (changed 18–19 Nov):** reset only the mission; players keep their progress, pings and streaks (decision 6).

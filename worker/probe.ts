@@ -1,18 +1,21 @@
 import { DurableObject } from "cloudflare:workers";
 import {
   BATCH_MS,
-  CEILING_WINDOW_MIN,
   COAST_KM_S,
+  CREW_WINDOW_MIN,
   DEAD_SOCKET_MS,
   HEARTBEAT_PING,
   HEARTBEAT_PONG,
+  IDLE_PAUSE_MS,
   MAX_TAPS_PER_S,
   PACE_WINDOW_MIN,
   ROUTE_KM,
   SIGNAL_URGENT_S,
   SIGNAL_WINDOW_MS,
+  arrivalAt,
   crewFactor,
   distanceAt,
+  probeClock,
   setbackMs,
   tierFor,
   utcDay,
@@ -23,6 +26,7 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../shared/mission";
+import { TODAY_PACE_MIN_MS, TODAY_PACE_MS } from "../shared/balance";
 import {
   MAX_LEVEL,
   OFFLINE_CAP_MS,
@@ -56,7 +60,9 @@ import {
 //   - keeps the distance as "km at time `at`" and lets coasting plus connected auto-thrust run on the clock;
 //   - keeps everyone's idle game (credits, upgrades, patches) and decides every purchase;
 //   - pays auto-thrust while connected, and up to 8 hours of it when a device comes back;
-//   - squeezes the crew's push on the shared probe above the ceiling's knee (shared/mission.ts);
+//   - balances the crew's push on the shared probe: a small crew is boosted, a big one squeezed (shared/balance.ts);
+//   - pauses the probe after 8 hours with no tap batch and no connected auto-thrust (an alarm), until a tap wakes it;
+//   - keeps today's pace (the average speed over the last 24 hours of moving) for the arrival date;
 //   - keeps the signal: a deadline, an alarm when it runs out, safe mode until someone pings;
 //   - notices milestones (also on an alarm, when nobody's around), records and logs them;
 //   - runs the daily crew vote: live tallies, closing at 00:00 UTC (the same alarm), the winner's effect on the route;
@@ -78,6 +84,8 @@ const DAY_MS = 86_400_000;
 const JUST_SAVED_MS = 5_000;
 /** "+N thrusters idling" is counted at most this often. */
 const IDLING_MS = 60_000;
+/** Today's pace is measured from samples of (distance, moving time) at most this far apart. */
+const TRACK_EVERY_MS = 10 * MINUTE_MS;
 
 interface Mission {
   id: number;
@@ -87,8 +95,14 @@ interface Mission {
   startedAt: number;
   distanceKm: number;
   at: number;
-  /** Connected auto-thrust after the ceiling, moving the probe since `at`. */
+  /** Connected auto-thrust as it moves the probe (self-balanced), since `at`. */
   autoKmS: number;
+  /** Time the probe has spent moving this mission, up to `at` (paused time doesn't count). */
+  movedMs: number;
+  /** The last tap batch, or the last moment auto-thrust was connected. */
+  lastActiveAt: number;
+  /** When the probe paused for lack of players, or null while it's moving (decision 5). */
+  pausedSince: number | null;
   signalDeadline: number;
   safeSince: number | null;
   /** The last outage that ended, so auto-thrust isn't paid for it. */
@@ -163,7 +177,17 @@ type MissionRow = {
   auto_kms: number | null;
   last_safe_from: number | null;
   last_safe_to: number | null;
+  moved_ms: number | null;
+  last_active_at: number | null;
+  paused_since: number | null;
 };
+
+/** One sample of the probe's track, for today's pace. */
+interface TrackPoint {
+  at: number;
+  distanceKm: number;
+  movedMs: number;
+}
 
 type ProgressRow = {
   device_id: string;
@@ -187,9 +211,9 @@ export class Probe extends DurableObject<Env> {
   private sql: SqlStorage;
   private mission!: Mission;
   private clockOffsetMs = 0;
-  /** Raw tap km per minute (key: minute number): the crew pace, and the ceiling. */
+  /** Raw tap km per minute (key: minute number): the crew pace, and the crew push that's balanced. */
   private pace = new Map<number, number>();
-  /** Raw offline catch-up km per minute: counted by the ceiling only, so one return doesn't swing the pace shown. */
+  /** Raw offline catch-up km per minute: counted in the crew push only, so one return doesn't swing the pace shown. */
   private catchup = new Map<number, number>();
   private dirtyMinutes = new Set<number>();
   private devices = new Map<string, DeviceEntry>();
@@ -199,7 +223,9 @@ export class Probe extends DurableObject<Env> {
   private dirtyProgress = new Set<string>();
   private d1Progress = new Set<string>();
   /** Km to add to D1's daily_km at the next flush (key: day|deviceId). */
-  private d1Pending = new Map<string, { day: string; deviceId: string; km: number; tapKm: number }>();
+  private d1Pending = new Map<string, { day: string; deviceId: string; km: number; tapKm: number; tapMovedKm: number }>();
+  /** Samples of the probe's track this mission, oldest first (today's pace). */
+  private track: TrackPoint[] = [];
   /** Real time of the last accepted ping (see JUST_SAVED_MS). */
   private lastPingAt = 0;
   private idling = { n: 0, at: 0 };
@@ -238,6 +264,9 @@ export class Probe extends DurableObject<Env> {
       started_at INTEGER NOT NULL, distance_km REAL NOT NULL, at INTEGER NOT NULL)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS pace (minute INTEGER PRIMARY KEY, km REAL NOT NULL)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value REAL NOT NULL)`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS track (
+      mission_id INTEGER NOT NULL, at INTEGER NOT NULL, distance_km REAL NOT NULL, moved_ms REAL NOT NULL,
+      PRIMARY KEY (mission_id, at))`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS progress (
       device_id TEXT PRIMARY KEY, credits_milli INTEGER NOT NULL,
       cold INTEGER NOT NULL, ion INTEGER NOT NULL, sail INTEGER NOT NULL, hands INTEGER NOT NULL, chant INTEGER NOT NULL,
@@ -257,6 +286,9 @@ export class Probe extends DurableObject<Env> {
       ["auto_kms", "REAL"],
       ["last_safe_from", "INTEGER"],
       ["last_safe_to", "INTEGER"],
+      ["moved_ms", "REAL"],
+      ["last_active_at", "INTEGER"],
+      ["paused_since", "INTEGER"],
     ]) {
       if (!cols.has(col)) this.sql.exec(`ALTER TABLE mission ADD COLUMN ${col} ${type}`);
     }
@@ -278,8 +310,12 @@ export class Probe extends DurableObject<Env> {
         safeSince: row.safe_since,
         lastSafeFrom: row.last_safe_from,
         lastSafeTo: row.last_safe_to,
+        // Missions from before the retune: count all their time as moving, and active now.
+        movedMs: row.moved_ms ?? Math.max(0, row.at - row.started_at),
+        lastActiveAt: row.last_active_at ?? this.now(),
+        pausedSince: row.paused_since,
       };
-      if (row.signal_deadline === null) this.saveSignal();
+      if (row.signal_deadline === null || row.moved_ms === null) this.saveSignal();
     } else {
       await this.startMission(1);
     }
@@ -288,6 +324,14 @@ export class Probe extends DurableObject<Env> {
       .exec<{ n: number; at: number }>(`SELECT n, at FROM milestone_reached WHERE mission_id = ? ORDER BY n`, this.mission.id)
       .toArray()
       .map((r) => ({ n: r.n, at: r.at }));
+    this.track = this.sql
+      .exec<{ at: number; distance_km: number; moved_ms: number }>(
+        `SELECT at, distance_km, moved_ms FROM track WHERE mission_id = ? ORDER BY moved_ms`,
+        this.mission.id,
+      )
+      .toArray()
+      .map((r) => ({ at: r.at, distanceKm: r.distance_km, movedMs: r.moved_ms }));
+    if (this.track.length === 0) this.sample(true);
 
     const since = Math.floor(this.now() / MINUTE_MS) - 60;
     for (const p of this.sql.exec<{ minute: number; km: number }>(`SELECT minute, km FROM pace WHERE minute > ?`, since)) {
@@ -327,16 +371,23 @@ export class Probe extends DurableObject<Env> {
       distanceKm: 0,
       at: now,
       autoKmS: 0,
+      movedMs: 0,
+      lastActiveAt: now,
+      pausedSince: null,
       signalDeadline: now + SIGNAL_WINDOW_MS,
       safeSince: null,
       lastSafeFrom: null,
       lastSafeTo: null,
     };
     this.reached = [];
+    this.track = [];
+    this.sql.exec(`DELETE FROM track`);
+    this.sample(true);
     const m = this.mission;
     this.sql.exec(
-      `INSERT OR REPLACE INTO mission (id, destination, route_km, started_at, distance_km, at, signal_deadline, safe_since, auto_kms)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO mission (id, destination, route_km, started_at, distance_km, at, signal_deadline, safe_since, auto_kms,
+         moved_ms, last_active_at, paused_since)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL)`,
       m.id,
       m.destination,
       m.routeKm,
@@ -346,6 +397,7 @@ export class Probe extends DurableObject<Env> {
       m.signalDeadline,
       null,
       0,
+      now,
     );
     try {
       await this.env.DB.prepare(
@@ -364,7 +416,16 @@ export class Probe extends DurableObject<Env> {
     this.saveTimer = undefined;
     if (!this.dirty && this.dirtyProgress.size === 0) return;
     const m = this.mission;
-    this.sql.exec(`UPDATE mission SET distance_km = ?, at = ?, auto_kms = ? WHERE id = ?`, m.distanceKm, m.at, m.autoKmS, m.id);
+    this.sql.exec(
+      `UPDATE mission SET distance_km = ?, at = ?, auto_kms = ?, moved_ms = ?, last_active_at = ? WHERE id = ?`,
+      m.distanceKm,
+      m.at,
+      m.autoKmS,
+      m.movedMs,
+      m.lastActiveAt,
+      m.id,
+    );
+    this.sample();
     for (const minute of this.dirtyMinutes) {
       this.sql.exec(`INSERT OR REPLACE INTO pace (minute, km) VALUES (?, ?)`, minute, this.pace.get(minute) ?? 0);
     }
@@ -385,7 +446,7 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     this.sql.exec(
       `UPDATE mission SET route_km = ?, distance_km = ?, at = ?, auto_kms = ?, signal_deadline = ?, safe_since = ?,
-         last_safe_from = ?, last_safe_to = ? WHERE id = ?`,
+         last_safe_from = ?, last_safe_to = ?, moved_ms = ?, last_active_at = ?, paused_since = ? WHERE id = ?`,
       m.routeKm,
       m.distanceKm,
       m.at,
@@ -394,6 +455,9 @@ export class Probe extends DurableObject<Env> {
       m.safeSince,
       m.lastSafeFrom,
       m.lastSafeTo,
+      m.movedMs,
+      m.lastActiveAt,
+      m.pausedSince,
       m.id,
     );
     this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('clock_offset_ms', ?)`, this.clockOffsetMs);
@@ -419,10 +483,11 @@ export class Probe extends DurableObject<Env> {
     const statements = batch.flatMap((p) => [
       db
         .prepare(
-          `INSERT INTO daily_km (day, device_id, km, tap_km) VALUES (?, ?, ?, ?)
-           ON CONFLICT (day, device_id) DO UPDATE SET km = km + excluded.km, tap_km = tap_km + excluded.tap_km`,
+          `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km) VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT (day, device_id) DO UPDATE SET km = km + excluded.km, tap_km = tap_km + excluded.tap_km,
+             tap_moved_km = tap_moved_km + excluded.tap_moved_km`,
         )
-        .bind(p.day, p.deviceId, p.km, p.tapKm),
+        .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm),
       db.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(seen, p.deviceId),
     ]);
     for (const id of progressIds) {
@@ -454,7 +519,7 @@ export class Probe extends DurableObject<Env> {
       this.lastD1FlushAt = seen;
     } catch (err) {
       console.error("D1 flush failed; will retry", err);
-      for (const p of batch) this.addPending(p.day, p.deviceId, p.km, p.tapKm);
+      for (const p of batch) this.addPending(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm);
       for (const id of progressIds) this.d1Progress.add(id);
       this.scheduleD1Flush();
     }
@@ -464,11 +529,12 @@ export class Probe extends DurableObject<Env> {
     this.d1Timer ??= setTimeout(() => void this.flushD1(), D1_FLUSH_MS);
   }
 
-  private addPending(day: string, deviceId: string, km: number, tapKm: number) {
+  private addPending(day: string, deviceId: string, km: number, tapKm: number, tapMovedKm = 0) {
     const key = `${day}|${deviceId}`;
-    const p = this.d1Pending.get(key) ?? { day, deviceId, km: 0, tapKm: 0 };
+    const p = this.d1Pending.get(key) ?? { day, deviceId, km: 0, tapKm: 0, tapMovedKm: 0 };
     p.km += km;
     p.tapKm += tapKm;
+    p.tapMovedKm += tapMovedKm;
     this.d1Pending.set(key, p);
   }
 
@@ -493,26 +559,33 @@ export class Probe extends DurableObject<Env> {
     return Date.now() + this.clockOffsetMs;
   }
 
+  /** The probe's motion: coasting plus connected auto-thrust, or nothing at all while it's paused. */
   private moving() {
-    return { ...this.mission, coastKmS: COAST_KM_S };
+    const m = this.mission;
+    const paused = m.pausedSince !== null;
+    return { ...m, coastKmS: paused ? 0 : COAST_KM_S, autoKmS: paused ? 0 : m.autoKmS };
   }
 
   private snapshot(now: number): ProbeSnapshot {
     const m = this.mission;
     const safe = m.safeSince !== null;
+    const paused = m.pausedSince !== null;
     const factor = this.factor(now);
+    const moving = this.moving();
     return {
       missionId: m.id,
       destination: m.destination,
       missionStartedAt: m.startedAt,
       routeKm: m.routeKm,
-      distanceKm: distanceAt(this.moving(), now),
+      distanceKm: distanceAt(moving, now),
       at: now,
-      coastKmS: COAST_KM_S,
-      autoKmS: m.autoKmS,
+      coastKmS: moving.coastKmS,
+      autoKmS: moving.autoKmS,
       // In safe mode the thrusters sleep: the crew adds nothing (the design's "0 km/s from crew").
-      crewKmS: safe ? 0 : this.paceKmS(now, PACE_WINDOW_MIN) * factor + m.autoKmS,
+      crewKmS: safe || paused ? 0 : this.tapPaceKmS(now, PACE_WINDOW_MIN) * factor + m.autoKmS,
       crewFactor: factor,
+      paceKmS: this.todayPace(now),
+      pausedSince: m.pausedSince,
       online: this.onlineDevices().size,
       idling: this.idlingCount(now),
       signalDeadline: m.signalDeadline,
@@ -533,10 +606,63 @@ export class Probe extends DurableObject<Env> {
     };
   }
 
-  /** Moves the stored distance up to `now` (coasting and auto-thrust), so km can be added on top. */
-  private rebase(now: number) {
-    this.mission.distanceKm = distanceAt(this.moving(), now);
-    this.mission.at = now;
+  /** Moves the stored distance and moving time up to `t` (never backwards), so km can be added on top. */
+  private rebase(t: number) {
+    const m = this.mission;
+    const at = Math.max(t, m.at);
+    m.distanceKm = distanceAt(this.moving(), at);
+    if (m.pausedSince === null) m.movedMs += at - m.at;
+    m.at = at;
+  }
+
+  /** Time the probe has spent moving this mission, up to `now`. */
+  private movedAt(now: number): number {
+    const m = this.mission;
+    return m.movedMs + (m.pausedSince === null ? Math.max(0, now - m.at) : 0);
+  }
+
+  /** Adds a sample of the track (the distance and moving time at `at`) when the last one is old enough. */
+  private sample(force = false) {
+    const m = this.mission;
+    const last = this.track[this.track.length - 1];
+    if (last && (m.at <= last.at || (!force && m.movedMs - last.movedMs < TRACK_EVERY_MS))) return;
+    const point: TrackPoint = { at: m.at, distanceKm: m.distanceKm, movedMs: m.movedMs };
+    this.track.push(point);
+    this.sql.exec(
+      `INSERT OR REPLACE INTO track (mission_id, at, distance_km, moved_ms) VALUES (?, ?, ?, ?)`,
+      m.id,
+      point.at,
+      point.distanceKm,
+      point.movedMs,
+    );
+    // Samples well before the window aren't needed any more.
+    const old = m.movedMs - TODAY_PACE_MS - 3_600_000;
+    while (this.track.length > 1 && this.track[0].movedMs < old) this.track.shift();
+    this.sql.exec(`DELETE FROM track WHERE mission_id = ? AND moved_ms < ?`, m.id, Math.min(old, this.track[0].movedMs));
+  }
+
+  /**
+   * Today's pace: the probe's average speed over its last 24 hours of moving (paused time left out),
+   * coasting and the crew together. Early in a mission, coasting plus the crew's live push.
+   */
+  private todayPace(now: number): number {
+    const moved = this.movedAt(now);
+    const from = moved - TODAY_PACE_MS;
+    const s = this.track.find((p) => p.movedMs >= from) ?? this.track[this.track.length - 1];
+    if (s && moved - s.movedMs >= TODAY_PACE_MIN_MS) {
+      return Math.max(1, (distanceAt(this.moving(), now) - s.distanceKm) / ((moved - s.movedMs) / 1000));
+    }
+    return COAST_KM_S + this.tapPaceKmS(now, PACE_WINDOW_MIN) * this.factor(now) + this.mission.autoKmS;
+  }
+
+  /** The arrival estimate at today's pace (null while paused). */
+  private arrivalNow(now: number): number | null {
+    const m = this.mission;
+    return arrivalAt(
+      { routeKm: m.routeKm, paceKmS: this.todayPace(now), pausedSince: m.pausedSince, safeSince: m.safeSince },
+      distanceAt(this.moving(), now),
+      now,
+    );
   }
 
   /** Raw km in `map` over the last `minutes` minutes (this one included), per second. */
@@ -549,16 +675,16 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** The crew's tap pace (raw km/s). */
-  private paceKmS(now: number, minutes: number): number {
+  private tapPaceKmS(now: number, minutes: number): number {
     return this.perSecond(this.pace, now, minutes);
   }
 
-  /** What the ceiling looks at, before auto-thrust: last hour's taps and catch-ups (raw km/s). */
+  /** The crew push before auto-thrust: last hour's taps and catch-ups (raw km/s). */
   private hourKmS(now: number): number {
-    return this.perSecond(this.pace, now, CEILING_WINDOW_MIN) + this.perSecond(this.catchup, now, CEILING_WINDOW_MIN);
+    return this.perSecond(this.pace, now, CREW_WINDOW_MIN) + this.perSecond(this.catchup, now, CREW_WINDOW_MIN);
   }
 
-  /** The ceiling's share right now: last hour's taps and catch-ups plus everyone connected's auto-thrust. */
+  /** How far each crew km moves the probe right now: last hour's taps and catch-ups plus everyone connected's auto-thrust, balanced. */
   private factor(now: number, except?: WebSocket): number {
     return crewFactor(this.hourKmS(now) + this.autoRaw(except));
   }
@@ -590,6 +716,9 @@ export class Probe extends DurableObject<Env> {
   /** A socket that went silent without closing: close it, and count its device away from its last heartbeat. */
   private dropDead(ws: WebSocket, aliveReal: number) {
     this.dead.add(ws);
+    // Its auto-thrust was connected until its last heartbeat (for the idle pause).
+    const a = ws.deserializeAttachment() as Attachment | null;
+    if (a && a.auto > 0) this.mission.lastActiveAt = Math.max(this.mission.lastActiveAt, aliveReal + this.clockOffsetMs);
     try {
       ws.close(1001, "no heartbeat");
     } catch {
@@ -607,15 +736,17 @@ export class Probe extends DurableObject<Env> {
   /** Re-works out how fast connected auto-thrust moves the probe (after anyone joins, leaves, buys or taps). */
   private retune(now: number, except?: WebSocket) {
     this.rebase(now);
+    const m = this.mission;
     const raw = this.autoRaw(except);
-    this.mission.autoKmS = this.mission.safeSince === null ? raw * this.factor(now, except) : 0;
+    if (raw > 0 && m.pausedSince === null) m.lastActiveAt = Math.max(m.lastActiveAt, now);
+    m.autoKmS = m.safeSince === null && m.pausedSince === null ? raw * this.factor(now, except) : 0;
     this.scheduleSave();
     this.scheduleBroadcast();
   }
 
-  /** Crew km arriving in one go (a tap batch or an offline catch-up): counted in full, squeezed for the probe. */
-  private pushCrewKm(now: number, rawKm: number, kind: "taps" | "catchup") {
-    if (rawKm <= 0) return;
+  /** Crew km arriving in one go (a tap batch or an offline catch-up): counted in full, balanced for the probe. Returns the km it moved the probe. */
+  private pushCrewKm(now: number, rawKm: number, kind: "taps" | "catchup"): number {
+    if (rawKm <= 0 || this.mission.pausedSince !== null) return 0;
     this.rebase(now);
     const minute = Math.floor(now / MINUTE_MS);
     const map = kind === "taps" ? this.pace : this.catchup;
@@ -624,6 +755,7 @@ export class Probe extends DurableObject<Env> {
     const moved = rawKm * this.factor(now);
     this.mission.distanceKm = Math.min(this.mission.routeKm, this.mission.distanceKm + moved);
     this.retune(now);
+    return moved;
   }
 
   /** Devices away within the last 8 hours with auto-thrust (cached; it's a count, not exact to the second). */
@@ -645,20 +777,26 @@ export class Probe extends DurableObject<Env> {
   // ---------- The signal ----------
 
   /**
-   * One alarm for whichever comes first: the signal running out, or the vote closing at midnight.
-   * Alarms run on real time, so the clock offset is taken off. Only rewritten when the time changes.
+   * One alarm for whichever comes first: the signal running out, the idle pause, the next milestone,
+   * or the vote closing at midnight. While the probe is paused only the vote can fire: the signal
+   * waits and the probe stands still. Alarms run on real time, so the clock offset is taken off.
+   * Durable Object alarms survive restarts; it's only rewritten when the time changes.
    */
   private async scheduleAlarm() {
     const m = this.mission;
     let at = this.vote.closesAt;
-    if (m.safeSince === null) at = Math.min(at, m.signalDeadline);
-    // When the probe reaches the next milestone by coasting (rounded up to the minute, so taps don't rewrite it).
-    const next = MILESTONES.find((ms) => !this.reached.some((r) => r.n === ms.n));
-    if (next) {
-      const now = this.now();
-      const left = next.km - distanceAt(this.moving(), now);
-      const reach = left <= 0 ? now : now + (left / (COAST_KM_S + m.autoKmS)) * 1000;
-      at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
+    if (m.pausedSince === null) {
+      if (m.safeSince === null) at = Math.min(at, m.signalDeadline);
+      const pauseAt = this.pausesAt();
+      if (pauseAt !== null) at = Math.min(at, pauseAt);
+      // When the probe reaches the next milestone without help (rounded up to the minute, so taps don't rewrite it).
+      const next = MILESTONES.find((ms) => !this.reached.some((r) => r.n === ms.n));
+      if (next) {
+        const now = this.now();
+        const left = next.km - distanceAt(this.moving(), now);
+        const reach = left <= 0 ? now : now + (left / (COAST_KM_S + m.autoKmS)) * 1000;
+        at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
+      }
     }
     const real = Math.max(Date.now(), at - this.clockOffsetMs);
     if (real === this.alarmAt) return;
@@ -674,23 +812,88 @@ export class Probe extends DurableObject<Env> {
     await this.scheduleAlarm();
   }
 
-  /** Enters safe mode if the deadline has passed (from the alarm, or if it's late). */
+  /**
+   * Enters safe mode if the deadline has passed, and pauses the probe after 8 quiet hours, in the order
+   * they happened (from the alarm, or any message if the alarm is late).
+   */
   private async checkSignal() {
     const m = this.mission;
     const now = this.now();
-    if (m.safeSince !== null || now < m.signalDeadline) {
-      await this.scheduleAlarm();
-      return;
-    }
-    this.rebase(now);
+    const pauseAt = this.pausesAt();
+    // The signal's clock stops when the probe pauses, so it only runs out if that comes first.
+    const until = m.pausedSince ?? Math.min(now, pauseAt ?? Infinity);
+    if (m.safeSince === null && m.signalDeadline <= until) await this.enterSafe(until);
+    if (pauseAt !== null && pauseAt <= now) await this.enterIdle(pauseAt);
+    await this.scheduleAlarm();
+  }
+
+  /** The signal ran out at its deadline: safe mode (thrusters asleep, taps count for nothing). */
+  private async enterSafe(upTo: number) {
+    const m = this.mission;
+    this.rebase(m.signalDeadline);
     m.safeSince = m.signalDeadline;
-    this.retune(now); // the thrusters sleep: auto-thrust stops moving the probe
+    m.autoKmS = 0;
+    this.retune(upTo); // the thrusters sleep: auto-thrust stops moving the probe
     this.saveSignal();
-    await this.scheduleAlarm(); // now just the vote's
     this.broadcast();
     await this.log("signal_lost", "Signal lost", "Nobody pinged in time. The probe went quiet and slipped into safe mode.", {
       distanceKm: Math.round(m.distanceKm),
     });
+  }
+
+  /** When the probe pauses if nothing happens: 8 hours after the last activity; never while auto-thrust is connected (or once paused). */
+  private pausesAt(): number | null {
+    const m = this.mission;
+    if (m.pausedSince !== null || this.autoRaw() > 0) return null;
+    return m.lastActiveAt + IDLE_PAUSE_MS;
+  }
+
+  /** Nobody's pushed for 8 hours: the probe stops where it is, and the signal timer and any setback wait with it (decision 5). */
+  private async enterIdle(at: number) {
+    const m = this.mission;
+    this.rebase(at);
+    m.pausedSince = m.at;
+    m.autoKmS = 0;
+    this.saveSignal();
+    this.broadcast();
+    await this.log(
+      "probe_idle",
+      "Probe idle",
+      "Nobody has pushed for 8 hours, so the probe has stopped to wait, and the signal timer with it. One tap wakes it.",
+      { distanceKm: Math.round(m.distanceKm) },
+    );
+  }
+
+  /** Activity (a tap batch, connected auto-thrust, a ping): keeps the probe awake, and wakes it if it's paused, logging who did. */
+  private async wake(deviceId: string, now: number) {
+    const m = this.mission;
+    m.lastActiveAt = Math.max(m.lastActiveAt, now);
+    if (m.pausedSince === null) return;
+    const pausedMs = Math.max(0, now - m.pausedSince);
+    // The signal and any setback waited with the probe.
+    if (m.safeSince !== null) m.safeSince += pausedMs;
+    else m.signalDeadline += pausedMs;
+    m.pausedSince = null;
+    m.at = Math.max(m.at, now); // it stood still: no distance or moving time to add
+    this.retune(now);
+    this.saveSignal();
+    await this.scheduleAlarm();
+    this.broadcast();
+    const name = await this.deviceName(deviceId);
+    await this.log("probe_woken", `Probe woken by ${name}`, `The probe was idle for ${span(pausedMs)}. It's moving again.`, {
+      by: name,
+      pausedMs: Math.round(pausedMs),
+    });
+  }
+
+  /** A device's generated name (for the log). */
+  private async deviceName(deviceId: string): Promise<string> {
+    try {
+      const row = await this.env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(deviceId).first<{ name: string }>();
+      return row?.name ?? "a crew member";
+    } catch {
+      return "a crew member";
+    }
   }
 
   /** A ping from a device: once per UTC day, first one wins in a close race. */
@@ -703,7 +906,7 @@ export class Probe extends DurableObject<Env> {
     if (Date.now() - this.lastPingAt < JUST_SAVED_MS) return { ok: false, reason: "just-saved" };
 
     const woke = m.safeSince !== null;
-    const secondsLeft = woke ? 0 : Math.max(0, (m.signalDeadline - now) / 1000);
+    const secondsLeft = woke ? 0 : Math.max(0, (m.signalDeadline - probeClock(m, now)) / 1000);
     const tier = tierFor(secondsLeft);
     const day = utcDay(now);
 
@@ -732,11 +935,12 @@ export class Probe extends DurableObject<Env> {
 
     // The signal is back: full window again. Waking from safe mode makes the setback permanent.
     const at = this.now();
+    await this.wake(deviceId, at); // a ping is activity too: it wakes a paused probe
     let setback = 0;
     this.rebase(at);
     if (m.safeSince !== null) {
       setback = setbackMs(m.safeSince, at);
-      m.routeKm += (setback / 1000) * COAST_KM_S; // drifted off course: more km to fly
+      m.routeKm += (setback / 1000) * this.todayPace(at); // drifted off course: that many hours more, at today's pace
       m.lastSafeFrom = m.safeSince; // nobody's auto-thrust is paid for the outage
       m.lastSafeTo = at;
       m.safeSince = null;
@@ -753,8 +957,8 @@ export class Probe extends DurableObject<Env> {
     this.broadcast();
 
     if (woke) {
-      const days = setback / DAY_MS;
-      void this.log("signal_restored", `Signal restored by ${name}`, `The probe woke up. Arrival moved ${days.toFixed(1)} days later.`, {
+      const later = setback > 0 ? `Arrival moved about ${span(setback)} later.` : "The arrival date held.";
+      void this.log("signal_restored", `Signal restored by ${name}`, `The probe woke up. ${later}`, {
         by: name,
         setbackMs: Math.round(setback),
       });
@@ -875,7 +1079,8 @@ export class Probe extends DurableObject<Env> {
     const hours = def?.hours ?? 0;
     if (hours !== 0) {
       this.rebase(now);
-      m.routeKm = Math.max(m.distanceKm + 1, m.routeKm + hours * 3600 * COAST_KM_S);
+      // Hours at today's pace, so "about 4 hours sooner" is what the arrival date does.
+      m.routeKm = Math.max(m.distanceKm + 1, m.routeKm + hours * 3600 * this.todayPace(now));
       this.saveSignal();
     }
     try {
@@ -955,12 +1160,19 @@ export class Probe extends DurableObject<Env> {
     const promise = (async () => {
       let kmToday = 0;
       let tapKmToday = 0;
+      let tapMovedToday = 0;
       let pingDays: string[] = [];
       const round = this.vote.round;
       let voteOpt: number | null = null;
       try {
-        const [km, pings, votes] = await this.env.DB.batch<{ km?: number; tap_km?: number; day?: string; option?: number }>([
-          this.env.DB.prepare(`SELECT km, tap_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, deviceId),
+        const [km, pings, votes] = await this.env.DB.batch<{
+          km?: number;
+          tap_km?: number;
+          tap_moved_km?: number;
+          day?: string;
+          option?: number;
+        }>([
+          this.env.DB.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, deviceId),
           this.env.DB.prepare(`SELECT day FROM pings WHERE device_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`).bind(
             deviceId,
             day,
@@ -970,6 +1182,7 @@ export class Probe extends DurableObject<Env> {
         voteOpt = votes.results[0]?.option ?? null;
         kmToday = km.results[0]?.km ?? 0;
         tapKmToday = km.results[0]?.tap_km ?? 0;
+        tapMovedToday = km.results[0]?.tap_moved_km ?? 0;
         pingDays = pings.results.map((r) => r.day!);
       } catch (err) {
         console.error("device read failed", err);
@@ -980,6 +1193,7 @@ export class Probe extends DurableObject<Env> {
         day,
         kmToday: kmToday + (pending?.km ?? 0),
         tapKmToday: tapKmToday + (pending?.tapKm ?? 0),
+        tapMovedToday: tapMovedToday + (pending?.tapMovedKm ?? 0),
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
@@ -1005,6 +1219,7 @@ export class Probe extends DurableObject<Env> {
     return {
       kmToday: dev.kmToday,
       tapKmToday: dev.tapKmToday,
+      tapMovedToday: dev.tapMovedToday,
       pingedToday: dev.pingedToday,
       pingStreakDays: alive ? dev.pingStreakDays : 0,
       vote: dev.voteRound === this.vote.round && dev.voteOption !== null ? { round: dev.voteRound, option: dev.voteOption } : null,
@@ -1135,6 +1350,7 @@ export class Probe extends DurableObject<Env> {
     const { from, awayMs, countedMs, km } = away;
     const sameMission = p.lastMissionId === this.mission.id;
     const snap = this.snapshot(now);
+    const arrival = this.arrivalNow(now);
     let keptAliveBy: WelcomeBack["keptAliveBy"] = null;
     try {
       const row = await this.env.DB.prepare(
@@ -1152,7 +1368,8 @@ export class Probe extends DurableObject<Env> {
       countedMs,
       km,
       crewKm: sameMission && p.lastDistance !== null ? Math.max(0, snap.distanceKm - p.lastDistance) : null,
-      arrivalSoonerMs: sameMission && p.lastArrivalAt !== null ? p.lastArrivalAt - coastArrival(snap, now) : null,
+      // How the arrival date moved while you were away (at today's pace, as the home screen shows it).
+      arrivalSoonerMs: sameMission && p.lastArrivalAt !== null && arrival !== null ? p.lastArrivalAt - arrival : null,
       keptAliveBy,
     };
   }
@@ -1259,6 +1476,8 @@ export class Probe extends DurableObject<Env> {
     const now = this.now();
     const dev = await this.device(deviceId, now);
     const p = this.prog(deviceId, now);
+    // Connected auto-thrust is activity: it wakes a paused probe (before any catch-up is added to it).
+    if (autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now);
     // Another tab of this device is already here: it never left. Otherwise it's back from time away.
     const alreadyHere = this.onlineDevices().has(deviceId);
     let away: Away | null = null;
@@ -1301,10 +1520,13 @@ export class Probe extends DurableObject<Env> {
       else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(deviceId, p, msg.key, now);
       this.send(ws, { t: "me", seq: msg.seq, ok, now, me: this.me(p) });
       if (ok) this.sendMe(deviceId, p, ws); // the device's other tabs
+      if (ok && autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now); // connected auto-thrust
       return;
     }
 
     if (msg.t !== "taps" || !Number.isInteger(msg.n) || msg.n < 0 || msg.n > MAX_TAPS_PER_MESSAGE) return;
+    // Any tap batch is activity: it keeps the probe awake, or wakes it (decision 5).
+    if (msg.n > 0) await this.wake(deviceId, now);
 
     // Refill the device's bucket for the real time that passed, then take what it can afford.
     const real = Date.now();
@@ -1318,7 +1540,10 @@ export class Probe extends DurableObject<Env> {
     if (km > 0) {
       this.earn(deviceId, p, dev, km, true);
       this.touch(deviceId);
-      this.pushCrewKm(now, km, "taps");
+      // What these taps moved the shared probe: "your taps today got us there X sooner".
+      const moved = this.pushCrewKm(now, km, "taps");
+      dev.tapMovedToday += moved;
+      this.addPending(dev.day, deviceId, 0, 0, moved);
     }
 
     this.send(ws, {
@@ -1354,13 +1579,14 @@ export class Probe extends DurableObject<Env> {
   private async left(ws: WebSocket, at?: number) {
     const a = ws.deserializeAttachment() as Attachment | null;
     const now = this.now();
+    // Its auto-thrust was connected until now (or its last heartbeat): activity, for the idle pause.
+    if (a && a.auto > 0) this.mission.lastActiveAt = Math.max(this.mission.lastActiveAt, Math.min(now, at ?? now));
     if (a && !this.onlineDevices(ws).has(a.deviceId)) {
       const dev = await this.device(a.deviceId, now);
       const p = this.prog(a.deviceId, now);
       this.settleConnected(a.deviceId, p, dev, Math.min(now, at ?? now));
-      const snap = this.snapshot(now);
-      p.lastDistance = snap.distanceKm;
-      p.lastArrivalAt = coastArrival(snap, now);
+      p.lastDistance = distanceAt(this.moving(), now);
+      p.lastArrivalAt = this.arrivalNow(now);
       p.lastMissionId = this.mission.id;
       this.touch(a.deviceId, true);
     }
@@ -1375,7 +1601,7 @@ export class Probe extends DurableObject<Env> {
     const players = this.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM progress`).toArray()[0]?.n ?? 0;
     return {
       probe: this.snapshot(now),
-      setbackMs: setbackMs(this.mission.safeSince, now),
+      setbackMs: setbackMs(this.mission.safeSince, probeClock(this.mission, now)),
       serverNow: now,
       clockOffsetMs: this.clockOffsetMs,
       sockets: this.ctx.getWebSockets().length,
@@ -1383,18 +1609,27 @@ export class Probe extends DurableObject<Env> {
       lastD1FlushAt: this.lastD1FlushAt,
       crewRawKmS: this.hourKmS(now),
       autoRawKmS: this.autoRaw(),
+      lastActiveAt: this.mission.lastActiveAt,
+      pausesAt: this.pausesAt(),
       players,
     };
   }
 
   async adminSetDistance(km: number): Promise<AdminState> {
     const now = this.now();
+    this.rebase(now);
     this.mission.distanceKm = Math.max(0, Math.min(this.mission.routeKm, km));
-    this.mission.at = now;
+    // A jump isn't speed: today's pace starts again from here.
+    this.track = [];
+    this.sql.exec(`DELETE FROM track`);
+    this.sample(true);
     return this.adminCommit();
   }
 
-  /** Moves the mission clock forward: the probe coasts through those hours, and the signal may run out. */
+  /**
+   * Moves the mission clock forward: the probe coasts through those hours, and the signal may run out.
+   * With no tap and no connected auto-thrust for 8 hours, the probe pauses part-way.
+   */
   async adminMoveClock(hours: number): Promise<AdminState> {
     this.rebase(this.now());
     this.clockOffsetMs += Math.round(hours * 3_600_000);
@@ -1408,7 +1643,7 @@ export class Probe extends DurableObject<Env> {
   async adminSetSignal(seconds: number): Promise<AdminState> {
     const now = this.now();
     this.rebase(now);
-    this.mission.signalDeadline = now + seconds * 1000;
+    this.mission.signalDeadline = probeClock(this.mission, now) + seconds * 1000;
     if (seconds > 0 && this.mission.safeSince !== null) {
       this.mission.lastSafeFrom = this.mission.safeSince;
       this.mission.lastSafeTo = now;
@@ -1466,7 +1701,12 @@ export class Probe extends DurableObject<Env> {
     return this.adminState();
   }
 
-  /** A fresh mission at 0 km, with the clock back to real time and a full signal. Everyone's progress is kept. */
+  /**
+   * "Reset mission (keep players)", decision 6 (the launch reset): a new mission at 0 km, starting now on
+   * real time, with a full signal, no milestones reached, a fresh vote round and an empty mission log
+   * (the log shows the current mission only). Devices, pings, streaks, progress, credits, upgrades and
+   * patches are all kept.
+   */
   async adminResetMission(): Promise<AdminState> {
     // Pay connected devices up to now, then restart their clocks at real time.
     const before = this.now();
@@ -1490,16 +1730,32 @@ export class Probe extends DurableObject<Env> {
     this.lastPingAt = 0;
     this.sql.exec(`DELETE FROM pace`);
     await this.startMission(this.mission.id + 1);
+    await this.abandonVote(now);
+    await this.openVote(now);
     return this.adminCommit();
   }
 
+  /** Ends the open round with no result and no effect (its mission is gone). */
+  private async abandonVote(now: number) {
+    const v = this.vote;
+    this.sql.exec(`UPDATE vote_round SET closed_at = ?, winner = -1 WHERE round = ?`, now, v.round);
+    try {
+      await this.env.DB.prepare(`UPDATE vote_days SET closed_at = ?, winner = -1, effect_hours = 0 WHERE round = ?`)
+        .bind(now, v.round)
+        .run();
+    } catch (err) {
+      console.error("vote_days abandon failed", err);
+    }
+  }
+
   private async adminCommit(): Promise<AdminState> {
+    // First, so a clock jump pauses the probe (or loses the signal) part-way rather than coasting through.
+    await this.checkSignal(); // also re-arms the alarm
     const now = this.now();
     this.retune(now);
     this.dirty = true;
     this.save();
     this.saveSignal();
-    await this.checkSignal(); // may enter safe mode (clock moved, timer set to 0); also re-arms the alarm
     await this.checkVote(); // the clock may have passed midnight
     await this.checkMilestones(); // the distance may have passed a milestone
     this.broadcast();
@@ -1507,13 +1763,12 @@ export class Probe extends DurableObject<Env> {
   }
 }
 
-/**
- * When the probe would arrive coasting alone from here. Welcome back compares this at leaving and at
- * returning, so "arrival moved" is what the crew's pushes (and any outage) did meanwhile, not pace noise.
- */
-function coastArrival(p: ProbeSnapshot, now: number): number {
-  const setbackKm = (setbackMs(p.safeSince, now) / 1000) * p.coastKmS;
-  return now + (Math.max(0, p.routeKm + setbackKm - p.distanceKm) / p.coastKmS) * 1000;
+/** "40 minutes", "5 hours", "3 days", for the log. */
+function span(ms: number): string {
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  if (ms < 90 * MINUTE_MS) return plural(Math.max(1, Math.round(ms / MINUTE_MS)), "minute");
+  if (ms < 2 * DAY_MS) return plural(Math.round(ms / 3_600_000), "hour");
+  return plural(Math.round(ms / DAY_MS), "day");
 }
 
 /** How much of [a, b] falls inside [c, d]. */
