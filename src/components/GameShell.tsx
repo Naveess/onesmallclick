@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { buyUpgrade, dismissWelcome, handOver, useGame } from "../game/store";
+import { buyUpgrade, dismissMoment, dismissWelcome, handOver, useGame } from "../game/store";
 import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
@@ -9,6 +9,7 @@ import { PixelIcon } from "./PixelIcon";
 import { Sky } from "./Sky";
 import { Toast } from "./Toast";
 import { UpgradesSheet } from "./UpgradesSheet";
+import { MilestoneMoment } from "./MilestoneMoment";
 import { WelcomeBack } from "./WelcomeBack";
 import "./GameShell.css";
 import "./PixelButton.css";
@@ -24,7 +25,7 @@ interface GameShellProps {
 export function GameShell({ tab, children }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
-  const { probe, player, view, toast, welcome, connection } = useGame();
+  const { probe, player, view, toast, welcome, moment, connection, now } = useGame();
   const safe = view.safe;
   const openUpgrades = () => setUpgradesOpen(true);
 
@@ -37,6 +38,32 @@ export function GameShell({ tab, children }: GameShellProps) {
             <WelcomeBack welcome={welcome} name={player.name} wide={wide} onClose={dismissWelcome} />
           </div>
         </div>
+      </>
+    );
+  }
+
+  if (moment) {
+    return (
+      <>
+        <Sky fixed milestone />
+        <div className={wide ? "game game--wide" : "game"}>
+          <div className="game__main">
+            <MilestoneMoment
+              reached={moment}
+              wide={wide}
+              missionDay={view.missionDayAt(moment.at)}
+              today={{
+                missionDay: view.missionDay,
+                progress: view.progress,
+                kmToday: player.kmToday,
+                arrivalAt: view.arrivalAt,
+                now,
+              }}
+              onClose={dismissMoment}
+            />
+          </div>
+        </div>
+        <Toast toast={toast} wide={wide} />
       </>
     );
   }

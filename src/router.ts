@@ -37,8 +37,12 @@ interface LinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;
 }
 
+/** Plain HTML pages outside the app (scripts/build-pages.mjs): links to them load the page normally. */
+const CONTENT_PAGE = /^\/(how-to-play|milestones)(\/|$)/;
+
 /** An <a> that navigates inside the app. Ctrl/Cmd-click and middle-click still open a new tab. */
 export function Link({ href, onClick, ...rest }: LinkProps) {
+  if (CONTENT_PAGE.test(href)) return createElement("a", { ...rest, href, onClick });
   const target = withSearch(href);
   return createElement("a", {
     ...rest,

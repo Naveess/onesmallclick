@@ -11,8 +11,8 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 5: Signal, Ping and safe mode** (deployed from 7261f30 and approved 2026-11-19)
 - [x] **Phase 6: Idle upgrades and offline thrust** (deployed from 3faffe7 and approved 2026-11-19)
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
-  - [x] **7a: The daily vote and the mission log** (built 2026-11-19; Nav applies migration 0004 and deploys)
-  - [ ] **7b: Milestones, the milestone moment, fact pages and How to play**
+  - [x] **7a: The daily vote and the mission log** (deployed from d80f813 and approved 2026-11-19)
+  - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (built 2026-11-19; Nav applies migration 0005 and deploys)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 
@@ -257,6 +257,26 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - The mission log page (1h) at `/log` reads `GET /api/log` (the current mission, newest first, 30 at a time) and puts today's open vote at the top. An open log page reloads by itself when a new entry is written. The design draws the marker icons at 12px; they're at 9px (1×) to keep whole-number pixels.
 - `/admin` shows today's tallies, closes the vote now, and lets its own browser vote again.
 - The open vote is shown as "DAY n" of the mission (mission days count from launch, not from midnight).
+
+**As built: 7b (2026-11-19)**
+- The six milestones are `content/milestones.json` (a DRAFT for Nav's approval), via `shared/milestones.ts`. Each fact was checked against the NASA/JPL pages listed with it:
+  1. Past the Moon (384,400 km);
+  2. Webb's neighbourhood (1.5M km);
+  3. Mid-course burn (120M km, the design's);
+  4. Halfway (240M km, the design's);
+  5. Three quarters (360M km);
+  6. Phobos in view (430M km).
+- The design's halfway fact ("a radio ping from here takes about 7 minutes") isn't true at 240M km (it takes about 13 minutes), so it moved to milestone 3, where it is.
+- The `Probe` object notices a milestone on any message, on /admin changes, and on an alarm set for when coasting reaches the next one (rounded to the minute), so it's caught with nobody around. It records it (its own SQLite, and D1 `milestones`, migration 0005), logs it (with the postcard and a link to the fact page), and sends it to everyone.
+- **The milestone moment (1e)** shows on every open screen: the design's warmer sky, the postcard (a placeholder photo with a 32px Mars stamp), the fact from the flight deck, the share card, fireworks and pixel confetti (none with reduced motion). Each browser remembers the milestones it has seen. One that comes back after several milestones sees the newest. A first visit doesn't replay old ones.
+- **Share result** opens the phone's share sheet, or copies the text on a computer. "Read more about this milestone" links to its fact page (an addition to the design).
+- The track flags only milestones 3–6. Milestones 1 and 2 sit within 0.3% of Earth, where their flags would cover it. They're still celebrated and logged.
+- **Content pages** are plain HTML written by `scripts/build-pages.mjs` (it runs before `npm run dev` and `npm run build`) into `public/` (git-ignored) from `content/milestones.json`:
+  - `/how-to-play` (the design's 1l, plus the list of milestones);
+  - `/milestones/<slug>` for each milestone (fact, postcard, two paragraphs, sources, previous and next);
+  - their stylesheet `/content.css`, made from the game's own styles plus `src/content/pages.css`.
+
+  The text is in the HTML source. They have ad-slot placeholders only. The theme follows the saved choice, else the system setting, live. In dev, a small Vite middleware serves them at the same clean addresses as production.
 
 ## Phase 8: Accounts, leaderboards, profile and arrival
 

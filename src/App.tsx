@@ -28,15 +28,6 @@ export function App() {
           note="Top players and countries by km pushed today. Arrives in phase 8."
         />
       );
-    case "/how-to-play":
-      return (
-        <StubPage
-          tab="other"
-          title="How to play"
-          icon="star"
-          note="Tap THRUST, keep the signal alive, vote on the route. The full guide arrives in phase 7."
-        />
-      );
     case "/sign-in":
       return (
         <StubPage

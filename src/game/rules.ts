@@ -13,21 +13,7 @@ export {
   type UpgradeLevels,
 } from "../../shared/upgrades";
 
-export interface Milestone {
-  n: number;
-  name: string;
-  km: number;
-}
-
-/**
- * The milestones the design shows on the track. All six are drafted in phase 7 (decision 12);
- * these four are the design's, as placeholders.
- */
-export const MILESTONES: Milestone[] = [
-  { n: 1, name: "Earth–Moon portrait", km: 20_000_000 },
-  { n: 3, name: "Mid-course burn", km: 120_000_000 },
-  { n: 4, name: "Halfway", km: 240_000_000 },
-  { n: 6, name: "Phobos in view", km: 430_000_000 },
-];
+// The six milestones (phase 7b) are content: content/milestones.json, via shared/milestones.ts.
+export { MILESTONES, MILESTONE_COUNT, type Milestone } from "../../shared/milestones";
 
 // The signal's numbers (window, red zone, setback) live in shared/mission.ts: the server keeps the signal.

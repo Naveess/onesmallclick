@@ -6,6 +6,10 @@ import { Sprite } from "./Sprite";
 import { Window } from "./Window";
 import "./JourneyTrack.css";
 
+/** Milestones closer to Earth than this share of the route (the Moon's orbit, L2) would sit on top of
+ * Earth, so they get no flag on the track. They're still celebrated and logged. */
+const FLAG_MIN_SHARE = 0.02;
+
 interface JourneyTrackProps {
   /** 0..1 along the route. */
   progress: number;
@@ -74,7 +78,7 @@ export function JourneyTrack({
         <div className="track__route" ref={routeRef}>
           <div className="track__dash" />
           <div className="track__done" style={{ width: px(progress) }} />
-          {milestones.map((m) => {
+          {milestones.filter((m) => m.km >= routeKm * FLAG_MIN_SHARE).map((m) => {
             const at = m.km / routeKm;
             const state = m.km <= distanceKm ? "passed" : m === nextMilestone ? "next" : "ahead";
             const tickClass = state === "passed" ? "track__tick" : `track__tick track__tick--${state}`;

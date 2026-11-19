@@ -15,6 +15,7 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/probe.png` | 64×40 | The probe OSC-1, engine off. The design uses the still probe on the Safe mode screen (probe gone quiet). |
 | `stills/earth.png` | 64×64 | Earth, where the route starts. The design uses the still on the Safe mode screen. |
 | `stills/mars.png` | 128×128 | Mars, the destination. The design uses the still on the Milestone moment card and the Safe mode screen. |
+| `stills/mars-32.png` | 32×32 | Added 2026-11-19. Mars for the postcard stamp (milestone moment, fact pages), where the design shows `mars.png` at 32px. Made from `mars.png` by two rounds of the same 2×2 reduction as the 64px sheet, since sprites only scale by whole numbers. |
 | `stills/moon.png` | 32×32 | The Moon. The design places it near Earth on the desktop game home and on How to play. |
 | `stills/firework.png` | 64×64 | One full firework. Not used in the design. Could stand in for the burst when reduced motion is on. |
 | `stills/starfield.png` | 256×256 | Nebula and starfield background tile. Not shipped: the design's sky is `nebula-tile.png` with `stars-far.png` and `stars-near.png` on top. |

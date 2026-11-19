@@ -1,0 +1,112 @@
+/* The milestone moment (1e). Sizes, colours and the postcard are the design's. */
+
+.moment {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 0 20px;
+}
+
+/* On the wide layout the same screen sits in a centred column. */
+.moment--wide {
+  width: min(100%, 440px);
+  margin: 0 auto;
+  padding-top: 40px;
+}
+
+.moment__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.moment__label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.moment__title {
+  font: 600 34px/1 var(--font-ui);
+  text-shadow: 3px 3px 0 var(--orange-shadow);
+  text-wrap: balance;
+}
+
+.moment__where {
+  font-size: 22px;
+  color: var(--text-orange-soft);
+}
+
+.moment__deck.window {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.moment__deck-label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.moment__deck p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-warm);
+}
+
+.moment__more {
+  align-self: flex-start;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-orange);
+  text-underline-offset: 3px;
+}
+
+.moment__share {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  background: var(--field);
+  border: 2px solid var(--line-blue);
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--text-soft);
+}
+
+.moment__buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Fireworks and confetti float above everything, and never catch a tap. */
+.moment__fx {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.moment__burst {
+  position: absolute;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.moment__burst img {
+  display: block;
+  max-width: none;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.moment__confetti {
+  position: absolute;
+  top: -10px;
+}

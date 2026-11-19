@@ -38,6 +38,7 @@ import {
   type UpgradeLevels,
   type WelcomeBack,
 } from "../shared/upgrades";
+import { MILESTONES, type ReachedMilestone } from "../shared/milestones";
 import {
   VOTE_QUESTION,
   VOTE_RECENT_ROUNDS,
@@ -57,6 +58,7 @@ import {
 //   - pays auto-thrust while connected, and up to 8 hours of it when a device comes back;
 //   - squeezes the crew's push on the shared probe above the ceiling's knee (shared/mission.ts);
 //   - keeps the signal: a deadline, an alarm when it runs out, safe mode until someone pings;
+//   - notices milestones (also on an alarm, when nobody's around), records and logs them;
 //   - runs the daily crew vote: live tallies, closing at 00:00 UTC (the same alarm), the winner's effect on the route;
 //   - sends an update to everyone when something changes, at most once a second (no ticking timer);
 //   - saves to its own SQLite at most every 5 s (the signal and purchases straight away),
@@ -205,6 +207,8 @@ export class Probe extends DurableObject<Env> {
   /** Set while a round is being closed, so two callers can't close it twice. */
   private closingVote: Promise<void> | null = null;
   private lastLogId = 0;
+  /** Milestones the current mission has reached. */
+  private reached: ReachedMilestone[] = [];
   /** The alarm time last set (real ms), so it's only rewritten when it changes. */
   private alarmAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
@@ -240,6 +244,8 @@ export class Probe extends DurableObject<Env> {
       patches INTEGER NOT NULL, km_since_shift REAL NOT NULL, settled_at INTEGER NOT NULL, auto_kms REAL NOT NULL,
       last_distance REAL, last_arrival_at INTEGER, last_mission_id INTEGER)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS progress_by_settled ON progress (settled_at)`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS milestone_reached (
+      mission_id INTEGER NOT NULL, n INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (mission_id, n))`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS vote_round (
       round TEXT PRIMARY KEY, opened_at INTEGER NOT NULL, closes_at INTEGER NOT NULL,
       options TEXT NOT NULL, tallies TEXT NOT NULL, winner INTEGER, closed_at INTEGER)`);
@@ -277,6 +283,11 @@ export class Probe extends DurableObject<Env> {
     } else {
       await this.startMission(1);
     }
+
+    this.reached = this.sql
+      .exec<{ n: number; at: number }>(`SELECT n, at FROM milestone_reached WHERE mission_id = ? ORDER BY n`, this.mission.id)
+      .toArray()
+      .map((r) => ({ n: r.n, at: r.at }));
 
     const since = Math.floor(this.now() / MINUTE_MS) - 60;
     for (const p of this.sql.exec<{ minute: number; km: number }>(`SELECT minute, km FROM pace WHERE minute > ?`, since)) {
@@ -321,6 +332,7 @@ export class Probe extends DurableObject<Env> {
       lastSafeFrom: null,
       lastSafeTo: null,
     };
+    this.reached = [];
     const m = this.mission;
     this.sql.exec(
       `INSERT OR REPLACE INTO mission (id, destination, route_km, started_at, distance_km, at, signal_deadline, safe_since, auto_kms)
@@ -507,6 +519,7 @@ export class Probe extends DurableObject<Env> {
       safeSince: m.safeSince,
       vote: this.liveVote(),
       logId: this.lastLogId,
+      milestones: this.reached,
     };
   }
 
@@ -639,6 +652,14 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     let at = this.vote.closesAt;
     if (m.safeSince === null) at = Math.min(at, m.signalDeadline);
+    // When the probe reaches the next milestone by coasting (rounded up to the minute, so taps don't rewrite it).
+    const next = MILESTONES.find((ms) => !this.reached.some((r) => r.n === ms.n));
+    if (next) {
+      const now = this.now();
+      const left = next.km - distanceAt(this.moving(), now);
+      const reach = left <= 0 ? now : now + (left / (COAST_KM_S + m.autoKmS)) * 1000;
+      at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
+    }
     const real = Math.max(Date.now(), at - this.clockOffsetMs);
     if (real === this.alarmAt) return;
     this.alarmAt = real;
@@ -649,6 +670,7 @@ export class Probe extends DurableObject<Env> {
     this.alarmAt = 0; // it fired: the next one must be set again
     await this.checkSignal();
     await this.checkVote();
+    await this.checkMilestones();
     await this.scheduleAlarm();
   }
 
@@ -745,6 +767,38 @@ export class Probe extends DurableObject<Env> {
     }
 
     return { ok: true, tier, secondsLeft, woke, setbackMs: Math.round(setback), pingStreakDays: dev.pingStreakDays };
+  }
+
+  // ---------- Milestones ----------
+
+  /** Records any milestone the probe has passed: everyone connected gets the moment, and it goes in the log. */
+  private async checkMilestones() {
+    const now = this.now();
+    const d = distanceAt(this.moving(), now);
+    const fresh = MILESTONES.filter((ms) => ms.km <= d && !this.reached.some((r) => r.n === ms.n));
+    if (fresh.length === 0) return;
+    const m = this.mission;
+    for (const ms of fresh) {
+      this.reached.push({ n: ms.n, at: now });
+      this.sql.exec(`INSERT OR IGNORE INTO milestone_reached (mission_id, n, at) VALUES (?, ?, ?)`, m.id, ms.n, now);
+    }
+    this.reached.sort((a, b) => a.n - b.n);
+    this.broadcast();
+    await this.scheduleAlarm();
+    for (const ms of fresh) {
+      try {
+        await this.env.DB.prepare(`INSERT OR IGNORE INTO milestones (mission_id, n, km, reached_at) VALUES (?, ?, ?, ?)`)
+          .bind(m.id, ms.n, ms.km, now)
+          .run();
+      } catch (err) {
+        console.error("milestone insert failed", err);
+      }
+      await this.log("milestone", `Milestone ${ms.n}: ${ms.name}`, `${gb.format(ms.km)} km from Earth. ${ms.fact}`, {
+        n: ms.n,
+        slug: ms.slug,
+        postcard: ms.n,
+      });
+    }
   }
 
   // ---------- The daily crew vote ----------
@@ -1200,6 +1254,7 @@ export class Probe extends DurableObject<Env> {
     if (!deviceId) return new Response("No device", { status: 400 });
     await this.checkSignal();
     await this.checkVote();
+    await this.checkMilestones();
 
     const now = this.now();
     const dev = await this.device(deviceId, now);
@@ -1276,6 +1331,7 @@ export class Probe extends DurableObject<Env> {
       me: this.me(p),
       ...this.today(dev),
     });
+    if (km > 0) await this.checkMilestones(); // taps may have carried the probe past one
   }
 
   async webSocketClose(ws: WebSocket, code: number, reason: string) {
@@ -1445,6 +1501,7 @@ export class Probe extends DurableObject<Env> {
     this.saveSignal();
     await this.checkSignal(); // may enter safe mode (clock moved, timer set to 0); also re-arms the alarm
     await this.checkVote(); // the clock may have passed midnight
+    await this.checkMilestones(); // the distance may have passed a milestone
     this.broadcast();
     return this.adminState();
   }

@@ -26,6 +26,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Phase plan proposed in docs/plan.md (18 Nov). Next: answer the "Before phase 2" decisions there.
 
 ## Before launch
+- [ ] **Approve the six milestones** (`content/milestones.json`): names, distances, the moment's fact and sub-line, the fact pages' text, and the sources. Drafted and checked on 19 Nov; still a draft until you say so.
 - [ ] **Approve the vote pool** (`content/vote-options.json`): wording, effects, and each detour's fact against its source link. It's a draft until you say so.
 
 ## At the end

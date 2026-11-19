@@ -1,0 +1,67 @@
+/* The milestone postcard (1e). Shared by the milestone moment and the fact pages (scripts/build-pages.mjs). */
+
+/* The postcard: paper, tilted, with a hard shadow. */
+.postcard {
+  align-self: center;
+  width: min(100%, 318px);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 10px 12px;
+  background: var(--paper);
+  box-shadow: 4px 4px 0 var(--outline);
+  transform: rotate(-2deg);
+}
+
+.postcard__photo {
+  position: relative;
+  height: 184px;
+  display: grid;
+  place-items: center;
+  background: var(--postcard-sky) url("/sprites/stars-near.png") 0 0 / 256px 256px;
+  image-rendering: pixelated;
+}
+
+.postcard__soon {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 0 64px 0 12px;
+  text-align: center;
+}
+
+.postcard__stamp {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 46px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  background: var(--paper);
+  box-shadow: 0 0 0 2px var(--paper);
+  outline: 2px dashed var(--paper-edge);
+  outline-offset: -2px;
+}
+
+.postcard__stamp img {
+  image-rendering: pixelated;
+}
+
+.postcard__caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font: 13px var(--font-ui);
+  color: var(--text-ink);
+}
+
+.postcard__no {
+  flex: none;
+  font-size: 16px;
+  color: var(--text-stamp);
+  border: 2px solid var(--stamp);
+  padding: 0 5px;
+}

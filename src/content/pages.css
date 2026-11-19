@@ -1,0 +1,305 @@
+/* The plain HTML content pages: How to play (1l) and the milestone fact pages.
+   scripts/build-pages.mjs bundles this with the game's fonts, theme, base, window, button,
+   sky and postcard styles into /content.css. Built from the kit; How to play follows the design's 1l. */
+
+.page {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 640px);
+  min-height: 100svh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 16px 32px;
+}
+
+/* --- Header --- */
+.page__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.page__brand {
+  font: 600 18px/1.2 var(--font-ui);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.page__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 13px;
+}
+
+.page__nav a,
+.page__theme {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  text-decoration: none;
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.page__nav a:hover,
+.page__theme:hover,
+.page__nav a[aria-current="page"] {
+  color: var(--text-blue);
+}
+
+.page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* --- Titles --- */
+.page__label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.page__label--orange {
+  color: var(--text-orange);
+}
+
+.page__title {
+  margin-top: 4px;
+  font: 500 30px/1.05 var(--font-ui);
+  text-wrap: balance;
+}
+
+.page__lede {
+  margin-top: 6px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+/* --- How to play: the four steps --- */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step.window {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+}
+
+.step__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: var(--field);
+  border: 2px solid var(--blue);
+  color: var(--text-blue);
+}
+
+.step__icon--orange {
+  border-color: var(--orange);
+  color: var(--text-orange);
+}
+
+.step__title {
+  font: 500 16px/1.3 var(--font-ui);
+}
+
+.step__n {
+  font: 20px var(--font-num);
+  color: var(--text-blue);
+}
+
+.step__n--orange {
+  color: var(--text-orange);
+}
+
+.step__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.page__note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+/* --- Fact pages --- */
+.fact.window {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px;
+}
+
+.fact__label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.fact p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-warm);
+}
+
+.prose.window {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.prose p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+.sources {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.sources h2 {
+  font: 500 15px var(--font-ui);
+  color: var(--text);
+}
+
+.sources ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.sources a,
+.page__links a {
+  color: var(--text-blue);
+  text-underline-offset: 3px;
+}
+
+.page__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+
+.page__links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.page__cta {
+  align-self: flex-start;
+}
+
+/* --- The milestone list --- */
+.milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.milestones a {
+  min-height: 44px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.milestones a:hover .milestones__name {
+  color: var(--text-orange);
+}
+
+.milestones__n {
+  flex: none;
+  width: 2ch;
+  font: 20px var(--font-num);
+  color: var(--text-orange);
+}
+
+.milestones__name {
+  font: 500 15px var(--font-ui);
+}
+
+.milestones__km {
+  margin-left: auto;
+  font: 18px var(--font-num);
+  color: var(--text-muted);
+}
+
+.page__h2 {
+  font: 500 18px var(--font-ui);
+}
+
+/* --- Ad slot placeholder (no real ads until phase 9) --- */
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ad-slot__label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+.ad-slot__box {
+  width: 320px;
+  height: 100px;
+  max-width: 100%;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--line-blue);
+  font: 18px/1 var(--font-num);
+  color: var(--text-dim);
+}
+
+/* --- Footer --- */
+.page__foot {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+}
+
+.page__foot a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}

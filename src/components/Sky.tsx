@@ -5,11 +5,13 @@ interface SkyProps {
   fixed?: boolean;
   /** Safe mode (1f): the grey, dimmed sky. */
   safe?: boolean;
+  /** The milestone moment's warmer sky (1e). */
+  milestone?: boolean;
 }
 
 /** The night sky (or the daylight one in the light theme). Purely decorative. */
-export function Sky({ fixed = false, safe = false }: SkyProps) {
-  const classes = ["sky", fixed && "sky--fixed", safe && "sky--safe"].filter(Boolean).join(" ");
+export function Sky({ fixed = false, safe = false, milestone = false }: SkyProps) {
+  const classes = ["sky", fixed && "sky--fixed", safe && "sky--safe", milestone && "sky--milestone"].filter(Boolean).join(" ");
   return (
     <div className={classes} aria-hidden="true">
       <div className="sky__nebula" />

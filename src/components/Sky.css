@@ -110,3 +110,16 @@
 .sky--safe .sky__stars {
   opacity: calc(var(--stars-opacity) * 0.4);
 }
+
+/* The milestone moment (1e): a warmer sky, as in the design. */
+.sky--milestone {
+  background: linear-gradient(
+    180deg,
+    var(--sky-milestone-1) 0 10%,
+    var(--sky-milestone-2) 10% 22%,
+    var(--sky-milestone-3) 22% 36%,
+    var(--sky-milestone-4) 36% 54%,
+    var(--sky-milestone-5) 54% 72%,
+    var(--sky-6) 72% 100%
+  );
+}

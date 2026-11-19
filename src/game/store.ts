@@ -15,6 +15,7 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../../shared/mission";
+import type { ReachedMilestone } from "../../shared/milestones";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
 import { request, startProbe, type Connection } from "./probeClient";
@@ -28,6 +29,7 @@ import { preloadTurnstile, turnstileToken } from "./turnstile";
 //   REAL from phase 6: credits, upgrades, auto-thrust, prestige patches, welcome back. The server
 //                      decides every purchase; between messages credits tick up at your auto rate.
 //   REAL from phase 7a: today's crew vote (POST /api/vote, live tallies) and the mission log (/log).
+//   REAL from phase 7b: milestones, and the milestone moment when one is reached (shown once per browser).
 // Time is the server's clock: every message carries it, and `now` below is Date.now() + that offset.
 
 export type VoteOption = LiveVote["options"][number];
@@ -56,6 +58,9 @@ export interface ProbeState {
   vote: LiveVote;
   /** The newest mission log entry's id (the log page reloads when it changes). */
   logId: number;
+  missionId: number;
+  /** Milestones this mission has reached. */
+  milestones: ReachedMilestone[];
 }
 
 /** This player's own state. */
@@ -105,6 +110,8 @@ export interface GameState {
   toast: Toast | null;
   /** The welcome back summary (1d), until it's closed. */
   welcome: WelcomeBack | null;
+  /** A milestone moment (1e) to show: the newest milestone this browser hasn't seen yet. */
+  moment: ReachedMilestone | null;
 }
 
 /** Test switches, from the URL: ?crew=handful  ?ads=off */
@@ -198,6 +205,8 @@ function initialState(): GameState {
       safeSince: server?.safeSince ?? null,
       vote: server?.vote ?? { round: "", question: "Which way today?", options: [], closesAt: nextUtcMidnight(now) },
       logId: server?.logId ?? 0,
+      missionId: server?.missionId ?? 0,
+      milestones: server?.milestones ?? [],
     },
     player: {
       name: "",
@@ -218,6 +227,7 @@ function initialState(): GameState {
     },
     toast: null,
     welcome: null,
+    moment: null,
   };
 }
 
@@ -260,6 +270,8 @@ function compose(base: GameState, connection = base.connection): GameState {
         safeSince: p.safeSince,
         vote: p.vote,
         logId: p.logId,
+        missionId: p.missionId,
+        milestones: p.milestones ?? [],
       }),
     },
     player: {
@@ -307,9 +319,57 @@ function onMessage(msg: ServerMessage) {
   if (msg.t === "hello" && msg.welcome) next = { ...next, welcome: msg.welcome };
   if (msg.t === "me" && msg.seq !== 0 && msg.seq === buyingSeq) next = doneBuying(next);
   if (msg.t === "credited") inFlight.delete(msg.seq);
-  if (msg.t !== "me") server = msg.probe;
+  if (msg.t !== "me") {
+    server = msg.probe;
+    next = withMoment(next, msg.probe);
+  }
   if (msg.t === "hello" || msg.t === "state") writeCache(msg.probe);
   set(compose(next));
+}
+
+// --- Milestone moments: each browser sees each milestone once ---
+
+const SEEN_KEY = (missionId: number) => `osc.milestoneSeen.${missionId}`;
+const seenInMemory = new Map<number, number>();
+
+function readSeen(missionId: number): number | null {
+  try {
+    const raw = localStorage.getItem(SEEN_KEY(missionId));
+    if (raw !== null) return Number(raw);
+  } catch {
+    // storage blocked: memory only
+  }
+  return seenInMemory.get(missionId) ?? null;
+}
+
+function writeSeen(missionId: number, n: number) {
+  seenInMemory.set(missionId, n);
+  try {
+    localStorage.setItem(SEEN_KEY(missionId), String(n));
+  } catch {
+    // fine: remembered for this visit
+  }
+}
+
+/** Shows the newest milestone this browser hasn't seen. A first visit to a mission starts with none owed. */
+function withMoment(s: GameState, p: ProbeSnapshot): GameState {
+  const reached = p.milestones ?? [];
+  const top = reached.reduce<ReachedMilestone | null>((best, r) => (!best || r.n > best.n ? r : best), null);
+  const seen = readSeen(p.missionId);
+  if (seen === null) {
+    writeSeen(p.missionId, top?.n ?? 0);
+    return s;
+  }
+  if (top && top.n > seen && (!s.moment || s.moment.n < top.n)) return { ...s, moment: top };
+  return s;
+}
+
+/** "Keep flying": this milestone (and any before it) is seen. */
+export function dismissMoment() {
+  const m = state.moment;
+  if (!m) return;
+  writeSeen(state.probe.missionId, m.n);
+  set({ ...state, moment: null });
 }
 
 let started = false;
@@ -368,6 +428,11 @@ function showToast(t: Omit<Toast, "id">) {
   set({ ...state, toast: { ...t, id: toastId } });
   window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(dismissToast, TOAST_MS);
+}
+
+/** A short message (e.g. "Copied"), in the same toast as Ping's results. */
+export function notify(title: string, body: string) {
+  showToast({ tier: null, title, body });
 }
 
 export function dismissToast() {

@@ -3,6 +3,7 @@
 
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
+import type { ReachedMilestone } from "./milestones";
 
 /** Earth to Mars, as the design has it. */
 export const ROUTE_KM = 480_000_000;
@@ -108,6 +109,8 @@ export interface ProbeSnapshot {
   vote: LiveVote;
   /** The newest mission log entry's id, so the log page knows when to reload. */
   logId: number;
+  /** Milestones this mission has reached (phase 7b). */
+  milestones: ReachedMilestone[];
 }
 
 /** This device's own numbers for today (UTC). */

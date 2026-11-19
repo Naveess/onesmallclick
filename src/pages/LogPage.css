@@ -113,6 +113,34 @@
   color: var(--text-orange);
 }
 
+/* A milestone's postcard, small and tilted (a placeholder until the photos are chosen). */
+.log__postcard {
+  width: 200px;
+  height: 124px;
+  margin-top: 4px;
+  padding: 6px;
+  background: var(--paper);
+  box-shadow: 3px 3px 0 var(--outline);
+  transform: rotate(-1.5deg);
+}
+
+.log__postcard-photo {
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: var(--postcard-sky) url("/sprites/stars-near.png") 0 0 / 256px 256px;
+  image-rendering: pixelated;
+  font: 16px var(--font-num);
+  color: var(--text-muted);
+}
+
+.log__more {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--log-tone);
+  text-underline-offset: 3px;
+}
+
 .log__note {
   font-size: 13px;
   line-height: 1.5;

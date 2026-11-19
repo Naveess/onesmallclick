@@ -16,7 +16,7 @@ interface Entry {
   kind: string;
   title: string;
   body: string;
-  data: { fact?: string; source?: string } | null;
+  data: { fact?: string; source?: string; slug?: string; postcard?: number } | null;
 }
 
 interface Look {
@@ -141,6 +141,16 @@ export function LogPage() {
                   </p>
                   <h2 className="log__entry-title">{e.title}</h2>
                   <p className="log__body">{e.body}</p>
+                  {e.kind === "milestone" && e.data?.postcard && (
+                    <div className="log__postcard" aria-hidden="true">
+                      <div className="log__postcard-photo">POSTCARD {String(e.data.postcard).padStart(2, "0")}</div>
+                    </div>
+                  )}
+                  {e.kind === "milestone" && e.data?.slug && (
+                    <a className="log__more" href={`/milestones/${e.data.slug}`}>
+                      Read more about this milestone →
+                    </a>
+                  )}
                   {e.data?.fact && (
                     <p className="log__fact">
                       <span className="log__fact-label">FROM THE FLIGHT DECK</span> {e.data.fact}
