@@ -54,42 +54,37 @@ The idea: a visible campaign beyond Mars, so players always have a "what's next"
   - a one-hour "landing burn" finale.
 - **Fun facts:** a daily "Destination file" fact about where we're heading, which is shareable, shown on the map, and collected on a page per destination.
 
-Draft route (to be checked in E0; the E1 design has since moved to Ceres or Vesta for the asteroid belt, with its own probe names. See the art list below):
-- Mars
-- Psyche or Ceres
-- Europa or Ganymede
-- Titan or Enceladus
-- Uranus or Neptune
-- Pluto or Arrokoth
-- the heliopause
-- interstellar
+Agreed route (19 Nov): Earth → Mars → Ceres or Vesta → Jupiter → Europa or Ganymede → Saturn → Titan or Enceladus → Uranus → Miranda or Titania → Neptune → Pluto or Arrokoth → the heliopause → interstellar.
+
+Agreed rules (19 Nov):
+- Medals: Gold by day 25, Silver by day 30, Bronze after that. The six medal colours are approved (Art kit).
+- Planet tech: one perk per stop, with Gold/Silver/Bronze strengths.
+- Passport stamps in the medal's colour for legs you helped with.
+- Cosmetic unlocks: skies, THRUST trails and probe paint.
+- Landing burn: 2,000,000 km in one hour, never a punishment.
+
+### Design handoff (next, at home)
+- [ ] **Copy the updated design file into design/**. It adds 1m Campaign map, 1n New probe reveal and 1o Landing burn, and updates 1a/1b, 1j, 1k and the Art kit. Light and dark are done across every screen.
+- [ ] **Add the five new PixelLab sprites to design/sprites/** (Europa Lander, Ganymede Orbiter, Jupiter, Saturn, Europa) and back them up to Drive.
+- [ ] **Add the medal colours to docs/tokens.css** as an agreed exception.
+- [ ] **Check the design's fun facts against sources** (in E0).
 
 ### E0: plan the campaign (after 8b, before 8c)
-- [ ] **Run the expansion planning prompt** (plan only, from Nav's build hub). It writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds phases E1–E5 to docs/plan.md.
+- [ ] **Run the expansion planning prompt** (plan only, from Nav's build hub). It plans the new screens into build phases, writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch (Mars → Ceres or Vesta) read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds the expansion phases to docs/plan.md.
 - [ ] **Nav approves**:
-  - the route and branch pairs;
+  - each stop's planet tech, with a sim of the stacked totals;
   - what carries between missions (suggested: everything, with upgrades renamed rather than reset);
-  - what the map shows (suggested: the whole chart, future stops dimmed, untaken branches greyed);
-  - signature perks per probe, or none;
-  - the medal days, each stop's planet tech (with a sim of the stacked totals), and who counts as "helped";
+  - who counts as "helped";
+  - whether the landing burn suits a small crew;
   - the 30 Mars facts;
   - whether medals and the facts card come before launch.
 
-### E1: design (Claude Design, in progress 19 Nov)
-- [ ] **First pass:** the campaign map (1m), the two-way branch vote on arrival (1k) and the new probe reveal (1n).
-- [ ] **Follow-up:**
-  - medals on the game home;
-  - the Destination file card;
-  - the landing burn (1o);
-  - the arrival rewards screen;
-  - planet tech on the branch vote and the map;
-  - the passport and cosmetics on the profile (1j).
-- [ ] **Approve the gold, silver and bronze colours** (new, outside the locked palette).
-- [ ] **Export the updated design** into design/ and hand it over, as before.
+### E1: design (done 19 Nov)
+- [x] The campaign map (1m), the new probe reveal (1n), the landing burn (1o), the arrival rewards and two-branch vote (1k), the passport and cosmetics (1j), the medal pace line and Destination file card (1a/1b), and the medal colours on the Art kit.
 
 ### E2: PixelLab art for the expansion
-The design (E1) has settled the probes and map art, so the list below replaces the earlier draft (Psyche, Europa and Ganymede probes). The current probe is the style reference.
-- [ ] **First needed:** the OSC-2 pair, for the first branch vote about 30 days after launch.
+The design (E1) has settled the probes and map art, so the list below replaces the earlier draft. The current probe is the style reference. Made 19 Nov: Europa Lander, Ganymede Orbiter, Jupiter, Saturn and Europa.
+- [ ] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor), for the first branch vote about 30 days after launch.
 
 ### Art the design draws in code or leaves as placeholders (added 19 Nov)
 Cheapest route: `create_1_direction_object` with `item_descriptions` makes a whole set in one call for 10 generations (64 items at 42px or smaller, 16 items at 43–64px). Back up the masters to Drive (OneSmallClick › Sprites).
