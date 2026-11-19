@@ -137,10 +137,12 @@ interface VoteCardProps {
   mine: number | null;
   leftS: number;
   onVote: (index: number) => void;
+  /** A vote is on its way, or there's no line to the probe. */
+  busy?: boolean;
   wide?: boolean;
 }
 
-export function VoteCard({ question, options, total, mine, leftS, onVote, wide = false }: VoteCardProps) {
+export function VoteCard({ question, options, total, mine, leftS, onVote, busy = false, wide = false }: VoteCardProps) {
   return (
     <Window as="section" className={wide ? "vote vote--wide" : "vote"} aria-labelledby="vote-label">
       <div className="vote__head">
@@ -155,10 +157,10 @@ export function VoteCard({ question, options, total, mine, leftS, onVote, wide =
       <p className="vote__question">{question}</p>
       <ul className="vote__options">
         {options.map((o, i) => {
-          const pct = Math.round((o.votes / total) * 100);
+          const pct = total > 0 ? Math.round((o.votes / total) * 100) : 0;
           const isMine = mine === i;
           return (
-            <li key={o.label}>
+            <li key={o.id}>
               <button
                 type="button"
                 className={isMine ? "vote__option vote__option--mine" : "vote__option"}
@@ -166,7 +168,8 @@ export function VoteCard({ question, options, total, mine, leftS, onVote, wide =
                   background: `linear-gradient(90deg, ${isMine ? "var(--vote-bar-picked)" : "var(--vote-bar)"} ${pct}%, transparent ${pct}%)`,
                 }}
                 onClick={() => onVote(i)}
-                disabled={mine !== null}
+                disabled={mine !== null || busy}
+                aria-busy={busy && mine === null}
                 aria-pressed={isMine}
               >
                 <span className="vote__text">
@@ -179,7 +182,9 @@ export function VoteCard({ question, options, total, mine, leftS, onVote, wide =
           );
         })}
       </ul>
-      <p className="vote__foot">{int(total)} votes · result goes in the mission log</p>
+      <p className="vote__foot">
+        {int(total)} vote{total === 1 ? "" : "s"} · result goes in the mission log
+      </p>
     </Window>
   );
 }

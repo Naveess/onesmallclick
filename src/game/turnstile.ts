@@ -1,4 +1,4 @@
-// Cloudflare Turnstile, the invisible bot check on Ping. The widget is "Invisible" in the dashboard,
+// Cloudflare Turnstile, the invisible bot check on Ping and the daily vote. The widget is "Invisible" in the dashboard,
 // so normally nobody sees anything; if Cloudflare wants a human check, it appears at the bottom of
 // the screen. The script loads in the background a little after the game page opens, so it never
 // slows the first paint. Tokens are single-use: one fresh widget per ping.
@@ -41,8 +41,8 @@ export function preloadTurnstile() {
   window.setTimeout(() => void load().catch(() => {}), 3000);
 }
 
-/** Runs the check and resolves with a one-time token for /api/ping. */
-export async function turnstileToken(): Promise<string> {
+/** Runs the check and resolves with a one-time token for /api/ping or /api/vote. */
+export async function turnstileToken(action: "ping" | "vote" = "ping"): Promise<string> {
   const ts = await load();
   return new Promise<string>((resolve, reject) => {
     const host = document.createElement("div");
@@ -64,7 +64,7 @@ export async function turnstileToken(): Promise<string> {
     }, 60_000);
     id = ts.render(host, {
       sitekey: SITE_KEY,
-      action: "ping",
+      action,
       appearance: "interaction-only",
       callback: (token: string) => {
         done();

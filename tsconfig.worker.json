@@ -13,7 +13,8 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "noEmit": true
   },
-  "include": ["worker", "shared"]
+  "include": ["worker", "shared", "content"]
 }

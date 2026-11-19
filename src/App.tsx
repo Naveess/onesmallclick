@@ -1,6 +1,7 @@
 import { AdminPage } from "./pages/AdminPage";
 import { GamePage } from "./pages/GamePage";
 import { KitPage } from "./pages/KitPage";
+import { LogPage } from "./pages/LogPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { StubPage } from "./pages/StubPage";
 import { usePath } from "./router";
@@ -17,14 +18,7 @@ export function App() {
     case "/admin":
       return <AdminPage />;
     case "/log":
-      return (
-        <StubPage
-          tab="log"
-          title="Mission log"
-          icon="log"
-          note="Every vote, result, milestone, postcard and signal save, as a timeline. Arrives in phase 7."
-        />
-      );
+      return <LogPage />;
     case "/ranks":
       return (
         <StubPage

@@ -38,6 +38,16 @@ import {
   type UpgradeLevels,
   type WelcomeBack,
 } from "../shared/upgrades";
+import {
+  VOTE_QUESTION,
+  VOTE_RECENT_ROUNDS,
+  pickOptions,
+  shortLabel,
+  voteOption,
+  winnerIndex,
+  type LiveVote,
+  type VoteResult,
+} from "../shared/votes";
 
 // The one shared probe. Every browser holds a WebSocket to this object (hibernation API, so an
 // idle crew costs almost nothing). It:
@@ -47,6 +57,7 @@ import {
 //   - pays auto-thrust while connected, and up to 8 hours of it when a device comes back;
 //   - squeezes the crew's push on the shared probe above the ceiling's knee (shared/mission.ts);
 //   - keeps the signal: a deadline, an alarm when it runs out, safe mode until someone pings;
+//   - runs the daily crew vote: live tallies, closing at 00:00 UTC (the same alarm), the winner's effect on the route;
 //   - sends an update to everyone when something changes, at most once a second (no ticking timer);
 //   - saves to its own SQLite at most every 5 s (the signal and purchases straight away),
 //     and daily km and progress to D1 every 30 s.
@@ -83,8 +94,11 @@ interface Mission {
   lastSafeTo: number | null;
 }
 
-interface DeviceEntry extends DeviceToday {
+interface DeviceEntry extends Omit<DeviceToday, "vote"> {
   day: string;
+  /** This device's vote: the round it was read for, and its option (null = not voted). */
+  voteRound: string | null;
+  voteOption: number | null;
   /** The last UTC day this device pinged, for the streak. */
   lastPingDay: string | null;
   tokens: number;
@@ -113,6 +127,19 @@ interface Attachment {
   since: number;
   seen?: number;
 }
+
+/** The open vote round. */
+interface VoteRound {
+  round: string;
+  openedAt: number;
+  closesAt: number;
+  ids: string[];
+  tallies: number[];
+}
+
+type VoteRow = { round: string; opened_at: number; closes_at: number; options: string; tallies: string };
+
+const gb = new Intl.NumberFormat("en-GB");
 
 /** Time away, as settled when a device comes back. */
 interface Away {
@@ -174,6 +201,12 @@ export class Probe extends DurableObject<Env> {
   /** Real time of the last accepted ping (see JUST_SAVED_MS). */
   private lastPingAt = 0;
   private idling = { n: 0, at: 0 };
+  private vote!: VoteRound;
+  /** Set while a round is being closed, so two callers can't close it twice. */
+  private closingVote: Promise<void> | null = null;
+  private lastLogId = 0;
+  /** The alarm time last set (real ms), so it's only rewritten when it changes. */
+  private alarmAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
   private dead = new WeakSet<WebSocket>();
 
@@ -207,6 +240,9 @@ export class Probe extends DurableObject<Env> {
       patches INTEGER NOT NULL, km_since_shift REAL NOT NULL, settled_at INTEGER NOT NULL, auto_kms REAL NOT NULL,
       last_distance REAL, last_arrival_at INTEGER, last_mission_id INTEGER)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS progress_by_settled ON progress (settled_at)`);
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS vote_round (
+      round TEXT PRIMARY KEY, opened_at INTEGER NOT NULL, closes_at INTEGER NOT NULL,
+      options TEXT NOT NULL, tallies TEXT NOT NULL, winner INTEGER, closed_at INTEGER)`);
     // Columns added after phase 4 (older tables don't have them).
     const cols = new Set(this.sql.exec<{ name: string }>(`PRAGMA table_info(mission)`).toArray().map((c) => c.name));
     for (const [col, type] of [
@@ -245,6 +281,27 @@ export class Probe extends DurableObject<Env> {
     const since = Math.floor(this.now() / MINUTE_MS) - 60;
     for (const p of this.sql.exec<{ minute: number; km: number }>(`SELECT minute, km FROM pace WHERE minute > ?`, since)) {
       this.pace.set(p.minute, p.km);
+    }
+
+    const v = this.sql
+      .exec<VoteRow>(`SELECT * FROM vote_round WHERE closed_at IS NULL ORDER BY rowid DESC LIMIT 1`)
+      .toArray()[0];
+    if (v) {
+      this.vote = {
+        round: v.round,
+        openedAt: v.opened_at,
+        closesAt: v.closes_at,
+        ids: JSON.parse(v.options),
+        tallies: JSON.parse(v.tallies),
+      };
+    } else {
+      await this.openVote(this.now());
+    }
+    try {
+      const r = await this.env.DB.prepare(`SELECT MAX(id) AS id FROM log_entries`).first<{ id: number | null }>();
+      this.lastLogId = r?.id ?? 0;
+    } catch (err) {
+      console.error("log id read failed", err);
     }
     await this.scheduleAlarm();
   }
@@ -406,11 +463,13 @@ export class Probe extends DurableObject<Env> {
   /** One line in the mission log (shown in phase 7). A failure is logged, never fatal. */
   private async log(kind: string, title: string, body: string, data: object) {
     try {
-      await this.env.DB.prepare(
+      const res = await this.env.DB.prepare(
         `INSERT INTO log_entries (mission_id, at, kind, title, body, data) VALUES (?, ?, ?, ?, ?, ?)`,
       )
         .bind(this.mission.id, this.now(), kind, title, body, JSON.stringify(data))
         .run();
+      this.lastLogId = Math.max(this.lastLogId, res.meta.last_row_id ?? 0);
+      this.scheduleBroadcast(); // the log page reloads when logId changes
     } catch (err) {
       console.error("log entry failed", err);
     }
@@ -446,6 +505,18 @@ export class Probe extends DurableObject<Env> {
       idling: this.idlingCount(now),
       signalDeadline: m.signalDeadline,
       safeSince: m.safeSince,
+      vote: this.liveVote(),
+      logId: this.lastLogId,
+    };
+  }
+
+  private liveVote(): LiveVote {
+    const v = this.vote;
+    return {
+      round: v.round,
+      question: VOTE_QUESTION,
+      options: v.ids.map((id, i) => ({ id, label: voteOption(id)?.label ?? id, votes: v.tallies[i] ?? 0 })),
+      closesAt: v.closesAt,
     };
   }
 
@@ -560,18 +631,25 @@ export class Probe extends DurableObject<Env> {
 
   // ---------- The signal ----------
 
-  /** The alarm fires when the signal runs out. Alarms run on real time, so take off the clock offset. */
+  /**
+   * One alarm for whichever comes first: the signal running out, or the vote closing at midnight.
+   * Alarms run on real time, so the clock offset is taken off. Only rewritten when the time changes.
+   */
   private async scheduleAlarm() {
     const m = this.mission;
-    if (m.safeSince !== null) {
-      await this.ctx.storage.deleteAlarm();
-      return;
-    }
-    await this.ctx.storage.setAlarm(Math.max(Date.now(), m.signalDeadline - this.clockOffsetMs));
+    let at = this.vote.closesAt;
+    if (m.safeSince === null) at = Math.min(at, m.signalDeadline);
+    const real = Math.max(Date.now(), at - this.clockOffsetMs);
+    if (real === this.alarmAt) return;
+    this.alarmAt = real;
+    await this.ctx.storage.setAlarm(real);
   }
 
   async alarm() {
+    this.alarmAt = 0; // it fired: the next one must be set again
     await this.checkSignal();
+    await this.checkVote();
+    await this.scheduleAlarm();
   }
 
   /** Enters safe mode if the deadline has passed (from the alarm, or if it's late). */
@@ -579,14 +657,14 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     const now = this.now();
     if (m.safeSince !== null || now < m.signalDeadline) {
-      if (m.safeSince === null) await this.scheduleAlarm();
+      await this.scheduleAlarm();
       return;
     }
     this.rebase(now);
     m.safeSince = m.signalDeadline;
     this.retune(now); // the thrusters sleep: auto-thrust stops moving the probe
     this.saveSignal();
-    await this.ctx.storage.deleteAlarm();
+    await this.scheduleAlarm(); // now just the vote's
     this.broadcast();
     await this.log("signal_lost", "Signal lost", "Nobody pinged in time. The probe went quiet and slipped into safe mode.", {
       distanceKm: Math.round(m.distanceKm),
@@ -669,6 +747,148 @@ export class Probe extends DurableObject<Env> {
     return { ok: true, tier, secondsLeft, woke, setbackMs: Math.round(setback), pingStreakDays: dev.pingStreakDays };
   }
 
+  // ---------- The daily crew vote ----------
+
+  /** Opens a new round: today's UTC day (with ".2", ".3" if /admin already closed one today). */
+  private async openVote(now: number) {
+    const day = utcDay(now);
+    let round = day;
+    for (let n = 2; this.sql.exec(`SELECT 1 FROM vote_round WHERE round = ?`, round).toArray().length > 0; n++) {
+      round = `${day}.${n}`;
+    }
+    const recent = this.sql
+      .exec<{ options: string }>(`SELECT options FROM vote_round ORDER BY rowid DESC LIMIT ?`, VOTE_RECENT_ROUNDS)
+      .toArray()
+      .flatMap((r) => JSON.parse(r.options) as string[]);
+    const ids = pickOptions(round, recent);
+    const closesAt = Math.floor(now / DAY_MS) * DAY_MS + DAY_MS;
+    this.vote = { round, openedAt: now, closesAt, ids, tallies: ids.map(() => 0) };
+    this.sql.exec(
+      `INSERT INTO vote_round (round, opened_at, closes_at, options, tallies) VALUES (?, ?, ?, ?, ?)`,
+      round,
+      now,
+      closesAt,
+      JSON.stringify(ids),
+      JSON.stringify(this.vote.tallies),
+    );
+    for (const dev of this.devices.values()) {
+      dev.voteRound = round;
+      dev.voteOption = null;
+    }
+    try {
+      await this.env.DB.prepare(
+        `INSERT OR IGNORE INTO vote_days (round, mission_id, opened_at, closes_at, options, tallies) VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+        .bind(round, this.mission.id, now, closesAt, JSON.stringify(ids), JSON.stringify(this.vote.tallies))
+        .run();
+    } catch (err) {
+      console.error("vote_days insert failed", err);
+    }
+  }
+
+  /** Closes the round if midnight has passed (from the alarm, or any message if the alarm is late). */
+  private async checkVote() {
+    if (this.now() < this.vote.closesAt) return;
+    await this.rollVote();
+  }
+
+  /** Closes the open round and opens the next; only one caller at a time. */
+  private async rollVote() {
+    if (this.closingVote) return this.closingVote;
+    this.closingVote = (async () => {
+      const now = this.now();
+      await this.closeVote(now);
+      await this.openVote(now);
+      await this.scheduleAlarm();
+      this.broadcast();
+    })();
+    try {
+      await this.closingVote;
+    } finally {
+      this.closingVote = null;
+    }
+  }
+
+  /** The winner takes effect on the route (and so the arrival date), and the result goes in the log. */
+  private async closeVote(now: number) {
+    const v = this.vote;
+    const m = this.mission;
+    const total = v.tallies.reduce((a, b) => a + b, 0);
+    const w = total > 0 ? winnerIndex(v.ids, v.tallies) : -1;
+    this.sql.exec(`UPDATE vote_round SET closed_at = ?, winner = ?, tallies = ? WHERE round = ?`, now, w, JSON.stringify(v.tallies), v.round);
+
+    const def = w >= 0 ? voteOption(v.ids[w]) : undefined;
+    const hours = def?.hours ?? 0;
+    if (hours !== 0) {
+      this.rebase(now);
+      m.routeKm = Math.max(m.distanceKm + 1, m.routeKm + hours * 3600 * COAST_KM_S);
+      this.saveSignal();
+    }
+    try {
+      await this.env.DB.prepare(
+        `UPDATE vote_days SET tallies = ?, winner = ?, effect_hours = ?, closed_at = ? WHERE round = ?`,
+      )
+        .bind(JSON.stringify(v.tallies), w, hours, now, v.round)
+        .run();
+    } catch (err) {
+      console.error("vote_days close failed", err);
+    }
+    if (!def) {
+      await this.log("vote_result", "No votes today", "Nobody voted, so the probe held its course.", { round: v.round, total: 0 });
+      return;
+    }
+    const pct = Math.round((v.tallies[w] / total) * 100);
+    await this.log("vote_result", `Crew chose: ${shortLabel(def.label)}`, `${pct}% of ${gb.format(total)} vote${total === 1 ? "" : "s"}. ${def.result}`, {
+      round: v.round,
+      option: def.id,
+      votes: v.tallies[w],
+      total,
+      hours,
+      fact: def.fact,
+      source: def.source,
+    });
+  }
+
+  /** A vote from a device: once per round, while the round is open. */
+  async castVote(deviceId: string, round: string, option: number): Promise<VoteResult> {
+    await this.checkVote();
+    const v = this.vote;
+    if (round !== v.round || !Number.isInteger(option) || option < 0 || option >= v.ids.length) {
+      return { ok: false, reason: "closed" };
+    }
+    const now = this.now();
+    const dev = await this.device(deviceId, now);
+    if (dev.voteRound === round && dev.voteOption !== null) return { ok: false, reason: "already-voted", option: dev.voteOption };
+
+    let inserted = false;
+    try {
+      const res = await this.env.DB.prepare(
+        `INSERT INTO votes (round, device_id, option, at) VALUES (?, ?, ?, ?) ON CONFLICT (round, device_id) DO NOTHING`,
+      )
+        .bind(round, deviceId, option, now)
+        .run();
+      inserted = res.meta.changes > 0;
+      if (!inserted) {
+        const row = await this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`)
+          .bind(round, deviceId)
+          .first<{ option: number }>();
+        dev.voteRound = round;
+        dev.voteOption = row?.option ?? null;
+        return { ok: false, reason: "already-voted", option: row?.option };
+      }
+    } catch (err) {
+      console.error("vote insert failed", err);
+      return { ok: false, reason: "unavailable" };
+    }
+    if (this.vote.round !== round) return { ok: false, reason: "closed" }; // closed while we waited
+    this.vote.tallies[option] += 1;
+    dev.voteRound = round;
+    dev.voteOption = option;
+    this.sql.exec(`UPDATE vote_round SET tallies = ? WHERE round = ?`, JSON.stringify(this.vote.tallies), round);
+    this.scheduleBroadcast();
+    return { ok: true, option, tallies: [...this.vote.tallies] };
+  }
+
   // ---------- Devices: today's numbers ----------
 
   /** This device's km and ping for today, loaded from D1 once a day per device. */
@@ -682,14 +902,18 @@ export class Probe extends DurableObject<Env> {
       let kmToday = 0;
       let tapKmToday = 0;
       let pingDays: string[] = [];
+      const round = this.vote.round;
+      let voteOpt: number | null = null;
       try {
-        const [km, pings] = await this.env.DB.batch<{ km?: number; tap_km?: number; day?: string }>([
+        const [km, pings, votes] = await this.env.DB.batch<{ km?: number; tap_km?: number; day?: string; option?: number }>([
           this.env.DB.prepare(`SELECT km, tap_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, deviceId),
           this.env.DB.prepare(`SELECT day FROM pings WHERE device_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`).bind(
             deviceId,
             day,
           ),
+          this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`).bind(round, deviceId),
         ]);
+        voteOpt = votes.results[0]?.option ?? null;
         kmToday = km.results[0]?.km ?? 0;
         tapKmToday = km.results[0]?.tap_km ?? 0;
         pingDays = pings.results.map((r) => r.day!);
@@ -705,6 +929,8 @@ export class Probe extends DurableObject<Env> {
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
+        voteRound: round,
+        voteOption: voteOpt,
         tokens: have?.tokens ?? TAP_BUCKET,
         refilledAt: have?.refilledAt ?? Date.now(),
       };
@@ -727,6 +953,7 @@ export class Probe extends DurableObject<Env> {
       tapKmToday: dev.tapKmToday,
       pingedToday: dev.pingedToday,
       pingStreakDays: alive ? dev.pingStreakDays : 0,
+      vote: dev.voteRound === this.vote.round && dev.voteOption !== null ? { round: dev.voteRound, option: dev.voteOption } : null,
     };
   }
 
@@ -972,6 +1199,7 @@ export class Probe extends DurableObject<Env> {
     const deviceId = request.headers.get("X-Device-Id");
     if (!deviceId) return new Response("No device", { status: 400 });
     await this.checkSignal();
+    await this.checkVote();
 
     const now = this.now();
     const dev = await this.device(deviceId, now);
@@ -1003,6 +1231,7 @@ export class Probe extends DurableObject<Env> {
     if (!msg || !Number.isInteger(msg.seq)) return;
 
     await this.checkSignal();
+    await this.checkVote();
     const att = ws.deserializeAttachment() as Attachment;
     const { deviceId } = att;
     ws.serializeAttachment({ ...att, seen: Date.now() } satisfies Attachment);
@@ -1142,6 +1371,34 @@ export class Probe extends DurableObject<Env> {
     return this.adminState();
   }
 
+  /** Closes today's vote now (its effect applies) and opens the next round. */
+  async adminCloseVote(): Promise<AdminState> {
+    await this.rollVote();
+    return this.adminState();
+  }
+
+  /** Lets this device vote again in the current round (testing only). */
+  async adminClearVote(deviceId: string): Promise<AdminState> {
+    const round = this.vote.round;
+    const row = await this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`)
+      .bind(round, deviceId)
+      .first<{ option: number }>();
+    if (row) {
+      await this.env.DB.prepare(`DELETE FROM votes WHERE round = ? AND device_id = ?`).bind(round, deviceId).run();
+      if (this.vote.round === round && (this.vote.tallies[row.option] ?? 0) > 0) {
+        this.vote.tallies[row.option] -= 1;
+        this.sql.exec(`UPDATE vote_round SET tallies = ? WHERE round = ?`, JSON.stringify(this.vote.tallies), round);
+      }
+    }
+    const dev = this.devices.get(deviceId);
+    if (dev) {
+      dev.voteRound = round;
+      dev.voteOption = null;
+    }
+    this.broadcast();
+    return this.adminState();
+  }
+
   /** Gives this device km for testing: credits and prestige progress (not the probe). */
   async adminGive(deviceId: string, km: number): Promise<AdminState> {
     const now = this.now();
@@ -1187,6 +1444,7 @@ export class Probe extends DurableObject<Env> {
     this.save();
     this.saveSignal();
     await this.checkSignal(); // may enter safe mode (clock moved, timer set to 0); also re-arms the alarm
+    await this.checkVote(); // the clock may have passed midnight
     this.broadcast();
     return this.adminState();
   }

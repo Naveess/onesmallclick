@@ -13,7 +13,7 @@ import "./GamePage.css";
 /** "/": the game home (1a phone, 1b wide), the shared probe is live from phase 4 (store.ts says what is still fake). */
 export function GamePage() {
   useDocumentTitle("OneSmallClick · push one probe to Mars together");
-  const { probe, player, view } = useGame();
+  const { probe, player, view, connection } = useGame();
 
   return (
     <GameShell tab="mission">
@@ -64,7 +64,8 @@ export function GamePage() {
             total={view.voteTotal}
             mine={player.voteChoice}
             leftS={view.voteLeftS}
-            onVote={castVote}
+            onVote={(i) => void castVote(i)}
+            busy={player.voting || connection !== "live"}
           />
         );
 

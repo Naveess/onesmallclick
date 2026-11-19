@@ -15,6 +15,7 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../../shared/mission";
+import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
 import { request, startProbe, type Connection } from "./probeClient";
 import { MILESTONES, UPGRADES, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
@@ -26,13 +27,10 @@ import { preloadTurnstile, turnstileToken } from "./turnstile";
 //   REAL from phase 5: the signal timer, safe mode and its setback, Ping (POST /api/ping), streaks.
 //   REAL from phase 6: credits, upgrades, auto-thrust, prestige patches, welcome back. The server
 //                      decides every purchase; between messages credits tick up at your auto rate.
-//   STILL FAKE:        today's vote (phase 7).
+//   REAL from phase 7a: today's crew vote (POST /api/vote, live tallies) and the mission log (/log).
 // Time is the server's clock: every message carries it, and `now` below is Date.now() + that offset.
 
-export interface VoteOption {
-  label: string;
-  votes: number;
-}
+export type VoteOption = LiveVote["options"][number];
 
 /** Shared by everyone. */
 export interface ProbeState {
@@ -54,8 +52,10 @@ export interface ProbeState {
   signalDeadline: number;
   /** When safe mode began, or null while the probe is talking. */
   safeSince: number | null;
-  /** FAKE until phase 7. */
-  vote: { question: string; options: VoteOption[]; closesAt: number };
+  /** Today's crew vote, with live tallies. */
+  vote: LiveVote;
+  /** The newest mission log entry's id (the log page reloads when it changes). */
+  logId: number;
 }
 
 /** This player's own state. */
@@ -80,8 +80,10 @@ export interface PlayerState {
   pingedToday: boolean;
   /** True while a ping is on its way (bot check, then the server). */
   pinging: boolean;
-  /** FAKE until phase 7. */
+  /** Your option in today's round, or null. */
   voteChoice: number | null;
+  /** True while a vote is on its way (bot check, then the server). */
+  voting: boolean;
   pingStreakDays: number;
 }
 
@@ -122,7 +124,7 @@ function readSwitches(): TestSwitches {
 export const switches = readSwitches();
 
 const DAY_MS = 86_400_000;
-const CACHE_KEY = "osc.probe.v3";
+const CACHE_KEY = "osc.probe.v4";
 const TOAST_MS = 7_000;
 /** "+N thrusters idling" shows only when this few are here (the design's "handful"). */
 const HANDFUL = 20;
@@ -135,7 +137,7 @@ const MAX_PENDING_TAPS = Math.round(MAX_TAPS_PER_S * (BATCH_MS / 1000) * 1.5);
 
 let server: ProbeSnapshot | null = readCache();
 let offsetMs = 0; // server clock − device clock
-let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, pingedToday: false, pingStreakDays: 0 };
+let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, pingedToday: false, pingStreakDays: 0, vote: null };
 let pendingTaps = 0;
 const inFlight = new Map<number, number>(); // seq → taps sent, not yet credited
 let me: Progress | null = null;
@@ -194,16 +196,8 @@ function initialState(): GameState {
       idling: switches.handful ? 48_206 : null,
       signalDeadline: server?.signalDeadline ?? now + SIGNAL_WINDOW_MS,
       safeSince: server?.safeSince ?? null,
-      // FAKE (phase 7): the design's vote.
-      vote: {
-        question: "Which way today?",
-        options: [
-          { label: "Detour past asteroid 2026 QX for a postcard", votes: 12_840 },
-          { label: "Burn hard: arrive about a day sooner", votes: 11_590 },
-          { label: "Hold steady and save fuel for Mars", votes: 6_890 },
-        ],
-        closesAt: nextUtcMidnight(now),
-      },
+      vote: server?.vote ?? { round: "", question: "Which way today?", options: [], closesAt: nextUtcMidnight(now) },
+      logId: server?.logId ?? 0,
     },
     player: {
       name: "",
@@ -219,6 +213,7 @@ function initialState(): GameState {
       pingedToday: false,
       pinging: false,
       voteChoice: null,
+      voting: false,
       pingStreakDays: 0,
     },
     toast: null,
@@ -263,6 +258,8 @@ function compose(base: GameState, connection = base.connection): GameState {
         idling,
         signalDeadline: p.signalDeadline,
         safeSince: p.safeSince,
+        vote: p.vote,
+        logId: p.logId,
       }),
     },
     player: {
@@ -279,6 +276,8 @@ function compose(base: GameState, connection = base.connection): GameState {
       tapKmToday: serverToday.tapKmToday + optimisticKm,
       pingedToday: serverToday.pingedToday,
       pingStreakDays: serverToday.pingStreakDays,
+      // Your vote counts only for the round it was cast in; a new round starts empty.
+      voteChoice: p && serverToday.vote?.round === p.vote.round ? serverToday.vote.option : null,
     },
   };
 }
@@ -298,6 +297,7 @@ function onMessage(msg: ServerMessage) {
       tapKmToday: msg.tapKmToday,
       pingedToday: msg.pingedToday,
       pingStreakDays: msg.pingStreakDays,
+      vote: msg.vote,
     };
   }
   if (msg.t === "hello" || msg.t === "credited" || msg.t === "me") {
@@ -339,21 +339,7 @@ function startServer() {
 }
 
 function tick() {
-  const next = compose(state);
-  // FAKE (phase 7): a little drift in the vote, so it feels alive.
-  const drift = Math.random() < 0.2;
-  set({
-    ...next,
-    probe: {
-      ...next.probe,
-      vote: drift
-        ? {
-            ...next.probe.vote,
-            options: next.probe.vote.options.map((o) => ({ ...o, votes: o.votes + (Math.random() < 0.5 ? 1 : 0) })),
-          }
-        : next.probe.vote,
-    },
-  });
+  set(compose(state));
 }
 
 function subscribe(fn: () => void) {
@@ -470,15 +456,48 @@ export async function ping() {
   }
 }
 
-/** FAKE until phase 7. */
-export function castVote(index: number) {
-  if (state.player.voteChoice !== null) return;
-  const options = state.probe.vote.options.map((o, i) => (i === index ? { ...o, votes: o.votes + 1 } : o));
-  set({
-    ...state,
-    probe: { ...state.probe, vote: { ...state.probe.vote, options } },
-    player: { ...state.player, voteChoice: index },
-  });
+/** Today's vote: the invisible bot check, then the server. The tallies update for everyone. */
+export async function castVote(index: number) {
+  if (state.player.voteChoice !== null || state.player.voting || !server) return;
+  const round = server.vote.round;
+  const setVoting = (voting: boolean) => set({ ...state, player: { ...state.player, voting } });
+  setVoting(true);
+  let result: VoteResult;
+  try {
+    const token = await turnstileToken("vote");
+    const res = await fetch("/api/vote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, round, option: index }),
+      credentials: "same-origin",
+    });
+    result = (await res.json()) as VoteResult;
+  } catch {
+    result = { ok: false, reason: "unavailable" };
+  }
+  setVoting(false);
+
+  if (result.ok || (result.reason === "already-voted" && result.option !== undefined)) {
+    const option = result.ok ? result.option : result.option!;
+    serverToday = { ...serverToday, vote: { round, option } };
+    if (result.ok && server && server.vote.round === round) {
+      const tallies = result.tallies;
+      server = { ...server, vote: { ...server.vote, options: server.vote.options.map((o, i) => ({ ...o, votes: tallies[i] ?? o.votes })) } };
+    }
+    set(compose(state));
+    if (!result.ok) showToast({ tier: null, title: "Already voted", body: "You've voted in today's round. A new one opens at 00:00 UTC." });
+    return;
+  }
+  switch (result.reason) {
+    case "closed":
+      showToast({ tier: null, title: "That vote just closed", body: "A new round is open. Have another look." });
+      break;
+    case "bot-check":
+      showToast({ tier: null, title: "Vote didn't go through", body: "The bot check failed. Please try again." });
+      break;
+    default:
+      showToast({ tier: null, title: "Vote didn't go through", body: "We couldn't reach the probe. Please try again." });
+  }
 }
 
 /** Asks the server for a purchase or a handover; the button waits for its answer. */
@@ -554,6 +573,8 @@ function derive({ now, probe, player }: GameState) {
     toNextKm: next ? next.km - probe.distanceKm : 0,
     voteLeftS: Math.max(0, (probe.vote.closesAt - now) / 1000),
     voteTotal: probe.vote.options.reduce((sum, o) => sum + o.votes, 0),
+    /** Mission day of a moment, as the log shows it. */
+    missionDayAt: (at: number) => Math.floor((at - probe.missionStartedAt) / DAY_MS) + 1,
     upgrades,
     affordable: upgrades.filter((u) => u.affordable).length,
     prestigeReady: player.kmSinceShift >= PRESTIGE_AT_KM,

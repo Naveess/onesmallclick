@@ -269,6 +269,31 @@ export function AdminPage() {
               </div>
             </Window>
 
+            <Window as="section" className="admin__card" aria-labelledby="admin-vote">
+              <h2 id="admin-vote" className="admin__h2">
+                Today's vote · round {p!.vote.round}
+              </h2>
+              <ul className="admin__note">
+                {p!.vote.options.map((o) => (
+                  <li key={o.id}>
+                    {o.votes} · {o.label}
+                  </li>
+                ))}
+              </ul>
+              <p className="admin__note">
+                Closes {when(p!.vote.closesAt)}. Closing now applies the winner's effect to the route, writes the result
+                to the log and opens a new round.
+              </p>
+              <div className="admin__row">
+                <PixelButton disabled={busy} onClick={() => void run("close-vote", {})}>
+                  Close today's vote now
+                </PixelButton>
+                <PixelButton variant="outline" disabled={busy} onClick={() => void run("clear-vote", {})}>
+                  Let this browser vote again
+                </PixelButton>
+              </div>
+            </Window>
+
             <Window
               as="form"
               className="admin__card"

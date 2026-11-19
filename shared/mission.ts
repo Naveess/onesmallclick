@@ -2,6 +2,7 @@
 // and the messages that go over the probe's WebSocket. No DOM or Worker APIs here.
 
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
+import type { LiveVote } from "./votes";
 
 /** Earth to Mars, as the design has it. */
 export const ROUTE_KM = 480_000_000;
@@ -103,6 +104,10 @@ export interface ProbeSnapshot {
   signalDeadline: number;
   /** When safe mode began, or null while the probe is talking. */
   safeSince: number | null;
+  /** Today's crew vote with live tallies (phase 7a). */
+  vote: LiveVote;
+  /** The newest mission log entry's id, so the log page knows when to reload. */
+  logId: number;
 }
 
 /** This device's own numbers for today (UTC). */
@@ -112,6 +117,8 @@ export interface DeviceToday {
   pingedToday: boolean;
   /** Consecutive days with a ping, up to today or yesterday. */
   pingStreakDays: number;
+  /** This device's vote in the current round, if any. */
+  vote: { round: string; option: number } | null;
 }
 
 /** What POST /api/ping answers. */

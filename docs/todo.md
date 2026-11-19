@@ -25,6 +25,9 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 ### Then
 - [x] Phase plan proposed in docs/plan.md (18 Nov). Next: answer the "Before phase 2" decisions there.
 
+## Before launch
+- [ ] **Approve the vote pool** (`content/vote-options.json`): wording, effects, and each detour's fact against its source link. It's a draft until you say so.
+
 ## At the end
 - [ ] **Privacy page (phase 9) must mention Cloudflare Turnstile**, which runs on Ping, and the device cookie (`osc_device`, HttpOnly, 400 days).
 - [ ] **Signal Keeper badge names (phase 8).** The signal card still shows the design's "Signal Keeper III · 4 days to IV"; only the streak number is real. Set the I–IV streak thresholds with the badges.

@@ -5,15 +5,20 @@
 //   GET  /api/session         sets the signed device cookie if needed; returns { name }
 //   GET  /api/probe           WebSocket to the shared Probe (needs the device cookie)
 //   POST /api/ping            { token } (Turnstile) → today's Ping for this device
+//   POST /api/vote            { token, round, option } (Turnstile) → this device's vote in today's round
+//   GET  /api/log             ?before=<id> → the current mission's log, newest first (30 at a time)
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
+//   POST /api/admin/close-vote  }   (closes today's vote now; its effect applies)
+//   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
 //   POST /api/admin/reset       }
 
 import type { PingResult } from "../shared/mission";
+import type { VoteResult } from "../shared/votes";
 import { deviceCookie, generateName, readDevice } from "./device";
 
 export { Probe } from "./probe";
@@ -37,6 +42,8 @@ export default {
     if (path === "/api/session" && request.method === "GET") return session(request, env);
     if (path === "/api/probe") return connect(request, env, url);
     if (path === "/api/ping" && request.method === "POST") return ping(request, env);
+    if (path === "/api/vote" && request.method === "POST") return vote(request, env);
+    if (path === "/api/log" && request.method === "GET") return missionLog(env, url);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
     return json({ error: "Not found" }, 404);
@@ -89,7 +96,7 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
 }
 
 /** Checks the invisible Turnstile token with Cloudflare. */
-async function turnstileOk(token: string, request: Request, env: Env): Promise<boolean> {
+async function turnstileOk(token: string, request: Request, env: Env, action: "ping" | "vote"): Promise<boolean> {
   const form = new FormData();
   form.append("secret", env.TURNSTILE_SECRET);
   form.append("response", token);
@@ -98,7 +105,7 @@ async function turnstileOk(token: string, request: Request, env: Env): Promise<b
   try {
     const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body: form });
     const out = (await res.json()) as { success?: boolean; action?: string };
-    return out.success === true && (!out.action || out.action === "ping");
+    return out.success === true && (!out.action || out.action === action);
   } catch (err) {
     console.error("turnstile check failed", err);
     return false;
@@ -116,12 +123,55 @@ async function ping(request: Request, env: Env): Promise<Response> {
   const id = await readDevice(request, env.DEVICE_SECRET);
   if (!id) return fail("no-device", 401);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown };
-  if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env))) {
+  if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "ping"))) {
     return fail("bot-check", 403);
   }
   const row = await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
   const result = await probe(env).ping(id, row?.name ?? "a crew member");
   return json(result);
+}
+
+/** Today's vote for this device: bot check, then the Probe decides (once per round, while it's open). */
+async function vote(request: Request, env: Env): Promise<Response> {
+  const fail = (reason: Extract<VoteResult, { ok: false }>["reason"], status: number) =>
+    json({ ok: false, reason } satisfies VoteResult, status);
+  if (!env.DEVICE_SECRET || !env.TURNSTILE_SECRET) return fail("unavailable", 503);
+  const origin = request.headers.get("Origin");
+  if (origin && new URL(origin).host !== new URL(request.url).host) return fail("no-device", 403);
+
+  const id = await readDevice(request, env.DEVICE_SECRET);
+  if (!id) return fail("no-device", 401);
+  const body = (await request.json().catch(() => ({}))) as { token?: unknown; round?: unknown; option?: unknown };
+  if (typeof body.round !== "string" || body.round.length > 20 || !Number.isInteger(body.option)) return fail("closed", 400);
+  if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "vote"))) {
+    return fail("bot-check", 403);
+  }
+  return json(await probe(env).castVote(id, body.round, body.option as number));
+}
+
+const LOG_PAGE = 30;
+
+/** The current mission's log, newest first. Public: everything in it is shared anyway. */
+async function missionLog(env: Env, url: URL): Promise<Response> {
+  const before = Number(url.searchParams.get("before"));
+  const cursor = Number.isInteger(before) && before > 0 ? before : Number.MAX_SAFE_INTEGER;
+  const rows = await env.DB.prepare(
+    `SELECT id, at, kind, title, body, data FROM log_entries
+     WHERE mission_id = (SELECT MAX(id) FROM missions) AND id < ?
+     ORDER BY id DESC LIMIT ?`,
+  )
+    .bind(cursor, LOG_PAGE + 1)
+    .all<{ id: number; at: number; kind: string; title: string; body: string; data: string | null }>();
+  const list = rows.results.slice(0, LOG_PAGE).map((r) => {
+    let data: unknown = null;
+    try {
+      data = r.data ? JSON.parse(r.data) : null;
+    } catch {
+      // keep null
+    }
+    return { id: r.id, at: r.at, kind: r.kind, title: r.title, body: r.body, data };
+  });
+  return json({ entries: list, more: rows.results.length > LOG_PAGE });
 }
 
 const enc = new TextEncoder();
@@ -175,6 +225,12 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     const km = Number(body.km);
     if (!Number.isFinite(km) || km <= 0 || km > 1e12) return json({ error: "km must be between 0 and 1,000,000,000,000" }, 400);
     return json(await stub.adminGive(id, km));
+  }
+  if (action === "close-vote") return json(await stub.adminCloseVote());
+  if (action === "clear-vote") {
+    const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
+    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
+    return json(await stub.adminClearVote(id));
   }
   if (action === "reset") return json(await stub.adminResetMission());
   return json({ error: "Not found" }, 404);

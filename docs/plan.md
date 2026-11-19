@@ -10,7 +10,9 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 4: The shared probe** (deployed c189904 and approved, 2026-11-18)
 - [x] **Phase 5: Signal, Ping and safe mode** (deployed from 7261f30 and approved 2026-11-19)
 - [x] **Phase 6: Idle upgrades and offline thrust** (deployed from 3faffe7 and approved 2026-11-19)
-- [ ] **Phase 7: Votes, mission log, milestones and fact pages**
+- [ ] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
+  - [x] **7a: The daily vote and the mission log** (built 2026-11-19; Nav applies migration 0004 and deploys)
+  - [ ] **7b: Milestones, the milestone moment, fact pages and How to play**
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 
@@ -247,6 +249,15 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Content volume.** A long mission needs a lot of vote options, so options will repeat from a pool.
 - **Every fact must be true and checked** (Product principle 5).
 
+**As built: 7a (2026-11-19)**
+- The pool is `content/vote-options.json` (a DRAFT for Nav's approval): 30 options, 10 each of faster (6 to 24 hours sooner), steady (no change) and detour (6 to 24 hours later, each with a true fact and its source). Rules in `shared/votes.ts`.
+- Each round the `Probe` object picks one option of each kind, in a shuffled order, avoiding the last 3 rounds' picks. A round is a UTC day; one closed early from /admin gets ".2", ".3".
+- Voting: `POST /api/vote` behind the invisible Turnstile check (action "vote"), one vote per device per round (D1 `votes`). The object keeps the live tallies in its own SQLite and sends them with every update (at most once a second).
+- Closing: one alarm covers both the signal and 00:00 UTC; any message or /admin clock move also checks. The winner's hours are applied to the route at coasting speed, the result goes in the log (with the fact for a detour), and D1 `vote_days` keeps the record (migration 0004). A tie goes to steady, then detour; no votes means no change ("No votes today").
+- The mission log page (1h) at `/log` reads `GET /api/log` (the current mission, newest first, 30 at a time) and puts today's open vote at the top. An open log page reloads by itself when a new entry is written. The design draws the marker icons at 12px; they're at 9px (1×) to keep whole-number pixels.
+- `/admin` shows today's tallies, closes the vote now, and lets its own browser vote again.
+- The open vote is shown as "DAY n" of the mission (mission days count from launch, not from midnight).
+
 ## Phase 8: Accounts, leaderboards, profile and arrival
 
 **Goal:** optional sign-in so progress follows you across devices, plus the leaderboards and the end of the mission.
@@ -349,9 +360,9 @@ Also decided with phase 5 (2026-11-18): **the setback lengthens the route** (the
 
 Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 km/s, flattening towards 21 km/s, so Mars takes at least about 4½ months); **a tab hidden for 5 minutes counts as away**; **welcome back shows after 30 minutes away** with some auto-thrust, and collecting is automatic.
 
-### Before phase 7
-11. **Vote** *(brief)*. The design already says 3 options closing at 00:00 UTC. Confirm? I'd draft a pool of about 30 options with their effects for your approval.
-12. **Milestones.** The design names only two: 3 (mid-course burn, 120M km) and 4 (halfway, 240M km). I'd draft all six, with distances and checked facts, for your approval.
+### Before phase 7 (11 and 12 decided 2026-11-19)
+11. ~~**Vote**~~ **Decided:** 3 options closing at 00:00 UTC, from a pool of about 30 drafted for approval (`content/vote-options.json`), each between a day sooner and a day later.
+12. ~~**Milestones**~~ **Decided:** I draft all six, with distances and checked facts, for approval in 7b. Fact pages are built from the kit in the style of How to play (1l), at `/milestones/<name>`.
 13. **Postcards** *(brief)*: real photos or pixel art? This can wait. Placeholders stay until then (todo, "At the end").
 
 ### Before phase 8
