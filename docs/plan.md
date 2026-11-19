@@ -9,7 +9,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 3: Game home with fake data** (deployed 52b688b, THRUST lag fix d9cda91 deployed, approved 2026-11-18)
 - [x] **Phase 4: The shared probe** (deployed c189904 and approved, 2026-11-18)
 - [x] **Phase 5: Signal, Ping and safe mode** (deployed from 7261f30 and approved 2026-11-19)
-- [ ] **Phase 6: Idle upgrades and offline thrust**
+- [x] **Phase 6: Idle upgrades and offline thrust** (built 2026-11-19; Nav applies migration 0003 and deploys)
 - [ ] **Phase 7: Votes, mission log, milestones and fact pages**
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival**
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
@@ -198,6 +198,24 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 **Main risks**
 - **Balance.** Thousands of idle players' auto-thrust could outweigh tapping, or finish the mission far too early. This needs the mission-length target (decision 4).
+
+**As built (2026-11-19)**
+- The `Probe` object is the authority for everyone's idle game. Each device's progress (credits in thousandths as whole numbers, levels, patches, km since the last handover, and when auto-thrust was last paid) lives in the object's own SQLite. A copy goes to D1 `progress` (migration 0003, keyed by device for now; accounts take over in phase 8) every 30 s.
+- The rules live in `shared/upgrades.ts`, so the app and the server use one copy. Buy and handover requests go over the WebSocket. The server checks the credits (or the 2,000,000 km), then replies; a refused request just gets the real balance back. Faked messages (30 solar sails at once, an unknown upgrade, extra fields) were refused in testing.
+- Taps credit at the device's own tap power: (4 + 2×hands) × (1 + 0.25×chant) × (1 + 0.1×patches), rounded. Auto-thrust is the design's per-level km/s × the same patch boost.
+- **Auto-thrust while connected** moves the shared probe continuously (each device once, whatever its tabs) and pays the device in full. **Offline**: when a device comes back, up to 8 hours of its auto-thrust is paid and added to the probe in one go. Time in safe mode doesn't pay.
+- **The crew-speed ceiling** (decided 2026-11-19): what the crew adds to the shared probe counts in full up to 10 km/s, then flattens towards 21 km/s (`crewEffective` in `shared/mission.ts`). A busy crew still reaches Mars in about 179 days; no crew can make it faster than about 132 days. The ceiling looks at the last hour of taps and catch-ups plus connected auto-thrust. Your own km and credits always count in full; "+N km/s from crew" and "your taps got us there X sooner" show what actually moved the probe.
+- **Welcome back (1d)** shows after 30 minutes or more away with some auto-thrust. It shows:
+  - how long you were away, the km and credits earned, and counted / not counted;
+  - the crew's km while you were away;
+  - "arrival moved" (the crew's pushes beyond coasting, minus any outage);
+  - the last ping while you were away.
+
+  The server has already paid it, so "Collect & keep pushing" just closes it.
+- **Prestige** unlocks at 2,000,000 km pushed since your last handover (the design's number, decision 10). It needs two taps ("Tap again: reset for 3 patches"), because it can't be undone.
+- **Connections:** a tab hidden for 5 minutes closes its line, so it counts as away and the 8-hour cap applies. The browser sends a heartbeat every 30 s; Cloudflare answers it without waking the object. A socket silent for 90 s (a phone that lost signal) is treated as gone, and its device is paid only up to its last heartbeat. Leaving the page closes the line straight away.
+- "+N thrusters idling" is real: devices away within the last 8 hours with auto-thrust, shown when 20 or fewer are here.
+- `/admin` shows the crew push before the ceiling and how much of it counts, and can give this browser km (credits and prestige progress) for testing.
 - **Prestige rules** aren't decided yet (decision 10).
 
 ## Phase 7: Votes, mission log, milestones and fact pages
@@ -325,9 +343,11 @@ Also decided with phase 4 (2026-11-18): **people here counts devices**, so five 
 
 Also decided with phase 5 (2026-11-18): **the setback lengthens the route** (the probe drifted off course: the distance is kept and the real arrival really is later); **taps don't count in safe mode** (the design's "0 km/s from crew"); **PING's fixed `--ping-*` colours** are agreed, like THRUST's. Turnstile widget made by Nav (site key `0x4AAAAAAGHp999jPtmZ4xYE`, invisible).
 
-### Before phase 6
-9. **Do idle players move the shared probe?** That means auto-thrust while connected, plus the offline catch-up (up to 8 hours) added when they come back. *(Yes to both. That's what the design shows.)*
-10. **Prestige** *(brief)*. The design resets upgrades and credits for 3 Mission Patches. When can you prestige: at any time after a credits threshold, or only at arrival? *(Any time after a lifetime-credits threshold. The exact number is set in phase 6 with the balance numbers.)*
+### Before phase 6 (all decided 2026-11-19)
+9. ~~**Do idle players move the shared probe?**~~ **Decided: yes to both**: auto-thrust while connected, plus the offline catch-up (up to 8 hours) added when they come back.
+10. ~~**Prestige**~~ **Decided: the design's number.** Any time once you've pushed 2,000,000 km since your last handover.
+
+Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 km/s, flattening towards 21 km/s, so Mars takes at least about 4½ months); **a tab hidden for 5 minutes counts as away**; **welcome back shows after 30 minutes away** with some auto-thrust, and collecting is automatic.
 
 ### Before phase 7
 11. **Vote** *(brief)*. The design already says 3 options closing at 00:00 UTC. Confirm? I'd draft a pool of about 30 options with their effects for your approval.

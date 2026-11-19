@@ -1,35 +1,47 @@
-import { useEffect, useRef } from "react";
-import type { GameView } from "../game/store";
+import { useEffect, useRef, useState } from "react";
+import type { GameView, PlayerState } from "../game/store";
 import { int } from "../game/format";
-import type { UpgradeKey } from "../game/rules";
+import { PRESTIGE_AT_KM, type UpgradeKey } from "../game/rules";
 import { PixelButton } from "./PixelButton";
 import { PixelIcon } from "./PixelIcon";
 import { Window } from "./Window";
 import "./UpgradesSheet.css";
 
-const PRESTIGE_AT_KM = 2_000_000;
+/** How long "Tap again to hand over" waits for the second tap. */
+const CONFIRM_MS = 5_000;
 
 interface UpgradesSheetProps {
   open: boolean;
   onClose: () => void;
-  credits: number;
-  lifetimeKm: number;
+  player: PlayerState;
+  /** False while there's no line to the probe: purchases need the server. */
+  live: boolean;
   view: GameView;
   onBuy: (key: UpgradeKey) => void;
+  onHandOver: () => void;
 }
 
 /** The upgrades sheet. A real modal <dialog>: focus stays inside, Esc and the backdrop close it. */
-export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy }: UpgradesSheetProps) {
+export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHandOver }: UpgradesSheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
     if (open && !d.open) d.showModal();
     if (!open && d.open) d.close();
+    if (!open) setConfirming(false);
   }, [open]);
 
-  const prestigePct = Math.min(100, Math.floor((lifetimeKm / PRESTIGE_AT_KM) * 100));
+  useEffect(() => {
+    if (!confirming) return;
+    const t = window.setTimeout(() => setConfirming(false), CONFIRM_MS);
+    return () => window.clearTimeout(t);
+  }, [confirming]);
+
+  const { credits, kmSinceShift, patches, buying } = player;
+  const prestigePct = Math.min(100, Math.floor((kmSinceShift / PRESTIGE_AT_KM) * 100));
   const rows = (group: "auto" | "tap") =>
     view.upgrades
       .filter((u) => u.def.group === group)
@@ -47,7 +59,8 @@ export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy 
           </div>
           <PixelButton
             className="upgrade__buy"
-            disabled={!u.affordable}
+            disabled={!u.affordable || !live || buying !== null}
+            aria-busy={buying === u.def.key}
             onClick={() => onBuy(u.def.key)}
             aria-label={`Buy ${u.def.name} level ${u.level + 1} for ${int(u.cost)} credits`}
           >
@@ -55,6 +68,15 @@ export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy 
           </PixelButton>
         </div>
       ));
+
+  const handOver = () => {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    onHandOver();
+  };
 
   return (
     <dialog
@@ -78,9 +100,7 @@ export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy 
         </div>
         <div className="sheet__balance">
           <div className="sheet__balance-label">BALANCE</div>
-          <div className="sheet__balance-value" aria-live="polite">
-            {int(credits)} cr
-          </div>
+          <div className="sheet__balance-value">{int(credits)} cr</div>
         </div>
       </div>
 
@@ -105,6 +125,7 @@ export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy 
           <p className="prestige__title">Hand over the shift</p>
           <p className="prestige__note">
             Reset your upgrades and credits for 3 Mission Patches. Each patch is +10% thrust, forever.
+            {patches > 0 && ` You have ${patches} (+${patches * 10}% thrust).`}
           </p>
           <div
             className="prestige__bar"
@@ -118,16 +139,28 @@ export function UpgradesSheet({ open, onClose, credits, lifetimeKm, view, onBuy 
           </div>
           <div className="prestige__numbers">
             <span>
-              {int(Math.min(lifetimeKm, PRESTIGE_AT_KM))} / {int(PRESTIGE_AT_KM)} km
+              {int(Math.min(kmSinceShift, PRESTIGE_AT_KM))} / {int(PRESTIGE_AT_KM)} km
             </span>
             <span>{prestigePct}%</span>
           </div>
-          <button type="button" className="prestige__locked" disabled>
-            Unlocks at {int(PRESTIGE_AT_KM)} km pushed
-          </button>
+          {view.prestigeReady ? (
+            <button
+              type="button"
+              className="prestige__locked prestige__go"
+              disabled={!live || buying !== null}
+              aria-busy={buying === "prestige"}
+              onClick={handOver}
+            >
+              {confirming ? "Tap again: reset for 3 patches" : "Hand over the shift"}
+            </button>
+          ) : (
+            <button type="button" className="prestige__locked" disabled>
+              Unlocks at {int(PRESTIGE_AT_KM)} km pushed
+            </button>
+          )}
         </Window>
 
-        <p className="sheet__note">Test flight: purchases last until you reload the page.</p>
+        {!live && <p className="sheet__note">Reconnecting to the probe. Purchases need the line back.</p>}
       </div>
     </dialog>
   );

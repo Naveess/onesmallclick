@@ -15,7 +15,11 @@ export function HereNow({ online, idling, wide = false }: { online: number; idli
         <span className="here-now__count num">{int(online)}</span>
         <span className="here-now__word">here now</span>
       </div>
-      {idling !== null && <div className="here-now__idling">+ {int(idling)} thrusters idling</div>}
+      {idling !== null && (
+        <div className="here-now__idling">
+          + {int(idling)} thruster{idling === 1 ? "" : "s"} idling
+        </div>
+      )}
     </div>
   );
 }

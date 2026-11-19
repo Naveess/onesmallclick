@@ -1,0 +1,140 @@
+/* Welcome back (1d). Sizes, colours and stripes are the design's. */
+
+.welcome {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 48px 0 24px;
+}
+
+/* On the wide layout the same screen sits in a centred column. */
+.welcome--wide {
+  width: min(100%, 460px);
+  margin: 0 auto;
+  padding-top: 64px;
+}
+
+.welcome__probe {
+  display: flex;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px rgb(var(--glow-blue) / 0.7));
+}
+
+.welcome__card.window {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.welcome__label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.welcome__title {
+  margin-top: 2px;
+  font: 500 22px/1.25 var(--font-ui);
+}
+
+.welcome__away {
+  font-size: 20px;
+  color: var(--text-muted);
+}
+
+.welcome__km {
+  font: 56px/0.9 var(--font-num);
+  color: var(--text-blue);
+  text-shadow: 3px 3px 0 var(--blue-text-shadow);
+  overflow-wrap: anywhere;
+}
+
+.welcome__sub {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.welcome__cap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.welcome__bar {
+  display: flex;
+  height: 14px;
+  border: 2px solid var(--line);
+  background: var(--field);
+}
+
+.welcome__counted {
+  background: repeating-linear-gradient(90deg, var(--blue) 0 8px, var(--blue-deep) 8px 10px);
+}
+
+.welcome__lost {
+  flex: 1;
+  background: repeating-linear-gradient(45deg, var(--line-dim) 0 3px, transparent 3px 6px);
+}
+
+.welcome__split {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.welcome__split-counted {
+  color: var(--text-blue);
+}
+
+.welcome__note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.welcome__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Each row has the design's divider: a 2px line that fades out at both ends. */
+.welcome__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  background: linear-gradient(90deg, transparent, var(--line-blue) 48px, var(--line-blue) calc(100% - 48px), transparent) top /
+    100% 2px no-repeat;
+}
+
+.welcome__row dt {
+  flex: none;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.welcome__row dd {
+  min-width: 0;
+  font-size: 22px;
+  text-align: right;
+}
+
+/* A long name wraps whole, before the time, never mid-word. */
+.welcome__row dd span {
+  white-space: nowrap;
+}
+
+.welcome__blue {
+  color: var(--text-blue);
+}
+
+.welcome__orange {
+  color: var(--text-orange);
+}

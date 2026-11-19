@@ -54,6 +54,7 @@ export function AdminPage() {
   const [km, setKm] = useState("");
   const [hours, setHours] = useState("24");
   const [seconds, setSeconds] = useState("70");
+  const [give, setGive] = useState("100000");
 
   const run = async (action: string, body?: object, k = key) => {
     setBusy(true);
@@ -155,9 +156,16 @@ export function AdminPage() {
                   </dd>
                 </div>
                 <div>
+                  <dt>Crew push (ceiling)</dt>
+                  <dd className="num">
+                    raw {(state.crewRawKmS + state.autoRawKmS).toFixed(2)} km/s (last hour's taps and catch-ups{" "}
+                    {state.crewRawKmS.toFixed(2)} + auto {state.autoRawKmS.toFixed(2)}) · {Math.round(p!.crewFactor * 100)}% counts
+                  </dd>
+                </div>
+                <div>
                   <dt>Devices here</dt>
                   <dd className="num">
-                    {p!.online} ({state.sockets} sockets)
+                    {p!.online} ({state.sockets} sockets) · {p!.idling} idling · {state.players} with progress
                   </dd>
                 </div>
                 <div>
@@ -261,11 +269,39 @@ export function AdminPage() {
               </div>
             </Window>
 
+            <Window
+              as="form"
+              className="admin__card"
+              aria-labelledby="admin-give"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                void run("give", { km: Number(give.replace(/[,\s_]/g, "")) });
+              }}
+            >
+              <h2 id="admin-give" className="admin__h2">
+                Give this browser km
+              </h2>
+              <p className="admin__note">
+                Adds credits and prestige progress to this browser's own idle game, as if it had pushed that far. The
+                shared probe doesn't move. 2,000,000 unlocks the handover.
+              </p>
+              <label className="admin__field">
+                <span className="label">Km</span>
+                <input inputMode="numeric" value={give} onChange={(e) => setGive(e.target.value)} required />
+              </label>
+              <PixelButton type="submit" disabled={busy}>
+                Give km
+              </PixelButton>
+            </Window>
+
             <Window as="section" tone="orange" className="admin__card" aria-labelledby="admin-reset">
               <h2 id="admin-reset" className="admin__h2">
                 Reset the mission
               </h2>
-              <p className="admin__note">Starts mission {p!.missionId + 1} at 0 km with a full signal, and puts the clock back to real time.</p>
+              <p className="admin__note">
+                Starts mission {p!.missionId + 1} at 0 km with a full signal, and puts the clock back to real time.
+                Everyone's credits, upgrades and patches are kept.
+              </p>
               <PixelButton
                 variant="orange"
                 disabled={busy}

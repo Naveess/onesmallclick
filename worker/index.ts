@@ -10,6 +10,7 @@
 //   POST /api/admin/clock       }
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
+//   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
 //   POST /api/admin/reset       }
 
 import type { PingResult } from "../shared/mission";
@@ -167,6 +168,13 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
     if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
     return json(await stub.adminClearPing(id));
+  }
+  if (action === "give") {
+    const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
+    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
+    const km = Number(body.km);
+    if (!Number.isFinite(km) || km <= 0 || km > 1e12) return json({ error: "km must be between 0 and 1,000,000,000,000" }, 400);
+    return json(await stub.adminGive(id, km));
   }
   if (action === "reset") return json(await stub.adminResetMission());
   return json({ error: "Not found" }, 404);

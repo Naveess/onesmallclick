@@ -269,3 +269,23 @@
 .sheet__grab:focus-visible {
   outline-offset: -4px;
 }
+
+/* Unlocked: the same outlined button at full strength. */
+.prestige__go {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.prestige__go:hover:not(:disabled) {
+  background: var(--orange-track);
+}
+
+.prestige__go:focus-visible {
+  outline: 2px solid var(--text-orange);
+  outline-offset: 2px;
+}
+
+.prestige__go:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

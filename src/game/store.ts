@@ -15,15 +15,18 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../../shared/mission";
-import { startProbe, type Connection } from "./probeClient";
-import { MILESTONES, UPGRADES, autoKmS, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
+import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
+import { request, startProbe, type Connection } from "./probeClient";
+import { MILESTONES, UPGRADES, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
 import { preloadTurnstile, turnstileToken } from "./turnstile";
 
 // The game's state for the screens.
 //   REAL from phase 4: the shared probe (distance, crew pace, people here, mission day, arrival date)
 //                      and this device's km today, from the Probe Durable Object over a WebSocket.
 //   REAL from phase 5: the signal timer, safe mode and its setback, Ping (POST /api/ping), streaks.
-//   STILL FAKE:        credits and upgrades (phase 6), today's vote (phase 7).
+//   REAL from phase 6: credits, upgrades, auto-thrust, prestige patches, welcome back. The server
+//                      decides every purchase; between messages credits tick up at your auto rate.
+//   STILL FAKE:        today's vote (phase 7).
 // Time is the server's clock: every message carries it, and `now` below is Date.now() + that offset.
 
 export interface VoteOption {
@@ -36,15 +39,18 @@ export interface ProbeState {
   missionStartedAt: number; // epoch ms, server clock
   /** The route, including setbacks already made permanent. */
   routeKm: number;
-  /** What to show: the server's distance, plus coasting since, plus this device's taps not yet credited. */
+  /** What to show: the server's distance, plus coasting and auto-thrust since, plus this device's taps not yet credited. */
   distanceKm: number;
   coastKmS: number;
-  /** The crew's taps over the last few minutes, in km/s (0 in safe mode). */
+  /** Everyone connected's auto-thrust after the ceiling (it moves the probe continuously). */
+  autoKmS: number;
+  /** What the crew adds: recent taps plus auto-thrust, after the ceiling (0 in safe mode). */
   crewKmS: number;
+  /** The share of a crew km that moves the shared probe (the ceiling; 1 for a normal crew). */
+  crewFactor: number;
   online: number;
-  /** Shown when only a handful are here: everyone else's idling thrusters. (Phase 6; test switch until then.) */
+  /** "+N thrusters idling": shown only when a handful are here (?crew=handful forces it, for the look). */
   idling: number | null;
-  tapKm: number;
   signalDeadline: number;
   /** When safe mode began, or null while the probe is talking. */
   safeSince: number | null;
@@ -54,16 +60,23 @@ export interface ProbeState {
 
 /** This player's own state. */
 export interface PlayerState {
-  /** FAKE until phase 6. */
+  /** This device's generated name, e.g. orbit_otter. */
+  name: string;
+  /** Credits now: the server's, plus auto-thrust since its last message, plus taps not yet credited. */
   credits: number;
-  /** FAKE until phase 6: buying works for this visit only and doesn't change the real tap power yet. */
   levels: UpgradeLevels;
+  patches: number;
+  /** Prestige progress: km pushed since the last handover. */
+  kmSinceShift: number;
+  /** Your auto-thrust (km/s) and tap power, with the patches. */
+  autoKmS: number;
+  tapKm: number;
+  /** A purchase or handover waiting for the server's answer. */
+  buying: UpgradeKey | "prestige" | null;
   /** Km this device pushed today (UTC). */
   kmToday: number;
   /** Km from taps today; sets "your taps today got us there X sooner". */
   tapKmToday: number;
-  /** FAKE until phase 6. */
-  lifetimeKm: number;
   pingedToday: boolean;
   /** True while a ping is on its way (bot check, then the server). */
   pinging: boolean;
@@ -88,6 +101,8 @@ export interface GameState {
   probe: ProbeState;
   player: PlayerState;
   toast: Toast | null;
+  /** The welcome back summary (1d), until it's closed. */
+  welcome: WelcomeBack | null;
 }
 
 /** Test switches, from the URL: ?crew=handful  ?ads=off */
@@ -107,8 +122,12 @@ function readSwitches(): TestSwitches {
 export const switches = readSwitches();
 
 const DAY_MS = 86_400_000;
-const CACHE_KEY = "osc.probe.v2";
+const CACHE_KEY = "osc.probe.v3";
 const TOAST_MS = 7_000;
+/** "+N thrusters idling" shows only when this few are here (the design's "handful"). */
+const HANDFUL = 20;
+/** A purchase with no answer by then is given up (the button comes back). */
+const BUY_TIMEOUT_MS = 5_000;
 /** Taps held while the socket is down; the server would cap anything beyond this anyway. */
 const MAX_PENDING_TAPS = Math.round(MAX_TAPS_PER_S * (BATCH_MS / 1000) * 1.5);
 
@@ -119,6 +138,10 @@ let offsetMs = 0; // server clock − device clock
 let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, pingedToday: false, pingStreakDays: 0 };
 let pendingTaps = 0;
 const inFlight = new Map<number, number>(); // seq → taps sent, not yet credited
+let me: Progress | null = null;
+let meAt = 0; // server time of `me`
+let buyingSeq: number | null = null;
+let buyTimer: number | undefined;
 
 function readCache(): ProbeSnapshot | null {
   try {
@@ -164,10 +187,11 @@ function initialState(): GameState {
       routeKm: server?.routeKm ?? ROUTE_KM,
       distanceKm: server ? distanceAt(server, now) : 0,
       coastKmS: server?.coastKmS ?? COAST_KM_S,
+      autoKmS: server?.autoKmS ?? 0,
       crewKmS: server?.crewKmS ?? 0,
+      crewFactor: server?.crewFactor ?? 1,
       online: server?.online ?? 1,
       idling: switches.handful ? 48_206 : null,
-      tapKm: server?.tapKm ?? BASE_TAP_KM,
       signalDeadline: server?.signalDeadline ?? now + SIGNAL_WINDOW_MS,
       safeSince: server?.safeSince ?? null,
       // FAKE (phase 7): the design's vote.
@@ -182,17 +206,23 @@ function initialState(): GameState {
       },
     },
     player: {
-      credits: 5_320,
-      levels: { cold: 6, ion: 3, sail: 0, hands: 4, chant: 1 },
+      name: "",
+      credits: 0,
+      levels: { cold: 0, ion: 0, sail: 0, hands: 0, chant: 0 },
+      patches: 0,
+      kmSinceShift: 0,
+      autoKmS: 0,
+      tapKm: BASE_TAP_KM,
+      buying: null,
       kmToday: 0,
       tapKmToday: 0,
-      lifetimeKm: 1_204_880,
       pingedToday: false,
       pinging: false,
       voteChoice: null,
       pingStreakDays: 0,
     },
     toast: null,
+    welcome: null,
   };
 }
 
@@ -205,11 +235,15 @@ function set(next: GameState) {
   listeners.forEach((fn) => fn());
 }
 
-/** Rebuilds the shown probe and today's numbers from the server's and our unconfirmed taps. */
+/** Rebuilds the shown probe and your numbers from the server's, plus auto-thrust since and unconfirmed taps. */
 function compose(base: GameState, connection = base.connection): GameState {
   const now = serverNow();
   const p = server;
-  const optimisticKm = unconfirmedTaps() * (p?.tapKm ?? BASE_TAP_KM);
+  const optimisticKm = unconfirmedTaps() * (me?.tapKm ?? BASE_TAP_KM);
+  // Auto-thrust pays while connected and the thrusters are awake; the server settles it exactly.
+  const awake = connection === "live" && p !== null && p.safeSince === null;
+  const autoSince = me && awake ? (me.autoKmS * Math.max(0, now - meAt)) / 1000 : 0;
+  const idling = switches.handful ? 48_206 : p && p.online <= HANDFUL && p.idling > 0 ? p.idling : null;
   return {
     ...base,
     now,
@@ -220,17 +254,27 @@ function compose(base: GameState, connection = base.connection): GameState {
       ...(p && {
         missionStartedAt: p.missionStartedAt,
         routeKm: p.routeKm,
-        distanceKm: Math.min(p.routeKm, distanceAt(p, now) + optimisticKm),
+        distanceKm: Math.min(p.routeKm, distanceAt(p, now) + optimisticKm * (p.crewFactor ?? 1)),
         coastKmS: p.coastKmS,
+        autoKmS: p.autoKmS ?? 0,
         crewKmS: p.crewKmS,
+        crewFactor: p.crewFactor ?? 1,
         online: p.online,
-        tapKm: p.tapKm,
+        idling,
         signalDeadline: p.signalDeadline,
         safeSince: p.safeSince,
       }),
     },
     player: {
       ...base.player,
+      ...(me && {
+        credits: me.credits + autoSince + optimisticKm,
+        levels: me.levels,
+        patches: me.patches,
+        kmSinceShift: me.kmSinceShift + autoSince + optimisticKm,
+        autoKmS: me.autoKmS,
+        tapKm: me.tapKm,
+      }),
       kmToday: serverToday.kmToday + optimisticKm,
       tapKmToday: serverToday.tapKmToday + optimisticKm,
       pingedToday: serverToday.pingedToday,
@@ -239,9 +283,15 @@ function compose(base: GameState, connection = base.connection): GameState {
   };
 }
 
+function doneBuying(s: GameState): GameState {
+  buyingSeq = null;
+  window.clearTimeout(buyTimer);
+  return s.player.buying === null ? s : { ...s, player: { ...s.player, buying: null } };
+}
+
 function onMessage(msg: ServerMessage) {
   offsetMs = msg.now - Date.now();
-  server = msg.probe;
+  let next = state;
   if (msg.t === "hello" || msg.t === "credited") {
     serverToday = {
       kmToday: msg.kmToday,
@@ -250,9 +300,16 @@ function onMessage(msg: ServerMessage) {
       pingStreakDays: msg.pingStreakDays,
     };
   }
+  if (msg.t === "hello" || msg.t === "credited" || msg.t === "me") {
+    me = msg.me;
+    meAt = msg.now;
+  }
+  if (msg.t === "hello" && msg.welcome) next = { ...next, welcome: msg.welcome };
+  if (msg.t === "me" && msg.seq !== 0 && msg.seq === buyingSeq) next = doneBuying(next);
   if (msg.t === "credited") inFlight.delete(msg.seq);
-  if (msg.t !== "credited") writeCache(msg.probe);
-  set(compose(state));
+  if (msg.t !== "me") server = msg.probe;
+  if (msg.t === "hello" || msg.t === "state") writeCache(msg.probe);
+  set(compose(next));
 }
 
 let started = false;
@@ -264,10 +321,13 @@ function startServer() {
   startProbe({
     onMessage,
     onConnection: (c) => set(compose(state, c)),
+    onName: (name) => {
+      if (name !== state.player.name) set({ ...state, player: { ...state.player, name } });
+    },
     onDropped: () => {
       // We can't know whether those batches were credited; drop them rather than count them twice.
       inFlight.clear();
-      set(compose(state));
+      set(compose(doneBuying(state)));
     },
     takeTaps: () => {
       const n = pendingTaps;
@@ -279,11 +339,7 @@ function startServer() {
 }
 
 function tick() {
-  const prev = state;
-  const next = compose(prev);
-  const dt = Math.min(5, Math.max(0, (next.now - prev.now) / 1000)); // capped if the tab slept
-  const auto = autoKmS(prev.player.levels);
-
+  const next = compose(state);
   // FAKE (phase 7): a little drift in the vote, so it feels alive.
   const drift = Math.random() < 0.2;
   set({
@@ -296,12 +352,6 @@ function tick() {
             options: next.probe.vote.options.map((o) => ({ ...o, votes: o.votes + (Math.random() < 0.5 ? 1 : 0) })),
           }
         : next.probe.vote,
-    },
-    // FAKE (phase 6): auto-thrust earns credits locally; it doesn't move the shared probe yet.
-    player: {
-      ...next.player,
-      credits: next.player.credits + auto * dt,
-      lifetimeKm: next.player.lifetimeKm + auto * dt,
     },
   });
 }
@@ -353,14 +403,9 @@ function timeLeftText(s: number): string {
 /** One tap of THRUST: shown straight away, sent in the next batch. Returns the km for the "+km" popup. */
 export function thrust(): number {
   if (state.probe.safeSince !== null) return 0; // thrusters asleep
-  const km = state.probe.tapKm;
+  const km = state.player.tapKm;
   if (unconfirmedTaps() < MAX_PENDING_TAPS || state.connection === "live") pendingTaps += 1;
-  const next = compose(state);
-  // FAKE (phase 6): credits and lifetime km.
-  set({
-    ...next,
-    player: { ...next.player, credits: next.player.credits + km, lifetimeKm: next.player.lifetimeKm + km },
-  });
+  set(compose(state));
   return km;
 }
 
@@ -436,19 +481,31 @@ export function castVote(index: number) {
   });
 }
 
-/** FAKE until phase 6: for this visit only. */
+/** Asks the server for a purchase or a handover; the button waits for its answer. */
+function ask(what: UpgradeKey | "prestige") {
+  if (state.player.buying !== null || state.connection !== "live") return;
+  const seq = request((n) => (what === "prestige" ? { t: "prestige", seq: n } : { t: "buy", key: what, seq: n }));
+  if (seq === null) return;
+  buyingSeq = seq;
+  window.clearTimeout(buyTimer);
+  buyTimer = window.setTimeout(() => set(compose(doneBuying(state))), BUY_TIMEOUT_MS);
+  set({ ...state, player: { ...state.player, buying: what } });
+}
+
+/** Buys one level. The server checks the credits; a refused purchase just brings back the real balance. */
 export function buyUpgrade(key: UpgradeKey) {
-  const def = UPGRADES.find((u) => u.key === key)!;
-  const cost = upgradeCost(def, state.player.levels[key]);
-  if (state.player.credits < cost) return;
-  set({
-    ...state,
-    player: {
-      ...state.player,
-      credits: state.player.credits - cost,
-      levels: { ...state.player.levels, [key]: state.player.levels[key] + 1 },
-    },
-  });
+  if (state.player.credits < upgradeCost(key, state.player.levels[key])) return;
+  ask(key);
+}
+
+/** "Hand over the shift": the server checks it's unlocked, then resets upgrades and credits for 3 patches. */
+export function handOver() {
+  if (state.player.kmSinceShift < PRESTIGE_AT_KM) return;
+  ask("prestige");
+}
+
+export function dismissWelcome() {
+  if (state.welcome) set({ ...state, welcome: null });
 }
 
 // --- Reading the state ---
@@ -460,8 +517,7 @@ export function useGame() {
 
 /** Everything the screens show that is worked out from the state. */
 function derive({ now, probe, player }: GameState) {
-  const auto = autoKmS(player.levels);
-  // Until phase 6 only coasting and the crew's taps move the shared probe.
+  // Coasting plus the crew's push (taps and auto-thrust, after the ceiling).
   const speedKmS = probe.coastKmS + probe.crewKmS;
   const safe = probe.safeSince !== null;
   // The current outage's setback, as extra km to fly (it becomes permanent route when someone pings).
@@ -472,16 +528,16 @@ function derive({ now, probe, player }: GameState) {
   const next = MILESTONES.find((m) => m.km > probe.distanceKm) ?? null;
   const upgrades = UPGRADES.map((def) => {
     const level = player.levels[def.key];
-    const cost = upgradeCost(def, level);
+    const cost = upgradeCost(def.key, level);
     return { def, level, cost, affordable: player.credits >= cost };
   });
   const arrivalAt = now + (toGoKm / speedKmS) * 1000;
   return {
     missionDay: Math.floor((now - probe.missionStartedAt) / DAY_MS) + 1,
     speedKmS,
-    autoKmS: auto,
-    /** The real tap power from the server (flat until phase 6; the fake upgrades don't change it). */
-    tapKm: probe.tapKm,
+    /** Your own auto-thrust and tap power (with patches), from the server. */
+    autoKmS: player.autoKmS,
+    tapKm: player.tapKm,
     toGoKm,
     progress: probe.distanceKm / (probe.routeKm + setbackKm), // 0..1
     arrivalAt,
@@ -490,8 +546,8 @@ function derive({ now, probe, player }: GameState) {
     quietS: safe ? Math.max(0, (now - probe.safeSince!) / 1000) : 0,
     setbackMs: setback,
     arrivalBeforeAt: arrivalAt - (setbackKm / speedKmS) * 1000,
-    /** Seconds sooner thanks to your taps today. */
-    savedS: player.tapKmToday / speedKmS,
+    /** Seconds sooner thanks to your taps today (what they moved the shared probe, after the ceiling). */
+    savedS: (player.tapKmToday * probe.crewFactor) / speedKmS,
     signalLeftS,
     signalUrgent: !safe && signalLeftS < SIGNAL_URGENT_S && !player.pingedToday,
     nextMilestone: next,
@@ -500,6 +556,7 @@ function derive({ now, probe, player }: GameState) {
     voteTotal: probe.vote.options.reduce((sum, o) => sum + o.votes, 0),
     upgrades,
     affordable: upgrades.filter((u) => u.affordable).length,
+    prestigeReady: player.kmSinceShift >= PRESTIGE_AT_KM,
   };
 }
 

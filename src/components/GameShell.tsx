@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { buyUpgrade, useGame } from "../game/store";
+import { buyUpgrade, dismissWelcome, handOver, useGame } from "../game/store";
 import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
@@ -9,6 +9,7 @@ import { PixelIcon } from "./PixelIcon";
 import { Sky } from "./Sky";
 import { Toast } from "./Toast";
 import { UpgradesSheet } from "./UpgradesSheet";
+import { WelcomeBack } from "./WelcomeBack";
 import "./GameShell.css";
 import "./PixelButton.css";
 
@@ -23,9 +24,22 @@ interface GameShellProps {
 export function GameShell({ tab, children }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
-  const { probe, player, view, toast } = useGame();
+  const { probe, player, view, toast, welcome, connection } = useGame();
   const safe = view.safe;
   const openUpgrades = () => setUpgradesOpen(true);
+
+  if (welcome) {
+    return (
+      <>
+        <Sky fixed />
+        <div className={wide ? "game game--wide" : "game"}>
+          <div className="game__main">
+            <WelcomeBack welcome={welcome} name={player.name} wide={wide} onClose={dismissWelcome} />
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -108,10 +122,11 @@ export function GameShell({ tab, children }: GameShellProps) {
       <UpgradesSheet
         open={upgradesOpen}
         onClose={() => setUpgradesOpen(false)}
-        credits={player.credits}
-        lifetimeKm={player.lifetimeKm}
+        player={player}
+        live={connection === "live"}
         view={view}
         onBuy={buyUpgrade}
+        onHandOver={handOver}
       />
     </>
   );
