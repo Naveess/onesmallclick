@@ -1,4 +1,5 @@
 import { BATCH_MS, HEARTBEAT_MS, HEARTBEAT_PING, type ClientMessage, type ServerMessage } from "../../shared/mission";
+import type { SessionInfo } from "../../shared/account";
 import { HIDDEN_CLOSE_MS } from "../../shared/upgrades";
 
 // The browser's line to the shared probe: makes sure we have a device cookie (/api/session),
@@ -11,8 +12,8 @@ export type Connection = "connecting" | "live" | "offline";
 interface Handlers {
   onMessage: (msg: ServerMessage) => void;
   onConnection: (c: Connection) => void;
-  /** This device's generated name, from /api/session. */
-  onName: (name: string) => void;
+  /** Who this browser is (name, crew number, account), from /api/session. */
+  onSession: (info: SessionInfo) => void;
   /** Called when a socket drops: batches sent on it may or may not have been credited. */
   onDropped: () => void;
   /** How many taps are waiting to be sent; the client sends them and calls `sent`. */
@@ -104,8 +105,8 @@ async function connect() {
   try {
     const res = await fetch("/api/session", { credentials: "same-origin", cache: "no-store" });
     if (!res.ok) throw new Error(`session ${res.status}`);
-    const body = (await res.json().catch(() => ({}))) as { name?: string };
-    if (body.name) handlers.onName(body.name);
+    const body = (await res.json().catch(() => ({}))) as Partial<SessionInfo>;
+    if (body.name) handlers.onSession({ name: body.name, crew: body.crew ?? 0, account: body.account ?? null });
   } catch {
     retry();
     return;
@@ -129,11 +130,15 @@ async function connect() {
     handlers.onMessage(msg);
     if (msg.t === "hello") flush();
   };
-  socket.onclose = () => {
+  socket.onclose = (e) => {
     if (ws === socket) ws = null;
     handlers.onDropped();
     if (paused) handlers.onConnection("offline");
-    else retry();
+    else if (e.code === 4001) {
+      // Signed in or out (in this tab or another): come straight back as who we are now.
+      attempt = 0;
+      void connect();
+    } else retry();
   };
 }
 

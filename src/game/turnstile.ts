@@ -42,7 +42,7 @@ export function preloadTurnstile() {
 }
 
 /** Runs the check and resolves with a one-time token for /api/ping or /api/vote. */
-export async function turnstileToken(action: "ping" | "vote" = "ping"): Promise<string> {
+export async function turnstileToken(action: "ping" | "vote" | "signin" = "ping"): Promise<string> {
   const ts = await load();
   return new Promise<string>((resolve, reject) => {
     const host = document.createElement("div");

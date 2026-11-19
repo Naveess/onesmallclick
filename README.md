@@ -44,7 +44,7 @@ View the design file: `cd design && python -m http.server 8000`, then open http:
 
 ## Secrets
 
-Local secrets go in `.dev.vars` (git-ignored): `ADMIN_KEY`, `DEVICE_SECRET` and `TURNSTILE_SECRET` (Cloudflare's always-pass test secret locally). Production secrets: `npx wrangler secret put NAME`.
+Local secrets go in `.dev.vars` (git-ignored): `ADMIN_KEY`, `DEVICE_SECRET`, `TURNSTILE_SECRET` (Cloudflare's always-pass test secret locally), `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (empty locally unless you're testing Google sign-in), and `DEV_SIGN_IN_LINKS="1"` (local only: the email sign-in link shows on screen instead of being sent). Production secrets: `npx wrangler secret put NAME`, or the Cloudflare dashboard (Workers & Pages → onesmallclick → Settings → Variables and Secrets).
 
 New migrations go to production with `npx wrangler d1 migrations apply onesmallclick --remote` before the deploy that needs them.
 

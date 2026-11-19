@@ -30,6 +30,8 @@
     }
   ]
 
-  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET and TURNSTILE_SECRET.
+  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET, TURNSTILE_SECRET, GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
+  // Email sign-in (worker/email.ts) also needs, once onesmallclick.io is in Email Service and on Workers Paid:
+  //   "send_email": [{ "name": "EMAIL" }]  and  "vars": { "EMAIL_FROM": "signin@onesmallclick.io" }
   // Production: npx wrangler secret put <NAME>. Local: .dev.vars (git-ignored).
 }

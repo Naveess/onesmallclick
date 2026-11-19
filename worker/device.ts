@@ -1,28 +1,10 @@
 // The anonymous device ID: a random id in an HttpOnly cookie, signed with DEVICE_SECRET
-// so it can't be forged or swapped for someone else's. Accounts arrive in phase 8.
+// so it can't be forged or swapped for someone else's. Signing in (phase 8a) links it to an account.
 
 const COOKIE = "osc_device";
 const MAX_AGE_S = 400 * 24 * 60 * 60; // the longest browsers keep a cookie
 
-const ADJECTIVES = [
-  "orbit", "lunar", "solar", "comet", "nova", "astro", "cosmic", "stellar", "meteor", "rocket",
-  "pulsar", "quasar", "nebula", "zenith", "apogee", "perigee", "ion", "plasma", "photon", "radar",
-  "beacon", "crater", "dusty", "frosty", "polar", "rusty", "swift", "steady", "brave", "plucky",
-];
-const ANIMALS = [
-  "otter", "badger", "falcon", "fox", "lynx", "heron", "puffin", "gecko", "koala", "lemur",
-  "marmot", "newt", "owl", "panda", "quokka", "raven", "seal", "tapir", "walrus", "wombat",
-  "yak", "zebra", "beaver", "bison", "crane", "dingo", "egret", "ferret", "hare", "ibis",
-];
-
-function pick<T>(list: T[]): T {
-  return list[crypto.getRandomValues(new Uint32Array(1))[0] % list.length];
-}
-
-/** A friendly generated name like `orbit_otter`. */
-export function generateName(): string {
-  return `${pick(ADJECTIVES)}_${pick(ANIMALS)}`;
-}
+export { generateName } from "../shared/names";
 
 const enc = new TextEncoder();
 

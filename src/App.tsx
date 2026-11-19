@@ -3,6 +3,7 @@ import { GamePage } from "./pages/GamePage";
 import { KitPage } from "./pages/KitPage";
 import { LogPage } from "./pages/LogPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { ConfirmPage, SignInPage } from "./pages/SignInPage";
 import { StubPage } from "./pages/StubPage";
 import { usePath } from "./router";
 
@@ -29,14 +30,9 @@ export function App() {
         />
       );
     case "/sign-in":
-      return (
-        <StubPage
-          tab="other"
-          title="Sign in"
-          icon="mail"
-          note="Sign in by email link or Google so your progress follows you. Arrives in phase 8. Playing without an account will always work."
-        />
-      );
+      return <SignInPage />;
+    case "/sign-in/confirm":
+      return <ConfirmPage />;
     default:
       return <NotFoundPage />;
   }

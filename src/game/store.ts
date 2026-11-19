@@ -16,6 +16,7 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../../shared/mission";
+import type { AccountInfo } from "../../shared/account";
 import type { ReachedMilestone } from "../../shared/milestones";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
@@ -73,8 +74,14 @@ export interface ProbeState {
 
 /** This player's own state. */
 export interface PlayerState {
-  /** This device's generated name, e.g. orbit_otter. */
+  /** Your name: your account's when signed in, else this device's generated one, e.g. orbit_otter. */
   name: string;
+  /** This device's crew number ("Keep playing as guest · Crew #48,213"). */
+  crew: number;
+  /** Your account (phase 8a), or null while playing as a guest. */
+  account: AccountInfo | null;
+  /** False until the first /api/session answer. */
+  known: boolean;
   /** Credits now: the server's, plus auto-thrust since its last message, plus taps not yet credited. */
   credits: number;
   levels: UpgradeLevels;
@@ -222,6 +229,9 @@ function initialState(): GameState {
     },
     player: {
       name: "",
+      crew: 0,
+      account: null,
+      known: false,
       credits: 0,
       levels: { cold: 0, ion: 0, sail: 0, hands: 0, chant: 0 },
       patches: 0,
@@ -398,9 +408,7 @@ function startServer() {
   startProbe({
     onMessage,
     onConnection: (c) => set(compose(state, c)),
-    onName: (name) => {
-      if (name !== state.player.name) set({ ...state, player: { ...state.player, name } });
-    },
+    onSession: (info) => set({ ...state, player: { ...state.player, ...info, known: true } }),
     onDropped: () => {
       // We can't know whether those batches were credited; drop them rather than count them twice.
       inFlight.clear();

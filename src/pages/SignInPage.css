@@ -1,0 +1,201 @@
+/* /sign-in (phase 8a): the design's 1i, and the states built from the kit in its style. */
+
+.signin {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 26.5rem);
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 72px 22px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.signin__probe {
+  width: 128px;
+  height: 80px;
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--blue) 70%, transparent));
+}
+
+.signin__title {
+  font: 500 32px/1.05 var(--font-ui);
+  overflow-wrap: anywhere;
+}
+
+.signin__lede {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.signin__email {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.signin__form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.signin__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signin__label {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.signin__label--orange {
+  color: var(--text-orange);
+}
+
+.signin__input {
+  min-height: 48px;
+  padding: 0 10px;
+  font: 22px var(--font-num);
+  color: var(--text);
+  background: var(--field);
+  border: 2px solid var(--line);
+  border-radius: 0;
+}
+
+.signin__input:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.signin__select {
+  font-size: 20px;
+}
+
+.signin__form .pbtn {
+  min-height: 50px;
+  font-size: 17px;
+}
+
+.signin__or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+.signin__or span {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--line-blue));
+}
+
+.signin__or span:last-child {
+  background: linear-gradient(90deg, var(--line-blue), transparent);
+}
+
+.signin__google {
+  min-height: 50px;
+  gap: 10px;
+}
+
+@media (hover: hover) {
+  .signin__google:hover {
+    background: var(--window-top);
+  }
+}
+
+.signin__g {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font: 700 14px var(--font-ui);
+  color: var(--text-on-blue);
+  background: var(--white);
+}
+
+.signin__small {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.signin__small--warm {
+  color: var(--text-warm-soft);
+}
+
+.signin__small a,
+.signin__lede a {
+  color: var(--text-blue);
+}
+
+.signin__error {
+  font-size: 14px;
+  color: var(--text-orange);
+}
+
+.signin__guest {
+  margin-top: auto;
+  padding-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-blue);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .signin__guest:hover {
+    color: var(--text-blue-bright);
+  }
+}
+
+.signin__dev,
+.signin__card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.signin__value {
+  font: 500 20px var(--font-ui);
+}
+
+.signin__names {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.signin__name {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  font: 22px var(--font-num);
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 2px solid var(--line);
+  cursor: pointer;
+}
+
+.signin__name--on {
+  color: var(--text-blue);
+  background: var(--well);
+  border-color: var(--blue);
+}
+
+@media (hover: hover) {
+  .signin__name:not(.signin__name--on):hover {
+    background: var(--window-top);
+  }
+}

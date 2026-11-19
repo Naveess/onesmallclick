@@ -21,7 +21,10 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 ## Before phase 8
 - [x] **The retune** (prompts 27-28): deployed from c132a88 with migration 0006, approved by Nav 19 Nov.
 - [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, next payday Friday). Then switch on Workers Paid for Email Service.
-- [ ] **A Google OAuth client** (Nav, before 8a is tested): I'll list the steps when 8a starts.
+- [x] **A Google OAuth client** (Nav, 19 Nov): made, with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the Cloudflare dashboard.
+- [ ] **Deploy 8a**: `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0007), then `npm run deploy`, then the 8a checks.
+- [ ] **Email sign-in on the live site** (after the domain): onboard onesmallclick.io in Email Service, switch on Workers Paid, then add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc).
+- [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing, once the domain is on Cloudflare).
 
 ### Before 8b (badges)
 

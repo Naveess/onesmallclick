@@ -2,10 +2,11 @@
 // before this runs; only /api/* reaches it (see run_worker_first in wrangler.jsonc).
 //
 //   GET  /api/health          { ok: true }
-//   GET  /api/session         sets the signed device cookie if needed; returns { name }
+//   GET  /api/session         sets the signed device cookie if needed; returns SessionInfo (name, crew number, account)
+//   /api/auth/*               sign-in, names, country, sign-out, delete account (worker/auth.ts)
 //   GET  /api/probe           WebSocket to the shared Probe (needs the device cookie)
-//   POST /api/ping            { token } (Turnstile) → today's Ping for this device
-//   POST /api/vote            { token, round, option } (Turnstile) → this device's vote in today's round
+//   POST /api/ping            { token } (Turnstile) → today's Ping for this device (or account, signed in)
+//   POST /api/vote            { token, round, option } (Turnstile) → this device's (or account's) vote in today's round
 //   GET  /api/log             ?before=<id> → the current mission's log, newest first (30 at a time)
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
@@ -17,16 +18,20 @@
 //   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
 //   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
 
+import type { SessionInfo } from "../shared/account";
 import type { PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
+import { accountInfo, auth, readSession, renewSession } from "./auth";
 import { deviceCookie, generateName, readDevice } from "./device";
 
 export { Probe } from "./probe";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
-function json(body: unknown, status = 200, headers: HeadersInit = {}) {
-  return Response.json(body, { status, headers: { ...NO_STORE, ...headers } });
+function json(body: unknown, status = 200, headers: HeadersInit = {}, cookies: string[] = []) {
+  const res = Response.json(body, { status, headers: { ...NO_STORE, ...headers } });
+  for (const c of cookies) res.headers.append("Set-Cookie", c);
+  return res;
 }
 
 function probe(env: Env) {
@@ -44,39 +49,52 @@ export default {
     if (path === "/api/ping" && request.method === "POST") return ping(request, env);
     if (path === "/api/vote" && request.method === "POST") return vote(request, env);
     if (path === "/api/log" && request.method === "GET") return missionLog(env, url);
+    if (path.startsWith("/api/auth/")) return auth(request, env, path.slice("/api/auth/".length), url);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
     return json({ error: "Not found" }, 404);
   },
 } satisfies ExportedHandler<Env>;
 
-/** Makes sure this browser has a device id (and a row in D1), and returns its name. */
+/**
+ * Makes sure this browser has a device id (and a row in D1), and says who it is: the device's
+ * name and crew number, and the signed-in account (renewing an old session as it goes).
+ */
 async function session(request: Request, env: Env): Promise<Response> {
   if (!env.DEVICE_SECRET) return json({ error: "DEVICE_SECRET is not set" }, 503);
   const now = Date.now();
   const country = (request.cf as IncomingRequestCfProperties | undefined)?.country ?? null;
+  const cookies: string[] = [];
 
-  const id = await readDevice(request, env.DEVICE_SECRET);
-  if (id) {
-    const row = await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
-    if (row) {
-      await env.DB.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(now, id).run();
-      return json({ name: row.name });
-    }
-    // A valid cookie whose row was wiped (test data cleared): give it a row again.
+  let id = await readDevice(request, env.DEVICE_SECRET);
+  let row = id
+    ? await env.DB.prepare(`SELECT rowid AS crew, name FROM devices WHERE id = ?`).bind(id).first<{ crew: number; name: string }>()
+    : null;
+  if (id && row) {
+    await env.DB.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(now, id).run();
+  } else {
+    // A new browser, or a valid cookie whose row was wiped (test data cleared).
+    const fresh = !id;
+    id ??= crypto.randomUUID();
     const name = generateName();
-    await env.DB.prepare(`INSERT INTO devices (id, name, country, created_at, last_seen) VALUES (?, ?, ?, ?, ?)`)
+    const res = await env.DB.prepare(`INSERT INTO devices (id, name, country, created_at, last_seen) VALUES (?, ?, ?, ?, ?)`)
       .bind(id, name, country, now, now)
       .run();
-    return json({ name });
+    row = { crew: res.meta.last_row_id ?? 0, name };
+    if (fresh) cookies.push(await deviceCookie(id, env.DEVICE_SECRET));
   }
 
-  const newId = crypto.randomUUID();
-  const name = generateName();
-  await env.DB.prepare(`INSERT INTO devices (id, name, country, created_at, last_seen) VALUES (?, ?, ?, ?, ?)`)
-    .bind(newId, name, country, now, now)
-    .run();
-  return json({ name }, 200, { "Set-Cookie": await deviceCookie(newId, env.DEVICE_SECRET) });
+  const signedIn = await readSession(request, env);
+  if (signedIn) {
+    const renewed = await renewSession(request, env, signedIn);
+    if (renewed) cookies.push(renewed);
+  }
+  const body: SessionInfo = {
+    name: signedIn?.account.name ?? row.name,
+    crew: row.crew,
+    account: signedIn ? accountInfo(signedIn.account) : null,
+  };
+  return json(body, 200, {}, cookies);
 }
 
 /** Hands the WebSocket to the Probe, with the device id from the signed cookie. */
@@ -92,6 +110,10 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
 
   const headers = new Headers(request.headers);
   headers.set("X-Device-Id", id);
+  // Signed in: the probe keeps this player's progress, pings and votes under the account.
+  const signedIn = await readSession(request, env);
+  headers.delete("X-Account-Id");
+  if (signedIn) headers.set("X-Account-Id", signedIn.account.id);
   return probe(env).fetch(new Request(request.url, { headers }));
 }
 
@@ -126,8 +148,10 @@ async function ping(request: Request, env: Env): Promise<Response> {
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "ping"))) {
     return fail("bot-check", 403);
   }
-  const row = await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
-  const result = await probe(env).ping(id, row?.name ?? "a crew member");
+  const signedIn = await readSession(request, env);
+  const row = signedIn ? null : await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
+  const name = signedIn?.account.name ?? row?.name ?? "a crew member";
+  const result = await probe(env).ping(id, signedIn?.account.id ?? null, name);
   return json(result);
 }
 
@@ -146,7 +170,8 @@ async function vote(request: Request, env: Env): Promise<Response> {
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "vote"))) {
     return fail("bot-check", 403);
   }
-  return json(await probe(env).castVote(id, body.round, body.option as number));
+  const signedIn = await readSession(request, env);
+  return json(await probe(env).castVote(id, signedIn?.account.id ?? null, body.round, body.option as number));
 }
 
 const LOG_PAGE = 30;
@@ -214,23 +239,30 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     }
     return json(await stub.adminSetSignal(seconds));
   }
-  if (action === "clear-ping") {
+  // These act on the admin's own browser: its device, or its account when signed in.
+  const mine = async () => {
     const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
-    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
-    return json(await stub.adminClearPing(id));
+    const signedIn = id ? await readSession(request, env) : null;
+    return id ? { id, accountId: signedIn?.account.id ?? null } : null;
+  };
+  const noDevice = () => json({ error: "This browser has no device yet; open the game first" }, 400);
+  if (action === "clear-ping") {
+    const me = await mine();
+    if (!me) return noDevice();
+    return json(await stub.adminClearPing(me.id, me.accountId));
   }
   if (action === "give") {
-    const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
-    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
+    const me = await mine();
+    if (!me) return noDevice();
     const km = Number(body.km);
     if (!Number.isFinite(km) || km <= 0 || km > 1e12) return json({ error: "km must be between 0 and 1,000,000,000,000" }, 400);
-    return json(await stub.adminGive(id, km));
+    return json(await stub.adminGive(me.id, me.accountId, km));
   }
   if (action === "close-vote") return json(await stub.adminCloseVote());
   if (action === "clear-vote") {
-    const id = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
-    if (!id) return json({ error: "This browser has no device yet; open the game first" }, 400);
-    return json(await stub.adminClearVote(id));
+    const me = await mine();
+    if (!me) return noDevice();
+    return json(await stub.adminClearVote(me.id, me.accountId));
   }
   if (action === "reset") return json(await stub.adminResetMission());
   return json({ error: "Not found" }, 404);

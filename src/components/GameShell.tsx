@@ -100,7 +100,7 @@ export function GameShell({ tab, children }: GameShellProps) {
                 </Link>
                 <ThemeLink className="game-nav__item" />
                 <Link href="/sign-in" className="pbtn pbtn--blue game-nav__signin">
-                  Sign in
+                  {player.account ? player.name : "Sign in"}
                 </Link>
               </nav>
             ) : safe ? (
@@ -116,7 +116,7 @@ export function GameShell({ tab, children }: GameShellProps) {
             <footer className="game-foot">
               <Link href="/how-to-play">How to play</Link>
               <Link href="/log">Mission log</Link>
-              <Link href="/sign-in">Sign in</Link>
+              <Link href="/sign-in">{player.account ? player.name : "Sign in"}</Link>
               <ThemeLink />
             </footer>
           )}

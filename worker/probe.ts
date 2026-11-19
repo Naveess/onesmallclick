@@ -110,6 +110,7 @@ interface Mission {
   lastSafeTo: number | null;
 }
 
+/** A player's numbers for today (km, ping, vote) and their tap allowance. */
 interface DeviceEntry extends Omit<DeviceToday, "vote"> {
   day: string;
   /** This device's vote: the round it was read for, and its option (null = not voted). */
@@ -137,11 +138,31 @@ interface ProgressEntry {
 
 interface Attachment {
   deviceId: string;
+  /** The account this socket is signed in to (phase 8a), or null for a guest. */
+  accountId?: string | null;
   /** This device's raw auto-thrust (km/s), so the crew total survives hibernation. */
   auto: number;
   /** Real ms: when the socket opened, and its last message (heartbeats are tracked by the runtime). */
   since: number;
   seen?: number;
+}
+
+/**
+ * Who's playing: this device, and its account when signed in. Progress, today's numbers, pings
+ * and votes are kept under `key`: the account (`a:<id>`) when signed in, else the device.
+ */
+interface Who {
+  deviceId: string;
+  accountId: string | null;
+  key: string;
+}
+
+function who(deviceId: string, accountId: string | null): Who {
+  return { deviceId, accountId, key: accountId ? `a:${accountId}` : deviceId };
+}
+
+function whoOf(a: Attachment): Who {
+  return who(a.deviceId, a.accountId ?? null);
 }
 
 /** The open vote round. */
@@ -216,14 +237,18 @@ export class Probe extends DurableObject<Env> {
   /** Raw offline catch-up km per minute: counted in the crew push only, so one return doesn't swing the pace shown. */
   private catchup = new Map<number, number>();
   private dirtyMinutes = new Set<number>();
+  /** Today's numbers per player (key: Who.key). */
   private devices = new Map<string, DeviceEntry>();
   private loadingDevices = new Map<string, Promise<DeviceEntry>>();
   private progress = new Map<string, ProgressEntry>();
   /** Progress to write to this object's SQLite at the next save, and to D1 at the next flush. */
   private dirtyProgress = new Set<string>();
   private d1Progress = new Set<string>();
-  /** Km to add to D1's daily_km at the next flush (key: day|deviceId). */
-  private d1Pending = new Map<string, { day: string; deviceId: string; km: number; tapKm: number; tapMovedKm: number }>();
+  /** Km to add to D1's daily_km at the next flush (key: day|deviceId), with the account they count for. */
+  private d1Pending = new Map<
+    string,
+    { day: string; deviceId: string; accountId: string | null; km: number; tapKm: number; tapMovedKm: number }
+  >();
   /** Samples of the probe's track this mission, oldest first (today's pace). */
   private track: TrackPoint[] = [];
   /** Real time of the last accepted ping (see JUST_SAVED_MS). */
@@ -483,11 +508,12 @@ export class Probe extends DurableObject<Env> {
     const statements = batch.flatMap((p) => [
       db
         .prepare(
-          `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km) VALUES (?, ?, ?, ?, ?)
+          `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km, account_id) VALUES (?, ?, ?, ?, ?, ?)
            ON CONFLICT (day, device_id) DO UPDATE SET km = km + excluded.km, tap_km = tap_km + excluded.tap_km,
-             tap_moved_km = tap_moved_km + excluded.tap_moved_km`,
+             tap_moved_km = tap_moved_km + excluded.tap_moved_km,
+             account_id = COALESCE(excluded.account_id, daily_km.account_id)`,
         )
-        .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm),
+        .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm, p.accountId),
       db.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(seen, p.deviceId),
     ]);
     for (const id of progressIds) {
@@ -519,7 +545,7 @@ export class Probe extends DurableObject<Env> {
       this.lastD1FlushAt = seen;
     } catch (err) {
       console.error("D1 flush failed; will retry", err);
-      for (const p of batch) this.addPending(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm);
+      for (const p of batch) this.addPending(p.day, who(p.deviceId, p.accountId), p.km, p.tapKm, p.tapMovedKm);
       for (const id of progressIds) this.d1Progress.add(id);
       this.scheduleD1Flush();
     }
@@ -529,9 +555,10 @@ export class Probe extends DurableObject<Env> {
     this.d1Timer ??= setTimeout(() => void this.flushD1(), D1_FLUSH_MS);
   }
 
-  private addPending(day: string, deviceId: string, km: number, tapKm: number, tapMovedKm = 0) {
-    const key = `${day}|${deviceId}`;
-    const p = this.d1Pending.get(key) ?? { day, deviceId, km: 0, tapKm: 0, tapMovedKm: 0 };
+  private addPending(day: string, w: Who, km: number, tapKm: number, tapMovedKm = 0) {
+    const key = `${day}|${w.deviceId}`;
+    const p = this.d1Pending.get(key) ?? { day, deviceId: w.deviceId, accountId: w.accountId, km: 0, tapKm: 0, tapMovedKm: 0 };
+    p.accountId = w.accountId;
     p.km += km;
     p.tapKm += tapKm;
     p.tapMovedKm += tapMovedKm;
@@ -689,7 +716,7 @@ export class Probe extends DurableObject<Env> {
     return crewFactor(this.hourKmS(now) + this.autoRaw(except));
   }
 
-  /** Open, live sockets' devices and their raw auto-thrust (several tabs on one device count once). */
+  /** Open, live sockets' players and their raw auto-thrust (several tabs, or two devices on one account, count once). */
   private onlineDevices(except?: WebSocket): Map<string, number> {
     const ids = new Map<string, number>();
     const real = Date.now();
@@ -702,9 +729,20 @@ export class Probe extends DurableObject<Env> {
         this.dropDead(ws, alive);
         continue;
       }
-      ids.set(a.deviceId, a.auto ?? 0);
+      ids.set(whoOf(a).key, a.auto ?? 0);
     }
     return ids;
+  }
+
+  /** The players with a live socket (key → who), for settling them all at once. */
+  private onlinePlayers(): Map<string, Who> {
+    const out = new Map<string, Who>();
+    const live = this.onlineDevices();
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (a && live.has(whoOf(a).key)) out.set(whoOf(a).key, whoOf(a));
+    }
+    return out;
   }
 
   /** Real ms of the socket's last sign of life: its last heartbeat or message, or when it opened. */
@@ -886,22 +924,27 @@ export class Probe extends DurableObject<Env> {
     });
   }
 
-  /** A device's generated name (for the log). */
+  /** A device's name for the log: its account's when signed in. */
   private async deviceName(deviceId: string): Promise<string> {
     try {
-      const row = await this.env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(deviceId).first<{ name: string }>();
+      const row = await this.env.DB.prepare(
+        `SELECT COALESCE(a.name, d.name) AS name FROM devices d LEFT JOIN accounts a ON a.id = d.account_id WHERE d.id = ?`,
+      )
+        .bind(deviceId)
+        .first<{ name: string }>();
       return row?.name ?? "a crew member";
     } catch {
       return "a crew member";
     }
   }
 
-  /** A ping from a device: once per UTC day, first one wins in a close race. */
-  async ping(deviceId: string, name: string): Promise<PingResult> {
+  /** A ping: once per UTC day per device, or per account when signed in; first one wins in a close race. */
+  async ping(deviceId: string, accountId: string | null, name: string): Promise<PingResult> {
     await this.checkSignal();
     const now = this.now();
     const m = this.mission;
-    const dev = await this.device(deviceId, now);
+    const w = who(deviceId, accountId);
+    const dev = await this.device(w, now);
     if (dev.pingedToday) return { ok: false, reason: "already-pinged" };
     if (Date.now() - this.lastPingAt < JUST_SAVED_MS) return { ok: false, reason: "just-saved" };
 
@@ -915,11 +958,13 @@ export class Probe extends DurableObject<Env> {
     this.lastPingAt = Date.now();
     let inserted = false;
     try {
+      // Signed in, one ping per account: not if another of its devices pinged today.
       const res = await this.env.DB.prepare(
-        `INSERT INTO pings (day, device_id, mission_id, at, seconds_left, tier) VALUES (?, ?, ?, ?, ?, ?)
+        `INSERT INTO pings (day, device_id, account_id, mission_id, at, seconds_left, tier)
+         SELECT ?, ?, ?, ?, ?, ?, ? WHERE ? IS NULL OR NOT EXISTS (SELECT 1 FROM pings WHERE day = ? AND account_id = ?)
          ON CONFLICT (day, device_id) DO NOTHING`,
       )
-        .bind(day, deviceId, m.id, now, secondsLeft, tier)
+        .bind(day, deviceId, accountId, m.id, now, secondsLeft, tier, accountId, day, accountId)
         .run();
       inserted = res.meta.changes > 0;
     } catch (err) {
@@ -1108,28 +1153,33 @@ export class Probe extends DurableObject<Env> {
     });
   }
 
-  /** A vote from a device: once per round, while the round is open. */
-  async castVote(deviceId: string, round: string, option: number): Promise<VoteResult> {
+  /** A vote: once per round per device, or per account when signed in, while the round is open. */
+  async castVote(deviceId: string, accountId: string | null, round: string, option: number): Promise<VoteResult> {
     await this.checkVote();
     const v = this.vote;
     if (round !== v.round || !Number.isInteger(option) || option < 0 || option >= v.ids.length) {
       return { ok: false, reason: "closed" };
     }
     const now = this.now();
-    const dev = await this.device(deviceId, now);
+    const w = who(deviceId, accountId);
+    const dev = await this.device(w, now);
     if (dev.voteRound === round && dev.voteOption !== null) return { ok: false, reason: "already-voted", option: dev.voteOption };
 
     let inserted = false;
     try {
       const res = await this.env.DB.prepare(
-        `INSERT INTO votes (round, device_id, option, at) VALUES (?, ?, ?, ?) ON CONFLICT (round, device_id) DO NOTHING`,
+        `INSERT INTO votes (round, device_id, account_id, option, at)
+         SELECT ?, ?, ?, ?, ? WHERE ? IS NULL OR NOT EXISTS (SELECT 1 FROM votes WHERE round = ? AND account_id = ?)
+         ON CONFLICT (round, device_id) DO NOTHING`,
       )
-        .bind(round, deviceId, option, now)
+        .bind(round, deviceId, accountId, option, now, accountId, round, accountId)
         .run();
       inserted = res.meta.changes > 0;
       if (!inserted) {
-        const row = await this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`)
-          .bind(round, deviceId)
+        const row = await this.env.DB.prepare(
+          `SELECT option FROM votes WHERE round = ? AND (device_id = ? OR (? IS NOT NULL AND account_id = ?)) LIMIT 1`,
+        )
+          .bind(round, deviceId, accountId, accountId)
           .first<{ option: number }>();
         dev.voteRound = round;
         dev.voteOption = row?.option ?? null;
@@ -1150,12 +1200,12 @@ export class Probe extends DurableObject<Env> {
 
   // ---------- Devices: today's numbers ----------
 
-  /** This device's km and ping for today, loaded from D1 once a day per device. */
-  private async device(deviceId: string, now: number): Promise<DeviceEntry> {
+  /** A player's km, ping and vote for today, loaded from D1 once a day (summed over an account's devices). */
+  private async device(w: Who, now: number): Promise<DeviceEntry> {
     const day = utcDay(now);
-    const have = this.devices.get(deviceId);
+    const have = this.devices.get(w.key);
     if (have && have.day === day) return have;
-    const loading = this.loadingDevices.get(deviceId);
+    const loading = this.loadingDevices.get(w.key);
     if (loading) return loading;
     const promise = (async () => {
       let kmToday = 0;
@@ -1164,21 +1214,36 @@ export class Probe extends DurableObject<Env> {
       let pingDays: string[] = [];
       const round = this.vote.round;
       let voteOpt: number | null = null;
+      const db = this.env.DB;
       try {
-        const [km, pings, votes] = await this.env.DB.batch<{
-          km?: number;
-          tap_km?: number;
-          tap_moved_km?: number;
+        const [km, pings, votes] = await db.batch<{
+          km?: number | null;
+          tap_km?: number | null;
+          tap_moved_km?: number | null;
           day?: string;
           option?: number;
-        }>([
-          this.env.DB.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, deviceId),
-          this.env.DB.prepare(`SELECT day FROM pings WHERE device_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`).bind(
-            deviceId,
-            day,
-          ),
-          this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`).bind(round, deviceId),
-        ]);
+        }>(
+          w.accountId
+            ? [
+                db
+                  .prepare(
+                    `SELECT SUM(km) AS km, SUM(tap_km) AS tap_km, SUM(tap_moved_km) AS tap_moved_km FROM daily_km
+                     WHERE day = ? AND account_id = ?`,
+                  )
+                  .bind(day, w.accountId),
+                db
+                  .prepare(`SELECT DISTINCT day FROM pings WHERE account_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`)
+                  .bind(w.accountId, day),
+                db.prepare(`SELECT option FROM votes WHERE round = ? AND account_id = ? LIMIT 1`).bind(round, w.accountId),
+              ]
+            : [
+                db.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, w.deviceId),
+                db
+                  .prepare(`SELECT day FROM pings WHERE device_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`)
+                  .bind(w.deviceId, day),
+                db.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`).bind(round, w.deviceId),
+              ],
+        );
         voteOpt = votes.results[0]?.option ?? null;
         kmToday = km.results[0]?.km ?? 0;
         tapKmToday = km.results[0]?.tap_km ?? 0;
@@ -1188,12 +1253,17 @@ export class Probe extends DurableObject<Env> {
         console.error("device read failed", err);
       }
       // Km credited but not yet flushed to D1 are only in memory.
-      const pending = this.d1Pending.get(`${day}|${deviceId}`);
+      for (const p of this.d1Pending.values()) {
+        if (p.day !== day || (w.accountId ? p.accountId !== w.accountId : p.deviceId !== w.deviceId)) continue;
+        kmToday += p.km;
+        tapKmToday += p.tapKm;
+        tapMovedToday += p.tapMovedKm;
+      }
       const entry: DeviceEntry = {
         day,
-        kmToday: kmToday + (pending?.km ?? 0),
-        tapKmToday: tapKmToday + (pending?.tapKm ?? 0),
-        tapMovedToday: tapMovedToday + (pending?.tapMovedKm ?? 0),
+        kmToday,
+        tapKmToday,
+        tapMovedToday,
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
@@ -1202,14 +1272,14 @@ export class Probe extends DurableObject<Env> {
         tokens: have?.tokens ?? TAP_BUCKET,
         refilledAt: have?.refilledAt ?? Date.now(),
       };
-      this.devices.set(deviceId, entry);
+      this.devices.set(w.key, entry);
       return entry;
     })();
-    this.loadingDevices.set(deviceId, promise);
+    this.loadingDevices.set(w.key, promise);
     try {
       return await promise;
     } finally {
-      this.loadingDevices.delete(deviceId);
+      this.loadingDevices.delete(w.key);
     }
   }
 
@@ -1228,11 +1298,11 @@ export class Probe extends DurableObject<Env> {
 
   // ---------- Devices: the idle game ----------
 
-  /** This device's progress, from memory or this object's SQLite; a new device starts at zero, now. */
-  private prog(deviceId: string, now: number): ProgressEntry {
-    const have = this.progress.get(deviceId);
+  /** A player's progress (key: Who.key), from memory or this object's SQLite; a new player starts at zero, now. */
+  private prog(key: string, now: number): ProgressEntry {
+    const have = this.progress.get(key);
     if (have) return have;
-    const row = this.sql.exec<ProgressRow>(`SELECT * FROM progress WHERE device_id = ?`, deviceId).toArray()[0];
+    const row = this.sql.exec<ProgressRow>(`SELECT * FROM progress WHERE device_id = ?`, key).toArray()[0];
     const entry: ProgressEntry = row
       ? {
           creditsMilli: row.credits_milli,
@@ -1254,17 +1324,18 @@ export class Probe extends DurableObject<Env> {
           lastArrivalAt: null,
           lastMissionId: null,
         };
-    this.progress.set(deviceId, entry);
+    this.progress.set(key, entry);
     return entry;
   }
 
-  private writeProgress(deviceId: string) {
-    const p = this.progress.get(deviceId);
+  /** The `progress` tables' device_id column holds the player key (a device id, or a:<account id>). */
+  private writeProgress(key: string) {
+    const p = this.progress.get(key);
     if (!p) return;
     this.sql.exec(
       `INSERT OR REPLACE INTO progress (device_id, credits_milli, cold, ion, sail, hands, chant, patches, km_since_shift,
          settled_at, auto_kms, last_distance, last_arrival_at, last_mission_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      deviceId,
+      key,
       p.creditsMilli,
       p.levels.cold,
       p.levels.ion,
@@ -1282,26 +1353,26 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Marks progress for the next save (or writes it now: purchases and leaving matter). */
-  private touch(deviceId: string, now = false) {
-    this.d1Progress.add(deviceId);
+  private touch(key: string, now = false) {
+    this.d1Progress.add(key);
     this.scheduleD1Flush();
     if (now) {
-      this.writeProgress(deviceId);
-      this.dirtyProgress.delete(deviceId);
+      this.writeProgress(key);
+      this.dirtyProgress.delete(key);
     } else {
-      this.dirtyProgress.add(deviceId);
+      this.dirtyProgress.add(key);
       this.scheduleSave();
     }
   }
 
-  /** Km this device pushed: 1 credit per km, prestige progress and today's km. All in full (no ceiling). */
-  private earn(deviceId: string, p: ProgressEntry, dev: DeviceEntry, km: number, fromTaps: boolean) {
+  /** Km this player pushed: 1 credit per km, prestige progress and today's km. All in full (no balancing). */
+  private earn(w: Who, p: ProgressEntry, dev: DeviceEntry, km: number, fromTaps: boolean) {
     if (km <= 0) return;
     p.creditsMilli += Math.round(km * 1000);
     p.kmSinceShift += km;
     dev.kmToday += km;
     if (fromTaps) dev.tapKmToday += km;
-    this.addPending(dev.day, deviceId, km, fromTaps ? km : 0);
+    this.addPending(dev.day, w, km, fromTaps ? km : 0);
     this.scheduleD1Flush();
   }
 
@@ -1316,28 +1387,28 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Pays auto-thrust for connected time since the last settle (in full; it already moved the probe). */
-  private settleConnected(deviceId: string, p: ProgressEntry, dev: DeviceEntry, now: number) {
+  private settleConnected(w: Who, p: ProgressEntry, dev: DeviceEntry, now: number) {
     if (now <= p.settledAt) return;
     const auto = autoKmS(p.levels, p.patches);
-    if (auto > 0) this.earn(deviceId, p, dev, (auto * this.awakeMs(p.settledAt, now)) / 1000, false);
+    if (auto > 0) this.earn(w, p, dev, (auto * this.awakeMs(p.settledAt, now)) / 1000, false);
     p.settledAt = now;
-    this.touch(deviceId);
+    this.touch(w.key);
   }
 
   /** A device comes back: pays up to 8 hours of auto-thrust and adds it to the probe. Returns what welcome back needs. */
-  private settleAway(deviceId: string, p: ProgressEntry, dev: DeviceEntry, now: number): Away | null {
+  private settleAway(w: Who, p: ProgressEntry, dev: DeviceEntry, now: number): Away | null {
     const from = p.settledAt;
     const awayMs = Math.max(0, now - from);
     const auto = autoKmS(p.levels, p.patches);
     const countedMs = Math.min(OFFLINE_CAP_MS, this.awakeMs(from, now));
     const km = (auto * countedMs) / 1000;
     if (km > 0) {
-      this.earn(deviceId, p, dev, km, false);
+      this.earn(w, p, dev, km, false);
       // The probe gets it too (decision 9), unless its thrusters are asleep right now.
       if (this.mission.safeSince === null) this.pushCrewKm(now, km, "catchup");
     }
     p.settledAt = now;
-    this.touch(deviceId);
+    this.touch(w.key);
     if (awayMs < WELCOME_MIN_AWAY_MS || km <= 0) return null;
     return { from, awayMs, countedMs, km };
   }
@@ -1354,7 +1425,8 @@ export class Probe extends DurableObject<Env> {
     let keptAliveBy: WelcomeBack["keptAliveBy"] = null;
     try {
       const row = await this.env.DB.prepare(
-        `SELECT d.name AS name, p.at AS at FROM pings p JOIN devices d ON d.id = p.device_id
+        `SELECT COALESCE(a.name, d.name) AS name, p.at AS at FROM pings p JOIN devices d ON d.id = p.device_id
+         LEFT JOIN accounts a ON a.id = p.account_id
          WHERE p.day >= ? AND p.at > ? AND p.at <= ? ORDER BY p.at DESC LIMIT 1`,
       )
         .bind(utcDay(from), from, now)
@@ -1385,48 +1457,48 @@ export class Probe extends DurableObject<Env> {
     };
   }
 
-  /** After a purchase or a handover: every tab of this device carries its new auto-thrust. */
-  private retag(deviceId: string, auto: number) {
+  /** After a purchase or a handover: every tab of this player carries its new auto-thrust. */
+  private retag(key: string, auto: number) {
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() as Attachment | null;
-      if (a?.deviceId === deviceId) ws.serializeAttachment({ ...a, auto } satisfies Attachment);
+      if (a && whoOf(a).key === key) ws.serializeAttachment({ ...a, auto } satisfies Attachment);
     }
   }
 
-  /** Sends this device's progress to all its tabs (after a buy in another tab, or /admin). */
-  private sendMe(deviceId: string, p: ProgressEntry, except?: WebSocket) {
+  /** Sends this player's progress to all its tabs and devices (after a buy elsewhere, or /admin). */
+  private sendMe(key: string, p: ProgressEntry, except?: WebSocket) {
     const msg: ServerMessage = { t: "me", seq: 0, ok: true, now: this.now(), me: this.me(p) };
     for (const ws of this.ctx.getWebSockets()) {
       if (ws === except || ws.readyState !== WebSocket.OPEN) continue;
       const a = ws.deserializeAttachment() as Attachment | null;
-      if (a?.deviceId === deviceId) this.send(ws, msg);
+      if (a && whoOf(a).key === key) this.send(ws, msg);
     }
   }
 
-  private buy(deviceId: string, p: ProgressEntry, key: UpgradeKey, now: number): boolean {
+  private buy(w: Who, p: ProgressEntry, key: UpgradeKey, now: number): boolean {
     const level = p.levels[key];
     const costMilli = upgradeCost(key, level) * 1000;
     if (level >= MAX_LEVEL || p.creditsMilli < costMilli) return false;
     p.creditsMilli -= costMilli;
     p.levels[key] = level + 1;
-    this.changed(deviceId, p, now);
+    this.changed(w, p, now);
     return true;
   }
 
   /** "Hand over the shift": upgrades and credits back to zero for 3 Mission Patches. */
-  private prestige(deviceId: string, p: ProgressEntry, now: number): boolean {
+  private prestige(w: Who, p: ProgressEntry, now: number): boolean {
     if (p.kmSinceShift < PRESTIGE_AT_KM) return false;
     p.creditsMilli = 0;
     p.levels = zeroLevels();
     p.kmSinceShift = 0;
     p.patches += PATCHES_PER_SHIFT;
-    this.changed(deviceId, p, now);
+    this.changed(w, p, now);
     return true;
   }
 
-  private changed(deviceId: string, p: ProgressEntry, now: number) {
-    this.touch(deviceId, true);
-    this.retag(deviceId, autoKmS(p.levels, p.patches));
+  private changed(w: Who, p: ProgressEntry, now: number) {
+    this.touch(w.key, true);
+    this.retag(w.key, autoKmS(p.levels, p.patches));
     this.retune(now);
   }
 
@@ -1469,24 +1541,30 @@ export class Probe extends DurableObject<Env> {
     if (request.headers.get("Upgrade") !== "websocket") return new Response("Expected a WebSocket", { status: 426 });
     const deviceId = request.headers.get("X-Device-Id");
     if (!deviceId) return new Response("No device", { status: 400 });
+    const w = who(deviceId, request.headers.get("X-Account-Id"));
     await this.checkSignal();
     await this.checkVote();
     await this.checkMilestones();
 
     const now = this.now();
-    const dev = await this.device(deviceId, now);
-    const p = this.prog(deviceId, now);
+    const dev = await this.device(w, now);
+    const p = this.prog(w.key, now);
     // Connected auto-thrust is activity: it wakes a paused probe (before any catch-up is added to it).
     if (autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now);
-    // Another tab of this device is already here: it never left. Otherwise it's back from time away.
-    const alreadyHere = this.onlineDevices().has(deviceId);
+    // Another tab (or device, on an account) is already here: it never left. Otherwise it's back from time away.
+    const alreadyHere = this.onlineDevices().has(w.key);
     let away: Away | null = null;
-    if (alreadyHere) this.settleConnected(deviceId, p, dev, now);
-    else away = this.settleAway(deviceId, p, dev, now);
+    if (alreadyHere) this.settleConnected(w, p, dev, now);
+    else away = this.settleAway(w, p, dev, now);
 
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
-    server.serializeAttachment({ deviceId, auto: autoKmS(p.levels, p.patches), since: Date.now() } satisfies Attachment);
+    server.serializeAttachment({
+      deviceId,
+      accountId: w.accountId,
+      auto: autoKmS(p.levels, p.patches),
+      since: Date.now(),
+    } satisfies Attachment);
     this.retune(now); // people here and auto-thrust changed
     const welcome = away ? await this.welcomeFor(p, away, now) : null;
 
@@ -1508,18 +1586,19 @@ export class Probe extends DurableObject<Env> {
     await this.checkVote();
     const att = ws.deserializeAttachment() as Attachment;
     const { deviceId } = att;
+    const w = whoOf(att);
     ws.serializeAttachment({ ...att, seen: Date.now() } satisfies Attachment);
-    const dev = await this.device(deviceId, this.now());
+    const dev = await this.device(w, this.now());
     const now = this.now();
-    const p = this.prog(deviceId, now);
-    this.settleConnected(deviceId, p, dev, now);
+    const p = this.prog(w.key, now);
+    this.settleConnected(w, p, dev, now);
 
     if (msg.t === "buy" || msg.t === "prestige") {
       let ok = false;
-      if (msg.t === "prestige") ok = this.prestige(deviceId, p, now);
-      else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(deviceId, p, msg.key, now);
+      if (msg.t === "prestige") ok = this.prestige(w, p, now);
+      else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(w, p, msg.key, now);
       this.send(ws, { t: "me", seq: msg.seq, ok, now, me: this.me(p) });
-      if (ok) this.sendMe(deviceId, p, ws); // the device's other tabs
+      if (ok) this.sendMe(w.key, p, ws); // the player's other tabs and devices
       if (ok && autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now); // connected auto-thrust
       return;
     }
@@ -1538,12 +1617,12 @@ export class Probe extends DurableObject<Env> {
 
     const km = taps * tapKm(p.levels, p.patches);
     if (km > 0) {
-      this.earn(deviceId, p, dev, km, true);
-      this.touch(deviceId);
+      this.earn(w, p, dev, km, true);
+      this.touch(w.key);
       // What these taps moved the shared probe: "your taps today got us there X sooner".
       const moved = this.pushCrewKm(now, km, "taps");
       dev.tapMovedToday += moved;
-      this.addPending(dev.day, deviceId, 0, 0, moved);
+      this.addPending(dev.day, w, 0, 0, moved);
     }
 
     this.send(ws, {
@@ -1581,16 +1660,118 @@ export class Probe extends DurableObject<Env> {
     const now = this.now();
     // Its auto-thrust was connected until now (or its last heartbeat): activity, for the idle pause.
     if (a && a.auto > 0) this.mission.lastActiveAt = Math.max(this.mission.lastActiveAt, Math.min(now, at ?? now));
-    if (a && !this.onlineDevices(ws).has(a.deviceId)) {
-      const dev = await this.device(a.deviceId, now);
-      const p = this.prog(a.deviceId, now);
-      this.settleConnected(a.deviceId, p, dev, Math.min(now, at ?? now));
+    if (a && !this.onlineDevices(ws).has(whoOf(a).key)) {
+      const w = whoOf(a);
+      const dev = await this.device(w, now);
+      const p = this.prog(w.key, now);
+      this.settleConnected(w, p, dev, Math.min(now, at ?? now));
       p.lastDistance = distanceAt(this.moving(), now);
       p.lastArrivalAt = this.arrivalNow(now);
       p.lastMissionId = this.mission.id;
-      this.touch(a.deviceId, true);
+      this.touch(w.key, true);
     }
     this.retune(now, ws); // people here and auto-thrust changed
+  }
+
+  // ---------- Accounts (phase 8a, called over RPC by worker/auth.ts) ----------
+
+  /**
+   * A device signed in: its progress moves into the account's (decision 18: the higher level of each
+   * upgrade, the higher patch count, credits and km added together), its history is attached to the
+   * account, and its sockets reconnect as the account.
+   */
+  async signIn(deviceId: string, accountId: string): Promise<void> {
+    await this.checkSignal();
+    const now = this.now();
+    const guest = who(deviceId, null);
+    const acct = who(deviceId, accountId);
+    const online = this.onlineDevices();
+
+    // Pay both up to now first, so nothing is lost or counted twice.
+    const hadGuest =
+      this.progress.has(guest.key) ||
+      this.sql.exec(`SELECT 1 FROM progress WHERE device_id = ?`, guest.key).toArray().length > 0;
+    const gp = hadGuest ? this.prog(guest.key, now) : null;
+    if (gp) {
+      const gDev = await this.device(guest, now);
+      if (online.has(guest.key)) this.settleConnected(guest, gp, gDev, now);
+      else this.settleAway(guest, gp, gDev, now);
+    }
+    const ap = this.prog(acct.key, now);
+    const aDev = await this.device(acct, now);
+    if (online.has(acct.key)) this.settleConnected(acct, ap, aDev, now);
+    else this.settleAway(acct, ap, aDev, now);
+
+    if (gp) {
+      for (const k of UPGRADE_KEYS) ap.levels[k] = Math.max(ap.levels[k], gp.levels[k]);
+      ap.patches = Math.max(ap.patches, gp.patches);
+      ap.creditsMilli += gp.creditsMilli;
+      ap.kmSinceShift += gp.kmSinceShift;
+      this.progress.delete(guest.key);
+      this.dirtyProgress.delete(guest.key);
+      this.d1Progress.delete(guest.key);
+      this.sql.exec(`DELETE FROM progress WHERE device_id = ?`, guest.key);
+    }
+    this.touch(acct.key, true);
+
+    // The device's km, pings and votes now count for the account (km not yet flushed included).
+    for (const p of this.d1Pending.values()) if (p.deviceId === deviceId) p.accountId = accountId;
+    try {
+      await this.env.DB.batch([
+        this.env.DB.prepare(`DELETE FROM progress WHERE device_id = ?`).bind(guest.key),
+        this.env.DB.prepare(`UPDATE daily_km SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
+        this.env.DB.prepare(`UPDATE pings SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
+        this.env.DB.prepare(`UPDATE votes SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
+      ]);
+    } catch (err) {
+      console.error("attaching history failed", err);
+    }
+    this.devices.delete(guest.key);
+    this.devices.delete(acct.key); // re-read with the attached history
+
+    // This device's tabs reconnect as the account (they're closed quietly: already settled above).
+    this.dropDevice((a) => a.deviceId === deviceId, "signed in");
+    this.retune(now);
+  }
+
+  /** A device signed out: its tabs reconnect (the browser gets a fresh guest device). The account keeps its progress. */
+  async signOut(deviceId: string): Promise<void> {
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (a?.deviceId !== deviceId) continue;
+      try {
+        ws.close(4001, "signed out"); // webSocketClose settles the account as it leaves
+      } catch {
+        // already closing
+      }
+    }
+  }
+
+  /** An account was deleted: its progress goes, and its tabs everywhere reconnect as guests. */
+  async deleteAccount(accountId: string): Promise<void> {
+    const key = who("", accountId).key;
+    this.dropDevice((a) => a.accountId === accountId, "account deleted");
+    this.progress.delete(key);
+    this.dirtyProgress.delete(key);
+    this.d1Progress.delete(key);
+    this.devices.delete(key);
+    this.sql.exec(`DELETE FROM progress WHERE device_id = ?`, key);
+    for (const p of this.d1Pending.values()) if (p.accountId === accountId) p.accountId = null;
+    this.retune(this.now());
+  }
+
+  /** Closes matching sockets without settling them as they go (the caller has dealt with their progress). */
+  private dropDevice(match: (a: Attachment) => boolean, reason: string) {
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (!a || !match(a)) continue;
+      this.dead.add(ws);
+      try {
+        ws.close(4001, reason);
+      } catch {
+        // already closing
+      }
+    }
   }
 
   // ---------- /admin (called over RPC by the Worker, after it checks the key) ----------
@@ -1654,10 +1835,12 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Lets this device ping again today (testing only): removes today's ping row. */
-  async adminClearPing(deviceId: string): Promise<AdminState> {
+  async adminClearPing(deviceId: string, accountId: string | null): Promise<AdminState> {
     const day = utcDay(this.now());
-    await this.env.DB.prepare(`DELETE FROM pings WHERE day = ? AND device_id = ?`).bind(day, deviceId).run();
-    this.devices.delete(deviceId);
+    await this.env.DB.prepare(`DELETE FROM pings WHERE day = ? AND (device_id = ? OR (? IS NOT NULL AND account_id = ?))`)
+      .bind(day, deviceId, accountId, accountId)
+      .run();
+    this.devices.delete(who(deviceId, accountId).key);
     this.lastPingAt = 0;
     return this.adminState();
   }
@@ -1669,19 +1852,20 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Lets this device vote again in the current round (testing only). */
-  async adminClearVote(deviceId: string): Promise<AdminState> {
+  async adminClearVote(deviceId: string, accountId: string | null): Promise<AdminState> {
     const round = this.vote.round;
-    const row = await this.env.DB.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`)
-      .bind(round, deviceId)
+    const mine = `round = ? AND (device_id = ? OR (? IS NOT NULL AND account_id = ?))`;
+    const row = await this.env.DB.prepare(`SELECT option FROM votes WHERE ${mine} LIMIT 1`)
+      .bind(round, deviceId, accountId, accountId)
       .first<{ option: number }>();
     if (row) {
-      await this.env.DB.prepare(`DELETE FROM votes WHERE round = ? AND device_id = ?`).bind(round, deviceId).run();
+      await this.env.DB.prepare(`DELETE FROM votes WHERE ${mine}`).bind(round, deviceId, accountId, accountId).run();
       if (this.vote.round === round && (this.vote.tallies[row.option] ?? 0) > 0) {
         this.vote.tallies[row.option] -= 1;
         this.sql.exec(`UPDATE vote_round SET tallies = ? WHERE round = ?`, JSON.stringify(this.vote.tallies), round);
       }
     }
-    const dev = this.devices.get(deviceId);
+    const dev = this.devices.get(who(deviceId, accountId).key);
     if (dev) {
       dev.voteRound = round;
       dev.voteOption = null;
@@ -1690,14 +1874,15 @@ export class Probe extends DurableObject<Env> {
     return this.adminState();
   }
 
-  /** Gives this device km for testing: credits and prestige progress (not the probe). */
-  async adminGive(deviceId: string, km: number): Promise<AdminState> {
+  /** Gives this player km for testing: credits and prestige progress (not the probe). */
+  async adminGive(deviceId: string, accountId: string | null, km: number): Promise<AdminState> {
     const now = this.now();
-    const p = this.prog(deviceId, now);
+    const key = who(deviceId, accountId).key;
+    const p = this.prog(key, now);
     p.creditsMilli += Math.round(km * 1000);
     p.kmSinceShift += km;
-    this.touch(deviceId, true);
-    this.sendMe(deviceId, p);
+    this.touch(key, true);
+    this.sendMe(key, p);
     return this.adminState();
   }
 
@@ -1710,9 +1895,9 @@ export class Probe extends DurableObject<Env> {
   async adminResetMission(): Promise<AdminState> {
     // Pay connected devices up to now, then restart their clocks at real time.
     const before = this.now();
-    for (const id of this.onlineDevices().keys()) {
-      const p = this.progress.get(id);
-      if (p) this.settleConnected(id, p, await this.device(id, before), before);
+    for (const w of this.onlinePlayers().values()) {
+      const p = this.progress.get(w.key);
+      if (p) this.settleConnected(w, p, await this.device(w, before), before);
     }
     this.clockOffsetMs = 0;
     const now = this.now();

@@ -235,10 +235,77 @@ ${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${e
   });
 }
 
+// ---------- Privacy (phase 8a: sign-in starts storing email addresses) ----------
+
+const PRIVACY_UPDATED = "19 November 2026";
+const privacySections = [
+  [
+    "Playing as a guest",
+    [
+      "The first time you open the game, your browser gets a random device id in a cookie (osc_device). It's signed so nobody can fake it, and it holds nothing about you. It lasts up to 400 days.",
+      "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km you push each day, your pings and votes, and your credits, upgrades and patches.",
+      "Your browser also keeps a few things for itself: your light or dark theme, a copy of the probe's position so the page opens fast, and which milestone moments you've already seen.",
+    ],
+  ],
+  [
+    "Signing in",
+    [
+      "Signing in is optional. If you sign in with an email link, we keep your email address. If you sign in with Google, we keep your email address and Google's id for your account, and nothing else from Google: no name, no photo, no contacts.",
+      "Your account also has its generated crew name and a country (detected when the account is made; you can change it once). A sign-in cookie (osc_session) keeps you signed in for up to 90 days; a short cookie (osc_oauth) lasts 10 minutes while you're away at Google.",
+      "A sign-in link is stored only as a scrambled code (a hash), and it stops working after one use or 15 minutes.",
+    ],
+  ],
+  [
+    "What other players see",
+    [
+      "Your crew name, never your email. It can appear in the mission log (for example “Signal restored by orbit_otter”), and on the leaderboards and in the mission credits when they arrive.",
+    ],
+  ],
+  [
+    "Who else handles it",
+    [
+      "Cloudflare runs the whole site: the pages, the game server and the database. Its network handles your IP address to deliver the site, and the game server keeps short-lived logs for fixing problems.",
+      "Ping, the daily vote and the email sign-in use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
+      "Sign-in emails are sent with Cloudflare's Email Service. Google sees that you signed in to OneSmallClick if you use “Continue with Google”.",
+      "There are no ads, no analytics trackers and no Google scripts on our pages. We never sell your data and never post anything for you.",
+    ],
+  ],
+  [
+    "Your choices",
+    [
+      "Sign out at any time: your progress stays with your account, and the device carries on as a new guest.",
+      "Delete your account from the sign-in page: your email, name and account progress are deleted straight away (the database's own backups roll off within 30 days). The km you pushed stay in the mission without your name.",
+      "For a copy of your data, or anything else about privacy, email <a href=\"mailto:privacy@onesmallclick.io\">privacy@onesmallclick.io</a>.",
+    ],
+  ],
+];
+
+const privacy = page({
+  path: "/privacy",
+  current: "/privacy",
+  title: "Privacy · OneSmallClick",
+  description: "What OneSmallClick stores about you, why, who else handles it, and how to delete it.",
+  body: `      <div>
+        <p class="page__label">PRIVACY</p>
+        <h1 id="page-title" class="page__title">What we keep, and why</h1>
+      </div>
+      <p class="page__note">The short version: a random id for your device, your game, and your email only if you sign in. Updated ${PRIVACY_UPDATED}.</p>
+${privacySections
+  .map(
+    ([title, paras], i) => `      <section class="window prose" aria-labelledby="privacy-${i}">
+        <h2 id="privacy-${i}" class="page__h2">${esc(title)}</h2>
+${paras.map((p) => `        <p>${p}</p>`).join("\n")}
+      </section>`,
+  )
+  .join("\n")}
+      <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
+});
+
 // ---------- Write ----------
 
 rmSync(join(root, "public", "milestones"), { recursive: true, force: true });
 out("content.css", css);
 out("how-to-play.html", howToPlay);
+out("privacy.html", privacy);
 milestones.forEach((m, i) => out(`milestones/${m.slug}.html`, factPage(m, i)));
-console.log(`build-pages: how-to-play + ${milestones.length} milestone pages, content.css ${cssVersion}`);
+console.log(`build-pages: how-to-play, privacy + ${milestones.length} milestone pages, content.css ${cssVersion}`);
