@@ -18,7 +18,12 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 ## Next
 - [x] **Deploy 7b** (Nav, 19 Nov; the live bundle matches 31172c3 and migration 0005 is applied): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
 
-## Before phase 8 (badges)
+## Before phase 8
+- [ ] **The retune phase** (Nav is sending it): mission length, an idle pause, and what resets at launch. 8a starts once Nav has approved it.
+- [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, next payday Friday). Then switch on Workers Paid for Email Service.
+- [ ] **A Google OAuth client** (Nav, before 8a is tested): I'll list the steps when 8a starts.
+
+### Before 8b (badges)
 
 ### Make with PixelLab (once the generations refresh)
 - [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:

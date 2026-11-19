@@ -93,8 +93,8 @@ Answered ones point to the decision in docs/plan.md ("Decisions").
 - ~~Safe mode: how many days does the arrival date jump back?~~ **Decided:** every quiet hour adds about 10 hours, capped at 7 days per outage (decision 8).
 - ~~Signal timer: how long is the window at launch?~~ **Decided:** 48 hours (decision 7).
 - ~~How long should the first Mars mission take at launch traffic levels?~~ **Decided:** the design's numbers, about 6 months with a busy crew and never faster than about 4½ months (decision 4 and the crew-speed ceiling).
-- Which email service sends the magic-link sign-in emails? (Recommended: Cloudflare Email Service; decision 14.)
-- Country for leaderboards: detected automatically, or chosen by the player? (Recommended: detected, changeable once; decision 16.)
-- Display names: how are rude names filtered out? (Recommended: generated names only at launch; decision 17.)
+- ~~Which email service sends the magic-link sign-in emails?~~ **Decided:** Cloudflare Email Service (decision 14).
+- ~~Country for leaderboards: detected automatically, or chosen by the player?~~ **Decided:** detected, changeable once (decision 16).
+- ~~Display names: how are rude names filtered out?~~ **Decided:** generated names only at launch, picked from three offers (decision 17).
 - Postcards: keep real space photos as a contrast, or convert them to pixel art? (Decision 13; can wait.)
-- Confirm the .io domain is bought (needed before phase 8).
+- Confirm the .io domain is bought (Nav is buying it on the next payday Friday; sign-in goes live once it's connected).

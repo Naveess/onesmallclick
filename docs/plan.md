@@ -281,6 +281,11 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 **Goal:** optional sign-in so progress follows you across devices, plus the leaderboards and the end of the mission.
 
+**Split in three (agreed 2026-11-19), and it waits for the retune.** Nav has changed three earlier decisions (mission length, an idle pause, and what resets at launch) and is sending a retune phase first. 8a starts once Nav has approved the retune.
+- **8a: Accounts and sign-in (1i).** Email link and Google sign-in, linking the device and merging its progress, sign-out, generated names, country, and the privacy page. Migration 0006: accounts, sessions, login tokens, and `devices.account_id`. Built and tested locally (Google accepts `localhost`; in dev the email link shows in `/admin` instead of being sent). It goes live for real players once onesmallclick.io is connected.
+- **8b: Leaderboards (1g), profile (1j) and badges.** Needs the profile badge sprites (todo).
+- **8c: Arrival and credits (1k).** The credits, the next-destination vote (Europa, Psyche or a Venus flyby) and the new mission. The next routes and their distances are drafted with checked facts for Nav's approval.
+
 **What gets built**
 - **Sign in (1i)** by email link or Google.
   - Signing in attaches the device's progress to the account.
@@ -384,12 +389,12 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 12. ~~**Milestones**~~ **Decided:** I draft all six, with distances and checked facts, for approval in 7b. Fact pages are built from the kit in the style of How to play (1l), at `/milestones/<name>`.
 13. **Postcards** *(brief)*: real photos or pixel art? This can wait. Placeholders stay until then (todo, "At the end").
 
-### Before phase 8
-14. **Email service** *(brief)*: see the next section.
-15. **Domain** *(brief)*: buy onesmallclick.io and add it to Cloudflare. It's needed for the sign-in email's sender address, so it has to happen before this phase.
-16. **Country for leaderboards** *(brief)*: detected or chosen? *(Detected from Cloudflare's location header when the account is made, and changeable once. Free changes would make country boards easy to game.)*
-17. **Rude names** *(brief)*: *(Generated names only at launch, like `orbit_otter`, picked from a few offers. Custom names with a blocklist and a report button can come later.)*
-18. **Two devices, one account:** when progress merges, keep the higher upgrade levels and add the credits together? *(Yes.)*
+### Before phase 8 (14, 16, 17 and 18 decided 2026-11-19)
+14. ~~**Email service**~~ **Decided: Cloudflare Email Service**, with the sending code in one file so switching to Resend is a one-file change. Nav switches on Workers Paid when the domain is connected. See the next section.
+15. **Domain** *(brief)*: **Nav is buying onesmallclick.io on the next payday Friday** and adding it to Cloudflare. Until then sign-in is built and tested locally only. It's needed for the sign-in email's sender address (and probably for Google's sign-in address, since Google may reject workers.dev), so sign-in goes live for real players once it's connected.
+16. ~~**Country for leaderboards**~~ **Decided: detected** from Cloudflare's location header when the account is made, **and changeable once.** Free changes would make country boards easy to game.
+17. ~~**Rude names**~~ **Decided: generated names only at launch**, like `orbit_otter`, **picked from three offers.** Custom names with a blocklist and a report button can come later.
+18. ~~**Two devices, one account**~~ **Decided:** when progress merges, **keep the higher level of each upgrade and the higher patch count, and add credits and km together.**
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
@@ -398,7 +403,7 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 
 ## Email for sign-in
 
-**Recommendation: Cloudflare Email Service**, with Resend as the fallback.
+**Decided (2026-11-19, decision 14): Cloudflare Email Service**, with Resend as the fallback.
 
 - **Why Cloudflare:**
   - It's built into Workers: the Worker sends mail through a binding, so there's no extra account and no API key to store.
