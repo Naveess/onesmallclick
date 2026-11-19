@@ -279,6 +279,8 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 ## Retune: a 30-day mission, the idle pause, a launch that keeps players (before phase 8)
 
+**Deployed from c132a88 with migration 0006 and approved by Nav, 2026-11-19.**
+
 **Goal:** Nav's decisions of 18–19 Nov (prompts 27 and 28): about 30 days to Mars with self-balancing thrust, an 8-hour idle pause, and a launch reset that keeps everyone's progress. Decisions 4, 5 and 6 below were changed; 8 (the setback) and the vote effects were retuned to fit a 30-day trip.
 
 **As built (2026-11-19)**
