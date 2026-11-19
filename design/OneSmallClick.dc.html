@@ -38,10 +38,13 @@ button{font-family:'Pixelify Sans',monospace}
 @keyframes osc-blink{0%,49%{opacity:1}50%,100%{opacity:.25}}
 @keyframes osc-urgent{0%,100%{color:var(--ki-ffb37a);text-shadow:3px 3px 0 var(--kf-5a2c12)}50%{color:var(--ki-ffe0bd);text-shadow:3px 3px 0 var(--kf-5a2c12),0 0 22px rgba(255,179,122,.9)}}
 @keyframes osc-urgent-box{0%,100%{box-shadow:inset 0 0 0 2px var(--kf-1a0d06),0 0 0 rgba(255,179,122,0)}50%{box-shadow:inset 0 0 0 2px var(--kf-1a0d06),0 0 28px rgba(255,179,122,.5)}}
+@keyframes osc-scroll-x{from{background-position:0 0}to{background-position:-256px 0}}
+@keyframes osc-crew{0%{transform:translateX(0);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(var(--d));opacity:0}}
+@keyframes osc-comet{0%{transform:translate(0,0);opacity:0}1%{opacity:1}12%{transform:translate(var(--cx),var(--cy));opacity:1}13%,100%{transform:translate(var(--cx),var(--cy));opacity:0}}
 @keyframes osc-roll{from{transform:translateY(0)}to{transform:translateY(-50%)}}
 @keyframes osc-flicker{0%,100%{opacity:1}50%{opacity:.5}}
 /* Theme tokens: --kf-* = fills/borders/shadows, --ki-* = text. Dark is the original night sky; light is daylight mission control. */
-.dv-turn{color-scheme:dark;background:var(--kf-02040b);--kf-02040b:#02040b;--kf-04060f:#04060f;--kf-05091a:#05091a;--kf-06080e:#06080e;--kf-060a1c:#060a1c;--kf-060d24:#060d24;--kf-06102a:#06102a;--kf-070d20:#070d20;--kf-081028:#081028;--kf-081128:#081128;--kf-090b13:#090b13;--kf-0a1028:#0a1028;--kf-0a1430:#0a1430;--kf-0a1533:#0a1533;--kf-0a1636:#0a1636;--kf-0b0e17:#0b0e17;--kf-0b1838:#0b1838;--kf-0c1232:#0c1232;--kf-0c1738:#0c1738;--kf-0e111b:#0e111b;--kf-0e1a40:#0e1a40;--kf-0f1232:#0f1232;--kf-0f2150:#0f2150;--kf-10131f:#10131f;--kf-121522:#121522;--kf-13285a:#13285a;--kf-13305e:#13305e;--kf-141436:#141436;--kf-160c06:#160c06;--kf-181430:#181430;--kf-1a0d06:#1a0d06;--kf-1a1f30:#1a1f30;--kf-1a3566:#1a3566;--kf-1a3670:#1a3670;--kf-1b2a55:#1b2a55;--kf-1c3a6e:#1c3a6e;--kf-1e1630:#1e1630;--kf-1f0f08:#1f0f08;--kf-1f1408:#1f1408;--kf-1f3463:#1f3463;--kf-22132a:#22132a;--kf-2a1420:#2a1420;--kf-2a170b:#2a170b;--kf-2a1a2a:#2a1a2a;--kf-2b4c86:#2b4c86;--kf-2b5a8f:#2b5a8f;--kf-3a1e10:#3a1e10;--kf-3a2414:#3a2414;--kf-3c4560:#3c4560;--kf-3c5a8e:#3c5a8e;--kf-4a2c18:#4a2c18;--kf-4a5170:#4a5170;--kf-5a2c12:#5a2c12;--kf-5a3418:#5a3418;--kf-5aa4e0:#5aa4e0;--kf-6a7aa0:#6a7aa0;--kf-7fb0e6:#7fb0e6;--kf-8a4620:#8a4620;--kf-8ccfff:#8ccfff;--kf-a8582a:#a8582a;--kf-c9b89c:#c9b89c;--kf-e8894a:#e8894a;--kf-eef3ff:#eef3ff;--kf-efe6d6:#efe6d6;--kf-ffb37a:#ffb37a;--ki-05081a:#05081a;--ki-3a2a1a:#3a2a1a;--ki-6f7ca0:#6f7ca0;--ki-8b98ba:#8b98ba;--ki-8ccfff:#8ccfff;--ki-a8582a:#a8582a;--ki-a8b6d6:#a8b6d6;--ki-b9e2ff:#b9e2ff;--ki-c9a888:#c9a888;--ki-c9d4ee:#c9d4ee;--ki-e6d2c0:#e6d2c0;--ki-eef3ff:#eef3ff;--ki-f3e4d6:#f3e4d6;--ki-ffb37a:#ffb37a;--ki-ffd9a8:#ffd9a8;--ki-ffe0bd:#ffe0bd;--kf-4a2c0a:#4a2c0a;--kf-7c401c:#7c401c;--kf-9a6418:#9a6418;--kf-c8743e:#c8743e;--kf-c9d4ee:#c9d4ee;--kf-ffd27a:#ffd27a;--kf-fff1b0:#fff1b0;--ki-9a6418:#9a6418;--ki-f0b98a:#f0b98a;--ki-ffd27a:#ffd27a}
+.dv-turn{color-scheme:dark;background:var(--kf-02040b);--kf-02040b:#02040b;--kf-04060f:#04060f;--kf-05091a:#05091a;--kf-06080e:#06080e;--kf-060a1c:#060a1c;--kf-060d24:#060d24;--kf-06102a:#06102a;--kf-070d20:#070d20;--kf-081028:#081028;--kf-081128:#081128;--kf-090b13:#090b13;--kf-0a1028:#0a1028;--kf-0a1430:#0a1430;--kf-0a1533:#0a1533;--kf-0a1636:#0a1636;--kf-0b0e17:#0b0e17;--kf-0b1838:#0b1838;--kf-0c1232:#0c1232;--kf-0c1738:#0c1738;--kf-0e111b:#0e111b;--kf-0e1a40:#0e1a40;--kf-0f1232:#0f1232;--kf-0f2150:#0f2150;--kf-10131f:#10131f;--kf-121522:#121522;--kf-13285a:#13285a;--kf-13305e:#13305e;--kf-141436:#141436;--kf-160c06:#160c06;--kf-181430:#181430;--kf-1a0d06:#1a0d06;--kf-1a1f30:#1a1f30;--kf-1a3566:#1a3566;--kf-1a3670:#1a3670;--kf-1b2a55:#1b2a55;--kf-1c3a6e:#1c3a6e;--kf-1e1630:#1e1630;--kf-1f0f08:#1f0f08;--kf-1f1408:#1f1408;--kf-1f3463:#1f3463;--kf-22132a:#22132a;--kf-2a1420:#2a1420;--kf-2a170b:#2a170b;--kf-2a1a2a:#2a1a2a;--kf-2b4c86:#2b4c86;--kf-2b5a8f:#2b5a8f;--kf-3a1e10:#3a1e10;--kf-3a2414:#3a2414;--kf-3c4560:#3c4560;--kf-3c5a8e:#3c5a8e;--kf-4a2c18:#4a2c18;--kf-4a5170:#4a5170;--kf-5a2c12:#5a2c12;--kf-5a3418:#5a3418;--kf-5aa4e0:#5aa4e0;--kf-6a7aa0:#6a7aa0;--kf-7fb0e6:#7fb0e6;--kf-8a4620:#8a4620;--kf-8ccfff:#8ccfff;--kf-a8582a:#a8582a;--kf-c9b89c:#c9b89c;--kf-e8894a:#e8894a;--kf-eef3ff:#eef3ff;--kf-efe6d6:#efe6d6;--kf-ffb37a:#ffb37a;--ki-05081a:#05081a;--ki-3a2a1a:#3a2a1a;--ki-6f7ca0:#6f7ca0;--ki-8b98ba:#8b98ba;--ki-8ccfff:#8ccfff;--ki-a8582a:#a8582a;--ki-a8b6d6:#a8b6d6;--ki-b9e2ff:#b9e2ff;--ki-c9a888:#c9a888;--ki-c9d4ee:#c9d4ee;--ki-e6d2c0:#e6d2c0;--ki-eef3ff:#eef3ff;--ki-f3e4d6:#f3e4d6;--ki-ffb37a:#ffb37a;--ki-ffd9a8:#ffd9a8;--ki-ffe0bd:#ffe0bd;--kf-4a2c0a:#4a2c0a;--kf-7c401c:#7c401c;--kf-9a6418:#9a6418;--kf-c8743e:#c8743e;--kf-c9d4ee:#c9d4ee;--kf-ffd27a:#ffd27a;--kf-fff1b0:#fff1b0;--ki-9a6418:#9a6418;--ki-f0b98a:#f0b98a;--ki-ffd27a:#ffd27a;--kf-d6ecff:#d6ecff}
 .dv-turn[data-theme=light]{color-scheme:light;--kf-02040b:#e9eef7;--kf-04060f:#14244a;--kf-05091a:#fff0e2;--kf-06080e:#f7f8fc;--kf-060a1c:#f0f2fc;--kf-060d24:#e6f1ff;--kf-06102a:#d2e8ff;--kf-070d20:#eaf4ff;--kf-081028:#e9edfb;--kf-081128:#dcefff;--kf-090b13:#f5f6fa;--kf-0a1028:#e9ecf9;--kf-0a1430:#d0e8ff;--kf-0a1533:#e3e9fa;--kf-0a1636:#f2f8ff;--kf-0b0e17:#f2f4f9;--kf-0b1838:#eaf4ff;--kf-0c1232:#e4e7f8;--kf-0c1738:#c4e2ff;--kf-0e111b:#f0f2f7;--kf-0e1a40:#b8dcff;--kf-0f1232:#e4e5f7;--kf-0f2150:#d3ddf7;--kf-10131f:#eef0f6;--kf-121522:#eceef5;--kf-13285a:#ffffff;--kf-13305e:#dcecff;--kf-141436:#e1e1f4;--kf-160c06:#fcf6f3;--kf-181430:#e7e5f4;--kf-1a0d06:#fcf5f1;--kf-1a1f30:#e5e7f1;--kf-1a3566:#cfe4fb;--kf-1a3670:#c1d1f1;--kf-1b2a55:#c9dcf2;--kf-1c3a6e:#bfdcfa;--kf-1e1630:#e9e5f3;--kf-1f0f08:#fbf2ee;--kf-1f1408:#fbf5ee;--kf-1f3463:#c9d4ee;--kf-22132a:#f0e8f5;--kf-2a1420:#f4e8ee;--kf-2a170b:#f9eee8;--kf-2a1a2a:#f1e8f1;--kf-2b4c86:#9cc4ee;--kf-2b5a8f:#bcd8f5;--kf-3a1e10:#f6e7df;--kf-3a2414:#f4e8df;--kf-3c4560:#cacfde;--kf-3c5a8e:#8fb3dd;--kf-4a2c18:#ffd9bd;--kf-4a5170:#c1c5d6;--kf-5a2c12:#f5dccd;--kf-5a3418:#f2ddce;--kf-5aa4e0:#2783ce;--kf-6a7aa0:#515e7f;--kf-7fb0e6:#3f86d6;--kf-8a4620:#edc8b3;--kf-8ccfff:#5ab4f5;--kf-a8582a:#e8bca3;--kf-c9b89c:#ad9469;--kf-e8894a:#d4651b;--kf-eef3ff:#ffffff;--kf-ffb37a:#ff9d55;--ki-6f7ca0:#56648a;--ki-8b98ba:#56648a;--ki-8ccfff:#1765b0;--ki-a8b6d6:#44557d;--ki-b9e2ff:#0f5596;--ki-c9a888:#7c5a38;--ki-c9d4ee:#2b3b62;--ki-e6d2c0:#543921;--ki-eef3ff:#14244a;--ki-f3e4d6:#462d15;--ki-ffb37a:#a84a0c;--ki-ffd9a8:#94450e;--ki-ffe0bd:#643500;--ki-ffd27a:#7a5000;--ki-f0b98a:#8a4620;--ki-9a6418:#7a4a0c}
 .dv-turn[data-theme=light] .osc-neb{filter:invert(1) hue-rotate(180deg) saturate(.6);opacity:.35 !important}
 .dv-turn[data-theme=light] .osc-stars{opacity:0}
@@ -54,6 +57,7 @@ button{font-family:'Pixelify Sans',monospace}
 .osc-fly{animation:osc-descend 1.8s steps(18) both}
 .osc-in{opacity:0;animation:osc-fadein .5s steps(5) forwards}
 @media (prefers-reduced-motion:reduce){.osc-fly{animation:osc-fadein .8s steps(8) both}.osc-in{animation:osc-fadein .5s steps(5) forwards}}
+.osc-noscroll{scrollbar-width:none}.osc-noscroll::-webkit-scrollbar{display:none}
 .osc-fill{transition:width .6s steps(6)}
 @media (prefers-reduced-motion:reduce){.osc-fill{transition:none}}
 @media (prefers-reduced-motion:reduce){[data-anim]{animation:none !important}}
@@ -114,7 +118,7 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 
 <div class="dv-opt" id="1a">
-<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Game home · phone (scrolls to vote + ad)</div>
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Game home · phone, flight view (tap THRUST to boost · scrolls to vote + ad)</div>
 <div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
 <div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
 <div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
@@ -149,25 +153,53 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ paceBar }};background:{{ paceFill }}"></div></div><span style="font:16px/1 VT323,monospace;color:var(--ki-a8b6d6);white-space:nowrap">{{ paceGap }}</span></div>
 </div>
 </div>
-<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px 12px 10px;display:flex;flex-direction:column;gap:8px">
-<div style="display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><span>EARTH</span><span>{{ pct }}</span><span>MARS</span></div>
-<div style="position:relative;height:64px">
-<div data-anim role="img" aria-label="Earth" style="position:absolute;left:-6px;top:0;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/earth-sheet.png" alt="" style="display:block;width:800%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 4s steps(8) infinite"></div>
-<div data-anim role="img" aria-label="Mars" style="position:absolute;right:-6px;top:0;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
-<div style="position:absolute;left:62px;right:62px;top:12px;bottom:12px">
-<div style="position:absolute;left:0;right:0;top:19px;height:2px;background:repeating-linear-gradient(90deg,var(--kf-3c5a8e) 0 4px,transparent 4px 8px)"></div>
-<div style="position:absolute;left:0;top:18px;height:4px;width:{{ pct }};background:var(--kf-8ccfff);box-shadow:0 0 8px rgba(140,207,255,.6);transition:width 1s linear"></div>
-<div style="position:absolute;left:4.2%;top:14px;width:2px;height:12px;background:var(--kf-8ccfff)"></div>
-<div style="position:absolute;left:25%;top:14px;width:2px;height:12px;background:var(--kf-8ccfff)"></div>
-<div data-anim style="position:absolute;left:50%;top:12px;width:4px;height:16px;background:var(--kf-ffb37a);box-shadow:0 0 8px rgba(255,179,122,.7);animation:osc-flicker 1.4s steps(2) infinite"></div>
-<div style="position:absolute;left:89.6%;top:15px;width:2px;height:10px;background:var(--kf-3c5a8e)"></div>
-<div style="position:absolute;left:{{ pct }};top:20px;transform:translate(-50%,-50%);transition:left 1s linear"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 4px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div></div>
+<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;height:254px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 60s steps(64) infinite"></div>
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 24s steps(64) infinite"></div>
+<sc-if value="{{ flP.engineOn }}" hint-placeholder-val="{{ true }}"><div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flP.streaks }});background-size:256px 128px;image-rendering:pixelated;opacity:.55;animation:osc-scroll-x 3s steps(32) infinite"></div>
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flP.streaks }});background-size:256px 128px;background-position:64px 32px;image-rendering:pixelated;opacity:{{ flP.boostOp }};animation:osc-scroll-x 1.2s steps(32) infinite"></div></sc-if>
+<img data-anim src="{{ flP.comet }}" alt="" style="position:absolute;{{ flP.cometSt }};width:36px;height:10px;max-width:none;image-rendering:pixelated;opacity:0;animation:osc-comet 19s steps(40) infinite 4s">
+<sc-for list="{{ flP.far }}" as="p" hint-placeholder-count="2"><img src="{{ p.img }}" alt="" style="position:absolute;{{ p.st }};image-rendering:pixelated;opacity:.8;filter:drop-shadow(0 0 4px rgba(255,179,122,.5))"><span style="position:absolute;{{ p.lab }};transform:translateX(-50%);font-size:10px;color:#8b98ba;white-space:nowrap">{{ p.label }}</span></sc-for>
+<span style="position:absolute;{{ flP.marsGlow }};background:radial-gradient(circle,rgba(255,140,80,.3),transparent 65%)"></span>
+<img src="{{ flP.mars }}" alt="" style="position:absolute;{{ flP.marsSt }};max-width:none;image-rendering:pixelated">
+<sc-if value="{{ flP.phobos }}" hint-placeholder-val="{{ false }}"><span data-anim style="position:absolute;{{ flP.phobosSt }};width:6px;height:4px;background:#8a8f9f;box-shadow:inset -2px -1px 0 #41444f;animation:osc-orbit 6s steps(12) infinite"></span></sc-if>
+<img src="{{ flP.earth }}" alt="" style="position:absolute;{{ flP.earthSt }};max-width:none;image-rendering:pixelated;opacity:.9">
+<sc-if value="{{ flP.beaconOn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;{{ flP.beacon }};display:flex;flex-direction:column;align-items:center;gap:2px"><span data-anim style="width:6px;height:6px;background:#ffb37a;box-shadow:0 0 10px rgba(255,179,122,.9);animation:osc-blink 1s steps(1) infinite"></span><span style="width:2px;height:10px;background:#ffb37a"></span><span style="padding:1px 5px;font-size:10px;letter-spacing:.08em;color:#ffb37a;border:2px solid #ffb37a;background:#060a1c;white-space:nowrap">NEXT · {{ flP.beaconLab }}</span></div></sc-if>
+<sc-if value="{{ flP.engineOn }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ flP.sparks }}" as="k" hint-placeholder-count="6"><span data-anim style="position:absolute;left:0;width:3px;height:2px;{{ k.st }};opacity:0;animation:osc-crew 2.2s steps(14) infinite"></span></sc-for>
+<div data-anim style="position:absolute;{{ flP.flameSt }};overflow:hidden;z-index:2"><img data-anim src="{{ flP.flame }}" alt="" style="display:block;width:300%;height:100%;max-width:none;image-rendering:pixelated;animation:osc-sheet .24s steps(3) infinite"></div></sc-if>
+<div style="position:absolute;{{ flP.probe }};z-index:3;{{ flP.probeFx }}"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.75));animation:osc-bob 1.2s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .4s steps(4) infinite"></div></div>
+<sc-if value="{{ flP.boost }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ flP.popSt }};z-index:4;font:22px/1 VT323,monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">+{{ tap }} km</span></sc-if>
+<div style="position:absolute;left:0;right:0;top:0;height:30px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 12px;background:linear-gradient(180deg,rgba(4,6,15,.85),rgba(4,6,15,0))">
+<span style="display:flex;align-items:baseline;gap:8px;font-size:10px;letter-spacing:.12em;color:#a8b6d6">OSC-1<span style="font:22px/1 VT323,monospace;letter-spacing:0;color:#8ccfff">{{ flP.pctShow }}</span></span>
+<span style="display:flex;align-items:baseline;gap:6px;font:18px/1 VT323,monospace;color:#eef3ff"><span style="color:#ffb37a;opacity:{{ flP.chevOp }}">›››</span>{{ speed }} km/s</span>
+</div>
+<sc-if value="{{ flP.previewing }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:50%;bottom:54px;transform:translateX(-50%);padding:1px 6px;font-size:10px;letter-spacing:.12em;color:#ffb37a;border:2px dashed #ffb37a;background:#060a1c">PREVIEW · SET IN TWEAKS</span></sc-if>
+<sc-if value="{{ flP.safe }}" hint-placeholder-val="{{ false }}"><div data-anim style="position:absolute;left:50%;top:36px;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 10px;border:2px solid #ffb37a;outline:2px solid #04060f;background:#1f0f08;font-size:11px;letter-spacing:.12em;color:#ffb37a;white-space:nowrap;animation:osc-urgent-box 1.4s steps(4) infinite">SAFE MODE · ENGINE OFF<span style="letter-spacing:0;color:#ffd9a8">Drifting. Ping to wake the probe.</span></div></sc-if>
+<sc-if value="{{ flP.low }}" hint-placeholder-val="{{ false }}"><div data-anim style="position:absolute;left:50%;top:36px;transform:translateX(-50%);z-index:4;padding:2px 8px;border:2px solid #ffb37a;background:#1f0f08;font-size:11px;letter-spacing:.12em;color:#ffb37a;white-space:nowrap;animation:osc-blink 1s steps(1) infinite">SIGNAL <span style="font:18px/1 VT323,monospace;letter-spacing:0">{{ signal }}</span> · PING NOW</div></sc-if>
+<sc-if value="{{ flP.burn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;top:36px;transform:translateX(-50%);z-index:4;padding:2px 8px;border:2px solid #ffd27a;outline:2px solid #4a2c0a;background:#2a1a06;font-size:11px;letter-spacing:.12em;color:#ffd27a;white-space:nowrap">LANDING BURN <span style="font:18px/1 VT323,monospace;letter-spacing:0">{{ burnLeft }}</span> · {{ burnPct }}</div></sc-if>
+<div style="position:absolute;left:12px;bottom:54px;display:flex;flex-direction:column;gap:2px;font-size:11px;color:#c9d4ee"><span><span style="font:17px/1 VT323,monospace;color:#8ccfff">{{ online }}</span> crew pushing</span><span>Mars looks <span style="font:17px/1 VT323,monospace;color:#ffb37a">{{ flP.bigger }}</span> bigger than at launch</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:44px;background:#060a1c;border-top:2px solid #1b2a55">
+<div style="position:absolute;left:12px;right:12px;top:12px;height:28px">
+<span style="position:absolute;left:-2px;top:9px;width:10px;height:10px;background:#2b5a8f"></span>
+<span style="position:absolute;{{ flP.strip.rest }};background:repeating-linear-gradient(90deg,#3c5a8e 0 4px,transparent 4px 8px)"></span>
+<span style="position:absolute;{{ flP.strip.done }};background:#8ccfff;box-shadow:0 0 6px rgba(140,207,255,.6)"></span>
+<sc-for list="{{ flP.strip.ticks }}" as="t" hint-placeholder-count="4"><span style="position:absolute;{{ t.st }};width:2px;height:14px"></span></sc-for>
+<span style="position:absolute;{{ flP.strip.probe }};width:10px;height:10px;background:#eef3ff;transform:rotate(45deg);outline:2px solid #8ccfff"></span>
+<span style="position:absolute;{{ flP.strip.mars }};width:10px;height:10px;background:#c8743e"></span>
+<span style="position:absolute;{{ flP.strip.link }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flP.strip.fork }};width:2px;background:#ffb37a"></span>
+<span style="position:absolute;{{ flP.strip.up }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flP.strip.down }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flP.strip.ceres }};display:flex;align-items:center;gap:4px;font-size:10px;color:#ffb37a;white-space:nowrap"><span style="width:8px;height:8px;background:#8a8f9f"></span>Ceres</span>
+<span style="position:absolute;{{ flP.strip.vesta }};display:flex;align-items:center;gap:4px;font-size:10px;color:#ffb37a;white-space:nowrap"><span style="width:8px;height:8px;background:#9a8a78"></span>Vesta</span>
+</div>
+<span style="position:absolute;left:12px;top:2px;font-size:9px;letter-spacing:.12em;color:#a8b6d6">EARTH</span>
+<span style="position:absolute;right:12px;top:2px;font-size:9px;letter-spacing:.12em;color:#ffb37a">CREW VOTE AT MARS</span>
 </div>
 </div>
-<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:0 2px">
 <div><div style="font-size:11px;color:var(--ki-a8b6d6)">Travelled</div><div style="font:24px/1 VT323,monospace">{{ dist }} km</div></div>
 <div style="text-align:right"><div style="font-size:11px;color:var(--ki-ffb37a)">Next · Halfway</div><div style="font:24px/1 VT323,monospace;color:var(--ki-ffb37a)">{{ toNext }}</div></div>
-</div>
 </div>
 <sc-if value="{{ low }}" hint-placeholder-val="{{ false }}">
 <div data-anim style="background:linear-gradient(180deg,var(--kf-3a1e10),var(--kf-1f0f08));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;animation:osc-urgent-box 1s steps(4) infinite">
@@ -205,6 +237,11 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="display:flex;gap:16px;align-items:baseline">
 <div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per tap</span></div>
 <div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:10px 12px;display:flex;flex-direction:column;gap:8px;align-self:stretch">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">YOU'VE CLICKED</span><span style="font-size:11px;color:var(--ki-a8b6d6)">today</span></div>
+<div role="img" aria-label="{{ clicksToday }} clicks today" style="display:flex;gap:3px;align-items:center"><sc-for list="{{ odo }}" as="d" hint-placeholder-count="7"><span style="{{ d.st }}">{{ d.c }}</span></sc-for><span style="margin-left:8px;font-size:12px;line-height:1.3;color:var(--ki-c9d4ee)">{{ clicksAll }}<br><span style="color:var(--ki-a8b6d6)">all time</span></span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ki-a8b6d6)"><span>Next: <span style="color:var(--ki-ffb37a)">{{ clickGoalName }}</span> at {{ clickGoal }}</span><span style="font:15px/1 VT323,monospace">{{ clicksLeft }} to go</span></div><div style="height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ clickBar }};background:var(--kf-ffb37a)"></div></div></div>
 </div>
 <div style="font-size:12px;color:var(--ki-a8b6d6)">{{ afford }} upgrades affordable · {{ credits }} cr</div>
 </div>
@@ -254,8 +291,8 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 
 <div class="dv-opt" id="1b">
-<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Game home · desktop 1440</div>
-<div style="position:relative;width:1440px;height:1180px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 10%,var(--kf-0c1738) 10% 22%,var(--kf-0a1430) 22% 36%,var(--kf-081128) 36% 52%,var(--kf-070d20) 52% 70%,var(--kf-05091a) 70% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Game home · desktop 1440, flight view</div>
+<div style="position:relative;width:1440px;height:1480px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 10%,var(--kf-0c1738) 10% 22%,var(--kf-0a1430) 22% 36%,var(--kf-081128) 36% 52%,var(--kf-070d20) 52% 70%,var(--kf-05091a) 70% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
 <div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
 <div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
 <div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
@@ -294,24 +331,48 @@ button{font-family:'Pixelify Sans',monospace}
 <div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TO GO</div><div style="font:36px/1 VT323,monospace">{{ toGo }} km</div></div>
 </div>
 </div>
-<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:16px 20px 14px">
-<div style="position:relative;height:86px">
-<div data-anim role="img" aria-label="Earth" style="position:absolute;left:0;top:4px;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/earth-sheet.png" alt="" style="display:block;width:800%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 4s steps(8) infinite"></div>
-<img data-anim src="assets/moon.png" alt="Moon" style="position:absolute;left:58px;top:0;width:16px;height:16px;image-rendering:pixelated;animation:osc-orbit 12s steps(12) infinite">
-<div data-anim role="img" aria-label="Mars" style="position:absolute;right:0;top:4px;width:64px;height:64px;overflow:hidden"><img data-anim src="assets/mars-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet 3.2s steps(4) infinite"></div>
-<div style="position:absolute;left:76px;right:70px;top:0;bottom:0">
-<div style="position:absolute;left:0;right:0;top:35px;height:2px;background:repeating-linear-gradient(90deg,var(--kf-3c5a8e) 0 6px,transparent 6px 12px)"></div>
-<div style="position:absolute;left:0;top:34px;height:4px;width:{{ pct }};background:var(--kf-8ccfff);box-shadow:0 0 10px rgba(140,207,255,.6);transition:width 1s linear"></div>
-<div style="position:absolute;left:4.2%;top:28px;width:2px;height:16px;background:var(--kf-8ccfff)"></div>
-<div style="position:absolute;left:4.2%;top:52px;font-size:12px;color:var(--ki-c9d4ee);white-space:nowrap">Earth–Moon portrait<div style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">20M km</div></div>
-<div style="position:absolute;left:25%;top:28px;width:2px;height:16px;background:var(--kf-8ccfff)"></div>
-<div style="position:absolute;left:25%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-c9d4ee);white-space:nowrap">Mid-course burn<div style="font:16px VT323,monospace;color:var(--ki-a8b6d6)">120M km</div></div>
-<div data-anim style="position:absolute;left:50%;top:24px;width:4px;height:24px;background:var(--kf-ffb37a);box-shadow:0 0 10px rgba(255,179,122,.7);animation:osc-flicker 1.4s steps(2) infinite"></div>
-<div style="position:absolute;left:50%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-ffb37a);white-space:nowrap">Next · Halfway<div style="font:16px VT323,monospace">in {{ toNext }}</div></div>
-<div style="position:absolute;left:89.6%;top:30px;width:2px;height:12px;background:var(--kf-3c5a8e)"></div>
-<div style="position:absolute;left:89.6%;top:52px;transform:translateX(-50%);text-align:center;font-size:12px;color:var(--ki-a8b6d6);white-space:nowrap">Phobos in view<div style="font:16px VT323,monospace">430M km</div></div>
-<div style="position:absolute;left:{{ pct }};top:36px;transform:translate(-50%,-50%);transition:left 1s linear"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet  .6s steps(4) infinite"></div></div>
+<div role="img" aria-label="Flight view: the probe is {{ pct }} of the way to Mars, moving at {{ speed }} km per second; after Mars the crew votes Ceres or Vesta" style="position:relative;height:344px;overflow:hidden;background:linear-gradient(90deg,#0e1a40,#081128 45%,#05091a 75%,#140b14);border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 60s steps(64) infinite"></div>
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-scroll-x 24s steps(64) infinite"></div>
+<sc-if value="{{ flD.engineOn }}" hint-placeholder-val="{{ true }}"><div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flD.streaks }});background-size:256px 128px;image-rendering:pixelated;opacity:.55;animation:osc-scroll-x 3s steps(32) infinite"></div>
+<div data-anim style="position:absolute;inset:0 0 44px 0;background-image:url({{ flD.streaks }});background-size:256px 128px;background-position:64px 32px;image-rendering:pixelated;opacity:{{ flD.boostOp }};animation:osc-scroll-x 1.2s steps(32) infinite"></div></sc-if>
+<img data-anim src="{{ flD.comet }}" alt="" style="position:absolute;{{ flD.cometSt }};width:36px;height:10px;max-width:none;image-rendering:pixelated;opacity:0;animation:osc-comet 19s steps(40) infinite 4s">
+<sc-for list="{{ flD.far }}" as="p" hint-placeholder-count="2"><img src="{{ p.img }}" alt="" style="position:absolute;{{ p.st }};image-rendering:pixelated;opacity:.8;filter:drop-shadow(0 0 4px rgba(255,179,122,.5))"><span style="position:absolute;{{ p.lab }};transform:translateX(-50%);font-size:10px;color:#8b98ba;white-space:nowrap">{{ p.label }}</span></sc-for>
+<span style="position:absolute;{{ flD.marsGlow }};background:radial-gradient(circle,rgba(255,140,80,.3),transparent 65%)"></span>
+<img src="{{ flD.mars }}" alt="" style="position:absolute;{{ flD.marsSt }};max-width:none;image-rendering:pixelated">
+<sc-if value="{{ flD.phobos }}" hint-placeholder-val="{{ false }}"><span data-anim style="position:absolute;{{ flD.phobosSt }};width:6px;height:4px;background:#8a8f9f;box-shadow:inset -2px -1px 0 #41444f;animation:osc-orbit 6s steps(12) infinite"></span></sc-if>
+<img src="{{ flD.earth }}" alt="" style="position:absolute;{{ flD.earthSt }};max-width:none;image-rendering:pixelated;opacity:.9">
+<sc-if value="{{ flD.beaconOn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;{{ flD.beacon }};display:flex;flex-direction:column;align-items:center;gap:2px"><span data-anim style="width:6px;height:6px;background:#ffb37a;box-shadow:0 0 10px rgba(255,179,122,.9);animation:osc-blink 1s steps(1) infinite"></span><span style="width:2px;height:10px;background:#ffb37a"></span><span style="padding:1px 5px;font-size:10px;letter-spacing:.08em;color:#ffb37a;border:2px solid #ffb37a;background:#060a1c;white-space:nowrap">NEXT · {{ flD.beaconLab }}</span></div></sc-if>
+<sc-if value="{{ flD.engineOn }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ flD.sparks }}" as="k" hint-placeholder-count="6"><span data-anim style="position:absolute;left:0;width:3px;height:2px;{{ k.st }};opacity:0;animation:osc-crew 2.2s steps(14) infinite"></span></sc-for>
+<div data-anim style="position:absolute;{{ flD.flameSt }};overflow:hidden;z-index:2"><img data-anim src="{{ flD.flame }}" alt="" style="display:block;width:300%;height:100%;max-width:none;image-rendering:pixelated;animation:osc-sheet .24s steps(3) infinite"></div></sc-if>
+<div style="position:absolute;{{ flD.probe }};z-index:3;{{ flD.probeFx }}"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.75));animation:osc-bob 1.2s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .4s steps(4) infinite"></div></div>
+<sc-if value="{{ flD.boost }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ flD.popSt }};z-index:4;font:22px/1 VT323,monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">+{{ tap }} km</span></sc-if>
+<div style="position:absolute;left:0;right:0;top:0;height:34px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 12px;background:linear-gradient(180deg,rgba(4,6,15,.85),rgba(4,6,15,0))">
+<span style="display:flex;align-items:baseline;gap:8px;font-size:10px;letter-spacing:.12em;color:#a8b6d6">FLIGHT VIEW · OSC-1<span style="font:26px/1 VT323,monospace;letter-spacing:0;color:#8ccfff">{{ flD.pctShow }}</span></span>
+<span style="display:flex;align-items:baseline;gap:6px;font:22px/1 VT323,monospace;color:#eef3ff"><span style="color:#ffb37a;opacity:{{ flD.chevOp }}">›››</span>{{ speed }} km/s<span style="margin-left:14px;font-size:10px;font-family:Pixelify Sans,monospace;letter-spacing:.12em;color:#a8b6d6">ETA</span> {{ arrival }}</span>
 </div>
+<sc-if value="{{ flD.previewing }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:50%;bottom:58px;transform:translateX(-50%);padding:1px 6px;font-size:10px;letter-spacing:.12em;color:#ffb37a;border:2px dashed #ffb37a;background:#060a1c">PREVIEW · SET IN TWEAKS</span></sc-if>
+<sc-if value="{{ flD.safe }}" hint-placeholder-val="{{ false }}"><div data-anim style="position:absolute;left:50%;top:40px;transform:translateX(-50%);z-index:4;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 10px;border:2px solid #ffb37a;outline:2px solid #04060f;background:#1f0f08;font-size:11px;letter-spacing:.12em;color:#ffb37a;white-space:nowrap;animation:osc-urgent-box 1.4s steps(4) infinite">SAFE MODE · ENGINE OFF<span style="letter-spacing:0;color:#ffd9a8">Drifting. Ping to wake the probe.</span></div></sc-if>
+<sc-if value="{{ flD.low }}" hint-placeholder-val="{{ false }}"><div data-anim style="position:absolute;left:50%;top:40px;transform:translateX(-50%);z-index:4;padding:2px 8px;border:2px solid #ffb37a;background:#1f0f08;font-size:11px;letter-spacing:.12em;color:#ffb37a;white-space:nowrap;animation:osc-blink 1s steps(1) infinite">SIGNAL <span style="font:18px/1 VT323,monospace;letter-spacing:0">{{ signal }}</span> · PING NOW</div></sc-if>
+<sc-if value="{{ flD.burn }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;left:50%;top:40px;transform:translateX(-50%);z-index:4;padding:2px 8px;border:2px solid #ffd27a;outline:2px solid #4a2c0a;background:#2a1a06;font-size:11px;letter-spacing:.12em;color:#ffd27a;white-space:nowrap">LANDING BURN <span style="font:18px/1 VT323,monospace;letter-spacing:0">{{ burnLeft }}</span> · {{ burnPct }}</div></sc-if>
+<div style="position:absolute;left:12px;bottom:54px;display:flex;flex-direction:column;gap:2px;font-size:13px;color:#c9d4ee"><span><span style="font:20px/1 VT323,monospace;color:#8ccfff">{{ online }}</span> crew pushing</span><span>Mars looks <span style="font:20px/1 VT323,monospace;color:#ffb37a">{{ flD.bigger }}</span> bigger than at launch</span></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:44px;background:#060a1c;border-top:2px solid #1b2a55">
+<div style="position:absolute;left:12px;right:12px;top:12px;height:28px">
+<span style="position:absolute;left:-2px;top:9px;width:10px;height:10px;background:#2b5a8f"></span>
+<span style="position:absolute;{{ flD.strip.rest }};background:repeating-linear-gradient(90deg,#3c5a8e 0 4px,transparent 4px 8px)"></span>
+<span style="position:absolute;{{ flD.strip.done }};background:#8ccfff;box-shadow:0 0 6px rgba(140,207,255,.6)"></span>
+<sc-for list="{{ flD.strip.ticks }}" as="t" hint-placeholder-count="4"><span style="position:absolute;{{ t.st }};width:2px;height:14px"></span></sc-for>
+<span style="position:absolute;{{ flD.strip.probe }};width:10px;height:10px;background:#eef3ff;transform:rotate(45deg);outline:2px solid #8ccfff"></span>
+<span style="position:absolute;{{ flD.strip.mars }};width:10px;height:10px;background:#c8743e"></span>
+<span style="position:absolute;{{ flD.strip.link }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flD.strip.fork }};width:2px;background:#ffb37a"></span>
+<span style="position:absolute;{{ flD.strip.up }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flD.strip.down }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
+<span style="position:absolute;{{ flD.strip.ceres }};display:flex;align-items:center;gap:4px;font-size:10px;color:#ffb37a;white-space:nowrap"><span style="width:8px;height:8px;background:#8a8f9f"></span>Ceres</span>
+<span style="position:absolute;{{ flD.strip.vesta }};display:flex;align-items:center;gap:4px;font-size:10px;color:#ffb37a;white-space:nowrap"><span style="width:8px;height:8px;background:#9a8a78"></span>Vesta</span>
+</div>
+<span style="position:absolute;left:12px;top:2px;font-size:9px;letter-spacing:.12em;color:#a8b6d6">EARTH</span>
+<span style="position:absolute;right:12px;top:2px;font-size:9px;letter-spacing:.12em;color:#ffb37a">CREW VOTE AT MARS</span>
 </div>
 </div>
 <div style="display:grid;grid-template-columns:360px minmax(0,1fr) 360px;gap:32px;align-items:start;padding-top:6px">
@@ -339,6 +400,11 @@ button{font-family:'Pixelify Sans',monospace}
 <div style="display:flex;gap:24px;align-items:baseline">
 <div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per click</span></div>
 <div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto-thrust</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px 14px;display:flex;flex-direction:column;gap:8px;width:100%;max-width:380px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">YOU'VE CLICKED</span><span style="font-size:11px;color:var(--ki-a8b6d6)">today</span></div>
+<div role="img" aria-label="{{ clicksToday }} clicks today" style="display:flex;gap:3px;align-items:center"><sc-for list="{{ odo }}" as="d" hint-placeholder-count="7"><span style="{{ d.st }}">{{ d.c }}</span></sc-for><span style="margin-left:8px;font-size:12px;line-height:1.3;color:var(--ki-c9d4ee)">{{ clicksAll }}<br><span style="color:var(--ki-a8b6d6)">all time</span></span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ki-a8b6d6)"><span>Next: <span style="color:var(--ki-ffb37a)">{{ clickGoalName }}</span> at {{ clickGoal }}</span><span style="font:15px/1 VT323,monospace">{{ clicksLeft }} to go</span></div><div style="height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ clickBar }};background:var(--kf-ffb37a)"></div></div></div>
 </div>
 <button style="min-height:40px;padding:0 16px;display:flex;align-items:center;gap:8px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="background:var(--kf-13285a)"><img src="{{ ic.bolt.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">Upgrades · {{ afford }} affordable · {{ credits }} cr</button>
 </div>
@@ -933,7 +999,7 @@ button{font-family:'Pixelify Sans',monospace}
 <div class="dv-opt" id="1m">
 <div class="dv-olabel"><a class="dv-oid" href="#1m">1m</a>Campaign map · star chart · phone (tap any stop, vote works, Crew tech)</div>
 <div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5);background:var(--kf-02040b)">
-<div ref="{{ mapPRef }}" style="position:absolute;left:0;right:0;top:108px;bottom:72px;overflow-y:auto;overflow-x:hidden;scrollbar-width:none">
+<div ref="{{ mapPRef }}" class="osc-noscroll" onScroll="{{ mapScrollP }}" style="position:absolute;left:0;right:0;top:108px;bottom:72px;overflow-y:auto;overflow-x:hidden">
 <div style="position:relative;width:390px;height:{{ mapP.h }}px;overflow:hidden;background:linear-gradient(0deg,var(--kf-0e1a40) 0,var(--kf-0a1430) 12%,var(--kf-081128) 30%,var(--kf-070d20) 50%,var(--kf-05091a) 72%,var(--kf-02040b) 100%)">
 <div class="osc-stars" style="position:absolute;inset:0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;pointer-events:none"></div>
 <div class="osc-stars" style="position:absolute;left:0;right:0;top:0;height:1000px;background-image:url({{ sp.stars2 }}),url({{ sp.stars1 }});background-size:256px 256px,128px 128px;image-rendering:pixelated;-webkit-mask-image:linear-gradient(180deg,#000 25%,transparent);mask-image:linear-gradient(180deg,#000 25%,transparent);pointer-events:none"></div>
@@ -1004,6 +1070,7 @@ button{font-family:'Pixelify Sans',monospace}
 </div></sc-if>
 </div>
 </sc-if>
+<div aria-hidden="true" style="position:absolute;right:3px;top:166px;bottom:80px;width:8px;z-index:3;background:repeating-linear-gradient(180deg,var(--kf-0a1636) 0 6px,var(--kf-060d24) 6px 8px);border:2px solid var(--kf-1b2a55)"><span style="position:absolute;left:0;right:0;top:{{ thumbP.t }};height:{{ thumbP.h }};background:var(--kf-8ccfff);box-shadow:inset 1px 1px 0 var(--kf-d6ecff),inset -1px -1px 0 var(--kf-2b5a8f)"></span></div>
 <button onClick="{{ openTech }}" style="position:absolute;right:12px;top:118px;z-index:4;min-height:40px;padding:0 10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ ic.bolt.b }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Crew tech · {{ crewTechCount }}</button>
 <sc-if value="{{ crewTechP }}" hint-placeholder-val="{{ false }}">
 <div style="position:absolute;left:12px;right:12px;bottom:84px;z-index:5;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a),0 12px 30px rgba(0,0,0,.55);padding:12px;display:flex;flex-direction:column;gap:10px">
@@ -1023,7 +1090,7 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 
 <div class="dv-opt" id="1m-desktop">
-<div class="dv-olabel"><a class="dv-oid" href="#1m-desktop">1m</a>Campaign map · desktop 1440 (runs left to right, side panel)</div>
+<div class="dv-olabel"><a class="dv-oid" href="#1m-desktop">1m</a>Campaign map · desktop 1440 (full width, drag or use the pixel scrollbar)</div>
 <div style="position:relative;overflow:hidden;color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5);width:1440px;height:1150px;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%)">
 <div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
 <div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
@@ -1047,11 +1114,10 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 <button style="min-height:44px;padding:0 16px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ ic.share.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">Share the map</button>
 </div>
-<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start">
-<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-<div style="position:relative;height:640px;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);overflow:hidden">
-<div ref="{{ mapDRef }}" style="position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin">
-<div style="position:relative;width:{{ mapD.w }}px;height:636px;overflow:hidden;background:linear-gradient(90deg,var(--kf-0e1a40) 0,var(--kf-0a1430) 12%,var(--kf-081128) 30%,var(--kf-070d20) 50%,var(--kf-05091a) 72%,var(--kf-02040b) 100%)">
+<div style="position:relative;margin:0 -48px;height:640px">
+<div ref="{{ mapDRef }}" class="osc-noscroll" onScroll="{{ mapScrollD }}" onPointerDown="{{ panStart }}" onPointerMove="{{ panMove }}" onPointerUp="{{ panEnd }}" onPointerLeave="{{ panEnd }}" style="position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent,#000 72px,#000 calc(100% - 72px),transparent);mask-image:linear-gradient(90deg,transparent,#000 72px,#000 calc(100% - 72px),transparent)">
+<div style="position:relative;width:calc({{ mapD.w }}px + 460px);height:640px">
+<div style="position:absolute;left:48px;top:2px;width:{{ mapD.w }}px;height:636px">
 <div class="osc-stars" style="position:absolute;inset:0;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;pointer-events:none"></div>
 <div class="osc-stars" style="position:absolute;top:0;bottom:0;right:0;width:1000px;background-image:url({{ sp.stars2 }}),url({{ sp.stars1 }});background-size:256px 256px,128px 128px;image-rendering:pixelated;-webkit-mask-image:linear-gradient(270deg,#000 25%,transparent);mask-image:linear-gradient(270deg,#000 25%,transparent);pointer-events:none"></div>
 <div style="position:absolute;{{ mapD.belt }};background:url({{ mp.beltV }}) repeat-y center/26px 256px;image-rendering:pixelated;opacity:.8"></div>
@@ -1082,13 +1148,7 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 </div>
 </div>
-<div style="display:flex;flex-wrap:wrap;gap:22px;font-size:12px;color:var(--ki-a8b6d6)"><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:var(--kf-8ccfff);box-shadow:0 0 6px rgba(140,207,255,.55)"></span>Visited</span><span style="display:flex;align-items:center;gap:8px"><img src="{{ mp.ring }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Probe now</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-ffb37a) 0 6px,transparent 6px 12px)"></span>Crew vote open</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-2b4c86) 0 6px,transparent 6px 12px)"></span>Future</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-4a5170) 0 3px,transparent 3px 8px)"></span>Not taken</span></div>
-<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:14px 16px;display:flex;flex-direction:column;gap:10px">
-<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;color:var(--ki-8ccfff)"><img src="{{ ic.bolt.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">CREW TECH · UNLOCKED SO FAR</span><span style="font-size:12px;color:var(--ki-a8b6d6)">Every stop adds one. Arrive faster for a stronger version.</span></div>
-<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><sc-for list="{{ crewTech }}" as="t" hint-placeholder-count="2"><div style="display:flex;gap:10px;align-items:center;padding:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><img src="{{ t.medalImg }}" alt="{{ t.medal }} medal" style="width:20px;height:30px;image-rendering:pixelated;flex:none"><div style="min-width:0;flex:1"><div style="font-size:14px">{{ t.name }}</div><div style="font-size:11px;color:var(--ki-a8b6d6)">{{ t.where }}</div></div><span style="font:19px/1.1 VT323,monospace;color:var(--ki-8ccfff);text-align:right">{{ t.fx }}</span></div></sc-for></div>
-</div>
-</div>
-<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:14px;min-height:640px">
+<div class="osc-noscroll" style="position:absolute;right:48px;top:0;width:340px;max-height:640px;overflow-y:auto;background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a),0 16px 40px rgba(0,0,0,.45);padding:18px;display:flex;flex-direction:column;gap:14px">
 <sc-if value="{{ selD.open }}" hint-placeholder-val="{{ true }}">
 <div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:11px;letter-spacing:.12em;color:{{ selD.kCol }}">{{ selD.kicker }}</div><div style="font:600 30px/1.05 'Pixelify Sans',monospace">{{ selD.name }}</div></div>
 <div style="height:150px;display:grid;place-items:center;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><img src="{{ selD.img }}" alt="{{ selD.name }}" style="width:{{ selD.w }}px;height:{{ selD.h }}px;max-width:none;image-rendering:pixelated"></div>
@@ -1117,6 +1177,19 @@ button{font-family:'Pixelify Sans',monospace}
 </sc-if>
 <sc-if value="{{ selD.closed }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;line-height:1.5;color:var(--ki-a8b6d6)">Pick a stop on the map to see its probe, the distance and a fact.</div></sc-if>
 </div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;margin-right:364px">
+<button onClick="{{ mapLeft }}" aria-label="Scroll the map back towards Earth" style="width:32px;height:26px;flex:none;display:grid;place-items:center;padding:0;background:var(--kf-0a1636);border:2px solid var(--kf-3c5a8e);outline:2px solid var(--kf-04060f);box-shadow:0 3px 0 var(--kf-04060f);cursor:pointer" style-hover="border-color:var(--kf-8ccfff)" style-active="transform:translateY(2px);box-shadow:0 1px 0 var(--kf-04060f)"><img src="{{ ic.left.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></button>
+<button onClick="{{ mapTrack }}" aria-label="Jump to this part of the map" style="position:relative;flex:1;height:26px;padding:0;background:repeating-linear-gradient(90deg,var(--kf-0a1636) 0 6px,var(--kf-060d24) 6px 8px);border:2px solid var(--kf-3c5a8e);outline:2px solid var(--kf-04060f);cursor:pointer">
+<span style="position:absolute;top:2px;bottom:2px;left:{{ thumbD.l }};width:{{ thumbD.w }};background:var(--kf-8ccfff);box-shadow:inset 2px 2px 0 var(--kf-d6ecff),inset -2px -2px 0 var(--kf-2b5a8f);display:flex;align-items:center;justify-content:center;gap:3px"><span style="width:2px;height:10px;background:var(--kf-2b5a8f)"></span><span style="width:2px;height:10px;background:var(--kf-2b5a8f)"></span><span style="width:2px;height:10px;background:var(--kf-2b5a8f)"></span></span>
+</button>
+<button onClick="{{ mapRight }}" aria-label="Scroll the map out towards the stars" style="width:32px;height:26px;flex:none;display:grid;place-items:center;padding:0;background:var(--kf-0a1636);border:2px solid var(--kf-3c5a8e);outline:2px solid var(--kf-04060f);box-shadow:0 3px 0 var(--kf-04060f);cursor:pointer" style-hover="border-color:var(--kf-8ccfff)" style-active="transform:translateY(2px);box-shadow:0 1px 0 var(--kf-04060f)"><img src="{{ ic.right.b }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"></button>
+<span style="min-width:150px;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">VIEWING<span style="display:block;font:18px/1 VT323,monospace;letter-spacing:0;color:var(--ki-8ccfff)">{{ thumbD.region }}</span></span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:22px;font-size:12px;color:var(--ki-a8b6d6)"><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:var(--kf-8ccfff);box-shadow:0 0 6px rgba(140,207,255,.55)"></span>Visited</span><span style="display:flex;align-items:center;gap:8px"><img src="{{ mp.ring }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Probe now</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-ffb37a) 0 6px,transparent 6px 12px)"></span>Crew vote open</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-2b4c86) 0 6px,transparent 6px 12px)"></span>Future</span><span style="display:flex;align-items:center;gap:8px"><span style="width:28px;height:4px;background:repeating-linear-gradient(90deg,var(--kf-4a5170) 0 3px,transparent 3px 8px)"></span>Not taken</span></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;color:var(--ki-8ccfff)"><img src="{{ ic.bolt.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">CREW TECH · UNLOCKED SO FAR</span><span style="font-size:12px;color:var(--ki-a8b6d6)">Every stop adds one. Arrive faster for a stronger version.</span></div>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px"><sc-for list="{{ crewTech }}" as="t" hint-placeholder-count="2"><div style="display:flex;gap:10px;align-items:center;padding:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><img src="{{ t.medalImg }}" alt="{{ t.medal }} medal" style="width:20px;height:30px;image-rendering:pixelated;flex:none"><div style="min-width:0;flex:1"><div style="font-size:14px">{{ t.name }}</div><div style="font-size:11px;color:var(--ki-a8b6d6)">{{ t.where }}</div></div><span style="font:19px/1.1 VT323,monospace;color:var(--ki-8ccfff);text-align:right">{{ t.fx }}</span></div></sc-for></div>
 </div>
 </div>
 </div>
@@ -1299,10 +1372,305 @@ button{font-family:'Pixelify Sans',monospace}
 </div>
 <p class="dv-next">Try next: "draw the placeholder probes" · "show the passport after three more legs" · "a Mars-dust sky version of 1a"</p>
 </section>
+<section class="dv-turn" id="t2" data-theme="{{ theme }}">
+<div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">v2 ideas · A: curved transfer orbit (2a, 2b). Idea B, the flight view, is now the game home (1a, 1b)</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="2a">
+<div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>v2 idea A · game home phone: curved transfer orbit, planets ahead, your clicks (tap THRUST)</div>
+<div style="position:relative;width:390px;height:844px;border-radius:36px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 12%,var(--kf-0c1738) 12% 24%,var(--kf-0a1430) 24% 38%,var(--kf-081128) 38% 54%,var(--kf-070d20) 54% 72%,var(--kf-05091a) 72% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1100px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:absolute;inset:0 0 72px 0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:18px 16px 28px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font:600 17px 'Pixelify Sans',monospace;letter-spacing:.02em">OneSmallClick</div>
+<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ki-a8b6d6)">Probe OSC-1 · Mission day 12</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+<div style="display:flex;align-items:center;gap:6px;padding:3px 8px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86)">
+<span data-anim style="width:6px;height:6px;background:var(--kf-8ccfff);animation:osc-blink 1.6s steps(1) infinite"></span>
+<span style="font:20px/1 VT323,monospace">{{ online }}</span>
+<span style="font-size:12px;color:var(--ki-a8b6d6)">here now</span>
+</div>
+<sc-if value="{{ handful }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:var(--ki-a8b6d6)">+ 48,206 thrusters idling</div></sc-if>
+</div>
+</div>
+<sc-if value="{{ burnHome }}" hint-placeholder-val="{{ false }}"><div data-anim style="background:linear-gradient(180deg,var(--kf-2a170b),var(--kf-160c06));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;flex-direction:column;gap:8px;animation:osc-urgent-box 1.4s steps(4) infinite">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">FINAL HOUR · LANDING BURN</span><span style="font:28px/1 VT323,monospace;color:var(--ki-ffd9a8)">{{ burnLeft }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:2px;padding:3px;background:var(--kf-04060f);border:2px solid var(--kf-5a3418)"><sc-for list="{{ burnSegs }}" as="b" hint-placeholder-count="20"><span style="height:10px;background:{{ b.bg }}"></span></sc-for></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:13px;color:var(--ki-ffd9a8)">{{ burnKm }} of 2,000,000 km burned</span><a href="#1o" style="min-height:40px;padding:0 12px;text-decoration:none;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:var(--kf-0a1636);border:2px solid var(--kf-ffb37a);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer">Join the burn</a></div>
+</div></sc-if>
+<div style="display:flex;flex-direction:column;gap:2px;padding:4px 2px 0">
+<div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ki-a8b6d6)">Live arrival estimate</div>
+<div style="font-size:16px;color:var(--ki-c9d4ee)">At this pace we arrive</div>
+<div style="font:48px/0.95 VT323,monospace;color:var(--ki-eef3ff);text-shadow:3px 3px 0 var(--kf-1c3a6e),0 0 18px rgba(140,207,255,.35)">{{ arrival }}</div>
+<div style="display:flex;align-items:center;gap:6px;margin-top:4px;font-size:13px;color:var(--ki-8ccfff)"><img src="{{ ic.up.b }}" alt="" style="width:12px;height:12px;image-rendering:pixelated">Your taps today: {{ saved }} sooner</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:8px 10px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86);">
+<div style="display:flex;align-items:center;gap:8px;font-size:13px;line-height:1.35;color:var(--ki-c9d4ee)"><img src="{{ medalNow }}" alt="{{ paceName }} medal" style="flex:none;width:20px;height:30px;image-rendering:pixelated"><span>{{ medalTarget }} · <span style="color:{{ paceInk }}">on pace for {{ paceName }}</span></span></div>
+<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ paceBar }};background:{{ paceFill }}"></div></div><span style="font:16px/1 VT323,monospace;color:var(--ki-a8b6d6);white-space:nowrap">{{ paceGap }}</span></div>
+</div>
+</div>
+<div role="img" aria-label="Transfer orbit from Earth to Mars. The probe is {{ pct }} of the way; the next crew vote is Ceres or Vesta" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);position:relative;height:236px;padding:0;overflow:hidden">
+<div style="position:absolute;left:0;top:0;width:354px;height:236px">
+<img src="{{ orbP.rings }}" alt="" style="position:absolute;left:0;top:0;width:354px;height:236px;max-width:none;image-rendering:pixelated">
+<div style="position:absolute;right:6px;bottom:6px;padding:2px 6px;font-size:10px;letter-spacing:.08em;color:var(--ki-8b98ba);border:2px solid var(--kf-1b2a55);background:var(--kf-060a1c)">Jupiter ›</div>
+<sc-for list="{{ orbP.branch }}" as="b" hint-placeholder-count="30"><span style="position:absolute;{{ b.st }};width:2px;height:2px;background:var(--kf-ffb37a);opacity:.55"></span></sc-for>
+<img src="{{ rIcons.ceres }}" alt="" style="position:absolute;{{ orbP.ceres }};width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,179,122,.6))">
+<img src="{{ orbVesta }}" alt="" style="position:absolute;{{ orbP.vesta }};width:16px;height:14px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,179,122,.6))">
+<div style="position:absolute;{{ orbP.voteLab }};padding:2px 6px;font-size:10px;letter-spacing:.08em;line-height:1.3;color:var(--ki-ffb37a);border:2px dashed var(--kf-ffb37a);background:var(--kf-060a1c);white-space:nowrap">VOTE AT MARS<br>Ceres or Vesta</div>
+<sc-for list="{{ orbP.dots }}" as="d" hint-placeholder-count="60"><span style="position:absolute;{{ d.st }}"></span></sc-for>
+<sc-for list="{{ orbP.flags }}" as="m" hint-placeholder-count="4"><span style="position:absolute;width:6px;height:6px;{{ m.st }}"></span><sc-if value="{{ m.show }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ m.lab }};transform:translateX(-50%);text-align:center;font-size:11px;color:{{ m.col }};white-space:nowrap">{{ m.label }}<span style="display:block;font:14px/1 VT323,monospace">{{ m.km }}</span></span></sc-if></sc-for>
+<img data-anim src="{{ orbSun }}" alt="" style="position:absolute;{{ orbP.sun }};width:40px;height:40px;image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(255,210,122,.7))">
+<img src="{{ sp.earthS }}" alt="" style="position:absolute;{{ orbP.earth }};width:32px;height:32px;image-rendering:pixelated">
+<img src="{{ rIcons.mars }}" alt="" style="position:absolute;{{ orbP.mars }};width:32px;height:32px;image-rendering:pixelated">
+<span style="position:absolute;{{ orbP.earthLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">EARTH</span>
+<span style="position:absolute;{{ orbP.marsLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">MARS</span>
+<span style="position:absolute;{{ orbP.sunLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-ffd27a)">SUN</span>
+<div style="position:absolute;{{ orbP.probe }};transform:translate(-50%,-50%);z-index:2"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 4px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .6s steps(4) infinite"></div></div>
+<div style="position:absolute;left:10px;top:8px;font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TRANSFER ORBIT · NOT TO SCALE<span style="display:block;font:22px/1 VT323,monospace;letter-spacing:0;color:var(--ki-8ccfff)">{{ pct }}</span></div>
+</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:8px;padding:0 2px">
+<div><div style="font-size:11px;color:var(--ki-a8b6d6)">Travelled</div><div style="font:24px/1 VT323,monospace">{{ dist }} km</div></div>
+<div style="text-align:right"><div style="font-size:11px;color:var(--ki-ffb37a)">Next · Halfway</div><div style="font:24px/1 VT323,monospace;color:var(--ki-ffb37a)">{{ toNext }}</div></div>
+</div>
+<sc-if value="{{ low }}" hint-placeholder-val="{{ false }}">
+<div data-anim style="background:linear-gradient(180deg,var(--kf-3a1e10),var(--kf-1f0f08));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;animation:osc-urgent-box 1s steps(4) infinite">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">SIGNAL FADING · PING NOW</div>
+<div data-anim style="font:44px/0.9 VT323,monospace;animation:osc-urgent 1s steps(4) infinite">{{ signal }}</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ki-ffd9a8)"><img src="{{ ic.star.o }}" alt="" style="width:11px;height:11px;image-rendering:pixelated">Signal Keeper III · 21 days</div>
+</div>
+<button onClick="{{ ping }}" style="min-width:96px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:var(--kf-1f0f08);border:2px solid var(--kf-ffb37a);box-shadow:0 4px 0 var(--kf-8a4620);cursor:pointer" style-hover="background:var(--kf-3a1e10)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-8a4620)"><img src="{{ ic.signal.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabel }}</button>
+</div>
+</sc-if>
+<sc-if value="{{ notLow }}" hint-placeholder-val="{{ true }}">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">KEEP THE SIGNAL ALIVE</div>
+<div style="font:44px/0.9 VT323,monospace;text-shadow:3px 3px 0 var(--kf-1c3a6e)">{{ signal }}</div>
+<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ki-ffd9a8)"><img src="{{ ic.star.o }}" alt="" style="width:11px;height:11px;image-rendering:pixelated">Signal Keeper III · 21 days</div>
+</div>
+<button onClick="{{ ping }}" disabled="{{ pinged }}" style="min-width:96px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ pingOp }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ pingIcon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabel }}</button>
+</div>
+</sc-if>
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-top:6px">
+<div style="position:relative;width:216px;height:216px;display:grid;place-items:center">
+<div data-anim style="position:absolute;inset:0;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:rgba(140,207,255,.12);animation:osc-breathe 2.8s steps(5) infinite"></div>
+<button onClick="{{ thrust }}" aria-label="Thrust" style="position:relative;width:184px;height:184px;border:0;padding:0;background:#b9e2ff;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);cursor:pointer;transition:transform 80ms steps(2)" style-active="transform:translateY(4px) scale(.96)">
+<span style="position:absolute;inset:4px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:#04060f"></span>
+<span style="position:absolute;inset:8px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:radial-gradient(circle at 50% 28%,#4a8fe0 0 16%,#3474c4 16% 32%,#25599f 32% 50%,#1a427c 50% 68%,#11305c 68% 84%,#0c2448 84%)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px">
+<img src="{{ icD.up.w }}" alt="" style="width:27px;height:27px;image-rendering:pixelated">
+<span style="font:600 24px 'Pixelify Sans',monospace;letter-spacing:.16em;color:#eef3ff;text-shadow:2px 2px 0 #0c2448">THRUST</span>
+<span style="font-size:12px;color:#d6ecff">tap to push</span>
+</span>
+</button>
+</div>
+<div style="display:flex;gap:16px;align-items:baseline">
+<div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per tap</span></div>
+<div style="font:24px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:12px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:10px 12px;display:flex;flex-direction:column;gap:8px;align-self:stretch">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">YOU'VE CLICKED</span><span style="font-size:11px;color:var(--ki-a8b6d6)">today</span></div>
+<div role="img" aria-label="{{ clicksToday }} clicks today" style="display:flex;gap:3px;align-items:center"><sc-for list="{{ odo }}" as="d" hint-placeholder-count="7"><span style="{{ d.st }}">{{ d.c }}</span></sc-for><span style="margin-left:8px;font-size:12px;line-height:1.3;color:var(--ki-c9d4ee)">{{ clicksAll }}<br><span style="color:var(--ki-a8b6d6)">all time</span></span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ki-a8b6d6)"><span>Next: <span style="color:var(--ki-ffb37a)">{{ clickGoalName }}</span> at {{ clickGoal }}</span><span style="font:15px/1 VT323,monospace">{{ clicksLeft }} to go</span></div><div style="height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ clickBar }};background:var(--kf-ffb37a)"></div></div></div>
+</div>
+<div style="font-size:12px;color:var(--ki-a8b6d6)">{{ afford }} upgrades affordable · {{ credits }} cr</div>
+</div>
+<div style="height:24px"></div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TODAY'S CREW VOTE</span><span style="font:18px VT323,monospace;color:var(--ki-a8b6d6)">closes {{ voteLeft }}</span></div>
+<div style="font:500 18px 'Pixelify Sans',monospace">Which way today?</div>
+<sc-for list="{{ voteOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:46px;padding:6px 10px;text-align:left;font:14px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:{{ o.bar }};border:2px solid {{ o.border }};cursor:pointer" style-hover="border-color:var(--kf-8ccfff)"><span style="display:flex;flex-direction:column;gap:1px"><span>{{ o.label }}</span><span style="font-size:10px;letter-spacing:.12em;color:var(--ki-ffb37a)">{{ o.mark }}</span></span><span style="font:24px VT323,monospace">{{ o.pct }}</span></button>
+</sc-for>
+<div style="font-size:11px;color:var(--ki-a8b6d6)">{{ voteTotal }} votes · result goes in the mission log</div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ rIcons.mars }}" alt="" style="width:32px;height:32px;image-rendering:pixelated">DESTINATION FILE · MARS</span><span style="font:18px/1 VT323,monospace;color:var(--ki-ffb37a);white-space:nowrap">Fact 12 of 30</span></div>
+<div style="font-size:15px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ factToday }}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:11px;color:var(--ki-a8b6d6)">Next fact at 00:00 UTC · <span style="font:15px VT323,monospace">{{ voteLeft }}</span></span><button onClick="{{ openShareC }}" style="min-height:40px;padding:0 12px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ ic.share.b }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Share fact</button></div>
+</div>
+<sc-if value="{{ showAds }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:10px">
+<div style="font-size:10px;letter-spacing:.14em;color:var(--ki-6f7ca0)">ADVERTISEMENT</div>
+<div style="width:320px;height:50px;display:grid;place-items:center;border:2px dashed var(--kf-2b4c86);font:18px VT323,monospace;color:var(--ki-6f7ca0)">AD SLOT · 320×50</div>
+</div>
+</sc-if>
+<div style="display:flex;justify-content:center;gap:18px;font-size:12px;color:var(--ki-a8b6d6);padding-top:8px"><span>How to play</span><span>Mission log</span><span>Sign in</span></div>
+</div>
+<sc-if value="{{ shareC }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;z-index:20;background:rgba(3,5,14,.72);display:grid;place-items:center;padding:16px">
+<div role="dialog" aria-label="Share this fact" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:14px;display:flex;flex-direction:column;gap:12px;align-items:center">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6);align-self:flex-start">SHARE CARD · PREVIEW</div>
+<div role="img" aria-label="Square share card: Mars, today's fact and onesmallclick.io" style="position:relative;width:300px;height:300px;overflow:hidden;background:#05081a url({{ sp.stars2 }}) 0 0/256px 256px;image-rendering:pixelated;border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<img src="assets/mars.png" alt="" style="position:absolute;right:-24px;top:16px;width:128px;height:128px;max-width:none;image-rendering:pixelated">
+<div style="position:absolute;left:16px;top:16px;font:11px 'Pixelify Sans',monospace;letter-spacing:.12em;color:#ffb37a">DESTINATION FILE<br>MARS · FACT 12</div>
+<div style="position:absolute;left:16px;right:16px;bottom:54px;font:600 19px/1.3 'Pixelify Sans',monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">{{ factToday }}</div>
+<div style="position:absolute;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid #2b4c86;padding-top:8px"><span style="font:600 14px 'Pixelify Sans',monospace;color:#eef3ff">OneSmallClick</span><span style="font:20px/1 VT323,monospace;color:#8ccfff">onesmallclick.io</span></div>
+</div>
+<div style="display:flex;gap:8px;width:300px"><button style="flex:1;min-height:44px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Save image</button><button style="flex:1;min-height:44px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Copy link</button></div>
+<button onClick="{{ closeShareC }}" style="width:300px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="color:var(--ki-eef3ff);border-color:var(--kf-8ccfff)">Close</button>
+<div style="font-size:11px;color:var(--ki-a8b6d6)">Saves as a 1080 × 1080 PNG</div>
+</div></div></sc-if>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:var(--kf-060a1c);border-top:2px solid var(--kf-1b2a55);display:grid;grid-template-columns:repeat(5,1fr)">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-8ccfff);font-size:12px;box-shadow:inset 0 2px 0 var(--kf-8ccfff)"><img src="{{ sp.earthS }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Mission</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.map.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Map</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.bolt.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Upgrades</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.log.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Log</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--ki-a8b6d6);font-size:12px"><img src="{{ ic.trophy.m }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">Ranks</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="2b">
+<div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>v2 idea A · game home desktop: the whole inner system, Jupiter and Saturn ahead</div>
+<div style="position:relative;width:1440px;height:1400px;overflow:hidden;background:linear-gradient(180deg,var(--kf-0e1a40) 0 10%,var(--kf-0c1738) 10% 22%,var(--kf-0a1430) 22% 36%,var(--kf-081128) 36% 52%,var(--kf-070d20) 52% 70%,var(--kf-05091a) 70% 100%);color:var(--ki-eef3ff);box-shadow:0 0 0 2px var(--kf-1b2a55),0 0 0 4px var(--kf-04060f),0 30px 80px rgba(0,0,0,.5)">
+<div class="osc-neb" data-anim style="position:absolute;left:0;right:0;top:-1024px;height:2200px;background-image:url(assets/nebula-tile.png);background-size:1024px 1024px;image-rendering:pixelated;opacity:.6;animation:osc-drift-neb 420s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars1 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 140s linear infinite;pointer-events:none"></div>
+<div class="osc-stars" data-anim style="position:absolute;left:0;right:0;top:-256px;height:1300px;background-image:url({{ sp.stars2 }});background-size:256px 256px;image-rendering:pixelated;animation:osc-drift 70s linear infinite;pointer-events:none"></div>
+<div style="position:relative;display:flex;flex-direction:column;gap:22px;padding:20px 48px 0">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;background:linear-gradient(90deg,transparent,var(--kf-2b4c86) 48px,var(--kf-2b4c86) calc(100% - 48px),transparent) bottom/100% 2px no-repeat">
+<div style="display:flex;align-items:baseline;gap:16px"><span style="font:600 22px 'Pixelify Sans',monospace">OneSmallClick</span><span style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">PROBE OSC-1 · MISSION DAY 12</span></div>
+<div style="display:flex;align-items:center;gap:22px;font-size:14px;color:var(--ki-c9d4ee)">
+<div style="display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86)"><span data-anim style="width:6px;height:6px;background:var(--kf-8ccfff);animation:osc-blink 1.6s steps(1) infinite"></span><span style="font:22px/1 VT323,monospace;color:var(--ki-eef3ff)">{{ online }}</span><span style="font-size:12px;color:var(--ki-a8b6d6)">here now</span></div>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.map.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Map</span>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.bolt.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Upgrades</span>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.log.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Log</span>
+<span style="display:flex;align-items:center;gap:6px"><img src="{{ ic.trophy.m }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Ranks</span>
+<span>How to play</span>
+<button style="min-height:36px;padding:0 14px;font:500 14px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 3px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)">Sign in</button>
+</div>
+</div>
+<sc-if value="{{ burnHome }}" hint-placeholder-val="{{ false }}"><div data-anim style="background:linear-gradient(180deg,var(--kf-2a170b),var(--kf-160c06));border:2px solid var(--kf-ffb37a);outline:2px solid var(--kf-04060f);padding:12px;display:flex;flex-direction:column;gap:8px;animation:osc-urgent-box 1.4s steps(4) infinite">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-ffb37a)">FINAL HOUR · LANDING BURN</span><span style="font:34px/1 VT323,monospace;color:var(--ki-ffd9a8)">{{ burnLeft }}</span></div>
+<div style="display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:2px;padding:3px;background:var(--kf-04060f);border:2px solid var(--kf-5a3418)"><sc-for list="{{ burnSegs }}" as="b" hint-placeholder-count="20"><span style="height:14px;background:{{ b.bg }}"></span></sc-for></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:13px;color:var(--ki-ffd9a8)">{{ burnKm }} of 2,000,000 km burned</span><a href="#1o" style="min-height:40px;padding:0 12px;text-decoration:none;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-ffb37a);background:var(--kf-0a1636);border:2px solid var(--kf-ffb37a);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer">Join the burn</a></div>
+</div></sc-if>
+<div style="display:flex;justify-content:space-between;align-items:flex-end;gap:40px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">LIVE ARRIVAL ESTIMATE</div>
+<div style="font-size:20px;color:var(--ki-c9d4ee)">At this pace we arrive</div>
+<div style="font:88px/0.9 VT323,monospace;text-shadow:4px 4px 0 var(--kf-1c3a6e),0 0 28px rgba(140,207,255,.35)">{{ arrival }}</div>
+<div style="display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ki-8ccfff)"><img src="{{ ic.up.b }}" alt="" style="width:12px;height:12px;image-rendering:pixelated">Your taps today: {{ saved }} sooner</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;padding:8px 10px;background:var(--kf-0a1636);border:2px solid var(--kf-2b4c86);max-width:560px">
+<div style="display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.35;color:var(--ki-c9d4ee)"><img src="{{ medalNow }}" alt="{{ paceName }} medal" style="flex:none;width:20px;height:30px;image-rendering:pixelated"><span>{{ medalTarget }} · <span style="color:{{ paceInk }}">on pace for {{ paceName }}</span></span></div>
+<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ paceBar }};background:{{ paceFill }}"></div></div><span style="font:18px/1 VT323,monospace;color:var(--ki-a8b6d6);white-space:nowrap">{{ paceGap }}</span></div>
+</div>
+</div>
+<div style="display:flex;gap:40px;padding-bottom:6px">
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TRAVELLED</div><div style="font:36px/1 VT323,monospace">{{ dist }} km</div></div>
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">PROBE SPEED</div><div style="font:36px/1 VT323,monospace">{{ speed }} km/s</div></div>
+<div><div style="font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TO GO</div><div style="font:36px/1 VT323,monospace">{{ toGo }} km</div></div>
+</div>
+</div>
+<div role="img" aria-label="Transfer orbit from Earth to Mars. The probe is {{ pct }} of the way; the next crew vote is Ceres or Vesta" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);position:relative;height:330px;padding:0;overflow:hidden">
+<div style="position:absolute;left:0;top:0;width:1300px;height:330px">
+<img src="{{ orbD.rings }}" alt="" style="position:absolute;left:0;top:0;width:1300px;height:330px;max-width:none;image-rendering:pixelated">
+<img src="assets/jupiter.png" alt="" style="position:absolute;{{ orbD.jup }};width:96px;height:96px;max-width:none;image-rendering:pixelated;opacity:.55">
+<img src="assets/saturn.png" alt="" style="position:absolute;{{ orbD.sat }};width:128px;height:80px;max-width:none;image-rendering:pixelated;opacity:.4">
+<div style="position:absolute;left:1031px;top:136px;transform:translateX(-50%);text-align:center;font-size:11px;letter-spacing:.1em;color:var(--ki-8b98ba);white-space:nowrap">JUPITER<div style="font-size:10px;letter-spacing:0">then Europa or Ganymede</div></div>
+<div style="position:absolute;left:1245px;top:214px;transform:translateX(-50%);font-size:11px;letter-spacing:.1em;color:var(--ki-8b98ba)">SATURN</div>
+<div style="position:absolute;right:14px;top:10px;font-size:10px;letter-spacing:.12em;color:var(--ki-6f7ca0)">NOT TO SCALE · OUTER PLANETS PULLED IN</div>
+<sc-for list="{{ orbD.branch }}" as="b" hint-placeholder-count="30"><span style="position:absolute;{{ b.st }};width:2px;height:2px;background:var(--kf-ffb37a);opacity:.55"></span></sc-for>
+<img src="{{ rIcons.ceres }}" alt="" style="position:absolute;{{ orbD.ceres }};width:16px;height:16px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,179,122,.6))">
+<img src="{{ orbVesta }}" alt="" style="position:absolute;{{ orbD.vesta }};width:16px;height:14px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(255,179,122,.6))">
+<div style="position:absolute;{{ orbD.voteLab }};padding:2px 6px;font-size:10px;letter-spacing:.08em;line-height:1.3;color:var(--ki-ffb37a);border:2px dashed var(--kf-ffb37a);background:var(--kf-060a1c);white-space:nowrap">VOTE AT MARS<br>Ceres or Vesta</div>
+<sc-for list="{{ orbD.dots }}" as="d" hint-placeholder-count="60"><span style="position:absolute;{{ d.st }}"></span></sc-for>
+<sc-for list="{{ orbD.flags }}" as="m" hint-placeholder-count="4"><span style="position:absolute;width:6px;height:6px;{{ m.st }}"></span><sc-if value="{{ m.show }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ m.lab }};transform:translateX(-50%);text-align:center;font-size:13px;color:{{ m.col }};white-space:nowrap">{{ m.label }}<span style="display:block;font:15px/1 VT323,monospace">{{ m.km }}</span></span></sc-if></sc-for>
+<img data-anim src="{{ orbSun }}" alt="" style="position:absolute;{{ orbD.sun }};width:40px;height:40px;image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(255,210,122,.7))">
+<img src="{{ sp.earthS }}" alt="" style="position:absolute;{{ orbD.earth }};width:32px;height:32px;image-rendering:pixelated">
+<img src="{{ rIcons.mars }}" alt="" style="position:absolute;{{ orbD.mars }};width:32px;height:32px;image-rendering:pixelated">
+<span style="position:absolute;{{ orbD.earthLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">EARTH</span>
+<span style="position:absolute;{{ orbD.marsLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">MARS</span>
+<span style="position:absolute;{{ orbD.sunLab }};transform:translateX(-50%);font-size:10px;letter-spacing:.12em;color:var(--ki-ffd27a)">SUN</span>
+<div style="position:absolute;{{ orbD.probe }};transform:translate(-50%,-50%);z-index:2"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 4px rgba(140,207,255,.7));animation:osc-bob 2.4s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .6s steps(4) infinite"></div></div>
+<div style="position:absolute;left:10px;top:8px;font-size:10px;letter-spacing:.12em;color:var(--ki-a8b6d6)">TRANSFER ORBIT<span style="display:block;font:26px/1 VT323,monospace;letter-spacing:0;color:var(--ki-8ccfff)">{{ pct }}</span></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:360px minmax(0,1fr) 360px;gap:32px;align-items:start;padding-top:6px">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ ic.signal.o }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">KEEP THE SIGNAL ALIVE</div>
+<sc-if value="{{ low }}" hint-placeholder-val="{{ false }}"><div data-anim style="font:80px/0.85 VT323,monospace;animation:osc-urgent 1s steps(4) infinite">{{ signal }}</div></sc-if>
+<sc-if value="{{ notLow }}" hint-placeholder-val="{{ true }}"><div style="font:80px/0.85 VT323,monospace;text-shadow:4px 4px 0 var(--kf-1c3a6e)">{{ signal }}</div></sc-if>
+<div style="font-size:13px;line-height:1.5;color:var(--ki-c9d4ee)">If this hits zero the probe goes quiet. Anyone can reset it, once a day each.</div>
+<button onClick="{{ ping }}" disabled="{{ pinged }}" style="min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 17px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer;opacity:{{ pingOp }}" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ pingIcon }}" alt="" style="width:18px;height:18px;image-rendering:pixelated">{{ pingLabelLong }}</button>
+<div style="display:flex;align-items:center;gap:8px;padding:8px;background:var(--kf-1f1408);border:2px solid var(--kf-5a3418)"><img src="{{ ic.star.o }}" alt="" style="width:18px;height:18px;image-rendering:pixelated"><div><div style="font-size:14px;color:var(--ki-ffd9a8)">Signal Keeper III</div><div style="font-size:11px;color:var(--ki-c9a888)">21-day ping streak · 4 days to IV</div></div></div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+<div style="position:relative;width:280px;height:280px;display:grid;place-items:center">
+<div data-anim style="position:absolute;inset:0;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:rgba(140,207,255,.12);animation:osc-breathe 2.8s steps(5) infinite"></div>
+<button onClick="{{ thrust }}" aria-label="Thrust" style="position:relative;width:240px;height:240px;border:0;padding:0;background:#b9e2ff;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);cursor:pointer;transition:transform 80ms steps(2)" style-active="transform:translateY(4px) scale(.96)">
+<span style="position:absolute;inset:5px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:#04060f"></span>
+<span style="position:absolute;inset:10px;clip-path:polygon(30% 0,70% 0,70% 4%,82% 4%,82% 9%,90% 9%,90% 18%,96% 18%,96% 30%,100% 30%,100% 70%,96% 70%,96% 82%,90% 82%,90% 91%,82% 91%,82% 96%,70% 96%,70% 100%,30% 100%,30% 96%,18% 96%,18% 91%,10% 91%,10% 82%,4% 82%,4% 70%,0 70%,0 30%,4% 30%,4% 18%,10% 18%,10% 9%,18% 9%,18% 4%,30% 4%);background:radial-gradient(circle at 50% 28%,#4a8fe0 0 16%,#3474c4 16% 32%,#25599f 32% 50%,#1a427c 50% 68%,#11305c 68% 84%,#0c2448 84%)"></span>
+<span style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+<img src="{{ icD.up.w }}" alt="" style="width:36px;height:36px;image-rendering:pixelated">
+<span style="font:600 32px 'Pixelify Sans',monospace;letter-spacing:.16em;color:#eef3ff;text-shadow:3px 3px 0 #0c2448">THRUST</span>
+<span style="font-size:13px;color:#d6ecff">click or press space</span>
+</span>
+</button>
+</div>
+<div style="display:flex;gap:24px;align-items:baseline">
+<div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ tap }} km <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">per click</span></div>
+<div style="font:30px/1 VT323,monospace;color:var(--ki-8ccfff)">+{{ auto }} km/s <span style="font:13px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6)">auto-thrust</span></div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:12px 14px;display:flex;flex-direction:column;gap:8px;width:100%;max-width:380px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)">YOU'VE CLICKED</span><span style="font-size:11px;color:var(--ki-a8b6d6)">today</span></div>
+<div role="img" aria-label="{{ clicksToday }} clicks today" style="display:flex;gap:3px;align-items:center"><sc-for list="{{ odo }}" as="d" hint-placeholder-count="7"><span style="{{ d.st }}">{{ d.c }}</span></sc-for><span style="margin-left:8px;font-size:12px;line-height:1.3;color:var(--ki-c9d4ee)">{{ clicksAll }}<br><span style="color:var(--ki-a8b6d6)">all time</span></span></div>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ki-a8b6d6)"><span>Next: <span style="color:var(--ki-ffb37a)">{{ clickGoalName }}</span> at {{ clickGoal }}</span><span style="font:15px/1 VT323,monospace">{{ clicksLeft }} to go</span></div><div style="height:8px;background:var(--kf-060d24);border:2px solid var(--kf-1b2a55)"><div class="osc-fill" style="height:100%;width:{{ clickBar }};background:var(--kf-ffb37a)"></div></div></div>
+</div>
+<button style="min-height:40px;padding:0 16px;display:flex;align-items:center;gap:8px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="background:var(--kf-13285a)"><img src="{{ ic.bolt.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">Upgrades · {{ afford }} affordable · {{ credits }} cr</button>
+</div>
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:18px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ ic.check.b }}" alt="" style="width:16px;height:16px;image-rendering:pixelated">TODAY'S CREW VOTE</span><span style="font:20px VT323,monospace;color:var(--ki-a8b6d6)">{{ voteLeft }}</span></div>
+<div style="font:500 20px 'Pixelify Sans',monospace">Which way today?</div>
+<sc-for list="{{ voteOpts }}" as="o" hint-placeholder-count="3">
+<button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:52px;padding:6px 12px;text-align:left;font:14px 'Pixelify Sans',monospace;color:var(--ki-eef3ff);background:{{ o.bar }};border:2px solid {{ o.border }};cursor:pointer" style-hover="border-color:var(--kf-8ccfff)"><span style="display:flex;flex-direction:column;gap:1px"><span>{{ o.label }}</span><span style="font-size:10px;letter-spacing:.12em;color:var(--ki-ffb37a)">{{ o.mark }}</span></span><span style="font:26px VT323,monospace">{{ o.pct }}</span></button>
+</sc-for>
+<div style="font-size:12px;color:var(--ki-a8b6d6)">{{ voteTotal }} votes · result goes in the mission log</div>
+</div>
+<div style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:16px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6)"><img src="{{ rIcons.mars }}" alt="" style="width:32px;height:32px;image-rendering:pixelated">DESTINATION FILE · MARS</span><span style="font:18px/1 VT323,monospace;color:var(--ki-ffb37a);white-space:nowrap">Fact 12 of 30</span></div>
+<div style="font-size:16px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ factToday }}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-size:11px;color:var(--ki-a8b6d6)">Next fact at 00:00 UTC · <span style="font:15px VT323,monospace">{{ voteLeft }}</span></span><button onClick="{{ openShareD }}" style="min-height:40px;padding:0 12px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)"><img src="{{ ic.share.b }}" alt="" style="width:14px;height:14px;image-rendering:pixelated">Share fact</button></div>
+</div>
+</div>
+</div>
+<sc-if value="{{ showAds }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-top:28px">
+<div style="font-size:10px;letter-spacing:.14em;color:var(--ki-6f7ca0)">ADVERTISEMENT</div>
+<div style="width:728px;height:90px;display:grid;place-items:center;border:2px dashed var(--kf-2b4c86);font:22px VT323,monospace;color:var(--ki-6f7ca0)">AD SLOT · 728×90</div>
+</div>
+</sc-if>
+</div>
+<sc-if value="{{ shareD }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;z-index:20;background:rgba(3,5,14,.72);display:grid;place-items:center;padding:16px">
+<div role="dialog" aria-label="Share this fact" style="background:linear-gradient(180deg,var(--kf-13285a),var(--kf-0b1838));border:2px solid var(--kf-7fb0e6);outline:2px solid var(--kf-04060f);box-shadow:inset 0 0 0 2px var(--kf-06102a);padding:14px;display:flex;flex-direction:column;gap:12px;align-items:center">
+<div style="font-size:11px;letter-spacing:.12em;color:var(--ki-a8b6d6);align-self:flex-start">SHARE CARD · PREVIEW</div>
+<div role="img" aria-label="Square share card: Mars, today's fact and onesmallclick.io" style="position:relative;width:300px;height:300px;overflow:hidden;background:#05081a url({{ sp.stars2 }}) 0 0/256px 256px;image-rendering:pixelated;border:2px solid #7fb0e6;outline:2px solid #04060f;box-shadow:inset 0 0 0 2px #06102a">
+<img src="assets/mars.png" alt="" style="position:absolute;right:-24px;top:16px;width:128px;height:128px;max-width:none;image-rendering:pixelated">
+<div style="position:absolute;left:16px;top:16px;font:11px 'Pixelify Sans',monospace;letter-spacing:.12em;color:#ffb37a">DESTINATION FILE<br>MARS · FACT 12</div>
+<div style="position:absolute;left:16px;right:16px;bottom:54px;font:600 19px/1.3 'Pixelify Sans',monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">{{ factToday }}</div>
+<div style="position:absolute;left:16px;right:16px;bottom:14px;display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid #2b4c86;padding-top:8px"><span style="font:600 14px 'Pixelify Sans',monospace;color:#eef3ff">OneSmallClick</span><span style="font:20px/1 VT323,monospace;color:#8ccfff">onesmallclick.io</span></div>
+</div>
+<div style="display:flex;gap:8px;width:300px"><button style="flex:1;min-height:44px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Save image</button><button style="flex:1;min-height:44px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px;font:600 16px 'Pixelify Sans',monospace;color:var(--ki-8ccfff);background:var(--kf-0a1636);border:2px solid var(--kf-8ccfff);box-shadow:0 4px 0 var(--kf-2b5a8f);cursor:pointer" style-hover="background:var(--kf-13305e)" style-active="transform:translateY(4px);box-shadow:0 0 0 var(--kf-2b5a8f)">Copy link</button></div>
+<button onClick="{{ closeShareD }}" style="width:300px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;font:500 15px 'Pixelify Sans',monospace;color:var(--ki-a8b6d6);background:transparent;border:2px solid var(--kf-3c5a8e);cursor:pointer" style-hover="color:var(--ki-eef3ff);border-color:var(--kf-8ccfff)">Close</button>
+<div style="font-size:11px;color:var(--ki-a8b6d6)">Saves as a 1080 × 1080 PNG</div>
+</div></div></sc-if>
+</div>
+</div>
+
+
+
+
+</div>
+<p class="dv-next">Ideas only: screens 1a and 1b are unchanged. The orbit is a Hohmann-style transfer (the Sun at one focus), drawn to scale for Earth and Mars and pulled in for the outer planets.</p>
+</section>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;signalState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;healthy&quot;,&quot;final seconds&quot;],&quot;default&quot;:&quot;healthy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;crew&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;busy&quot;,&quot;handful&quot;],&quot;default&quot;:&quot;busy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;showAds&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;particles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;arrivalPace&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;silver&quot;,&quot;gold&quot;,&quot;bronze&quot;],&quot;default&quot;:&quot;silver&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;landingBurn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Game state&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Look&quot;},&quot;signalState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;healthy&quot;,&quot;final seconds&quot;,&quot;safe mode&quot;],&quot;default&quot;:&quot;healthy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;crew&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;busy&quot;,&quot;handful&quot;],&quot;default&quot;:&quot;busy&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;showAds&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;particles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;arrivalPace&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;silver&quot;,&quot;gold&quot;,&quot;bronze&quot;],&quot;default&quot;:&quot;silver&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;landingBurn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Game state&quot;},&quot;flightProgress&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0,&quot;max&quot;:100,&quot;step&quot;:1,&quot;unit&quot;:&quot;%&quot;,&quot;default&quot;:0,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Game state&quot;}}">
 class Component extends DCLogic {
-  state = { dist: 182406311, myToday: 9640, clicks: 0, elapsed: 0, signal: 15159, pinged: false, vote: null, votes: [12840, 11590, 6890], credits: 5320, lv: { cold: 6, ion: 3, sail: 0, hands: 4, chant: 1 }, tab: 'players', nv: null, nvotes: [41204, 37118], theme: null, mapSelP: 'europa', mapSelD: 'ceres', mapVotes: [52110, 47320], mapVote: null, revealOn: true, shareA: false, shareB: false, burnKm: 1236480, burnLeft: 2472, crewTechP: false, cos: { sky: 'night', trail: 'blue', paint: 'std' } };
+  state = { dist: 182406311, myToday: 9640, clicks: 0, elapsed: 0, signal: 15159, pinged: false, vote: null, votes: [12840, 11590, 6890], credits: 5320, lv: { cold: 6, ion: 3, sail: 0, hands: 4, chant: 1 }, tab: 'players', nv: null, nvotes: [41204, 37118], theme: null, mapSelP: 'europa', mapSelD: 'ceres', mapVotes: [52110, 47320], mapVote: null, revealOn: true, shareA: false, shareB: false, burnKm: 1236480, burnLeft: 2472, crewTechP: false, cos: { sky: 'night', trail: 'blue', paint: 'std' }, shareC: false, shareD: false, shareE: false, shareF: false, boostOn: false };
   B = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
   celebRef = React.createRef();
   sp = this.buildSprites();
@@ -1311,6 +1679,7 @@ class Component extends DCLogic {
   mapDRef = React.createRef();
   RW = this.rewardSprites();
   MAP = this.buildMap();
+  ORB = this.buildOrbits();
 
   componentDidMount() {
     this.reduce = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)').matches : false;
@@ -1420,6 +1789,8 @@ class Component extends DCLogic {
   }
   buildIcons() {
     const G = {
+      left: ['......#..', '.....##..', '....###..', '...####..', '..#####..', '...####..', '....###..', '.....##..', '......#..'],
+      right: ['..#......', '..##.....', '..###....', '..####...', '..#####..', '..####...', '..###....', '..##.....', '..#......'],
       map: ['.......#.', '......###', '.......#.', '....#....', '...###...', '....#....', '.#.......', '###......', '.#.......'],
       flag: ['#######..', '#######..', '#######..', '#........', '#........', '#........', '#........', '#........', '#........'],
       share: ['......#..', '......##.', '.#######.', '.#....##.', '.#....#..', '.#.......', '.#.......', '.#######.', '.........'],
@@ -1598,7 +1969,7 @@ class Component extends DCLogic {
   centerMaps() {
     const p = this.mapPRef.current, d = this.mapDRef.current;
     if (p) p.scrollTop = this.MAP.P.probeY - p.clientHeight / 2;
-    if (d) d.scrollLeft = this.MAP.D.probeX - d.clientWidth / 2;
+    if (d) d.scrollLeft = this.MAP.D.probeX + 48 - (d.clientWidth - 388) / 2;
   }
   mapVals(s) {
     const M = this.MAP, mv = s.mapVotes, mvt = mv[0] + mv[1], icT = this.theme() === 'light' ? this.ic.light : this.ic, MED = ['Gold', 'Silver', 'Bronze'], MINK = ['var(--ki-ffd27a)', 'var(--ki-c9d4ee)', 'var(--ki-f0b98a)'];
@@ -1748,8 +2119,155 @@ class Component extends DCLogic {
     return this.px(32, 8, g => { const r = this.rng(5); for (let i = 0; i < 26; i++) { const x = Math.floor(r() * 30), y = Math.floor(3 + (r() - .5) * 6 * (x / 32)); g.fillStyle = cols[i % cols.length]; g.fillRect(31 - x, y, x < 8 ? 2 : 1, x < 8 ? 2 : 1); } });
   }
 
+  // --- v2 idea: curved transfer orbit + your clicks ---
+  orbitView(o) {
+    // A Hohmann-style transfer: the Sun at one focus, Earth at perihelion (left), Mars at aphelion (right).
+    const { W, H, sx, sy, r1, r2, gap } = o, a = (r1 + r2) / 2, e = (r2 - r1) / (r2 + r1);
+    const pts = [], L = [0];
+    for (let i = 0; i <= 600; i++) { const th = Math.PI * i / 600, r = a * (1 - e * e) / (1 + e * Math.cos(th)); pts.push([sx - r * Math.cos(th), sy - r * Math.sin(th)]); if (i) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1])); }
+    const tot = L[600];
+    const at = f => { const d = Math.max(0, Math.min(1, f)) * tot; let i = 1; while (i < 600 && L[i] < d) i++; const t = (d - L[i - 1]) / ((L[i] - L[i - 1]) || 1); return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * t, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * t]; };
+    const dots = []; for (let d = 0; d <= tot; d += gap) { const [x, y] = at(d / tot); dots.push({ x: Math.round(x), y: Math.round(y), f: d / tot }); }
+    const line = (p, q, step) => { const out = [], n = Math.max(1, Math.round(Math.hypot(q[0] - p[0], q[1] - p[1]) / step)); for (let i = 1; i < n; i++) out.push({ x: Math.round(p[0] + (q[0] - p[0]) * i / n), y: Math.round(p[1] + (q[1] - p[1]) * i / n) }); return out; };
+    const rings = this.px(W, H, g => {
+      const ring = (r, col, step, sz) => { const n = Math.round(2 * Math.PI * r / step); for (let k = 0; k < n; k++) { const t = 2 * Math.PI * k / n, x = Math.round(sx + r * Math.cos(t)), y = Math.round(sy + r * Math.sin(t)); if (x >= 0 && y >= 0 && x < W && y < H) { g.fillStyle = col; g.fillRect(x, y, sz, sz); } } };
+      ring(r1, '#2b5a8f', 7, 2); ring(r2, '#8a4620', 7, 2);
+      (o.extra || []).forEach(([r, col]) => ring(r, col, 9, 2));
+      if (o.belt) { const R = this.rng(77); for (let i = 0; i < o.belt[2]; i++) { const t = -Math.PI * (0.02 + R() * .62), r = o.belt[0] + R() * (o.belt[1] - o.belt[0]), x = Math.round(sx + r * Math.cos(t)), y = Math.round(sy + r * Math.sin(t)); if (x >= 0 && y >= 0 && x < W && y < H) { g.fillStyle = ['#3c4258', '#6c7390', '#8a8f9f', '#5a4a3c'][i % 4]; g.fillRect(x, y, R() > .8 ? 2 : 1, R() > .8 ? 2 : 1); } } }
+    });
+    return { W, H, at, dots, rings, line, earth: [sx - r1, sy], mars: [sx + r2, sy], sun: [sx, sy] };
+  }
+  buildOrbits() {
+    const sun = this.ball(9, { a: ['#4a2c0a', '#9a6418', '#e0a83a', '#ffd27a', '#fff1b0'], b: ['#9a6418', '#e0a83a', '#ffd27a', '#fff1b0', '#fffbe6'], f: 3, th: .5, seed: 21 });
+    const vesta = this.ball(7, { sq: .82, a: ['#1a1410', '#3a2f26', '#66574a', '#9a8a78', '#cdbfae'], b: ['#120e0b', '#2a221b', '#4a3f35', '#716253', '#9e8f7f'], f: 2.2, seed: 5 });
+    const P = this.orbitView({ W: 354, H: 236, sx: 150, sy: 172, r1: 96, r2: 146, gap: 7, belt: [176, 214, 260] });
+    const D = this.orbitView({ W: 1300, H: 330, sx: 430, sy: 300, r1: 190, r2: 289, gap: 9, belt: [345, 420, 900], extra: [[640, '#5c3214'], [825, '#5e5040']] });
+    const MS = [[.042, 'Past the Moon', '20M km'], [.25, 'Mid-course burn', '120M km'], [.5, 'Halfway', '240M km'], [.896, 'Phobos in view', '430M km']];
+    const deco = (V, big) => {
+      const [mx, my] = V.mars;
+      const ceres = big ? [800, 140] : [296, 30], vesta = big ? [815, 222] : [330, 84], jup = big ? [1031, 82] : null, sat = big ? [1245, 170] : null;
+      const branch = [...V.line([mx, my - 18], ceres, big ? 9 : 7), ...V.line([mx, my - 18], vesta, big ? 9 : 7)];
+      if (jup) branch.push(...V.line(ceres, jup, 10), ...V.line(vesta, jup, 10), ...V.line(jup, sat, 12));
+      const flags = MS.map(([f, name, km], i) => { const [x, y] = V.at(f).map(Math.round); return { x, y, name, km, next: i === 2 }; });
+      return { ceres, vesta, jup, sat, branch: branch.map(p => ({ st: `left:${p.x - 1}px;top:${p.y - 1}px` })), flags };
+    };
+    return { P: { ...P, ...deco(P, false) }, D: { ...D, ...deco(D, true) }, sun, vesta };
+  }
+  orbitVals(V, pct, big) {
+    const f = pct / 100, [px, py] = V.at(f);
+    const dots = V.dots.map(d => ({ st: d.f <= f ? `left:${d.x - 2}px;top:${d.y - 2}px;width:4px;height:4px;background:var(--kf-8ccfff);box-shadow:0 0 6px rgba(140,207,255,.7)` : `left:${d.x - 1}px;top:${d.y - 1}px;width:2px;height:2px;background:var(--kf-7fb0e6);opacity:.55` }));
+    const flags = V.flags.map(m => ({ st: `left:${m.x - 3}px;top:${m.y - 3}px;background:${m.next ? 'var(--kf-ffb37a)' : m.x <= px ? 'var(--kf-8ccfff)' : 'var(--kf-3c5a8e)'};${m.next ? 'box-shadow:0 0 8px rgba(255,179,122,.8)' : ''}`,
+      label: m.name, km: m.km, lab: `left:${m.x}px;top:${m.y + (big ? 10 : 8)}px`, show: big || m.next, next: m.next, col: m.next ? 'var(--ki-ffb37a)' : 'var(--ki-a8b6d6)' }));
+    const pos = (p, w, h) => `left:${Math.round(p[0] - w / 2)}px;top:${Math.round(p[1] - h / 2)}px`;
+    return { w: V.W, h: V.H, rings: V.rings, dots, flags, branch: V.branch, probe: `left:${Math.round(px)}px;top:${Math.round(py)}px`,
+      earth: pos(V.earth, 32, 32), mars: pos(V.mars, 32, 32), sun: pos(V.sun, 40, 40), ceres: pos(V.ceres, 16, 16), vesta: pos(V.vesta, 16, 14),
+      jup: V.jup ? pos(V.jup, 96, 96) : '', sat: V.sat ? pos(V.sat, 128, 80) : '',
+      earthLab: `left:${V.earth[0]}px;top:${V.earth[1] + 20}px`, marsLab: `left:${V.mars[0]}px;top:${V.mars[1] + 20}px`, sunLab: `left:${V.sun[0]}px;top:${V.sun[1] + 24}px`,
+      voteLab: big ? `left:${V.ceres[0] + 16}px;top:${V.ceres[1] - 34}px` : `left:${V.ceres[0] - 104}px;top:${V.ceres[1] - 22}px` };
+  }
+  clickVals(s) {
+    const today = 1284 + s.clicks, all = 48920 + s.clicks, str = String(today).padStart(6, '0');
+    const odo = [...str.slice(0, 3) + ',' + str.slice(3)].map((c, i, arr) => ({ c, st: c === ','
+      ? 'width:8px;font:28px/30px VT323,monospace;color:var(--ki-a8b6d6);text-align:center'
+      : `width:22px;height:30px;display:grid;place-items:center;font:28px/1 VT323,monospace;background:var(--kf-04060f);border:2px solid ${i === arr.length - 1 ? 'var(--kf-8ccfff)' : 'var(--kf-2b4c86)'};color:${(i < 3 && Number(str.slice(0, i + 1)) === 0) ? 'var(--ki-6f7ca0)' : 'var(--ki-8ccfff)'}` }));
+    const goal = today < 1500 ? 1500 : today < 5000 ? 5000 : 10000, nameG = goal === 1500 ? 'Steady Finger' : goal === 5000 ? 'Iron Thumb' : 'Ten Thousand Club';
+    return { odo, clicksToday: today.toLocaleString('en-GB'), clicksAll: all.toLocaleString('en-GB'), clickGoal: goal.toLocaleString('en-GB'), clickGoalName: nameG,
+      clickBar: Math.round(Math.min(1, today / goal) * 100) + '%', clicksLeft: (goal - today).toLocaleString('en-GB') };
+  }
+
+  // --- v2 idea B: flight view (side-on, Mars grows as we close in) ---
+  pcache = {};
+  planetAt(kind, R) {
+    const k = kind + R;
+    if (!this.pcache[k]) this.pcache[k] = this.planet(R, kind, kind === 'earth' ? 1.3 : .6);
+    return this.pcache[k];
+  }
+  streaks() {
+    if (this._streaks) return this._streaks;
+    const r = this.rng(91);
+    this._streaks = this.px(128, 64, g => { for (let i = 0; i < 14; i++) { const x = Math.floor(r() * 120), y = Math.floor(r() * 64), l = 6 + Math.floor(r() * 14); g.fillStyle = r() > .5 ? '#7fb0e6' : '#2b5a8f'; g.fillRect(x, y, l, 1); g.fillStyle = '#eef3ff'; g.fillRect(x + l - 2, y, 2, 1); } });
+    return this._streaks;
+  }
+  flameSheet2() {
+    if (this._flame2) return this._flame2;
+    const F = [
+      ['.......rrooo', '...rrrooyyww', '.rrrooyywwww', '..rrrooyywww', '....rrrooyyy', '........rroo'],
+      ['........rroo', '.....rrooyyw', '...rrooyywww', '....rrooyyww', '......rrooyy', '.........rro'],
+      ['......rrrooo', '..rrrrooyyww', 'rrrrooyywwww', '.rrrooyyywww', '...rrrooyyyy', '.......rrroo']
+    ];
+    this._flame2 = this.grid(F[0].map((_, i) => F[0][i] + F[1][i] + F[2][i]), { r: '#e8894a', o: '#ffb37a', y: '#ffd9a8', w: '#fff4ea' });
+    return this._flame2;
+  }
+  comet() {
+    if (this._comet) return this._comet;
+    this._comet = this.grid(['..............bb..', '.........bbBBBwww.', '...bbBBBBBBwwwwwww', '.........bbBBBwww.', '..............bb..'], { b: '#2b5a8f', B: '#8ccfff', w: '#eef3ff' });
+    return this._comet;
+  }
+  boost() { clearTimeout(this.bt); this.setState({ boostOn: true }); this.bt = setTimeout(() => this.setState({ boostOn: false }), 240); }
+  flightVals(pctNum, big) {
+    const prev = Number(this.props.flightProgress ?? 0);
+    const f = Math.max(0, Math.min(1, (prev > 0 ? prev : this.props.landingBurn ? 97 : pctNum) / 100)), W = big ? 1300 : 354, H = big ? 300 : 210;
+    const boost = !!this.state.boostOn && this.props.signalState !== 'safe mode', sig = this.props.signalState ?? 'healthy', safe = sig === 'safe mode', low = sig === 'final seconds', burn = !!this.props.landingBurn, motion = this.props.particles !== false;
+    const mR = Math.round((big ? 14 : 9) + (big ? 120 : 62) * Math.pow(f, 1.4)), eR = Math.max(3, Math.round((big ? 40 : 24) - (big ? 34 : 20) * Math.pow(f, .6)));
+    const mS = mR * 2 + 2, eS = eR * 2 + 2, cy = Math.round(H * (big ? .48 : .5));
+    const mx = Math.round(W - (big ? 120 : 40) - mR * .2), px = Math.round(W * (big ? .3 : .3));
+    const MS = [[.042, 'PAST THE MOON'], [.25, 'MID-COURSE BURN'], [.5, 'HALFWAY'], [.896, 'PHOBOS IN VIEW']];
+    const nx = MS.find(m => m[0] > f), span = nx ? nx[0] - (MS[MS.indexOf(nx) - 1] || [0])[0] : 1;
+    const bx = nx ? Math.round(px + 50 + Math.min(1, (nx[0] - f) / span) * Math.max(10, mx - mR - px - 120)) : -200;
+    const SW = W - 24, xm = Math.round(SW * .78), xp = Math.round(f * xm), xk = xm + 10, xf = Math.round(SW * (big ? .9 : .875));
+    const far = big
+      ? [{ img: this.RW.icons.ceres, w: 16, h: 16, x: W - 64, y: 50, label: 'Ceres?' }, { img: this.ORB.vesta, w: 16, h: 14, x: W - 30, y: 96, label: 'Vesta?' }, { img: this.RW.icons.jupiter, w: 16, h: 16, x: W - 190, y: 44, label: 'Jupiter' }]
+      : [{ img: this.RW.icons.ceres, w: 16, h: 16, x: W - 64, y: 44, label: 'Ceres?' }, { img: this.ORB.vesta, w: 16, h: 14, x: W - 26, y: 74, label: 'Vesta?' }];
+    const sparks = Array.from({ length: !motion || safe ? 0 : !this.busy() ? 2 : big ? 9 : 6 }, (_, i) => ({ st: `top:${cy - 14 + ((i * 7) % 28)}px;--d:${px - 26}px;animation-delay:${(i * .37).toFixed(2)}s;background:${i % 3 ? '#8ccfff' : '#eef3ff'}` }));
+    const fl = boost ? 4 : 2;
+    return {
+      engineOn: !safe && motion, safe, low, burn, probeFx: safe ? 'filter:grayscale(.85) brightness(.7)' : '',
+      w: W, h: H, streaks: this.streaks(), flame: this.flameSheet2(), comet: this.comet(), boost, boostOp: boost ? '1' : '0', chevOp: boost ? '1' : '.35',
+      earth: this.planetAt('earth', eR), earthSt: `left:${-Math.round(eR * .9)}px;top:${cy + 26 - eR - 1}px;width:${eS}px;height:${eS}px`,
+      mars: this.planetAt('mars', mR), marsSt: `left:${mx - mR - 1}px;top:${cy - mR - 1}px;width:${mS}px;height:${mS}px`,
+      marsGlow: `left:${mx - mR - 12}px;top:${cy - mR - 12}px;width:${mS + 22}px;height:${mS + 22}px`,
+      phobos: f > .85, phobosSt: `left:${mx - mR - 14}px;top:${cy - Math.round(mR * .7)}px`,
+      probe: `left:${px - 32 + (boost ? 8 : 0)}px;top:${cy - 20}px`,
+      flameSt: `left:${px - 32 + 14 - 12 * fl + (boost ? 8 : 0)}px;top:${cy - 1 - 3 * fl}px;width:${12 * fl}px;height:${6 * fl}px`,
+      popSt: `left:${px + 12}px;top:${cy - 44}px`,
+      sparks, beaconOn: !!nx, beacon: `left:${bx}px;top:${cy + 24}px`, beaconLab: nx ? nx[1] : '',
+      cometSt: big ? '--cx:-900px;--cy:150px;left:1300px;top:20px' : '--cx:-420px;--cy:90px;left:354px;top:24px',
+      bigger: (mR / (big ? 14 : 9)).toFixed(1) + '×', pctShow: (f * 100).toFixed(2) + '%', previewing: prev > 0,
+      far: far.map(p => ({ ...p, st: `left:${p.x - p.w / 2}px;top:${p.y - p.h / 2}px;width:${p.w}px;height:${p.h}px`, lab: `left:${p.x}px;top:${p.y + 10}px` })),
+      strip: {
+        done: `left:0;top:12px;width:${xp}px;height:4px`, rest: `left:${xp}px;top:13px;width:${xm - xp}px;height:2px`,
+        probe: `left:${xp - 5}px;top:9px`, mars: `left:${xm - 5}px;top:9px`, fork: `left:${xk}px;top:2px;height:24px`, link: `left:${xm + 5}px;top:13px;width:${xk - xm - 5}px`,
+        up: `left:${xk}px;top:2px;width:${xf - xk}px`, down: `left:${xk}px;top:24px;width:${xf - xk}px`,
+        ceres: `left:${xf}px;top:-1px`, vesta: `left:${xf}px;top:21px`,
+        ticks: MS.map(m => ({ st: `left:${Math.round(m[0] * xm) - 1}px;top:7px;background:${m[0] <= f ? '#8ccfff' : m === nx ? '#ffb37a' : '#3c5a8e'}` }))
+      }
+    };
+  }
+
+
+  // --- campaign map: pixel scrollbars and drag to pan ---
+  mapScrollD = (e) => { const el = e.currentTarget; cancelAnimationFrame(this.rafD); this.rafD = requestAnimationFrame(() => this.setState({ msD: [el.scrollLeft, el.scrollWidth, el.clientWidth] })); };
+  mapScrollP = (e) => { const el = e.currentTarget; cancelAnimationFrame(this.rafP); this.rafP = requestAnimationFrame(() => this.setState({ msP: [el.scrollTop, el.scrollHeight, el.clientHeight] })); };
+  mapLeft = () => { const d = this.mapDRef.current; if (d) d.scrollLeft -= 380; };
+  mapRight = () => { const d = this.mapDRef.current; if (d) d.scrollLeft += 380; };
+  mapTrack = (e) => { const d = this.mapDRef.current; if (!d) return; const r = e.currentTarget.getBoundingClientRect(); d.scrollLeft = (e.clientX - r.left) / r.width * d.scrollWidth - d.clientWidth / 2; };
+  panStart = (e) => { const d = this.mapDRef.current; if (!d || e.pointerType !== 'mouse' || e.button !== 0) return; this.pan = { x: e.clientX, s: d.scrollLeft }; };
+  panMove = (e) => { const d = this.mapDRef.current; if (!this.pan || !d) return; if (!(e.buttons & 1)) { this.pan = null; return; } d.scrollLeft = this.pan.s - (e.clientX - this.pan.x); };
+  panEnd = () => { this.pan = null; };
+  thumbVals(s) {
+    const [sl, sw, cw] = s.msD || [this.MAP.D.probeX - 478, this.MAP.D.w + 460, 1440];
+    const view = Math.min(1, cw / sw), pos = sw > cw ? sl / (sw - cw) : 0, w = Math.max(10, view * 100);
+    const centre = sl + (cw - 388) * .35 - 48, p = Math.max(0, Math.min(12, Math.round((centre - 100) / 190)));
+    const REG = [[0, 'Inner system'], [2, 'Asteroid belt'], [3, 'Gas giants'], [7, 'Ice giants'], [10, 'Kuiper belt'], [11, 'Heliopause'], [12, 'Interstellar space']];
+    const region = REG.filter(r => r[0] <= p).pop()[1];
+    const [st, sh, ch] = s.msP || [this.MAP.P.probeY - 332, this.MAP.P.h, 664];
+    const vP = Math.min(1, ch / sh), posP = sh > ch ? st / (sh - ch) : 0, hP = Math.max(8, vP * 100);
+    return { thumbD: { w: w.toFixed(2) + '%', l: (pos * (100 - w)).toFixed(2) + '%', region }, thumbP: { h: hP.toFixed(2) + '%', t: (posP * (100 - hP)).toFixed(2) + '%' } };
+  }
+
   // --- interactions ---
   thrust = (e) => {
+    this.boost();
     const host = e.currentTarget.parentElement, km = this.tapKm(this.state);
     this.setState(s => ({ dist: s.dist + km, myToday: s.myToday + km, credits: s.credits + km, clicks: s.clicks + 1 }));
     if (this.reduce || this.props.particles === false || !host) return;
@@ -1872,6 +2390,11 @@ class Component extends DCLogic {
       }),
       nextTotal: n(s.nvotes.reduce((a, b) => a + b, 0)),
       ...this.mapVals(s),
+      orbP: this.orbitVals(this.ORB.P, pct, false), orbD: this.orbitVals(this.ORB.D, pct, true), orbSun: this.ORB.sun, orbVesta: this.ORB.vesta, ...this.clickVals(s),
+      flP: this.flightVals(pct, false), flD: this.flightVals(pct, true),
+      shareE: s.shareE, shareF: s.shareF, openShareE: () => this.setState({ shareE: true }), openShareF: () => this.setState({ shareF: true }), closeShareE: () => this.setState({ shareE: false }), closeShareF: () => this.setState({ shareF: false }),
+      shareC: s.shareC, shareD: s.shareD, openShareC: () => this.setState({ shareC: true }), openShareD: () => this.setState({ shareD: true }), closeShareC: () => this.setState({ shareC: false }), closeShareD: () => this.setState({ shareD: false }),
+      ...this.thumbVals(s),
       ...this.rewardVals(s), medalG: this.RW.medals[0], medalS: this.RW.medals[1], medalB: this.RW.medals[2],
       autos: ups.filter(u => u.g === 'a'), taps: ups.filter(u => u.g === 'c'),
       showAds: this.props.showAds ?? true,
