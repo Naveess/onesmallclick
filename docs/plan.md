@@ -31,7 +31,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **One Durable Object, `Probe`, holds the live shared state.** D1 holds everything that has to last (devices, pings, votes, progress, accounts, the log).
 - **Every day is a UTC day**: one ping per day, the vote closes at 00:00 UTC, and leaderboards count "today" in UTC.
 - **Fake data lives in one store shaped like the real state**, so phases 4 to 8 swap it for server data piece by piece.
-- **Testing uses the live workers.dev URL.** All test data is wiped before launch (phase 9).
+- **Testing uses the live workers.dev URL.** At launch only the mission is reset; players keep their progress (decision 6, changed 2026-11-19).
 - **Few dependencies**: React, Vite, the Cloudflare Vite plugin, Wrangler and TypeScript. Any other library gets a reason first.
 
 ---
@@ -336,12 +336,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Pages:** privacy, terms and contact, plus error pages.
 - **Domain:** onesmallclick.io connected.
 - **Monitoring:** Workers logs and analytics.
-- **Fresh start:** the test data is wiped and the real mission start date is set.
+- **Fresh start:** "Reset mission (keep players)" from `/admin` (decision 6): the mission, its milestones, the vote round and the mission log start again, and the real start date is set. Devices, pings, streaks and progress are kept.
 - **The launch checklist:** Lighthouse, an accessibility pass, both themes, reduced motion and real phones.
 
 **Data changes**
 - `network_caps` (day, net_hash, count).
-- The wipe of all test rows.
+- No wipe: the launch reset clears only the mission's own rows (decision 6).
 
 **How you test it**
 - Read the load-test report.
@@ -366,9 +366,9 @@ My recommendation is in brackets. Items marked *(brief)* come from the open ques
 3. ~~**Content pages**~~ **Decided: plain HTML pages** for How to play, the fact pages and the legal pages. The game is the React app.
 
 ### Before phase 4 (all decided 2026-11-18)
-4. ~~**First mission length**~~ **Decided: keep the design's numbers.** Coasting at 21 km/s plus the crew's pace: about 6 months with a busy crew, about 8.8 months coasting alone.
-5. ~~**Does the probe always coast?**~~ **Decided: yes.** It arrives eventually even with no players.
-6. ~~**Wipe all workers.dev test data at launch?**~~ **Decided: yes.**
+4. ~~**First mission length**~~ **Decided (changed by Nav, 18–19 Nov; replaces "about 6 months, never under 4½ months"): about 30 days to Mars at launch traffic, with self-balancing thrust.** A small crew's push is boosted and a big crowd's is squeezed: more players always means sooner, but each extra player helps a bit less, and no crowd gets there in under about 14 days. Your own km, credits and prestige progress always count in full. The formula and its numbers are in `shared/balance.ts`; `npm run sim` prints the days for different crowds. *(Formula and numbers waiting for Nav's OK, prompt 27.)*
+5. ~~**Does the probe always coast?**~~ **Decided (changed by Nav, 18–19 Nov): it coasts on its own, but pauses after 8 hours with no player activity** (any tap batch, or auto-thrust from a connected player). The next tap wakes it. While paused the screen says "Probe idle: tap to wake it" and the arrival date shows as on hold. So coasting alone never finishes a mission.
+6. ~~**Wipe all workers.dev test data at launch?**~~ **Decided (changed by Nav, 18–19 Nov): reset only the mission** (distance, route, milestones reached, the current vote round and the mission log) and set the real start date. **Keep devices, pings, streaks, progress, credits, upgrades and patches.** `/admin` gets a "Reset mission (keep players)" action so this can be tested before launch.
 
 Also decided with phase 4 (2026-11-18): **people here counts devices**, so five tabs on one phone count once. **THRUST below the fold on 375×667 is fine.** **No half-scaled sprites:** the track's Mars is a 64px sheet made from the 128px one, and the Moon shows at its full 32px.
 
@@ -382,7 +382,7 @@ Also decided with phase 5 (2026-11-18): **the setback lengthens the route** (the
 9. ~~**Do idle players move the shared probe?**~~ **Decided: yes to both**: auto-thrust while connected, plus the offline catch-up (up to 8 hours) added when they come back.
 10. ~~**Prestige**~~ **Decided: the design's number.** Any time once you've pushed 2,000,000 km since your last handover.
 
-Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 km/s, flattening towards 21 km/s, so Mars takes at least about 4½ months); **a tab hidden for 5 minutes counts as away**; **welcome back shows after 30 minutes away** with some auto-thrust, and collecting is automatic.
+Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 km/s, flattening towards 21 km/s, so Mars takes at least about 4½ months; replaced by the self-balancing thrust of decision 4 in the retune); **a tab hidden for 5 minutes counts as away**; **welcome back shows after 30 minutes away** with some auto-thrust, and collecting is automatic.
 
 ### Before phase 7 (11 and 12 decided 2026-11-19)
 11. ~~**Vote**~~ **Decided:** 3 options closing at 00:00 UTC, from a pool of about 30 drafted for approval (`content/vote-options.json`), each between a day sooner and a day later.
