@@ -245,3 +245,31 @@
   --glow-orange: 255 179 122;
   --scrim: 2 4 11; /* --page (dark), behind the upgrades sheet */
 }
+
+/* The flight view (game home 1a/1b, prompt 32) stays deep space in light mode too: the design
+   hard-codes the dark theme's colours in it, like THRUST. All are palette colours except the two
+   marked NEW, which the flight view design introduced (19 Nov evening). */
+:root {
+  --space-1: #0e1a40; /* kf-0e1a40 · window gradient, left (behind Earth) */
+  --space-2: #081128; /* kf-081128 */
+  --space-3: #05091a; /* kf-05091a */
+  --space-dusk: #140b14; /* NEW · window gradient, right (the reddish glow near Mars) */
+  --space-border: #7fb0e6; /* kf-7fb0e6 */
+  --space-outline: #04060f; /* kf-04060f */
+  --space-inset: #06102a; /* kf-06102a */
+  --space-strip: #060a1c; /* kf-060a1c · route strip and chip backgrounds */
+  --space-line-dim: #1b2a55; /* kf-1b2a55 */
+  --space-line: #3c5a8e; /* kf-3c5a8e · dashes ahead */
+  --space-origin: #2b5a8f; /* kf-2b5a8f · Earth's square on the strip */
+  --space-blue: #8ccfff; /* kf-8ccfff · trail, progress, numbers */
+  --space-orange: #ffb37a; /* kf-ffb37a · milestones, the vote at Mars */
+  --space-orange-well: #1f0f08; /* kf-1f0f08 · warning chips */
+  --space-mars: #c8743e; /* the PING and bronze ramp's #c8743e · Mars's square on the strip */
+  --space-text: #eef3ff; /* ki-eef3ff */
+  --space-text-soft: #c9d4ee; /* ki-c9d4ee */
+  --space-text-muted: #a8b6d6; /* ki-a8b6d6 */
+  --space-text-faint: #8b98ba; /* ki-8b98ba */
+  --space-text-warm: #ffd9a8; /* ki-ffd9a8 */
+  --space-text-shadow: #1c3a6e; /* kf-1c3a6e */
+  --glow-mars: 255 140 80; /* NEW · see-through glow behind Mars: rgb(var(--glow-mars) / 0.3) */
+}

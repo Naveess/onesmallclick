@@ -247,7 +247,7 @@ export class Probe extends DurableObject<Env> {
   /** Km to add to D1's daily_km at the next flush (key: day|deviceId), with the account they count for. */
   private d1Pending = new Map<
     string,
-    { day: string; deviceId: string; accountId: string | null; km: number; tapKm: number; tapMovedKm: number }
+    { day: string; deviceId: string; accountId: string | null; km: number; tapKm: number; tapMovedKm: number; taps: number }
   >();
   /** Samples of the probe's track this mission, oldest first (today's pace). */
   private track: TrackPoint[] = [];
@@ -508,12 +508,12 @@ export class Probe extends DurableObject<Env> {
     const statements = batch.flatMap((p) => [
       db
         .prepare(
-          `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km, account_id) VALUES (?, ?, ?, ?, ?, ?)
+          `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km, taps, account_id) VALUES (?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT (day, device_id) DO UPDATE SET km = km + excluded.km, tap_km = tap_km + excluded.tap_km,
-             tap_moved_km = tap_moved_km + excluded.tap_moved_km,
+             tap_moved_km = tap_moved_km + excluded.tap_moved_km, taps = taps + excluded.taps,
              account_id = COALESCE(excluded.account_id, daily_km.account_id)`,
         )
-        .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm, p.accountId),
+        .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm, p.taps, p.accountId),
       db.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(seen, p.deviceId),
     ]);
     for (const id of progressIds) {
@@ -545,7 +545,7 @@ export class Probe extends DurableObject<Env> {
       this.lastD1FlushAt = seen;
     } catch (err) {
       console.error("D1 flush failed; will retry", err);
-      for (const p of batch) this.addPending(p.day, who(p.deviceId, p.accountId), p.km, p.tapKm, p.tapMovedKm);
+      for (const p of batch) this.addPending(p.day, who(p.deviceId, p.accountId), p.km, p.tapKm, p.tapMovedKm, p.taps);
       for (const id of progressIds) this.d1Progress.add(id);
       this.scheduleD1Flush();
     }
@@ -555,13 +555,14 @@ export class Probe extends DurableObject<Env> {
     this.d1Timer ??= setTimeout(() => void this.flushD1(), D1_FLUSH_MS);
   }
 
-  private addPending(day: string, w: Who, km: number, tapKm: number, tapMovedKm = 0) {
+  private addPending(day: string, w: Who, km: number, tapKm: number, tapMovedKm = 0, taps = 0) {
     const key = `${day}|${w.deviceId}`;
-    const p = this.d1Pending.get(key) ?? { day, deviceId: w.deviceId, accountId: w.accountId, km: 0, tapKm: 0, tapMovedKm: 0 };
+    const p = this.d1Pending.get(key) ?? { day, deviceId: w.deviceId, accountId: w.accountId, km: 0, tapKm: 0, tapMovedKm: 0, taps: 0 };
     p.accountId = w.accountId;
     p.km += km;
     p.tapKm += tapKm;
     p.tapMovedKm += tapMovedKm;
+    p.taps += taps;
     this.d1Pending.set(key, p);
   }
 
@@ -1211,17 +1212,21 @@ export class Probe extends DurableObject<Env> {
       let kmToday = 0;
       let tapKmToday = 0;
       let tapMovedToday = 0;
+      let tapsToday = 0;
+      let tapsAll = 0;
       let pingDays: string[] = [];
       const round = this.vote.round;
       let voteOpt: number | null = null;
       const db = this.env.DB;
       try {
-        const [km, pings, votes] = await db.batch<{
+        const [km, pings, votes, clicks] = await db.batch<{
           km?: number | null;
           tap_km?: number | null;
           tap_moved_km?: number | null;
           day?: string;
           option?: number;
+          taps_today?: number | null;
+          taps_all?: number | null;
         }>(
           w.accountId
             ? [
@@ -1235,6 +1240,12 @@ export class Probe extends DurableObject<Env> {
                   .prepare(`SELECT DISTINCT day FROM pings WHERE account_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`)
                   .bind(w.accountId, day),
                 db.prepare(`SELECT option FROM votes WHERE round = ? AND account_id = ? LIMIT 1`).bind(round, w.accountId),
+                db
+                  .prepare(
+                    `SELECT SUM(CASE WHEN day = ? THEN taps ELSE 0 END) AS taps_today, SUM(taps) AS taps_all FROM daily_km
+                     WHERE account_id = ?`,
+                  )
+                  .bind(day, w.accountId),
               ]
             : [
                 db.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, w.deviceId),
@@ -1242,12 +1253,20 @@ export class Probe extends DurableObject<Env> {
                   .prepare(`SELECT day FROM pings WHERE device_id = ? AND day <= ? ORDER BY day DESC LIMIT 400`)
                   .bind(w.deviceId, day),
                 db.prepare(`SELECT option FROM votes WHERE round = ? AND device_id = ?`).bind(round, w.deviceId),
+                db
+                  .prepare(
+                    `SELECT SUM(CASE WHEN day = ? THEN taps ELSE 0 END) AS taps_today, SUM(taps) AS taps_all FROM daily_km
+                     WHERE device_id = ?`,
+                  )
+                  .bind(day, w.deviceId),
               ],
         );
         voteOpt = votes.results[0]?.option ?? null;
         kmToday = km.results[0]?.km ?? 0;
         tapKmToday = km.results[0]?.tap_km ?? 0;
         tapMovedToday = km.results[0]?.tap_moved_km ?? 0;
+        tapsToday = clicks.results[0]?.taps_today ?? 0;
+        tapsAll = clicks.results[0]?.taps_all ?? 0;
         pingDays = pings.results.map((r) => r.day!);
       } catch (err) {
         console.error("device read failed", err);
@@ -1258,12 +1277,19 @@ export class Probe extends DurableObject<Env> {
         kmToday += p.km;
         tapKmToday += p.tapKm;
         tapMovedToday += p.tapMovedKm;
+        tapsToday += p.taps;
+      }
+      // Taps credited but not yet flushed, from any day, count towards all time.
+      for (const p of this.d1Pending.values()) {
+        if (w.accountId ? p.accountId === w.accountId : p.deviceId === w.deviceId) tapsAll += p.taps;
       }
       const entry: DeviceEntry = {
         day,
         kmToday,
         tapKmToday,
         tapMovedToday,
+        tapsToday,
+        tapsAll,
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
@@ -1290,6 +1316,8 @@ export class Probe extends DurableObject<Env> {
       kmToday: dev.kmToday,
       tapKmToday: dev.tapKmToday,
       tapMovedToday: dev.tapMovedToday,
+      tapsToday: dev.tapsToday,
+      tapsAll: dev.tapsAll,
       pingedToday: dev.pingedToday,
       pingStreakDays: alive ? dev.pingStreakDays : 0,
       vote: dev.voteRound === this.vote.round && dev.voteOption !== null ? { round: dev.voteRound, option: dev.voteOption } : null,
@@ -1615,6 +1643,13 @@ export class Probe extends DurableObject<Env> {
     const taps = this.mission.safeSince === null ? Math.min(msg.n, Math.floor(dev.tokens)) : 0;
     dev.tokens -= taps;
 
+    // "You've clicked": only the taps credited here count (not those over the cap, or in safe mode).
+    if (taps > 0) {
+      dev.tapsToday += taps;
+      dev.tapsAll += taps;
+      this.addPending(dev.day, w, 0, 0, 0, taps);
+      this.scheduleD1Flush();
+    }
     const km = taps * tapKm(p.levels, p.patches);
     if (km > 0) {
       this.earn(w, p, dev, km, true);

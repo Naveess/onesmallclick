@@ -29,7 +29,9 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 
 ### Tonight (19 Nov)
 - [ ] **The 8a checks** (above).
-- [ ] **Flight view phase** (docs/plan.md): plan, build, deploy and check. The game home's flight view replaces `JourneyTrack`, plus "You've clicked" with per-player click counts on the server.
+- [ ] **Flight view phase** (docs/plan.md): built and pushed (prompt 32). Nav: apply migration 0008, deploy, check. Then approve or reject the two new flight view colours (`--space-dusk`, `--glow-mars`, end of docs/tokens.css).
+- [ ] **8b: do the click badges count clicks in one day or in all time?** The design's bar uses today's clicks (Steady Finger at 1,500 today); "You've clicked" follows it for now.
+- [ ] **After the flight view is approved:** delete `src/components/JourneyTrack.tsx` and `JourneyTrack.css`.
 - [ ] **8b planning**, if there's time.
 
 ### Before 8b (badges)
@@ -137,7 +139,7 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
 - [ ] **Europa Lander thruster flame**, 3 frames of 10×12 (drawn in code), for the New probe reveal (1n).
 - [ ] **THRUST trail particles**, 32×8: blue sparks (default) and red dust (drawn in code).
 - [ ] **Cosmetic skies:** Mars-dust and Salt-glow versions of `nebula-tile.png` (512×512). The design only shows them as colour gradients.
-- [ ] **Flight view art (drawn in code for now, added 19 Nov evening):**
+- [ ] **Flight view art (drawn in code for now, added 19 Nov evening; all in `src/game/flightArt.ts`, swap the sprites in there):**
   - horizontal exhaust flame, 3 frames of 12×6
   - comet, 18×5
   - speed lines

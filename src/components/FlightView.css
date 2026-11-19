@@ -1,0 +1,580 @@
+/* The flight view (game home 1a/1b, prompt 32). Deep space in both themes: only --space-* colours here.
+   Every piece is absolutely positioned from FlightView.tsx (the design's flightVals()). */
+
+.flightview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* The phone home is a flex column: without this the window, whose children are all absolutely
+     positioned, is squeezed to a line (design fix fcb448c). */
+  flex: none;
+}
+
+.flight {
+  position: relative;
+  flex: none;
+  height: 254px;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--space-1), var(--space-2) 45%, var(--space-3) 75%, var(--space-dusk));
+  border: 2px solid var(--space-border);
+  outline: 2px solid var(--space-outline);
+  box-shadow: inset 0 0 0 2px var(--space-inset);
+  color: var(--space-text);
+  /* Keep text and number spans from adding line boxes under the images */
+  line-height: 1;
+}
+
+.flight--wide {
+  height: 344px;
+}
+
+.flight img {
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.flight > img {
+  position: absolute;
+}
+
+/* --- Stars and speed lines streaming left --- */
+.flight__stars,
+.flight__streaks {
+  position: absolute;
+  inset: 0 0 44px 0;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.flight__stars--far {
+  background: url("/sprites/stars-far.png") 0 0 / 256px 256px;
+  animation: flight-scroll 60s steps(64) infinite;
+}
+
+.flight__stars--near {
+  background: url("/sprites/stars-near.png") 0 0 / 256px 256px;
+  animation: flight-scroll 24s steps(64) infinite;
+}
+
+/* The idle pause: the probe has stopped, so space stops streaming past. */
+.flight--still .flight__stars {
+  animation-play-state: paused;
+}
+
+.flight__streaks {
+  background-size: 256px 128px;
+  opacity: 0.55;
+  animation: flight-scroll 3s steps(32) infinite;
+}
+
+@keyframes flight-scroll {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -256px;
+  }
+}
+
+.flight__streaks--boost {
+  background-position: 64px 32px;
+  animation-name: flight-scroll-boost;
+  animation-duration: 1.2s;
+}
+
+@keyframes flight-scroll-boost {
+  from {
+    background-position: 64px 32px;
+  }
+  to {
+    background-position: -192px 32px;
+  }
+}
+
+.flight__comet {
+  opacity: 0;
+  animation: flight-comet 19s steps(40) 4s infinite;
+}
+
+@keyframes flight-comet {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  12% {
+    transform: translate(var(--cx), var(--cy));
+    opacity: 1;
+  }
+  13%,
+  100% {
+    transform: translate(var(--cx), var(--cy));
+    opacity: 0;
+  }
+}
+
+/* --- Bodies --- */
+.flight__far {
+  opacity: 0.8;
+  filter: drop-shadow(0 0 4px rgb(var(--glow-orange) / 0.5));
+}
+
+.flight__far-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: var(--space-text-faint);
+  white-space: nowrap;
+}
+
+.flight__mars-glow {
+  position: absolute;
+  background: radial-gradient(circle, rgb(var(--glow-mars) / 0.3), transparent 65%);
+}
+
+.flight__earth {
+  opacity: 0.9;
+}
+
+.flight__phobos {
+  animation: flight-orbit 6s steps(12) infinite;
+}
+
+@keyframes flight-orbit {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(10px, -4px);
+  }
+  50% {
+    transform: translate(0, -8px);
+  }
+  75% {
+    transform: translate(-10px, -4px);
+  }
+}
+
+/* --- The next milestone's beacon --- */
+.flight__beacon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.flight__beacon-light {
+  width: 6px;
+  height: 6px;
+  background: var(--space-orange);
+  box-shadow: 0 0 10px rgb(var(--glow-orange) / 0.9);
+  animation: flight-blink 1s steps(1) infinite;
+}
+
+.flight__beacon-pole {
+  width: 2px;
+  height: 10px;
+  background: var(--space-orange);
+}
+
+.flight__beacon-label {
+  padding: 1px 5px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--space-orange);
+  border: 2px solid var(--space-orange);
+  background: var(--space-strip);
+  white-space: nowrap;
+}
+
+@keyframes flight-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.25;
+  }
+}
+
+/* --- The crew's sparks, the flame, the trail and the path ahead --- */
+.flight__spark {
+  position: absolute;
+  left: 0;
+  width: 3px;
+  height: 2px;
+  background: var(--space-blue);
+  opacity: 0;
+  animation: flight-crew 2.2s steps(14) infinite;
+}
+
+.flight__spark--white {
+  background: var(--space-text);
+}
+
+@keyframes flight-crew {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(var(--d));
+    opacity: 0;
+  }
+}
+
+.flight__flame {
+  position: absolute;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.flight__flame img {
+  display: block;
+  animation: flight-sheet 0.24s steps(3) infinite;
+}
+
+@keyframes flight-sheet {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.flight__ahead {
+  position: absolute;
+  width: 4px;
+  height: 2px;
+  background: var(--space-line);
+}
+
+.flight__trail {
+  position: absolute;
+  background: var(--space-blue);
+  box-shadow: 0 0 4px rgb(var(--glow-blue) / 0.6);
+}
+
+.flight__probe {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  line-height: 0;
+  filter: drop-shadow(0 0 6px rgb(var(--glow-blue) / 0.75));
+}
+
+/* Safe mode: the probe goes grey and dim (the design's filter). */
+.flight__probe--off {
+  filter: grayscale(0.85) brightness(0.7);
+}
+
+.flight__pop {
+  position: absolute;
+  z-index: 4;
+  font: 22px/1 var(--font-num);
+  color: var(--space-text);
+  text-shadow: 2px 2px 0 var(--space-text-shadow);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* --- Header bar: progress and speed --- */
+.flight__head {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--space-outline) 85%, transparent), transparent);
+}
+
+.flight--wide .flight__head {
+  height: 34px;
+}
+
+.flight__id {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--space-text-muted);
+}
+
+.flight__pct {
+  font: 22px/1 var(--font-num);
+  letter-spacing: 0;
+  color: var(--space-blue);
+}
+
+.flight--wide .flight__pct {
+  font-size: 26px;
+}
+
+.flight__speed {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font: 18px/1 var(--font-num);
+  color: var(--space-text);
+  white-space: nowrap;
+}
+
+.flight--wide .flight__speed {
+  font-size: 22px;
+}
+
+.flight__chev {
+  color: var(--space-orange);
+}
+
+.flight__eta-label {
+  margin-left: 14px;
+  font: 10px var(--font-ui);
+  letter-spacing: 0.12em;
+  color: var(--space-text-muted);
+}
+
+/* --- Warning chips: safe mode, the final 60 seconds, the idle pause --- */
+.flight__chip {
+  position: absolute;
+  left: 50%;
+  top: 36px;
+  z-index: 4;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 2px 8px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  color: var(--space-orange);
+  border: 2px solid var(--space-orange);
+  background: var(--space-orange-well);
+}
+
+.flight--wide .flight__chip {
+  top: 40px;
+}
+
+.flight__chip span {
+  letter-spacing: 0;
+  color: var(--space-text-warm);
+}
+
+.flight__chip--safe {
+  padding: 4px 10px;
+  outline: 2px solid var(--space-outline);
+  animation: flight-urgent-box 1.4s steps(4) infinite;
+}
+
+.flight__chip--low {
+  display: block;
+  animation: flight-blink 1s steps(1) infinite;
+}
+
+.flight__chip--low .flight__chip-num {
+  font: 18px/1 var(--font-num);
+  color: inherit;
+}
+
+/* Not in the design: the idle pause in the same chip, in the probe's blue (action: tap to wake it). */
+.flight__chip--idle {
+  padding: 4px 10px;
+  color: var(--space-blue);
+  border-color: var(--space-blue);
+  background: var(--space-strip);
+}
+
+.flight__chip--idle span {
+  color: var(--space-text-soft);
+}
+
+@keyframes flight-urgent-box {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgb(var(--glow-orange) / 0);
+  }
+  50% {
+    box-shadow: 0 0 28px rgb(var(--glow-orange) / 0.5);
+  }
+}
+
+/* --- Crew and Mars, bottom left --- */
+.flight__info {
+  position: absolute;
+  left: 12px;
+  bottom: 54px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--space-text-soft);
+}
+
+.flight--wide .flight__info {
+  font-size: 13px;
+}
+
+.flight__info-num {
+  font: 17px/1 var(--font-num);
+  color: var(--space-blue);
+}
+
+.flight--wide .flight__info-num {
+  font-size: 20px;
+}
+
+.flight__info-num--orange {
+  color: var(--space-orange);
+}
+
+/* --- The route strip --- */
+.flight__strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  background: var(--space-strip);
+  border-top: 2px solid var(--space-line-dim);
+}
+
+.flight__route {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 12px;
+  height: 28px;
+}
+
+.flight__route > span,
+.flight__route > img {
+  position: absolute;
+}
+
+.flight__origin {
+  left: -2px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+  background: var(--space-origin);
+}
+
+.flight__rest {
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--space-line) 0 4px, transparent 4px 8px);
+}
+
+.flight__done {
+  height: 4px;
+  background: var(--space-blue);
+  box-shadow: 0 0 6px rgb(var(--glow-blue) / 0.6);
+}
+
+.flight__tick {
+  width: 2px;
+  height: 14px;
+  background: var(--space-line);
+}
+
+.flight__tick--passed {
+  background: var(--space-blue);
+}
+
+.flight__tick--next {
+  background: var(--space-orange);
+}
+
+.flight__mini {
+  filter: drop-shadow(0 0 4px rgb(var(--glow-blue) / 0.8));
+}
+
+.flight__mars-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--space-mars);
+}
+
+.flight__dash {
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--space-orange) 0 3px, transparent 3px 6px);
+}
+
+.flight__fork {
+  width: 2px;
+  height: 24px;
+  background: var(--space-orange);
+}
+
+.flight__branch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--space-orange);
+  white-space: nowrap;
+}
+
+.flight__strip-label {
+  position: absolute;
+  left: 12px;
+  top: 2px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--space-text-muted);
+}
+
+.flight__strip-label--vote {
+  left: auto;
+  right: 12px;
+  color: var(--space-orange);
+}
+
+/* --- Under the window (phone): travelled and the next milestone --- */
+.flightview__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 0 2px;
+}
+
+.flightview__foot-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.flightview__foot .num {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.flightview__foot-next {
+  text-align: right;
+  color: var(--text-orange);
+}
+
+.flightview__foot-next .flightview__foot-label {
+  color: var(--text-orange);
+}

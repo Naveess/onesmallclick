@@ -189,3 +189,11 @@
 [data-theme="light"] {
   --medal-gold-text: #7a5000; --medal-silver-text: #2b3b62; --medal-bronze-text: #8a4620;
 }
+
+/* Flight view (game home 1a/1b, added 2026-11-19 evening, prompt 32; waiting for Nav's OK).
+   The design's flight window stays deep space in light mode, using the dark values above, plus two
+   colours that aren't elsewhere in the palette: */
+:root {
+  --space-dusk: #140b14;      /* the window's gradient ends in a dark red near Mars */
+  --glow-mars: 255 140 80;    /* rgba(255,140,80,.3): the soft glow behind Mars */
+}

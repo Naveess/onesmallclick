@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { ICON_NAMES, type IconName } from "../components/iconPaths";
 import { PixelButton } from "../components/PixelButton";
 import { PixelIcon, type IconTone } from "../components/PixelIcon";
@@ -6,7 +6,8 @@ import { Sky } from "../components/Sky";
 import { Sprite, type PixelScale } from "../components/Sprite";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AdSlot, HereNow } from "../components/GameCards";
-import { JourneyTrack } from "../components/JourneyTrack";
+import { ClickCounter } from "../components/ClickCounter";
+import { FlightView, type FlightHandle } from "../components/FlightView";
 import { ThrustButton } from "../components/ThrustButton";
 import { Window } from "../components/Window";
 import { MILESTONES, ROUTE_KM } from "../game/rules";
@@ -138,13 +139,34 @@ function KitSection({ title, children }: { title: string; children: ReactNode })
 /* Phase 3 pieces of the game home, with fixed sample numbers. */
 function GamePiecesSection() {
   const [taps, setTaps] = useState(0);
+  const flight = useRef<FlightHandle>(null);
   const sampleKm = 182_406_311;
+  // The flight view (prompt 32) with fixed sample numbers, and its states: safe mode only shows here,
+  // because in the game safe mode replaces the home with its own screen (1f).
+  const flightSample = {
+    progress: sampleKm / ROUTE_KM,
+    distanceKm: sampleKm,
+    routeKm: ROUTE_KM,
+    speedKmS: 29.62,
+    crewKmS: 120,
+    online: 12_481,
+    handful: false,
+    arrivalAt: Date.UTC(2027, 1, 16),
+    milestones: MILESTONES,
+    nextMilestone: MILESTONES[3],
+    toNextKm: MILESTONES[3].km - sampleKm,
+    safe: false,
+    urgent: false,
+    signalLeftS: 15_152,
+    paused: false,
+  };
   return (
     <KitSection title="Game home pieces · phase 3">
       <div className="kit-row kit-row--center">
         <ThrustButton
           onThrust={() => {
             setTaps((t) => t + 1);
+            flight.current?.boost(12);
             return 12;
           }}
         />
@@ -153,14 +175,17 @@ function GamePiecesSection() {
         <span className="kit-strong">ThrustButton.</span> The same in both themes (fixed --thrust-* colours). 184px here, 240px on
         the wide layout. Taps on this sample: <span className="num kit-blue">{taps}</span>
       </p>
-      <JourneyTrack
-        progress={sampleKm / ROUTE_KM}
-        distanceKm={sampleKm}
-        routeKm={ROUTE_KM}
-        milestones={MILESTONES}
-        nextMilestone={MILESTONES[2]}
-        toNextKm={MILESTONES[2].km - sampleKm}
-      />
+      <ClickCounter today={1_284 + taps} all={48_920 + taps} />
+      <p className="kit-note">
+        <span className="kit-strong">FlightView.</span> Deep space in both themes (fixed --space-* colours). THRUST above boosts it.
+      </p>
+      <FlightView handle={flight} {...flightSample} />
+      <p className="kit-note">Final 60 seconds of the signal</p>
+      <FlightView {...flightSample} urgent signalLeftS={42} />
+      <p className="kit-note">Idle pause (nobody tapping), and a small crew</p>
+      <FlightView {...flightSample} paused crewKmS={0} online={3} arrivalAt={null} />
+      <p className="kit-note">Safe mode (in the game, safe mode shows its own screen instead)</p>
+      <FlightView {...flightSample} safe crewKmS={0} />
       <div className="kit-row">
         <HereNow online={12_481} idling={null} />
         <HereNow online={7} idling={48_206} />

@@ -15,7 +15,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
-  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Target: built and deployed tonight.
+  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32) with migration 0008; waiting for Nav's deploy and checks.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges)
   - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
@@ -335,6 +335,52 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 **Main risks**
 - **Performance on phones.** Many moving layers; keep them to CSS transforms and `steps()`, and cap the sparks and particles.
 - **Whole-number scaling** of Mars and Earth as they grow: use a few fixed sizes rather than smooth scaling.
+
+**As built (2026-11-19, prompt 32; waiting for Nav's migration, deploy and checks)**
+- **`FlightView`** (`src/components/FlightView.tsx` and `.css`) replaces `JourneyTrack` on the game home, phone and wide. Its layout follows the design's `flightVals()`, measured from the window's real width.
+  - It has every piece of 1a/1b:
+    - the stars and speed lines streaming left;
+    - the comet;
+    - Ceres? and Vesta? ahead (plus Jupiter on wide screens);
+    - Mars with its glow, and Phobos past 85%;
+    - Earth behind;
+    - the probe with its flame, trail and dashed path ahead;
+    - the next-milestone beacon (the real milestones from `content/milestones.json`);
+    - the header (progress, speed, and the ETA on wide screens);
+    - "N crew pushing / Mars looks N× bigger";
+    - the route strip with its ticks, tiny probe, Mars and the Ceres/Vesta fork.
+  - The phone's "Travelled / Next" line sits under the window, as in the design. The window has `flex: none` and a fixed height (254px phone, 344px wide).
+  - **THRUST** boosts it for 240 ms through a handle from `GamePage`: the probe shifts 8px, the flame doubles to 4×, the extra speed lines show, the chevrons light up, and "+N km" pops.
+  - **Crew sparks** come from the live crew pace (`crewKmS`, out of the most the crew can add): none while nobody pushes, at least 2, up to 6 on phones and 9 wide; `?crew=handful` shows 2. No per-tap broadcast.
+  - **States:**
+    - The final 60 seconds: the blinking "SIGNAL 00:00:42 · PING NOW" chip.
+    - The idle pause: engine off, the stars stop, 0.00 km/s, ETA "On hold", and a blue "PROBE IDLE · Tap THRUST to wake it" chip. This chip isn't in the design; it's built in the design's chip style.
+    - Reduced motion: no streaming, flame, sparks, comet or pop.
+    - Safe mode: engine off, the probe greyed out, the "SAFE MODE · ENGINE OFF" chip. In the game, safe mode still replaces the home with its own screen (1f), so this state shows only on `/kit`, which now has the flight view in all four states.
+  - It stays deep space in light mode: it uses only the fixed `--space-*` colours at the end of `src/styles/theme.css`. Two of them are new and wait for Nav's OK (listed at the end of `docs/tokens.css`): `--space-dusk` #140b14 (the window's gradient near Mars) and `--glow-mars` (rgba 255,140,80 at 30%, the glow behind Mars).
+- **Art drawn in code** (`src/game/flightArt.ts`, ported from the design's drawing code, made once on a canvas and cached): Mars and Earth, the flame (3 frames of 12×6), the comet (18×5), the speed lines, Ceres, Vesta (16×14), Jupiter, Phobos, the tiny probe and the strip's swatches.
+  - Mars and Earth step through fixed radii (Mars 9 sizes, Earth 6, each drawn 1:1); everything else shows at 1×, 2× or 4×.
+  - The Sun isn't in the flight view, so it wasn't drawn.
+  - PixelLab sprites replace these in that one file.
+- **"You've clicked"** (`ClickCounter`) under the THRUST rates: today's clicks as a six-digit odometer, all time, and the bar to the next click badge (`shared/clicks.ts`).
+  - As in the design, the bar counts **today's** clicks. Whether the badges count a day's clicks or all-time clicks is for 8b to settle.
+  - Past 10,000 it shows "Ten Thousand Club reached".
+- **Click counts on the server:** the `Probe` counts the taps it credits (after the tap cap; none in safe mode) per player (the account when signed in, else the device), in today's entry it already keeps.
+  - They're copied to D1 with the km (`daily_km.taps`, migration 0008).
+  - Today is that day's rows and all time is the sum of all rows.
+  - Signing in already moves a device's `daily_km` rows onto the account, so the counts add up with no new merge code.
+  - Taps not yet confirmed show straight away and are corrected by the server's reply.
+- **Migration 0008:** `daily_km.taps`, and an index on `daily_km (device_id, day)` for a guest's all-time sum.
+- `JourneyTrack.tsx` and its CSS are kept but no longer used (removed once the flight view is approved).
+- **Checked locally:**
+  - Screenshots at 375, 390 and 1440 in both themes, next to the design file's 1a/1b. Also: the boost, the start and near Mars (phone and wide), a small crew, reduced motion, the final seconds, the idle pause, and the `/kit` states.
+  - A scripted check passed in full:
+    - Capped and safe-mode taps don't count.
+    - The counts survive a reconnect.
+    - Two devices on one email add up and share the count.
+    - D1's `daily_km.taps` matches after the flush.
+  - The 8a auth checks pass again.
+  - `npm run build` passes.
 
 ## Phase 8: Accounts, leaderboards, profile and arrival
 

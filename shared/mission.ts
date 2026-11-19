@@ -110,6 +110,9 @@ export interface DeviceToday {
   tapKmToday: number;
   /** What this device's taps moved the shared probe today, after balancing ("your taps today got us there X sooner"). */
   tapMovedToday: number;
+  /** THRUST taps the server credited today (UTC) and in all time: capped and safe-mode taps don't count ("You've clicked"). */
+  tapsToday: number;
+  tapsAll: number;
   pingedToday: boolean;
   /** Consecutive days with a ping, up to today or yesterday. */
   pingStreakDays: number;

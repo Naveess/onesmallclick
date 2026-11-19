@@ -1,6 +1,8 @@
+import { useRef } from "react";
+import { ClickCounter } from "../components/ClickCounter";
+import { FlightView, type FlightHandle } from "../components/FlightView";
 import { AdSlot, ArrivalEstimate, SignalCard, VoteCard } from "../components/GameCards";
 import { GameShell } from "../components/GameShell";
-import { JourneyTrack } from "../components/JourneyTrack";
 import { SafeMode } from "../components/SafeMode";
 import { PixelIcon } from "../components/PixelIcon";
 import { ThrustButton } from "../components/ThrustButton";
@@ -14,6 +16,13 @@ import "./GamePage.css";
 export function GamePage() {
   useDocumentTitle("OneSmallClick · push one probe to Mars together");
   const { probe, player, view, connection } = useGame();
+  const flight = useRef<FlightHandle>(null);
+  // THRUST also boosts the probe in the flight view, with its "+km".
+  const onThrust = () => {
+    const km = thrust();
+    flight.current?.boost(km);
+    return km;
+  };
 
   return (
     <GameShell tab="mission">
@@ -35,17 +44,29 @@ export function GamePage() {
           );
         }
 
+        // The flight view replaces JourneyTrack (prompt 32); JourneyTrack.tsx stays until the flight view is approved.
         const track = (
-          <JourneyTrack
+          <FlightView
+            handle={flight}
             wide={wide}
             progress={view.progress}
             distanceKm={probe.distanceKm}
             routeKm={probe.routeKm}
+            speedKmS={view.speedKmS}
+            crewKmS={probe.crewKmS}
+            online={probe.online}
+            handful={switches.handful}
+            arrivalAt={view.arrivalAt}
             milestones={MILESTONES}
             nextMilestone={view.nextMilestone}
             toNextKm={view.toNextKm}
+            safe={view.safe}
+            urgent={view.signalUrgent}
+            signalLeftS={view.signalLeftS}
+            paused={view.paused}
           />
         );
+        const clicks = <ClickCounter wide={wide} today={player.tapsToday} all={player.tapsAll} />;
         const signal = (
           <SignalCard
             wide={wide}
@@ -78,7 +99,7 @@ export function GamePage() {
               {track}
               {signal}
               <section className="home__thrust" aria-label="Thrust">
-                <ThrustButton onThrust={thrust} />
+                <ThrustButton onThrust={onThrust} />
                 <div className="home__rates">
                   <span className="num">
                     +{view.tapKm} km <small>per tap</small>
@@ -87,6 +108,7 @@ export function GamePage() {
                     +{view.autoKmS.toFixed(2)} km/s <small>auto</small>
                   </span>
                 </div>
+                {clicks}
                 <button type="button" className="home__afford" onClick={openUpgrades} aria-haspopup="dialog">
                   {view.affordable} upgrades affordable · {int(player.credits)} cr
                 </button>
@@ -122,7 +144,7 @@ export function GamePage() {
             <div className="home__columns">
               {signal}
               <section className="home__thrust home__thrust--wide" aria-label="Thrust">
-                <ThrustButton onThrust={thrust} size="lg" hint="click or press space" spaceKey />
+                <ThrustButton onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
                 <div className="home__rates">
                   <span className="num">
                     +{view.tapKm} km <small>per click</small>
@@ -131,6 +153,7 @@ export function GamePage() {
                     +{view.autoKmS.toFixed(2)} km/s <small>auto-thrust</small>
                   </span>
                 </div>
+                {clicks}
                 <button type="button" className="home__upgrades" onClick={openUpgrades} aria-haspopup="dialog">
                   <PixelIcon name="bolt" size={18} tone="blue" />
                   Upgrades · {view.affordable} affordable · {int(player.credits)} cr

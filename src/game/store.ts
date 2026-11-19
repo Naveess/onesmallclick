@@ -99,6 +99,9 @@ export interface PlayerState {
   tapKmToday: number;
   /** What your taps moved the shared probe today; sets "your taps today got us there X sooner". */
   tapMovedToday: number;
+  /** "You've clicked": your THRUST taps today (UTC) and in all time, from the server plus taps not yet confirmed. */
+  tapsToday: number;
+  tapsAll: number;
   pingedToday: boolean;
   /** True while a ping is on its way (bot check, then the server). */
   pinging: boolean;
@@ -161,7 +164,16 @@ const MAX_PENDING_TAPS = Math.round(MAX_TAPS_PER_S * (BATCH_MS / 1000) * 1.5);
 
 let server: ProbeSnapshot | null = readCache();
 let offsetMs = 0; // server clock − device clock
-let serverToday: DeviceToday = { kmToday: 0, tapKmToday: 0, tapMovedToday: 0, pingedToday: false, pingStreakDays: 0, vote: null };
+let serverToday: DeviceToday = {
+  kmToday: 0,
+  tapKmToday: 0,
+  tapMovedToday: 0,
+  tapsToday: 0,
+  tapsAll: 0,
+  pingedToday: false,
+  pingStreakDays: 0,
+  vote: null,
+};
 let pendingTaps = 0;
 const inFlight = new Map<number, number>(); // seq → taps sent, not yet credited
 let me: Progress | null = null;
@@ -242,6 +254,8 @@ function initialState(): GameState {
       kmToday: 0,
       tapKmToday: 0,
       tapMovedToday: 0,
+      tapsToday: 0,
+      tapsAll: 0,
       pingedToday: false,
       pinging: false,
       voteChoice: null,
@@ -312,6 +326,8 @@ function compose(base: GameState, connection = base.connection): GameState {
       kmToday: serverToday.kmToday + optimisticKm,
       tapKmToday: serverToday.tapKmToday + optimisticKm,
       tapMovedToday: serverToday.tapMovedToday + optimisticKm * (p?.crewFactor ?? 1),
+      tapsToday: serverToday.tapsToday + unconfirmedTaps(),
+      tapsAll: serverToday.tapsAll + unconfirmedTaps(),
       pingedToday: serverToday.pingedToday,
       pingStreakDays: serverToday.pingStreakDays,
       // Your vote counts only for the round it was cast in; a new round starts empty.
@@ -334,6 +350,8 @@ function onMessage(msg: ServerMessage) {
       kmToday: msg.kmToday,
       tapKmToday: msg.tapKmToday,
       tapMovedToday: msg.tapMovedToday ?? 0,
+      tapsToday: msg.tapsToday ?? 0,
+      tapsAll: msg.tapsAll ?? 0,
       pingedToday: msg.pingedToday,
       pingStreakDays: msg.pingStreakDays,
       vote: msg.vote,
