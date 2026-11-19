@@ -167,6 +167,8 @@ button{font-family:'Pixelify Sans',monospace}
 <sc-if value="{{ flP.beaconOn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;{{ flP.beacon }};display:flex;flex-direction:column;align-items:center;gap:2px"><span data-anim style="width:6px;height:6px;background:#ffb37a;box-shadow:0 0 10px rgba(255,179,122,.9);animation:osc-blink 1s steps(1) infinite"></span><span style="width:2px;height:10px;background:#ffb37a"></span><span style="padding:1px 5px;font-size:10px;letter-spacing:.08em;color:#ffb37a;border:2px solid #ffb37a;background:#060a1c;white-space:nowrap">NEXT · {{ flP.beaconLab }}</span></div></sc-if>
 <sc-if value="{{ flP.engineOn }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ flP.sparks }}" as="k" hint-placeholder-count="6"><span data-anim style="position:absolute;left:0;width:3px;height:2px;{{ k.st }};opacity:0;animation:osc-crew 2.2s steps(14) infinite"></span></sc-for>
 <div data-anim style="position:absolute;{{ flP.flameSt }};overflow:hidden;z-index:2"><img data-anim src="{{ flP.flame }}" alt="" style="display:block;width:300%;height:100%;max-width:none;image-rendering:pixelated;animation:osc-sheet .24s steps(3) infinite"></div></sc-if>
+<sc-for list="{{ flP.ahead }}" as="a" hint-placeholder-count="8"><span style="position:absolute;{{ a.st }};width:4px;height:2px;background:#3c5a8e"></span></sc-for>
+<sc-for list="{{ flP.trail }}" as="t" hint-placeholder-count="10"><span style="position:absolute;{{ t.st }};background:#8ccfff;box-shadow:0 0 4px rgba(140,207,255,.6)"></span></sc-for>
 <div style="position:absolute;{{ flP.probe }};z-index:3;{{ flP.probeFx }}"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.75));animation:osc-bob 1.2s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .4s steps(4) infinite"></div></div>
 <sc-if value="{{ flP.boost }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ flP.popSt }};z-index:4;font:22px/1 VT323,monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">+{{ tap }} km</span></sc-if>
 <div style="position:absolute;left:0;right:0;top:0;height:30px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 12px;background:linear-gradient(180deg,rgba(4,6,15,.85),rgba(4,6,15,0))">
@@ -184,7 +186,7 @@ button{font-family:'Pixelify Sans',monospace}
 <span style="position:absolute;{{ flP.strip.rest }};background:repeating-linear-gradient(90deg,#3c5a8e 0 4px,transparent 4px 8px)"></span>
 <span style="position:absolute;{{ flP.strip.done }};background:#8ccfff;box-shadow:0 0 6px rgba(140,207,255,.6)"></span>
 <sc-for list="{{ flP.strip.ticks }}" as="t" hint-placeholder-count="4"><span style="position:absolute;{{ t.st }};width:2px;height:14px"></span></sc-for>
-<span style="position:absolute;{{ flP.strip.probe }};width:10px;height:10px;background:#eef3ff;transform:rotate(45deg);outline:2px solid #8ccfff"></span>
+<img src="{{ flP.mini }}" alt="" style="position:absolute;{{ flP.strip.probe }};width:24px;height:10px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(140,207,255,.8))">
 <span style="position:absolute;{{ flP.strip.mars }};width:10px;height:10px;background:#c8743e"></span>
 <span style="position:absolute;{{ flP.strip.link }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
 <span style="position:absolute;{{ flP.strip.fork }};width:2px;background:#ffb37a"></span>
@@ -345,6 +347,8 @@ button{font-family:'Pixelify Sans',monospace}
 <sc-if value="{{ flD.beaconOn }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;{{ flD.beacon }};display:flex;flex-direction:column;align-items:center;gap:2px"><span data-anim style="width:6px;height:6px;background:#ffb37a;box-shadow:0 0 10px rgba(255,179,122,.9);animation:osc-blink 1s steps(1) infinite"></span><span style="width:2px;height:10px;background:#ffb37a"></span><span style="padding:1px 5px;font-size:10px;letter-spacing:.08em;color:#ffb37a;border:2px solid #ffb37a;background:#060a1c;white-space:nowrap">NEXT · {{ flD.beaconLab }}</span></div></sc-if>
 <sc-if value="{{ flD.engineOn }}" hint-placeholder-val="{{ true }}"><sc-for list="{{ flD.sparks }}" as="k" hint-placeholder-count="6"><span data-anim style="position:absolute;left:0;width:3px;height:2px;{{ k.st }};opacity:0;animation:osc-crew 2.2s steps(14) infinite"></span></sc-for>
 <div data-anim style="position:absolute;{{ flD.flameSt }};overflow:hidden;z-index:2"><img data-anim src="{{ flD.flame }}" alt="" style="display:block;width:300%;height:100%;max-width:none;image-rendering:pixelated;animation:osc-sheet .24s steps(3) infinite"></div></sc-if>
+<sc-for list="{{ flD.ahead }}" as="a" hint-placeholder-count="8"><span style="position:absolute;{{ a.st }};width:4px;height:2px;background:#3c5a8e"></span></sc-for>
+<sc-for list="{{ flD.trail }}" as="t" hint-placeholder-count="10"><span style="position:absolute;{{ t.st }};background:#8ccfff;box-shadow:0 0 4px rgba(140,207,255,.6)"></span></sc-for>
 <div style="position:absolute;{{ flD.probe }};z-index:3;{{ flD.probeFx }}"><div data-anim role="img" aria-label="Probe OSC-1" style="filter:drop-shadow(0 0 6px rgba(140,207,255,.75));animation:osc-bob 1.2s steps(2) infinite;width:64px;height:40px;overflow:hidden"><img data-anim src="assets/probe-sheet.png" alt="" style="display:block;width:400%;height:100%;image-rendering:pixelated;max-width:none;flex:none;animation:osc-sheet .4s steps(4) infinite"></div></div>
 <sc-if value="{{ flD.boost }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;{{ flD.popSt }};z-index:4;font:22px/1 VT323,monospace;color:#eef3ff;text-shadow:2px 2px 0 #1c3a6e">+{{ tap }} km</span></sc-if>
 <div style="position:absolute;left:0;right:0;top:0;height:34px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 12px;background:linear-gradient(180deg,rgba(4,6,15,.85),rgba(4,6,15,0))">
@@ -362,7 +366,7 @@ button{font-family:'Pixelify Sans',monospace}
 <span style="position:absolute;{{ flD.strip.rest }};background:repeating-linear-gradient(90deg,#3c5a8e 0 4px,transparent 4px 8px)"></span>
 <span style="position:absolute;{{ flD.strip.done }};background:#8ccfff;box-shadow:0 0 6px rgba(140,207,255,.6)"></span>
 <sc-for list="{{ flD.strip.ticks }}" as="t" hint-placeholder-count="4"><span style="position:absolute;{{ t.st }};width:2px;height:14px"></span></sc-for>
-<span style="position:absolute;{{ flD.strip.probe }};width:10px;height:10px;background:#eef3ff;transform:rotate(45deg);outline:2px solid #8ccfff"></span>
+<img src="{{ flD.mini }}" alt="" style="position:absolute;{{ flD.strip.probe }};width:24px;height:10px;image-rendering:pixelated;filter:drop-shadow(0 0 4px rgba(140,207,255,.8))">
 <span style="position:absolute;{{ flD.strip.mars }};width:10px;height:10px;background:#c8743e"></span>
 <span style="position:absolute;{{ flD.strip.link }};height:2px;background:repeating-linear-gradient(90deg,#ffb37a 0 3px,transparent 3px 6px)"></span>
 <span style="position:absolute;{{ flD.strip.fork }};width:2px;background:#ffb37a"></span>
@@ -2203,6 +2207,10 @@ class Component extends DCLogic {
     this._comet = this.grid(['..............bb..', '.........bbBBBwww.', '...bbBBBBBBwwwwwww', '.........bbBBBwww.', '..............bb..'], { b: '#2b5a8f', B: '#8ccfff', w: '#eef3ff' });
     return this._comet;
   }
+  miniProbe() {
+    if (!this._mini) this._mini = this.grid(['.....ww.....', 'bb..wwww..bb', 'bbBBwwwwBBbb', 'bb..wwww..bb', '.....ww.....'], { b: '#2d6fbc', B: '#8ccfff', w: '#eef3ff' });
+    return this._mini;
+  }
   boost() { clearTimeout(this.bt); this.setState({ boostOn: true }); this.bt = setTimeout(() => this.setState({ boostOn: false }), 240); }
   flightVals(pctNum, big) {
     const prev = Number(this.props.flightProgress ?? 0);
@@ -2210,7 +2218,7 @@ class Component extends DCLogic {
     const boost = !!this.state.boostOn && this.props.signalState !== 'safe mode', sig = this.props.signalState ?? 'healthy', safe = sig === 'safe mode', low = sig === 'final seconds', burn = !!this.props.landingBurn, motion = this.props.particles !== false;
     const mR = Math.round((big ? 14 : 9) + (big ? 120 : 62) * Math.pow(f, 1.4)), eR = Math.max(3, Math.round((big ? 40 : 24) - (big ? 34 : 20) * Math.pow(f, .6)));
     const mS = mR * 2 + 2, eS = eR * 2 + 2, cy = Math.round(H * (big ? .48 : .5));
-    const mx = Math.round(W - (big ? 120 : 40) - mR * .2), px = Math.round(W * (big ? .3 : .3));
+    const mx = Math.round(W - (big ? 120 : 40) - mR * .2), px = Math.round(W * ((big ? .14 : .16) + (big ? .46 : .42) * f));
     const MS = [[.042, 'PAST THE MOON'], [.25, 'MID-COURSE BURN'], [.5, 'HALFWAY'], [.896, 'PHOBOS IN VIEW']];
     const nx = MS.find(m => m[0] > f), span = nx ? nx[0] - (MS[MS.indexOf(nx) - 1] || [0])[0] : 1;
     const bx = nx ? Math.round(px + 50 + Math.min(1, (nx[0] - f) / span) * Math.max(10, mx - mR - px - 120)) : -200;
@@ -2220,8 +2228,11 @@ class Component extends DCLogic {
       : [{ img: this.RW.icons.ceres, w: 16, h: 16, x: W - 64, y: 44, label: 'Ceres?' }, { img: this.ORB.vesta, w: 16, h: 14, x: W - 26, y: 74, label: 'Vesta?' }];
     const sparks = Array.from({ length: !motion || safe ? 0 : !this.busy() ? 2 : big ? 9 : 6 }, (_, i) => ({ st: `top:${cy - 14 + ((i * 7) % 28)}px;--d:${px - 26}px;animation-delay:${(i * .37).toFixed(2)}s;background:${i % 3 ? '#8ccfff' : '#eef3ff'}` }));
     const fl = boost ? 4 : 2;
+    const trail = [], ahead = [];
+    for (let x = 8; x < px - 34; x += 8) { const k = x / Math.max(1, px - 34); trail.push({ st: `left:${x}px;top:${cy - 1}px;width:${k > .7 ? 3 : 2}px;height:${k > .7 ? 3 : 2}px;opacity:${(.25 + .75 * k).toFixed(2)}` }); }
+    for (let x = px + 40; x < mx - mR - 8; x += 12) ahead.push({ st: `left:${x}px;top:${cy}px` });
     return {
-      engineOn: !safe && motion, safe, low, burn, probeFx: safe ? 'filter:grayscale(.85) brightness(.7)' : '',
+      engineOn: !safe && motion, safe, low, burn, trail, ahead, mini: this.miniProbe(), probeFx: safe ? 'filter:grayscale(.85) brightness(.7)' : '',
       w: W, h: H, streaks: this.streaks(), flame: this.flameSheet2(), comet: this.comet(), boost, boostOp: boost ? '1' : '0', chevOp: boost ? '1' : '.35',
       earth: this.planetAt('earth', eR), earthSt: `left:${-Math.round(eR * .9)}px;top:${cy + 26 - eR - 1}px;width:${eS}px;height:${eS}px`,
       mars: this.planetAt('mars', mR), marsSt: `left:${mx - mR - 1}px;top:${cy - mR - 1}px;width:${mS}px;height:${mS}px`,
@@ -2236,7 +2247,7 @@ class Component extends DCLogic {
       far: far.map(p => ({ ...p, st: `left:${p.x - p.w / 2}px;top:${p.y - p.h / 2}px;width:${p.w}px;height:${p.h}px`, lab: `left:${p.x}px;top:${p.y + 10}px` })),
       strip: {
         done: `left:0;top:12px;width:${xp}px;height:4px`, rest: `left:${xp}px;top:13px;width:${xm - xp}px;height:2px`,
-        probe: `left:${xp - 5}px;top:9px`, mars: `left:${xm - 5}px;top:9px`, fork: `left:${xk}px;top:2px;height:24px`, link: `left:${xm + 5}px;top:13px;width:${xk - xm - 5}px`,
+        probe: `left:${xp - 12}px;top:9px`, mars: `left:${xm - 5}px;top:9px`, fork: `left:${xk}px;top:2px;height:24px`, link: `left:${xm + 5}px;top:13px;width:${xk - xm - 5}px`,
         up: `left:${xk}px;top:2px;width:${xf - xk}px`, down: `left:${xk}px;top:24px;width:${xf - xk}px`,
         ceres: `left:${xf}px;top:-1px`, vesta: `left:${xf}px;top:21px`,
         ticks: MS.map(m => ({ st: `left:${Math.round(m[0] * xm) - 1}px;top:7px;background:${m[0] <= f ? '#8ccfff' : m === nx ? '#ffb37a' : '#3c5a8e'}` }))
