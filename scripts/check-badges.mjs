@@ -203,8 +203,8 @@ check(leftover === 0, "the guest's badge rows moved to the account");
 await wait(1100);
 await h.taps(5);
 h.close();
-console.log("waiting for the D1 flush…");
-await wait(32_000);
+console.log("waiting for the D1 flush (every 5 minutes)…");
+await wait(305_000);
 lb = await H.get("/api/leaderboard?board=players");
 check(lb.signedIn && lb.me?.rank >= 1 && lb.me.km > 0, `signed in: rank #${lb.me?.rank} with ${Math.round(lb.me?.km ?? 0)} km`);
 

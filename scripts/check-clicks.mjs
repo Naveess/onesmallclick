@@ -119,9 +119,9 @@ check(a.hello.tapsToday === afterCap + 10, `the other device sees the account's 
 a.ws.close();
 b.ws.close();
 
-// --- D1 gets the counts (flushed within 30 s) ---
-console.log("waiting for the D1 flush…");
-await wait(33_000);
+// --- D1 gets the counts (flushed within 5 minutes, since prompt 56) ---
+console.log("waiting for the D1 flush (every 5 minutes)…");
+await wait(305_000);
 const out = execSync(
   `npx wrangler d1 execute onesmallclick --local --json --command "SELECT SUM(taps) AS t FROM daily_km d JOIN accounts a ON a.id = d.account_id WHERE a.email = '${email}'"`,
   { cwd: new URL("..", import.meta.url), encoding: "utf-8" },

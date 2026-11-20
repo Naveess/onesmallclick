@@ -149,7 +149,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 **As built (2026-11-18)**
 - Updates go out when something changes, at most once a second, with no ticking timer. A once-a-second timer would keep the object awake all day (about 86,400 wake-ups against the free plan's 100,000 requests a day). Between updates each browser moves the probe on by coasting, using the server's clock.
 - The cap is a token bucket per device: 15 taps a second, up to 45 banked. `scripts/tap-flood.mjs` checks it (local or live).
-- The object saves to its own SQLite at most every 5 s and to D1 every 30 s, so a crash loses at most 5 s of distance and 30 s of daily km.
+- The object saves to its own SQLite at most every 5 s and to D1 every 30 s, so a crash loses at most 5 s of distance and 30 s of daily km. (Changed in phase 9a, prompt 56: players' progress and the km waiting for D1 are saved every 60 s, and D1 gets them every 5 minutes; see docs/load-test.md, "Storage".)
 - Credits, upgrades, the signal and the vote stay fake until their phases (see `src/game/store.ts`). The "+km" popup shows the server's flat 4 km.
 
 ## Phase 5: Signal, Ping and safe mode
@@ -218,7 +218,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Balance.** Thousands of idle players' auto-thrust could outweigh tapping, or finish the mission far too early. This needs the mission-length target (decision 4).
 
 **As built (2026-11-19)**
-- The `Probe` object is the authority for everyone's idle game. Each device's progress (credits in thousandths as whole numbers, levels, patches, km since the last handover, and when auto-thrust was last paid) lives in the object's own SQLite. A copy goes to D1 `progress` (migration 0003, keyed by device for now; accounts take over in phase 8) every 30 s.
+- The `Probe` object is the authority for everyone's idle game. Each device's progress (credits in thousandths as whole numbers, levels, patches, km since the last handover, and when auto-thrust was last paid) lives in the object's own SQLite. A copy goes to D1 `progress` (migration 0003, keyed by device for now; accounts take over in phase 8) every 30 s (every 5 minutes from phase 9a, prompt 56).
 - The rules live in `shared/upgrades.ts`, so the app and the server use one copy. Buy and handover requests go over the WebSocket. The server checks the credits (or the 2,000,000 km), then replies; a refused request just gets the real balance back. Faked messages (30 solar sails at once, an unknown upgrade, extra fields) were refused in testing.
 - Taps credit at the device's own tap power: (4 + 2×hands) × (1 + 0.25×chant) × (1 + 0.1×patches), rounded. Auto-thrust is the design's per-level km/s × the same patch boost.
 - **Auto-thrust while connected** moves the shared probe continuously (each device once, whatever its tabs) and pays the device in full. **Offline**: when a device comes back, up to 8 hours of its auto-thrust is paid and added to the probe in one go. Time in safe mode doesn't pay.
@@ -656,14 +656,13 @@ Done in prompt 55 (2026-11-20):
 - **Monitoring** written down in docs/launch-checklist.md ("Monitoring").
 - **The scripted checks moved into scripts/** (`check-auth.mjs`, `check-clicks.mjs`, `check-badges.mjs`, `check-arrival.mjs`; each takes the base URL, default localhost:5173). Re-run after the probe change: sign-in 37/37 and arrival 18/18 pass; clicks passed its 8 probe checks and then stopped at the step that reads local D1 through wrangler, which (like `check-badges.mjs` and `cap-test.mjs`) couldn't start on this laptop ("spawn UNKNOWN": six old dev servers from this morning were still running and Claude wasn't allowed to stop them).
 
-**Waiting for Nav (prompt 55): storage costs.** Each player with the game open writes about 2,200 rows an hour to the probe's SQLite and 1,000 to D1. On the free plan that's ~45 player-hours a day before the probe's writes run out; on Workers Paid, past the included 50 million a month, about $75 a day for 1,000 players around the clock. Proposal: save each player's progress every 60 s instead of 5 s (the shared distance stays at 5 s), update rows in place instead of replacing them, flush to D1 every 5 minutes instead of 30 s, and update "last seen" at most hourly: about 15× fewer rows. The cost: after a probe restart (deploy or crash) players can lose up to a minute of credits, and the leaderboards' "today" lags up to 5 minutes.
+**Storage costs (prompt 55 proposal, OK'd by Nav in prompt 56, built).** Each player with the game open wrote about 2,200 rows an hour to the probe's SQLite and 1,000 to D1 (about $75 a day for 1,000 players around the clock on Workers Paid, and only ~45 player-hours a day on the free plan). Now: players' progress is saved every 60 s (the shared distance stays at 5 s), rows are updated in place instead of replaced, D1 gets km, taps and progress every 5 minutes, "last seen" is written at most hourly (also on page loads), and the /admin clock offset only when it changes. The km waiting for D1 are kept in a new table in the probe's SQLite (`d1_queue`, written with the 60 s save), so a restart loses at most a minute of them, not 5 minutes; a flush only takes off what D1 confirmed, and one flush runs at a time. **Measured after:** about 227 rows a player-hour in the probe and 77 in D1, about 10× fewer (a little short of the 15× estimate). Checked: sign-in 37/37 and arrival 18/18 still pass; a scripted restart test showed the queued taps survive a restart and the queue is empty after the flush. Locally, the dev server's code reload leaves the old copy of the probe running, and it flushed its own copy too, so that test double-counted. On Cloudflare only one copy runs, which it enforces when a copy touches its storage, so every flush now reads the probe's storage before sending. The trade-offs Nav accepted: after a restart players can lose up to a minute of credits, and the leaderboards' "today" lags up to 5 minutes.
 
 Still to do in 9a (in this order):
-1. The storage change above, once Nav OKs it, then measure again.
-2. Re-run `check-clicks.mjs`, `check-badges.mjs` and `node scripts/cap-test.mjs` once the old dev servers are stopped.
-3. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
-4. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
-5. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
+1. Re-run `check-clicks.mjs`, `check-badges.mjs` and `node scripts/cap-test.mjs` once the old dev servers are stopped.
+2. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
+3. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
+4. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
 
 
 **Goal:** ready for real players.

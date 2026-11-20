@@ -24,7 +24,7 @@
 //   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
 
 import type { SessionInfo } from "../shared/account";
-import type { PingResult } from "../shared/mission";
+import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
 import { credits, leaderboard, profile } from "./boards";
@@ -82,7 +82,8 @@ async function session(request: Request, env: Env): Promise<Response> {
     ? await env.DB.prepare(`SELECT rowid AS crew, name FROM devices WHERE id = ?`).bind(id).first<{ crew: number; name: string }>()
     : null;
   if (id && row) {
-    await env.DB.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(now, id).run();
+    // At most hourly: an unchanged row isn't a row written (storage is billed by those).
+    await env.DB.prepare(`UPDATE devices SET last_seen = ? WHERE id = ? AND last_seen < ?`).bind(now, id, now - LAST_SEEN_EVERY_MS).run();
   } else {
     // A new browser, or a valid cookie whose row was wiped (test data cleared).
     const fresh = !id;

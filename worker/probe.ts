@@ -4,6 +4,7 @@ import {
   COAST_KM_S,
   CREW_WINDOW_MIN,
   DEAD_SOCKET_MS,
+  LAST_SEEN_EVERY_MS,
   HEARTBEAT_PING,
   HEARTBEAT_PONG,
   IDLE_PAUSE_MS,
@@ -90,12 +91,16 @@ import {
 //   - notices milestones (also on an alarm, when nobody's around), records and logs them;
 //   - runs the daily crew vote: live tallies, closing at 00:00 UTC (the same alarm), the winner's effect on the route;
 //   - sends an update to everyone when something changes, at most once a second (no ticking timer);
-//   - saves to its own SQLite at most every 5 s (the signal and purchases straight away),
-//     and daily km and progress to D1 every 30 s.
+//   - saves the probe to its own SQLite at most every 5 s (the signal and purchases straight away),
+//     everyone's progress and the km waiting for D1 every 60 s, and daily km and progress to D1 every 5 minutes
+//     (phase 9a: storage is billed by rows written; see docs/load-test.md, "Storage").
 // All times are the server's clock plus the /admin clock offset.
 
 const SAVE_MS = 5_000;
-const D1_FLUSH_MS = 30_000;
+/** Players' progress and the D1 queue: a probe restart (a deploy, a crash) loses at most this much of them. */
+const PROGRESS_SAVE_MS = 60_000;
+/** How often km, taps and progress go to D1 (the leaderboards' "today" lags up to this). */
+const D1_FLUSH_MS = 300_000;
 const BROADCAST_MS = 1_000;
 /**
  * How long the list of who's online is kept between tap batches (phase 9a, load test). Every batch needs it several
@@ -265,6 +270,18 @@ interface TrackPoint {
   movedMs: number;
 }
 
+/** A row of d1_queue: km waiting for the next D1 flush (phase 9a). */
+type QueueRow = {
+  key: string;
+  day: string;
+  device_id: string;
+  account_id: string | null;
+  km: number;
+  tap_km: number;
+  tap_moved_km: number;
+  taps: number;
+};
+
 type ProgressRow = {
   device_id: string;
   credits_milli: number;
@@ -299,7 +316,7 @@ export class Probe extends DurableObject<Env> {
   /** Progress to write to this object's SQLite at the next save, and to D1 at the next flush. */
   private dirtyProgress = new Set<string>();
   private d1Progress = new Set<string>();
-  /** Km to add to D1's daily_km at the next flush (key: day|deviceId), with the account they count for. */
+  /** Km to add to D1's daily_km at the next flush (key: day|deviceId), with the account they count for. Kept in the d1_queue table too (see saveProgress). */
   private d1Pending = new Map<
     string,
     { day: string; deviceId: string; accountId: string | null; km: number; tapKm: number; tapMovedKm: number; taps: number }
@@ -326,8 +343,16 @@ export class Probe extends DurableObject<Env> {
   /** onlineDevices() and its auto-thrust total, kept for ONLINE_CACHE_MS; null when a socket opened, closed or changed. */
   private online: { at: number; ids: Map<string, number>; auto: number } | null = null;
 
+  /** d1Pending keys changed since they were last written to d1_queue. */
+  private dirtyQueue = new Set<string>();
+  /** The D1 flush in flight, so two never send the same km. */
+  private flushing: Promise<void> | null = null;
+  /** The clock offset last written to meta (it only changes from /admin). */
+  private savedOffset: number | null = null;
+
   private dirty = false;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
+  private progressTimer: ReturnType<typeof setTimeout> | undefined;
   private d1Timer: ReturnType<typeof setTimeout> | undefined;
   private broadcastTimer: ReturnType<typeof setTimeout> | undefined;
   private lastBroadcastAt = 0;
@@ -372,6 +397,10 @@ export class Probe extends DurableObject<Env> {
       patches INTEGER NOT NULL, km_since_shift REAL NOT NULL, settled_at INTEGER NOT NULL, auto_kms REAL NOT NULL,
       last_distance REAL, last_arrival_at INTEGER, last_mission_id INTEGER)`);
     this.sql.exec(`CREATE INDEX IF NOT EXISTS progress_by_settled ON progress (settled_at)`);
+    // Km, taps and moved km credited but not yet in D1 (phase 9a), so a restart doesn't lose 5 minutes of them.
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS d1_queue (
+      key TEXT PRIMARY KEY, day TEXT NOT NULL, device_id TEXT NOT NULL, account_id TEXT,
+      km REAL NOT NULL, tap_km REAL NOT NULL, tap_moved_km REAL NOT NULL, taps INTEGER NOT NULL)`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS milestone_reached (
       mission_id INTEGER NOT NULL, n INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (mission_id, n))`);
     this.sql.exec(`CREATE TABLE IF NOT EXISTS vote_round (
@@ -406,6 +435,19 @@ export class Probe extends DurableObject<Env> {
     }
     const offset = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'clock_offset_ms'`).toArray()[0];
     this.clockOffsetMs = offset?.value ?? 0;
+    this.savedOffset = offset ? offset.value : null;
+    for (const q of this.sql.exec<QueueRow>(`SELECT * FROM d1_queue`)) {
+      this.d1Pending.set(q.key, {
+        day: q.day,
+        deviceId: q.device_id,
+        accountId: q.account_id,
+        km: q.km,
+        tapKm: q.tap_km,
+        tapMovedKm: q.tap_moved_km,
+        taps: q.taps,
+      });
+    }
+    if (this.d1Pending.size > 0) this.scheduleD1Flush();
 
     const row = this.sql.exec<MissionRow>(`SELECT * FROM mission ORDER BY id DESC LIMIT 1`).toArray()[0];
     if (row) {
@@ -546,11 +588,11 @@ export class Probe extends DurableObject<Env> {
     }
   }
 
-  /** Writes the distance, pace, progress and clock offset to this object's SQLite. */
+  /** Writes the distance, pace and clock offset to this object's SQLite (players' progress: saveProgress). */
   private save() {
     if (this.saveTimer !== undefined) clearTimeout(this.saveTimer);
     this.saveTimer = undefined;
-    if (!this.dirty && this.dirtyProgress.size === 0) return;
+    if (!this.dirty) return;
     const m = this.mission;
     this.sql.exec(
       `UPDATE mission SET distance_km = ?, at = ?, auto_kms = ?, moved_ms = ?, last_active_at = ? WHERE id = ?`,
@@ -563,18 +605,67 @@ export class Probe extends DurableObject<Env> {
     );
     this.sample();
     for (const minute of this.dirtyMinutes) {
-      this.sql.exec(`INSERT OR REPLACE INTO pace (minute, km) VALUES (?, ?)`, minute, this.pace.get(minute) ?? 0);
+      this.sql.exec(
+        `INSERT INTO pace (minute, km) VALUES (?, ?) ON CONFLICT (minute) DO UPDATE SET km = excluded.km`,
+        minute,
+        this.pace.get(minute) ?? 0,
+      );
     }
     this.dirtyMinutes.clear();
     const old = Math.floor(this.now() / MINUTE_MS) - 60;
     this.sql.exec(`DELETE FROM pace WHERE minute <= ?`, old);
     for (const minute of this.pace.keys()) if (minute <= old) this.pace.delete(minute);
     for (const minute of this.catchup.keys()) if (minute <= old) this.catchup.delete(minute);
-    this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('clock_offset_ms', ?)`, this.clockOffsetMs);
-    for (const id of this.dirtyProgress) this.writeProgress(id);
-    this.dirtyProgress.clear();
+    this.saveOffset();
     this.dirty = false;
     this.lastSavedAt = Date.now();
+  }
+
+  /** The /admin clock offset, only when it changed. */
+  private saveOffset() {
+    if (this.savedOffset === this.clockOffsetMs) return;
+    this.sql.exec(
+      `INSERT INTO meta (key, value) VALUES ('clock_offset_ms', ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
+      this.clockOffsetMs,
+    );
+    this.savedOffset = this.clockOffsetMs;
+  }
+
+  /** Writes changed players' progress and the D1 queue to this object's SQLite (every 60 s: PROGRESS_SAVE_MS). */
+  private saveProgress() {
+    if (this.progressTimer !== undefined) clearTimeout(this.progressTimer);
+    this.progressTimer = undefined;
+    for (const id of this.dirtyProgress) this.writeProgress(id);
+    this.dirtyProgress.clear();
+    for (const key of this.dirtyQueue) this.writeQueue(key);
+    this.dirtyQueue.clear();
+  }
+
+  private scheduleProgressSave() {
+    // Like the save timer, a pending timer keeps the object from hibernating before this is written.
+    this.progressTimer ??= setTimeout(() => this.saveProgress(), PROGRESS_SAVE_MS);
+  }
+
+  /** One D1 queue entry, as it is in memory now (deleted once D1 has it all). */
+  private writeQueue(key: string) {
+    const p = this.d1Pending.get(key);
+    if (!p) {
+      this.sql.exec(`DELETE FROM d1_queue WHERE key = ?`, key);
+      return;
+    }
+    this.sql.exec(
+      `INSERT INTO d1_queue (key, day, device_id, account_id, km, tap_km, tap_moved_km, taps) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (key) DO UPDATE SET account_id = excluded.account_id, km = excluded.km, tap_km = excluded.tap_km,
+         tap_moved_km = excluded.tap_moved_km, taps = excluded.taps`,
+      key,
+      p.day,
+      p.deviceId,
+      p.accountId,
+      p.km,
+      p.tapKm,
+      p.tapMovedKm,
+      p.taps,
+    );
   }
 
   /** The signal, the route and the distance are saved straight away: they change rarely and matter. */
@@ -597,7 +688,7 @@ export class Probe extends DurableObject<Env> {
       m.arrivedAt,
       m.id,
     );
-    this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('clock_offset_ms', ?)`, this.clockOffsetMs);
+    this.saveOffset();
   }
 
   private scheduleSave() {
@@ -606,18 +697,32 @@ export class Probe extends DurableObject<Env> {
     this.saveTimer ??= setTimeout(() => this.save(), SAVE_MS);
   }
 
-  /** Adds the batched km to D1 (daily_km), copies changed progress there, and marks the devices as seen. */
+  /** Adds the batched km to D1 (daily_km), copies changed progress there, and marks the devices as seen (at most hourly). */
   private async flushD1() {
     if (this.d1Timer !== undefined) clearTimeout(this.d1Timer);
     this.d1Timer = undefined;
+    while (this.flushing) await this.flushing; // then send whatever came in meanwhile
     if (this.d1Pending.size === 0 && this.d1Progress.size === 0) return;
-    const batch = [...this.d1Pending.values()];
+    const run = this.sendD1();
+    this.flushing = run;
+    try {
+      await run;
+    } finally {
+      if (this.flushing === run) this.flushing = null;
+    }
+  }
+
+  private async sendD1() {
+    // Touching this object's storage first makes an out-of-date copy of the probe (one Cloudflare has already replaced)
+    // throw here instead of sending km the new copy will also send from d1_queue.
+    this.sql.exec(`SELECT 1 FROM meta LIMIT 1`).toArray();
+    // What's sent is copied: km credited while D1 answers stay queued, and only what D1 took is taken off.
+    const sent = [...this.d1Pending.entries()].map(([key, p]) => [key, { ...p }] as const);
     const progressIds = [...this.d1Progress];
-    this.d1Pending.clear();
     this.d1Progress.clear();
     const seen = Date.now();
     const db = this.env.DB;
-    const statements = batch.flatMap((p) => [
+    const statements = sent.flatMap(([, p]) => [
       db
         .prepare(
           `INSERT INTO daily_km (day, device_id, km, tap_km, tap_moved_km, taps, account_id) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -626,7 +731,8 @@ export class Probe extends DurableObject<Env> {
              account_id = COALESCE(excluded.account_id, daily_km.account_id)`,
         )
         .bind(p.day, p.deviceId, p.km, p.tapKm, p.tapMovedKm, p.taps, p.accountId),
-      db.prepare(`UPDATE devices SET last_seen = ? WHERE id = ?`).bind(seen, p.deviceId),
+      // An unchanged row isn't a row written, so this costs one write an hour per device.
+      db.prepare(`UPDATE devices SET last_seen = ? WHERE id = ? AND last_seen < ?`).bind(seen, p.deviceId, seen - LAST_SEEN_EVERY_MS),
     ]);
     for (const id of progressIds) {
       const p = this.progress.get(id);
@@ -634,8 +740,12 @@ export class Probe extends DurableObject<Env> {
       statements.push(
         db
           .prepare(
-            `INSERT OR REPLACE INTO progress (device_id, credits_milli, cold, ion, sail, hands, chant, patches,
-               km_since_shift, settled_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO progress (device_id, credits_milli, cold, ion, sail, hands, chant, patches,
+               km_since_shift, settled_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT (device_id) DO UPDATE SET credits_milli = excluded.credits_milli, cold = excluded.cold,
+               ion = excluded.ion, sail = excluded.sail, hands = excluded.hands, chant = excluded.chant,
+               patches = excluded.patches, km_since_shift = excluded.km_since_shift, settled_at = excluded.settled_at,
+               updated_at = excluded.updated_at`,
           )
           .bind(
             id,
@@ -652,15 +762,28 @@ export class Probe extends DurableObject<Env> {
           ),
       );
     }
+    if (statements.length === 0) return;
     try {
       const results = await db.batch(statements);
       for (const r of results) this.rows.d1 += r.meta?.rows_written ?? 0;
       this.lastD1FlushAt = seen;
     } catch (err) {
       console.error("D1 flush failed; will retry", err);
-      for (const p of batch) this.addPending(p.day, who(p.deviceId, p.accountId), p.km, p.tapKm, p.tapMovedKm, p.taps);
       for (const id of progressIds) this.d1Progress.add(id);
       this.scheduleD1Flush();
+      return; // the km are all still queued
+    }
+    for (const [key, s] of sent) {
+      const p = this.d1Pending.get(key);
+      if (!p) continue;
+      p.km -= s.km;
+      p.tapKm -= s.tapKm;
+      p.tapMovedKm -= s.tapMovedKm;
+      p.taps -= s.taps;
+      if (p.km === 0 && p.tapKm === 0 && p.tapMovedKm === 0 && p.taps === 0) this.d1Pending.delete(key);
+      // Straight away, so a restart now can't send these km to D1 twice.
+      this.writeQueue(key);
+      this.dirtyQueue.delete(key);
     }
   }
 
@@ -677,6 +800,8 @@ export class Probe extends DurableObject<Env> {
     p.tapMovedKm += tapMovedKm;
     p.taps += taps;
     this.d1Pending.set(key, p);
+    this.dirtyQueue.add(key);
+    this.scheduleProgressSave();
   }
 
   /** One line in the mission log (shown in phase 7). A failure is logged, never fatal. */
@@ -1643,6 +1768,8 @@ export class Probe extends DurableObject<Env> {
     const loading = this.loadingDevices.get(w.key);
     if (loading) return loading;
     const promise = (async () => {
+      // D1 plus the queue: mid-flush the same km would be in both, so wait for it.
+      while (this.flushing) await this.flushing;
       let kmToday = 0;
       let tapKmToday = 0;
       let tapMovedToday = 0;
@@ -1823,8 +1950,13 @@ export class Probe extends DurableObject<Env> {
     const p = this.progress.get(key);
     if (!p) return;
     this.sql.exec(
-      `INSERT OR REPLACE INTO progress (device_id, credits_milli, cold, ion, sail, hands, chant, patches, km_since_shift,
-         settled_at, auto_kms, last_distance, last_arrival_at, last_mission_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO progress (device_id, credits_milli, cold, ion, sail, hands, chant, patches, km_since_shift,
+         settled_at, auto_kms, last_distance, last_arrival_at, last_mission_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (device_id) DO UPDATE SET credits_milli = excluded.credits_milli, cold = excluded.cold, ion = excluded.ion,
+         sail = excluded.sail, hands = excluded.hands, chant = excluded.chant, patches = excluded.patches,
+         km_since_shift = excluded.km_since_shift, settled_at = excluded.settled_at, auto_kms = excluded.auto_kms,
+         last_distance = excluded.last_distance, last_arrival_at = excluded.last_arrival_at,
+         last_mission_id = excluded.last_mission_id`,
       key,
       p.creditsMilli,
       p.levels.cold,
@@ -1851,7 +1983,7 @@ export class Probe extends DurableObject<Env> {
       this.dirtyProgress.delete(key);
     } else {
       this.dirtyProgress.add(key);
-      this.scheduleSave();
+      this.scheduleProgressSave();
     }
   }
 
@@ -2223,7 +2355,12 @@ export class Probe extends DurableObject<Env> {
     this.touch(acct.key, true);
 
     // The device's km, pings and votes now count for the account (km not yet flushed included).
-    for (const p of this.d1Pending.values()) if (p.deviceId === deviceId) p.accountId = accountId;
+    for (const [key, p] of this.d1Pending) {
+      if (p.deviceId !== deviceId) continue;
+      p.accountId = accountId;
+      this.dirtyQueue.add(key);
+    }
+    this.scheduleProgressSave();
     try {
       await this.env.DB.batch([
         this.env.DB.prepare(`DELETE FROM progress WHERE device_id = ?`).bind(guest.key),
@@ -2271,7 +2408,12 @@ export class Probe extends DurableObject<Env> {
     this.d1Progress.delete(key);
     this.devices.delete(key);
     this.sql.exec(`DELETE FROM progress WHERE device_id = ?`, key);
-    for (const p of this.d1Pending.values()) if (p.accountId === accountId) p.accountId = null;
+    for (const [key, p] of this.d1Pending) {
+      if (p.accountId !== accountId) continue;
+      p.accountId = null;
+      this.dirtyQueue.add(key);
+    }
+    this.scheduleProgressSave();
     this.retune(this.now());
   }
 
@@ -2464,6 +2606,7 @@ export class Probe extends DurableObject<Env> {
     this.retune(now);
     this.dirty = true;
     this.save();
+    this.saveProgress();
     this.saveSignal();
     await this.checkVote(); // the clock may have passed midnight
     await this.checkMilestones(); // the distance may have passed a milestone

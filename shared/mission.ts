@@ -35,6 +35,8 @@ export const HEARTBEAT_PING = "ping";
 export const HEARTBEAT_PONG = "pong";
 /** A socket silent this long is treated as gone (a phone that lost signal), even if it never closed. */
 export const DEAD_SOCKET_MS = 90_000;
+/** A device's `last_seen` in D1 is rewritten at most this often (phase 9a: storage is billed by rows written). */
+export const LAST_SEEN_EVERY_MS = 3_600_000;
 
 /** Crew pace is the tap km of the last few minutes, averaged. */
 export const PACE_WINDOW_MIN = 5;

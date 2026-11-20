@@ -49,6 +49,23 @@ Measured with 100 simulated players tapping for 90 s: each player with the game 
 
 So on Workers Paid, 1,000 players around the clock would cost roughly **$75 a day** in rows written alone. **That needs fixing before launch** (proposal in docs/plan.md, "Phase 9a status"): save each player's progress every 60 s instead of 5 s (the shared distance keeps its 5 s save), update in place instead of replacing the row, flush to D1 every 5 minutes, and touch "last seen" at most once an hour. That should cut both by about 15×. The cost: if the probe restarts (a deploy, or a crash), players lose up to a minute of credits instead of 5 s, and the leaderboards' "today" lags up to 5 minutes.
 
+**Built (prompt 56, Nav's OK).** As proposed, plus a queue of the km waiting for D1 kept in the probe's SQLite (`d1_queue`, saved with the 60 s save), so a restart loses at most a minute of them rather than 5 minutes. Measured the same way (100 players, 320 s, so the window takes in a 5-minute flush):
+
+| Rows a player-hour | Before | After |
+|---|---|---|
+| Probe SQLite | ~2,200 | ~227 |
+| D1 | ~1,000 | ~77 |
+| Together | ~3,200 | ~300 (about 10× fewer) |
+
+What's left in the probe: each player's progress row once a minute (with its index), their queue row once a minute, and the shared distance and pace every 5 s while anyone's playing (about 2,000 rows an hour in all, however many play: about half the free plan's daily allowance if it ran all day, and nothing much on Workers Paid).
+
+| | Free plan (now) | Workers Paid |
+|---|---|---|
+| Probe SQLite | ~200–400 player-hours a day | ~220,000 player-hours a month included, then ~$0.0002 a player-hour |
+| D1 | ~1,300 player-hours a day | ~650,000 player-hours a month included, then ~$0.0001 a player-hour |
+
+So 1,000 players around the clock would now cost a few dollars a day in rows written on Workers Paid, not ~$75.
+
 ## Earlier results (2026-11-20, before the fix)
 
 
