@@ -16,7 +16,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
-  - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges)
+  - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38) with migration 0009; waiting for the deploy and Nav's checks.
   - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
@@ -415,6 +415,44 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **`/privacy`:** a plain HTML page (`scripts/build-pages.mjs`) covering the device cookie, the game data, the browser storage, sign-in data, what other players see, Cloudflare (hosting, Turnstile with a link to its Turnstile Privacy Addendum, which invisible mode requires, and Email Service), Google, and how to delete or ask (privacy@onesmallclick.io). Linked from the sign-in screens; phase 9 links the legal pages from everywhere.
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
+
+**8b as built (2026-11-20, prompts 37–38; waiting for migration 0009, the deploy and Nav's checks)**
+- **Answers (prompt 38):**
+  - Signal Keeper I–IV at 3 / 7 / 21 / 30-day ping streaks.
+  - Night Shift is THRUST taps credited between 02:00 and 04:59 local time.
+  - Halfway Crew goes to anyone who pushed at any point in the mission before the probe passed halfway.
+  - The Countries board counts everyone for now (signed-in only later).
+  - The passport and cosmetics wait for 8c.
+- **Leaderboards (1g), `/ranks`** (`src/pages/RanksPage.tsx`):
+  - Players and Countries tabs, by km pushed today (UTC, the probe's day).
+  - Players lists signed-in accounts only, the top 50. Countries counts everyone: an account by its country, a guest by its device's country.
+  - Your row is pinned above the tab bar (sticky at the bottom on wide screens) and links to your profile. A guest's Players row says "Sign in to appear on the board".
+  - `GET /api/leaderboard` (`worker/boards.ts`) works out each board's top at most once a minute per Worker instance. Your own row is looked up on each request. The page asks again every minute.
+  - The design has no desktop version, so wide screens get a centred column.
+- **Profile (1j), `/profile`** (`src/pages/ProfilePage.tsx`):
+  - Your name, "Crew since day N · country", and three stats: total pushed, today, and pings in the last 30 days.
+  - Badges as a 3×3 grid: Signal Keeper is one tile showing your highest level, then First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch and the three click badges. Earned tiles are lit, the rest dimmed, as in the design.
+  - The 30-day ping grid, today outlined, with your streak and Keeper level.
+  - "Share my mission card" shares the milestone moment's text card, and a link goes to your account.
+  - `GET /api/profile` gives the name, country, first-played date, all-time km and the last 30 days' pings.
+  - Signed in, your name in the header links here; on phones the footer has "Profile" and "Account".
+- **Badges** (`shared/badges.ts`; awarded by the `Probe`):
+  - Kept per player (the account when signed in, else the device) in D1's `badges` table (migration 0009), and loaded with the day's numbers.
+  - Checked when you connect (so earlier pings, votes, clicks and handovers count), after a ping, a vote, credited taps, a handover, and when the probe passes halfway.
+  - A new badge shows a toast ("Badge earned: First Ping") on every tab of that player.
+  - **Signal Keeper** uses your longest streak ever, from your ping history.
+  - **Night Shift** uses the time zone Cloudflare gives for the connection (never the browser's), and it isn't stored.
+  - **Halfway Crew:** when the probe passes 240M km, everyone with km between the mission's first day and that day gets it (to the day).
+  - Signing in moves a device's badges onto the account (the account keeps the earlier date when both have one). Deleting the account deletes its badges.
+  - The badges show the design's 9×9 icons at 3× until the PixelLab sprites exist.
+- **The signal card** shows your real Signal Keeper level from today's streak (for example "Signal Keeper I · 4 days", "21-day ping streak · 9 days to IV"), instead of the design's placeholder "III".
+- **Text:**
+  - The delete-account text now lists badges.
+  - The privacy page (updated 20 November) mentions click counts, badges, the Night Shift time zone check, and that the Players board shows signed-in names only.
+- **Checked locally:**
+  - A scripted run passed all 18 checks: each badge rule, Halfway Crew not going to someone who pushed only after halfway, the merge of two devices' badges, the leaderboards as guest and signed in, the profile, and delete account removing badges.
+  - The 8a sign-in checks and the click-count checks pass again, and `npm run build` passes.
+  - Screenshots: `/ranks` (players, countries, guest) and `/profile` at 390 in both themes and at 1440, plus the signal card.
 
 **What gets built**
 - **Sign in (1i)** by email link or Google.

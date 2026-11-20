@@ -4,7 +4,8 @@ import { KitPage } from "./pages/KitPage";
 import { LogPage } from "./pages/LogPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ConfirmPage, SignInPage } from "./pages/SignInPage";
-import { StubPage } from "./pages/StubPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { RanksPage } from "./pages/RanksPage";
 import { usePath } from "./router";
 
 // The Worker serves index.html for every path (not_found_handling in wrangler.jsonc)
@@ -21,14 +22,9 @@ export function App() {
     case "/log":
       return <LogPage />;
     case "/ranks":
-      return (
-        <StubPage
-          tab="ranks"
-          title="Leaderboards"
-          icon="trophy"
-          note="Top players and countries by km pushed today. Arrives in phase 8."
-        />
-      );
+      return <RanksPage />;
+    case "/profile":
+      return <ProfilePage />;
     case "/sign-in":
       return <SignInPage />;
     case "/sign-in/confirm":

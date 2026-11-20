@@ -237,13 +237,13 @@ ${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${e
 
 // ---------- Privacy (phase 8a: sign-in starts storing email addresses) ----------
 
-const PRIVACY_UPDATED = "19 November 2026";
+const PRIVACY_UPDATED = "20 November 2026";
 const privacySections = [
   [
     "Playing as a guest",
     [
       "The first time you open the game, your browser gets a random device id in a cookie (osc_device). It's signed so nobody can fake it, and it holds nothing about you. It lasts up to 400 days.",
-      "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km you push each day, your pings and votes, and your credits, upgrades and patches.",
+      "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km and THRUST clicks you push each day, your pings and votes, your credits, upgrades and patches, and the badges you earn. For the Night Shift badge, the game checks the time zone Cloudflare’s network gives for your connection while you tap; it isn’t stored.",
       "Your browser also keeps a few things for itself: your light or dark theme, a copy of the probe's position so the page opens fast, and which milestone moments you've already seen.",
     ],
   ],
@@ -258,7 +258,7 @@ const privacySections = [
   [
     "What other players see",
     [
-      "Your crew name, never your email. It can appear in the mission log (for example “Signal restored by orbit_otter”), and on the leaderboards and in the mission credits when they arrive.",
+      "Your crew name, never your email. It can appear in the mission log (for example “Signal restored by orbit_otter”), and on the leaderboards (signed-in players only; the countries board counts everyone’s km by country, without names), and in the mission credits when they arrive.",
     ],
   ],
   [

@@ -8,6 +8,8 @@
 //   POST /api/ping            { token } (Turnstile) → today's Ping for this device (or account, signed in)
 //   POST /api/vote            { token, round, option } (Turnstile) → this device's (or account's) vote in today's round
 //   GET  /api/log             ?before=<id> → the current mission's log, newest first (30 at a time)
+//   GET  /api/leaderboard     ?board=players|countries → today's top km and your row (worker/boards.ts)
+//   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
@@ -22,6 +24,7 @@ import type { SessionInfo } from "../shared/account";
 import type { PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
+import { leaderboard, profile } from "./boards";
 import { deviceCookie, generateName, readDevice } from "./device";
 
 export { Probe } from "./probe";
@@ -49,6 +52,8 @@ export default {
     if (path === "/api/ping" && request.method === "POST") return ping(request, env);
     if (path === "/api/vote" && request.method === "POST") return vote(request, env);
     if (path === "/api/log" && request.method === "GET") return missionLog(env, url);
+    if (path === "/api/leaderboard" && request.method === "GET") return leaderboard(request, env, url, await probe(env).boardDay());
+    if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path.startsWith("/api/auth/")) return auth(request, env, path.slice("/api/auth/".length), url);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
@@ -114,6 +119,10 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
   const signedIn = await readSession(request, env);
   headers.delete("X-Account-Id");
   if (signedIn) headers.set("X-Account-Id", signedIn.account.id);
+  // The player's time zone from Cloudflare's location, for the Night Shift badge (never from the browser).
+  headers.delete("X-Timezone");
+  const tz = (request.cf as IncomingRequestCfProperties | undefined)?.timezone;
+  if (tz) headers.set("X-Timezone", tz);
   return probe(env).fetch(new Request(request.url, { headers }));
 }
 

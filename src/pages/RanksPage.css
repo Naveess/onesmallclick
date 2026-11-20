@@ -1,0 +1,172 @@
+/* The leaderboards (1g, phase 8b). Sizes and colours are the design's. */
+
+.ranks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* room for your pinned row above the tab bar */
+  padding-bottom: 64px;
+}
+
+/* The design only shows the phone; wide screens get the same board in a centred column. */
+.ranks--wide {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding-top: 8px;
+  padding-bottom: 0;
+}
+
+.ranks__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.ranks__title {
+  font: 500 24px/1.2 var(--font-ui);
+}
+
+.ranks__sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.ranks__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 2px solid var(--line);
+  outline: 2px solid var(--outline);
+}
+
+.ranks__tab {
+  min-height: 44px;
+  font: 500 15px var(--font-ui);
+  color: var(--text-soft);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.ranks__tab + .ranks__tab {
+  border-left: 2px solid var(--line);
+}
+
+.ranks__tab--on {
+  color: var(--text-on-blue);
+  background: var(--blue);
+}
+
+.ranks__tab:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.ranks__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranks__row,
+.ranks__me {
+  display: grid;
+  grid-template-columns: 36px 34px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.ranks__row {
+  min-height: 46px;
+  background: linear-gradient(90deg, transparent, var(--row-me) 48px, var(--row-me) calc(100% - 48px), transparent) bottom / 100% 2px
+    no-repeat;
+}
+
+.ranks__rank {
+  font: 26px var(--font-num);
+  color: var(--text-muted);
+}
+
+.ranks__rank--top {
+  color: var(--text-blue);
+}
+
+.ranks__rank--gold {
+  color: var(--text-orange);
+}
+
+.ranks__cc {
+  font: 16px var(--font-num);
+  color: var(--text-soft);
+  text-align: center;
+  border: 2px solid var(--line);
+}
+
+.ranks__name {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ranks__km {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+/* Your row, pinned above the tab bar (phone) or to the bottom of the screen (wide). */
+.ranks__me {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(84px + env(safe-area-inset-bottom));
+  z-index: 5;
+  max-width: 496px;
+  min-height: 52px;
+  margin: 0 auto;
+  padding: 0 10px;
+  grid-template-columns: auto 34px minmax(0, 1fr) auto;
+  color: var(--text);
+  text-decoration: none;
+  background: linear-gradient(180deg, var(--window-active-top), var(--window-active-bottom));
+  border: 2px solid var(--blue);
+  outline: 2px solid var(--outline);
+  box-shadow: 0 0 18px rgb(var(--glow-blue) / 0.25);
+}
+
+.ranks--wide .ranks__me {
+  position: sticky;
+  left: auto;
+  right: auto;
+  bottom: 16px;
+  max-width: none;
+  margin: 8px 0 0;
+}
+
+.ranks__me .ranks__km,
+.ranks__me-rank {
+  color: var(--text-blue);
+}
+
+.ranks__me-rank {
+  font: 24px var(--font-num);
+}
+
+.ranks__me-hint {
+  font-size: 11px;
+  color: var(--text-blue);
+}
+
+.ranks__note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.ranks__note a {
+  color: var(--text-blue);
+}

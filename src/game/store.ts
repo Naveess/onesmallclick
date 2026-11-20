@@ -17,6 +17,7 @@ import {
   type ServerMessage,
 } from "../../shared/mission";
 import type { AccountInfo } from "../../shared/account";
+import { BADGE_INFO, type EarnedBadge } from "../../shared/badges";
 import type { ReachedMilestone } from "../../shared/milestones";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
@@ -32,6 +33,8 @@ import { preloadTurnstile, turnstileToken } from "./turnstile";
 //                      decides every purchase; between messages credits tick up at your auto rate.
 //   REAL from phase 7a: today's crew vote (POST /api/vote, live tallies) and the mission log (/log).
 //   REAL from phase 7b: milestones, and the milestone moment when one is reached (shown once per browser).
+//   REAL from the flight view phase and 8b: your click counts today and in all time, and your badges
+//                      (a toast when you earn one).
 //   RETUNE (prompts 27-28): self-balancing thrust, today's pace for the arrival date, and the idle pause
 //                      ("Probe idle: tap to wake it", the date on hold); numbers in shared/balance.ts.
 // Time is the server's clock: every message carries it, and `now` below is Date.now() + that offset.
@@ -102,6 +105,8 @@ export interface PlayerState {
   /** "You've clicked": your THRUST taps today (UTC) and in all time, from the server plus taps not yet confirmed. */
   tapsToday: number;
   tapsAll: number;
+  /** Your badges (phase 8b), from the server. */
+  badges: EarnedBadge[];
   pingedToday: boolean;
   /** True while a ping is on its way (bot check, then the server). */
   pinging: boolean;
@@ -170,6 +175,7 @@ let serverToday: DeviceToday = {
   tapMovedToday: 0,
   tapsToday: 0,
   tapsAll: 0,
+  badges: [],
   pingedToday: false,
   pingStreakDays: 0,
   vote: null,
@@ -256,6 +262,7 @@ function initialState(): GameState {
       tapMovedToday: 0,
       tapsToday: 0,
       tapsAll: 0,
+      badges: [],
       pingedToday: false,
       pinging: false,
       voteChoice: null,
@@ -328,6 +335,7 @@ function compose(base: GameState, connection = base.connection): GameState {
       tapMovedToday: serverToday.tapMovedToday + optimisticKm * (p?.crewFactor ?? 1),
       tapsToday: serverToday.tapsToday + unconfirmedTaps(),
       tapsAll: serverToday.tapsAll + unconfirmedTaps(),
+      badges: serverToday.badges,
       pingedToday: serverToday.pingedToday,
       pingStreakDays: serverToday.pingStreakDays,
       // Your vote counts only for the round it was cast in; a new round starts empty.
@@ -344,6 +352,14 @@ function doneBuying(s: GameState): GameState {
 
 function onMessage(msg: ServerMessage) {
   offsetMs = msg.now - Date.now();
+  if (msg.t === "badges") {
+    serverToday = { ...serverToday, badges: msg.badges };
+    set(compose(state));
+    const names = msg.earned.map((id) => BADGE_INFO[id].name);
+    if (names.length === 1) showToast({ tier: null, title: `Badge earned: ${names[0]}`, body: BADGE_INFO[msg.earned[0]].how + ". See it on your profile." });
+    else if (names.length > 1) showToast({ tier: null, title: `${names.length} badges earned`, body: `${names.join(", ")}. See them on your profile.` });
+    return;
+  }
   let next = state;
   if (msg.t === "hello" || msg.t === "credited") {
     serverToday = {
@@ -352,6 +368,7 @@ function onMessage(msg: ServerMessage) {
       tapMovedToday: msg.tapMovedToday ?? 0,
       tapsToday: msg.tapsToday ?? 0,
       tapsAll: msg.tapsAll ?? 0,
+      badges: msg.badges ?? [],
       pingedToday: msg.pingedToday,
       pingStreakDays: msg.pingStreakDays,
       vote: msg.vote,

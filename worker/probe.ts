@@ -43,6 +43,19 @@ import {
   type WelcomeBack,
 } from "../shared/upgrades";
 import { MILESTONES, type ReachedMilestone } from "../shared/milestones";
+import { CLICK_BADGES } from "../shared/clicks";
+import {
+  CLICK_BADGE_IDS,
+  HALFWAY_KM,
+  KEEPER_DAYS,
+  KEEPER_IDS,
+  NIGHT_SHIFT_FROM_HOUR,
+  NIGHT_SHIFT_TO_HOUR,
+  VOTER_ROUNDS,
+  longestStreak,
+  type BadgeId,
+  type EarnedBadge,
+} from "../shared/badges";
 import {
   VOTE_QUESTION,
   VOTE_RECENT_ROUNDS,
@@ -110,8 +123,16 @@ interface Mission {
   lastSafeTo: number | null;
 }
 
-/** A player's numbers for today (km, ping, vote) and their tap allowance. */
-interface DeviceEntry extends Omit<DeviceToday, "vote"> {
+/** A player's numbers for today (km, ping, vote), their tap allowance, and what their badges need. */
+interface DeviceEntry extends Omit<DeviceToday, "vote" | "badges"> {
+  /** The badges they have, and when each was earned. */
+  badges: Map<BadgeId, number>;
+  /** Rounds voted in, ever (Voter ×30). */
+  votesTotal: number;
+  /** The longest ping streak they've ever had (Signal Keeper). */
+  bestStreak: number;
+  /** They pushed in this mission before the probe passed halfway (Halfway Crew). */
+  pushedBeforeHalfway: boolean;
   day: string;
   /** This device's vote: the round it was read for, and its option (null = not voted). */
   voteRound: string | null;
@@ -145,6 +166,8 @@ interface Attachment {
   /** Real ms: when the socket opened, and its last message (heartbeats are tracked by the runtime). */
   since: number;
   seen?: number;
+  /** The player's time zone, from Cloudflare's location for the connection (Night Shift). */
+  tz?: string | null;
 }
 
 /**
@@ -998,9 +1021,11 @@ export class Probe extends DurableObject<Env> {
 
     const yesterday = utcDay(at - DAY_MS);
     dev.pingStreakDays = dev.lastPingDay === yesterday ? dev.pingStreakDays + 1 : 1;
+    dev.bestStreak = Math.max(dev.bestStreak, dev.pingStreakDays);
     dev.lastPingDay = day;
     dev.pingedToday = true;
     this.broadcast();
+    await this.checkBadges(w, dev, null, at); // First Ping, Signal Keeper
 
     if (woke) {
       const later = setback > 0 ? `Arrival moved about ${span(setback)} later.` : "The arrival date held.";
@@ -1048,6 +1073,81 @@ export class Probe extends DurableObject<Env> {
         slug: ms.slug,
         postcard: ms.n,
       });
+    }
+    if (fresh.some((ms) => ms.km === HALFWAY_KM)) await this.awardHalfway(now);
+  }
+
+  // ---------- Badges (phase 8b) ----------
+
+  /** When the probe passed halfway in this mission, or null if it hasn't yet. */
+  private halfwayAt(): number | null {
+    const half = MILESTONES.find((ms) => ms.km === HALFWAY_KM);
+    return this.reached.find((r) => r.n === half?.n)?.at ?? null;
+  }
+
+  /** Halfway Crew: everyone who pushed in this mission up to the day it passed halfway. */
+  private async awardHalfway(at: number) {
+    await this.flushD1(); // km pushed in the last few seconds count too
+    const db = this.env.DB;
+    let keys: string[] = [];
+    try {
+      await db
+        .prepare(
+          `INSERT OR IGNORE INTO badges (player_key, badge, earned_at)
+           SELECT DISTINCT CASE WHEN account_id IS NOT NULL THEN 'a:' || account_id ELSE device_id END, 'halfway', ?
+           FROM daily_km WHERE km > 0 AND day >= ? AND day <= ?`,
+        )
+        .bind(at, utcDay(this.mission.startedAt), utcDay(at))
+        .run();
+      const rows = await db.prepare(`SELECT player_key FROM badges WHERE badge = 'halfway' AND earned_at = ?`).bind(at).all<{ player_key: string }>();
+      keys = rows.results.map((r) => r.player_key);
+    } catch (err) {
+      console.error("halfway badges failed", err);
+      return;
+    }
+    for (const key of keys) {
+      const dev = this.devices.get(key);
+      if (!dev || dev.badges.has("halfway")) continue;
+      dev.badges.set("halfway", at);
+      dev.pushedBeforeHalfway = true;
+      this.sendBadges(key, dev, ["halfway"]);
+    }
+  }
+
+  /** Awards every badge this player now qualifies for (plus any in `extra`), saves them and tells their tabs. */
+  private async checkBadges(w: Who, dev: DeviceEntry, p: ProgressEntry | null, now: number, extra: BadgeId[] = []) {
+    const want: BadgeId[] = [...extra];
+    if (dev.lastPingDay !== null) want.push("first-ping");
+    const streak = Math.max(dev.bestStreak, dev.pingStreakDays);
+    KEEPER_DAYS.forEach((d, i) => streak >= d && want.push(KEEPER_IDS[i]));
+    if (dev.votesTotal >= VOTER_ROUNDS) want.push("voter-30");
+    if (dev.pushedBeforeHalfway) want.push("halfway");
+    if (p && p.patches > 0) want.push("patch");
+    CLICK_BADGES.forEach((b, i) => dev.tapsAll >= b.clicks && want.push(CLICK_BADGE_IDS[i]));
+    const earned = [...new Set(want)].filter((id) => !dev.badges.has(id));
+    if (earned.length === 0) return;
+    for (const id of earned) dev.badges.set(id, now);
+    try {
+      await this.env.DB.batch(
+        earned.map((id) =>
+          this.env.DB.prepare(`INSERT OR IGNORE INTO badges (player_key, badge, earned_at) VALUES (?, ?, ?)`).bind(w.key, id, now),
+        ),
+      );
+    } catch (err) {
+      console.error("badge insert failed", err);
+      for (const id of earned) dev.badges.delete(id); // try again next time
+      return;
+    }
+    this.sendBadges(w.key, dev, earned);
+  }
+
+  /** Tells all of a player's tabs and devices about new badges. */
+  private sendBadges(key: string, dev: DeviceEntry, earned: BadgeId[]) {
+    const msg: ServerMessage = { t: "badges", now: this.now(), earned, badges: badgeList(dev) };
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (a && whoOf(a).key === key) this.send(ws, msg);
     }
   }
 
@@ -1194,8 +1294,10 @@ export class Probe extends DurableObject<Env> {
     this.vote.tallies[option] += 1;
     dev.voteRound = round;
     dev.voteOption = option;
+    dev.votesTotal += 1;
     this.sql.exec(`UPDATE vote_round SET tallies = ? WHERE round = ?`, JSON.stringify(this.vote.tallies), round);
     this.scheduleBroadcast();
+    await this.checkBadges(w, dev, null, now); // Voter ×30
     return { ok: true, option, tallies: [...this.vote.tallies] };
   }
 
@@ -1214,12 +1316,19 @@ export class Probe extends DurableObject<Env> {
       let tapMovedToday = 0;
       let tapsToday = 0;
       let tapsAll = 0;
+      const badges = new Map<BadgeId, number>();
+      let votesTotal = 0;
+      let pushedBeforeHalfway = false;
       let pingDays: string[] = [];
       const round = this.vote.round;
       let voteOpt: number | null = null;
       const db = this.env.DB;
       try {
-        const [km, pings, votes, clicks] = await db.batch<{
+        // Halfway Crew: km pushed from the mission's first day to the day it passed halfway (none if it hasn't).
+        const halfAt = this.halfwayAt();
+        const halfFrom = utcDay(this.mission.startedAt);
+        const halfTo = halfAt === null ? "" : utcDay(halfAt);
+        const [km, pings, votes, clicks, badgeRows, voteCount, half] = await db.batch<{
           km?: number | null;
           tap_km?: number | null;
           tap_moved_km?: number | null;
@@ -1227,6 +1336,9 @@ export class Probe extends DurableObject<Env> {
           option?: number;
           taps_today?: number | null;
           taps_all?: number | null;
+          badge?: string;
+          earned_at?: number;
+          n?: number;
         }>(
           w.accountId
             ? [
@@ -1246,6 +1358,11 @@ export class Probe extends DurableObject<Env> {
                      WHERE account_id = ?`,
                   )
                   .bind(day, w.accountId),
+                db.prepare(`SELECT badge, earned_at FROM badges WHERE player_key = ?`).bind(w.key),
+                db.prepare(`SELECT COUNT(*) AS n FROM votes WHERE account_id = ?`).bind(w.accountId),
+                db
+                  .prepare(`SELECT COUNT(*) AS n FROM daily_km WHERE account_id = ? AND km > 0 AND day >= ? AND day <= ?`)
+                  .bind(w.accountId, halfFrom, halfTo),
               ]
             : [
                 db.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, w.deviceId),
@@ -1259,6 +1376,11 @@ export class Probe extends DurableObject<Env> {
                      WHERE device_id = ?`,
                   )
                   .bind(day, w.deviceId),
+                db.prepare(`SELECT badge, earned_at FROM badges WHERE player_key = ?`).bind(w.key),
+                db.prepare(`SELECT COUNT(*) AS n FROM votes WHERE device_id = ?`).bind(w.deviceId),
+                db
+                  .prepare(`SELECT COUNT(*) AS n FROM daily_km WHERE device_id = ? AND km > 0 AND day >= ? AND day <= ?`)
+                  .bind(w.deviceId, halfFrom, halfTo),
               ],
         );
         voteOpt = votes.results[0]?.option ?? null;
@@ -1267,6 +1389,9 @@ export class Probe extends DurableObject<Env> {
         tapMovedToday = km.results[0]?.tap_moved_km ?? 0;
         tapsToday = clicks.results[0]?.taps_today ?? 0;
         tapsAll = clicks.results[0]?.taps_all ?? 0;
+        for (const r of badgeRows.results) badges.set(r.badge as BadgeId, r.earned_at!);
+        votesTotal = voteCount.results[0]?.n ?? 0;
+        pushedBeforeHalfway = (half.results[0]?.n ?? 0) > 0;
         pingDays = pings.results.map((r) => r.day!);
       } catch (err) {
         console.error("device read failed", err);
@@ -1290,6 +1415,10 @@ export class Probe extends DurableObject<Env> {
         tapMovedToday,
         tapsToday,
         tapsAll,
+        badges,
+        votesTotal,
+        bestStreak: longestStreak(pingDays),
+        pushedBeforeHalfway,
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
@@ -1318,6 +1447,7 @@ export class Probe extends DurableObject<Env> {
       tapMovedToday: dev.tapMovedToday,
       tapsToday: dev.tapsToday,
       tapsAll: dev.tapsAll,
+      badges: badgeList(dev),
       pingedToday: dev.pingedToday,
       pingStreakDays: alive ? dev.pingStreakDays : 0,
       vote: dev.voteRound === this.vote.round && dev.voteOption !== null ? { round: dev.voteRound, option: dev.voteOption } : null,
@@ -1592,11 +1722,13 @@ export class Probe extends DurableObject<Env> {
       accountId: w.accountId,
       auto: autoKmS(p.levels, p.patches),
       since: Date.now(),
+      tz: request.headers.get("X-Timezone"),
     } satisfies Attachment);
     this.retune(now); // people here and auto-thrust changed
     const welcome = away ? await this.welcomeFor(p, away, now) : null;
 
     this.send(server, { t: "hello", now, probe: this.snapshot(now), me: this.me(p), welcome, ...this.today(dev) });
+    await this.checkBadges(w, dev, p, now); // anything earned before badges existed, or while away
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -1627,6 +1759,7 @@ export class Probe extends DurableObject<Env> {
       else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(w, p, msg.key, now);
       this.send(ws, { t: "me", seq: msg.seq, ok, now, me: this.me(p) });
       if (ok) this.sendMe(w.key, p, ws); // the player's other tabs and devices
+      if (ok && msg.t === "prestige") await this.checkBadges(w, dev, p, now); // Mission Patch
       if (ok && autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now); // connected auto-thrust
       return;
     }
@@ -1649,6 +1782,10 @@ export class Probe extends DurableObject<Env> {
       dev.tapsAll += taps;
       this.addPending(dev.day, w, 0, 0, 0, taps);
       this.scheduleD1Flush();
+      // The click badges, and Night Shift for taps between 02:00 and 04:59 the player's local time.
+      const hour = localHour(att.tz, now);
+      const night = hour !== null && hour >= NIGHT_SHIFT_FROM_HOUR && hour < NIGHT_SHIFT_TO_HOUR;
+      await this.checkBadges(w, dev, p, now, night ? ["night-shift"] : []);
     }
     const km = taps * tapKm(p.levels, p.patches);
     if (km > 0) {
@@ -1757,6 +1894,12 @@ export class Probe extends DurableObject<Env> {
         this.env.DB.prepare(`UPDATE daily_km SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
         this.env.DB.prepare(`UPDATE pings SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
         this.env.DB.prepare(`UPDATE votes SET account_id = ? WHERE device_id = ? AND account_id IS NULL`).bind(accountId, deviceId),
+        // Badges: the account keeps every badge either had (the earlier date where both have one).
+        this.env.DB.prepare(
+          `INSERT INTO badges (player_key, badge, earned_at) SELECT ?, badge, earned_at FROM badges WHERE player_key = ?
+           ON CONFLICT (player_key, badge) DO UPDATE SET earned_at = MIN(earned_at, excluded.earned_at)`,
+        ).bind(acct.key, guest.key),
+        this.env.DB.prepare(`DELETE FROM badges WHERE player_key = ?`).bind(guest.key),
       ]);
     } catch (err) {
       console.error("attaching history failed", err);
@@ -1810,6 +1953,11 @@ export class Probe extends DurableObject<Env> {
   }
 
   // ---------- /admin (called over RPC by the Worker, after it checks the key) ----------
+
+  /** Today's UTC day by the probe's clock (the leaderboards and profile use it, so /admin clock moves agree). */
+  async boardDay(): Promise<string> {
+    return utcDay(this.now());
+  }
 
   async adminState(): Promise<AdminState> {
     await this.checkSignal();
@@ -1997,6 +2145,27 @@ function overlap(a: number, b: number, c: number, d: number): number {
 }
 
 /** Consecutive ping days ending today or yesterday. `days` is newest first (YYYY-MM-DD). */
+/** A player's badges as the app gets them. */
+function badgeList(dev: DeviceEntry): EarnedBadge[] {
+  return [...dev.badges].map(([id, at]) => ({ id, at }));
+}
+
+const hourFormats = new Map<string, Intl.DateTimeFormat>();
+/** The hour (0–23) at `ms` in time zone `tz`, or null if the zone is unknown. */
+function localHour(tz: string | null | undefined, ms: number): number | null {
+  if (!tz) return null;
+  try {
+    let f = hourFormats.get(tz);
+    if (!f) {
+      f = new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: tz });
+      hourFormats.set(tz, f);
+    }
+    return Number(f.format(ms));
+  } catch {
+    return null;
+  }
+}
+
 function streak(days: string[], now: number): number {
   if (days.length === 0) return 0;
   const today = utcDay(now);

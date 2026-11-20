@@ -1,3 +1,4 @@
+import { KEEPER_DAYS, ROMAN, keeperLevel } from "../../shared/badges";
 import { hms, int, longDate, minSec } from "../game/format";
 import type { VoteOption } from "../game/store";
 import { PixelButton } from "./PixelButton";
@@ -69,6 +70,14 @@ interface SignalCardProps {
 
 export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays, onPing, wide = false }: SignalCardProps) {
   const days = `${streakDays} day${streakDays === 1 ? "" : "s"}`;
+  // Your Signal Keeper level from today's streak (phase 8b: 3 / 7 / 21 / 30 days).
+  const level = keeperLevel(streakDays);
+  const nextDays = level < KEEPER_DAYS.length ? KEEPER_DAYS[level] - streakDays : 0;
+  const keeperName = `Signal Keeper ${ROMAN[Math.max(0, level - 1)]}`;
+  const keeperNote =
+    level === KEEPER_DAYS.length
+      ? `${streakDays}-day ping streak · top level`
+      : `${streakDays}-day ping streak · ${nextDays} day${nextDays === 1 ? "" : "s"} to ${ROMAN[level]}`;
   const timer = (
     <div
       className={urgent ? "signal__timer signal__timer--urgent" : "signal__timer"}
@@ -95,9 +104,8 @@ export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays,
         <div className="signal__badge">
           <PixelIcon name="star" size={18} tone="orange" />
           <div>
-            <div className="signal__badge-name">Signal Keeper III</div>
-            <div className="signal__badge-note">{streakDays}-day ping streak · 4 days to IV</div>
-            {/* The badge name and "days to IV" stay the design's until badges arrive in phase 8. */}
+            <div className="signal__badge-name">{keeperName}</div>
+            <div className="signal__badge-note">{keeperNote}</div>
           </div>
         </div>
       </Window>
@@ -113,7 +121,7 @@ export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays,
         {timer}
         <div className="signal__streak">
           <PixelIcon name="star" size={9} tone="orange" />
-          Signal Keeper III · {days}
+          {level > 0 ? `${keeperName} · ${days}` : `${days} streak · Keeper I at ${KEEPER_DAYS[0]}`}
         </div>
       </div>
       <PixelButton

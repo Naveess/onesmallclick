@@ -36,7 +36,8 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [ ] **8b planning**, if there's time.
 
 ### Before 8b (badges)
-- [ ] **Signal Keeper I–IV thresholds and what "Night Shift" means**: Claude proposes them at the start of 8b, Nav approves.
+- [x] **Signal Keeper I–IV thresholds and what "Night Shift" means**: decided in prompt 38 (3 / 7 / 21 / 30 days; taps between 02:00 and 04:59 local time).
+- [ ] **Countries board: signed-in only, later** (prompt 38). It counts everyone (guests by device country) for now.
 
 ### Make with PixelLab (once 10 generations are banked, or after the PixelLab upgrade)
 - [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:
@@ -167,6 +168,6 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
 
 ## At the end
 - [ ] **Privacy page (phase 9) must mention Cloudflare Turnstile**, which runs on Ping, and the device cookie (`osc_device`, HttpOnly, 400 days).
-- [ ] **Signal Keeper badge names (phase 8).** The signal card still shows the design's "Signal Keeper III · 4 days to IV"; only the streak number is real. Set the I–IV streak thresholds with the badges.
+- [x] **Signal Keeper badge names (phase 8).** Done in 8b: the signal card shows your real level and the days to the next.
 - [ ] **Add onesmallclick.io to the Turnstile widget's hostnames** when the domain is connected, or Ping will fail there.
 - [ ] **Postcard photos.** Pick a real space photo for each of the six milestones, check each licence (prefer public-domain NASA/JPL) and note the credit line. Decide whether to keep them as photos or convert them to pixel art (open question in the brief).

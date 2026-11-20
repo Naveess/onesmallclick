@@ -32,7 +32,7 @@ interface MilestoneMomentProps {
 }
 
 /** The design's share card: "OneSmallClick · Day 63 / ▰▰▰▰▰▱▱▱▱▱ 50% to Mars / …". */
-function shareText(t: Today): string {
+export function shareText(t: Today): string {
   const pct = Math.min(100, Math.max(0, Math.floor(t.progress * 100)));
   const cells = Math.round(pct / 10);
   return [
@@ -43,7 +43,8 @@ function shareText(t: Today): string {
   ].join("\n");
 }
 
-async function share(text: string) {
+/** Shares the text (the share sheet on phones) or copies it, with the site address. Also used by the profile. */
+export async function share(text: string) {
   const url = window.location.origin;
   try {
     if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {

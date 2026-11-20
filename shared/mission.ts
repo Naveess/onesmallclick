@@ -4,6 +4,7 @@
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
 import type { ReachedMilestone } from "./milestones";
+import type { BadgeId, EarnedBadge } from "./badges";
 import { SETBACK_CAP_MS, SETBACK_HOURS_PER_QUIET_HOUR } from "./balance";
 
 // Every number that sets the trip's length lives in shared/balance.ts (the retune); these are re-exported.
@@ -113,6 +114,8 @@ export interface DeviceToday {
   /** THRUST taps the server credited today (UTC) and in all time: capped and safe-mode taps don't count ("You've clicked"). */
   tapsToday: number;
   tapsAll: number;
+  /** The badges this player has (phase 8b). */
+  badges: EarnedBadge[];
   pingedToday: boolean;
   /** Consecutive days with a ping, up to today or yesterday. */
   pingStreakDays: number;
@@ -144,6 +147,8 @@ export type ClientMessage =
 export type ServerMessage =
   | ({ t: "hello"; now: number; probe: ProbeSnapshot; me: Progress; welcome: WelcomeBack | null } & DeviceToday)
   | { t: "state"; now: number; probe: ProbeSnapshot }
+  /** New badges for this player (phase 8b): the ones just earned, and the full list. */
+  | { t: "badges"; now: number; earned: BadgeId[]; badges: EarnedBadge[] }
   | ({ t: "credited"; seq: number; taps: number; km: number; now: number; probe: ProbeSnapshot; me: Progress } & DeviceToday)
   /** The answer to a buy or a handover: refused when it isn't affordable (or unlocked). */
   | { t: "me"; seq: number; ok: boolean; now: number; me: Progress };

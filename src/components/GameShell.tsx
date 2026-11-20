@@ -99,7 +99,7 @@ export function GameShell({ tab, children }: GameShellProps) {
                   How to play
                 </Link>
                 <ThemeLink className="game-nav__item" />
-                <Link href="/sign-in" className="pbtn pbtn--blue game-nav__signin">
+                <Link href={player.account ? "/profile" : "/sign-in"} className="pbtn pbtn--blue game-nav__signin">
                   {player.account ? player.name : "Sign in"}
                 </Link>
               </nav>
@@ -116,7 +116,8 @@ export function GameShell({ tab, children }: GameShellProps) {
             <footer className="game-foot">
               <Link href="/how-to-play">How to play</Link>
               <Link href="/log">Mission log</Link>
-              <Link href="/sign-in">{player.account ? player.name : "Sign in"}</Link>
+              <Link href="/profile">Profile</Link>
+              <Link href="/sign-in">{player.account ? "Account" : "Sign in"}</Link>
               <ThemeLink />
             </footer>
           )}

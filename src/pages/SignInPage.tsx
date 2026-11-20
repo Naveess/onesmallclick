@@ -325,7 +325,7 @@ function AccountView() {
       <Window tone="orange" className="signin__card">
         <h2 className="signin__label signin__label--orange">DELETE ACCOUNT</h2>
         <p className="signin__small signin__small--warm">
-          Deletes your account, its name and its progress (credits, upgrades and patches) for good. The km you
+          Deletes your account, its name and its progress (credits, upgrades, patches and badges) for good. The km you
           pushed stay in the mission, without your name. This can't be undone.
         </p>
         <PixelButton
