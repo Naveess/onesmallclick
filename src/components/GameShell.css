@@ -74,6 +74,42 @@
   display: none;
 }
 
+/* Phone: "here now" (or SAFE MODE) and the profile icon, side by side. */
+.game-head__side {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.game-head__profile {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+/* A 44px tap target around the 32px box. */
+.game-head__profile::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+.game-head__profile:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .game-head__profile:hover {
+    border-color: var(--blue);
+  }
+}
+
 /* --- Wide header --- */
 .game-head--wide {
   align-items: center;

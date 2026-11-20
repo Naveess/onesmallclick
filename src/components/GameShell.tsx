@@ -103,10 +103,14 @@ export function GameShell({ tab, children }: GameShellProps) {
                   {player.account ? player.name : "Sign in"}
                 </Link>
               </nav>
-            ) : safe ? (
-              <SafeChip />
             ) : (
-              <HereNow online={probe.online} idling={probe.idling} />
+              <div className="game-head__side">
+                {safe ? <SafeChip /> : <HereNow online={probe.online} idling={probe.idling} />}
+                {/* Prompt 42: the profile, one tap away on phones (the name button does this on wide screens). */}
+                <Link href="/profile" className="game-head__profile" aria-label="Your profile">
+                  <PixelIcon name="user" size={18} tone="blue" />
+                </Link>
+              </div>
             )}
           </header>
 

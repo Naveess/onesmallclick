@@ -454,6 +454,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
     - Made by `scripts/make-flags.mjs` from flag-icons (MIT, credited in `design/sprites/flags/`).
     - 54 busy flags were tidied by hand (`scripts/flags/overrides.json`).
     - Flags keep their real colours (an agreed palette exception).
+  - **A profile icon in the phone header** (prompt 42), beside "here now" (or SAFE MODE): a 32px box with a 44px tap area. On wide screens your name button already opens the profile.
   - **The signal card's wording** before Signal Keeper I: "Ping streak · 2-day ping streak · 1 day to Signal Keeper I" (it used to say "Signal Keeper I · 1 day to I").
 - **Checked locally:**
   - A scripted run passed all 18 checks: each badge rule, Halfway Crew not going to someone who pushed only after halfway, the merge of two devices' badges, the leaderboards as guest and signed in, the profile, and delete account removing badges.
