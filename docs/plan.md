@@ -430,7 +430,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
 
-**E4b part 1 as built (2026-11-20, prompts 49–50; not deployed yet; no migration)**
+**E4b part 1 as built (2026-11-20, prompts 49–50; deployed 2026-11-20, prompt 51, version c6e1027f; no migration; waiting for Nav's checks)**
 - **Answers (prompt 50):** the share image is laid out at 360px and drawn at exactly 3× (1080 × 1080), and the Mars facts page is built now, ahead of E4.
 - **The medal pace line** sits under "Your taps today" (1a/1b), from the arrival estimate the home already shows:
   - "Gold if we arrive by 15 Dec · on pace for Silver", a bar and "2.4 days to Gold". On Gold pace it reads "top tier · hold it"; on Bronze pace it aims for Silver ("Silver if we arrive by…", the days to Silver).
