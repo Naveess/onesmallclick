@@ -10,7 +10,8 @@ interface ClickCounterProps {
   wide?: boolean;
 }
 
-/** "You've clicked" under THRUST (design 1a/1b): today's clicks as an odometer, all time, and the next click badge. */
+/** "You've clicked" under THRUST (design 1a/1b): today's clicks as an odometer, all time, and the next click badge.
+ * The badges count all-time clicks (Nav, prompt 33), so the bar follows the all-time total. */
 export function ClickCounter({ today, all, wide = false }: ClickCounterProps) {
   // At least six digits, grouped in threes: 001,284.
   const digits = String(Math.max(0, Math.floor(today))).padStart(6, "0");
@@ -19,9 +20,9 @@ export function ClickCounter({ today, all, wide = false }: ClickCounterProps) {
   const chars = [...groups.join(",")];
   let d = -1;
 
-  const goal = nextClickBadge(today);
+  const goal = nextClickBadge(all);
   const last = CLICK_BADGES[CLICK_BADGES.length - 1];
-  const bar = goal ? Math.min(1, today / goal.clicks) : 1;
+  const bar = goal ? Math.min(1, all / goal.clicks) : 1;
 
   return (
     <Window as="section" className={wide ? "clicks clicks--wide" : "clicks"} aria-labelledby="clicks-label">
@@ -65,7 +66,7 @@ export function ClickCounter({ today, all, wide = false }: ClickCounterProps) {
               <span>
                 Next: <span className="clicks__badge">{goal.name}</span> at {int(goal.clicks)}
               </span>
-              <span className="num">{int(goal.clicks - today)} to go</span>
+              <span className="num">{int(goal.clicks - all)} to go</span>
             </>
           ) : (
             <span>
@@ -79,7 +80,7 @@ export function ClickCounter({ today, all, wide = false }: ClickCounterProps) {
           aria-label={goal ? `Clicks towards ${goal.name}` : `${last.name} reached`}
           aria-valuemin={0}
           aria-valuemax={goal?.clicks ?? last.clicks}
-          aria-valuenow={Math.min(today, goal?.clicks ?? last.clicks)}
+          aria-valuenow={Math.min(all, goal?.clicks ?? last.clicks)}
         >
           <div className="clicks__fill" style={{ width: `${Math.round(bar * 100)}%` }} />
         </div>

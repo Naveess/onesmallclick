@@ -27,6 +27,25 @@ export function GamePage() {
   return (
     <GameShell tab="mission">
       {({ wide, openUpgrades }) => {
+        // The flight view replaces JourneyTrack (prompt 32); JourneyTrack.tsx stays until the flight view is approved.
+        const flightProps = {
+          progress: view.progress,
+          distanceKm: probe.distanceKm,
+          routeKm: probe.routeKm,
+          speedKmS: view.speedKmS,
+          crewKmS: probe.crewKmS,
+          online: probe.online,
+          handful: switches.handful,
+          arrivalAt: view.arrivalAt,
+          milestones: MILESTONES,
+          nextMilestone: view.nextMilestone,
+          toNextKm: view.toNextKm,
+          safe: view.safe,
+          urgent: view.signalUrgent,
+          signalLeftS: view.signalLeftS,
+          paused: view.paused,
+        };
+        const track = <FlightView handle={flight} wide={wide} {...flightProps} />;
         if (view.safe) {
           return (
             <SafeMode
@@ -36,7 +55,7 @@ export function GamePage() {
               arrivalBeforeAt={view.arrivalBeforeAt}
               setbackMs={view.setbackMs}
               paused={view.paused}
-              progress={view.progress}
+              flight={<FlightView {...flightProps} />}
               pinged={player.pingedToday}
               pinging={player.pinging}
               onPing={() => void ping()}
@@ -44,28 +63,6 @@ export function GamePage() {
           );
         }
 
-        // The flight view replaces JourneyTrack (prompt 32); JourneyTrack.tsx stays until the flight view is approved.
-        const track = (
-          <FlightView
-            handle={flight}
-            wide={wide}
-            progress={view.progress}
-            distanceKm={probe.distanceKm}
-            routeKm={probe.routeKm}
-            speedKmS={view.speedKmS}
-            crewKmS={probe.crewKmS}
-            online={probe.online}
-            handful={switches.handful}
-            arrivalAt={view.arrivalAt}
-            milestones={MILESTONES}
-            nextMilestone={view.nextMilestone}
-            toNextKm={view.toNextKm}
-            safe={view.safe}
-            urgent={view.signalUrgent}
-            signalLeftS={view.signalLeftS}
-            paused={view.paused}
-          />
-        );
         const clicks = <ClickCounter wide={wide} today={player.tapsToday} all={player.tapsAll} />;
         const signal = (
           <SignalCard

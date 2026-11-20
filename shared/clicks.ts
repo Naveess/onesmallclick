@@ -1,5 +1,6 @@
-// The click badges (decided 2026-11-19, docs/plan.md "Flight view"). "You've clicked" under THRUST
-// shows the bar to the next one from the flight view phase; phase 8b awards them.
+// The click badges (decided 2026-11-19, docs/plan.md "Flight view"). They count a player's all-time
+// credited clicks (Nav, prompt 33, "for now"). "You've clicked" under THRUST shows the bar to the next
+// one; phase 8b awards them.
 
 export interface ClickBadge {
   name: string;

@@ -1,8 +1,7 @@
+import type { ReactNode } from "react";
 import { SETBACK_HOURS_PER_QUIET_HOUR } from "../../shared/mission";
 import { longDate } from "../game/format";
-import { SPRITES, STILLS } from "../sprites";
 import { PingButton } from "./PingButton";
-import { Sprite } from "./Sprite";
 import { Window } from "./Window";
 import "./SafeMode.css";
 
@@ -15,7 +14,8 @@ interface SafeModeProps {
   setbackMs: number;
   /** The probe is paused for lack of players: the setback waits too. */
   paused: boolean;
-  progress: number;
+  /** The flight view in its safe state (decided 2026-11-20, prompt 33: 1f uses the flight view). */
+  flight: ReactNode;
   pinged: boolean;
   pinging: boolean;
   onPing: () => void;
@@ -49,12 +49,11 @@ export function SafeMode({
   arrivalBeforeAt,
   setbackMs,
   paused,
-  progress,
+  flight,
   pinged,
   pinging,
   onPing,
 }: SafeModeProps) {
-  const pct = `${Math.min(100, Math.max(0, progress * 100)).toFixed(2)}%`;
   return (
     <main className={wide ? "safe safe--wide" : "safe"} aria-label="Safe mode">
       <div className="safe__vignette" aria-hidden="true" />
@@ -74,23 +73,13 @@ export function SafeMode({
         )}
       </section>
 
-      <Window tone="muted" className="safe__track" aria-label={`Route from Earth to Mars, ${pct} travelled, thrusters asleep`}>
-        <div className="safe__lane" aria-hidden="true">
-          <img className="safe__earth" src={STILLS.earth.src} alt="" width={64} height={64} />
-          <div className="safe__mars">
-            <Sprite sprite={SPRITES.marsSmall} scale={1} playing={false} />
-          </div>
-          <div className="safe__route">
-            <div className="safe__dash" />
-            <div className="safe__bar" style={{ width: pct }} />
-            <img className="safe__probe" src={STILLS.probe.src} alt="" width={64} height={40} style={{ left: pct }} />
-          </div>
-        </div>
-        <div className="safe__foot">
+      <div className="safe__flight">
+        {flight}
+        <p className="safe__foot">
           <span>{paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
           <span className="num">0 km/s from crew</span>
-        </div>
-      </Window>
+        </p>
+      </div>
 
       <Window tone="muted" as="section" className="safe__signal" aria-labelledby="safe-signal-label">
         <div>

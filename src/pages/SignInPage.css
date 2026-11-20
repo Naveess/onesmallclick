@@ -77,6 +77,12 @@
   font-size: 20px;
 }
 
+.signin__back.pbtn {
+  min-height: 50px;
+  font-size: 17px;
+  text-decoration: none;
+}
+
 .signin__form .pbtn {
   min-height: 50px;
   font-size: 17px;

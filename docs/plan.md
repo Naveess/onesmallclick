@@ -15,7 +15,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
-  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up from Nav's decisions next (see "Decided after the checks" below).
+  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges)
   - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
@@ -377,6 +377,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   2. The two new colours are approved.
   3. The idle-pause chip goes into the design file.
   4. The click badges count **all-time** clicks for now, so the bar in "You've clicked" moves to the all-time total.
+- **Follow-up as built (2026-11-20, prompts 34–35; waiting for Nav's deploy):**
+  - The safe-mode screen shows the flight view in its safe state, with the "Coasting · thrusters asleep" line under it. This replaces its muted track. The rest of 1f is unchanged.
+  - "You've clicked" keeps today's odometer, but its bar and "to go" now count all-time clicks.
+  - The account page (`/sign-in`, signed in) has a full-width "Back to the mission" button under your name. The footer keeps only the Privacy link.
+  - The design file now has an "idle pause" signal state for 1a/1b (the blue PROBE IDLE chip, engine off, stars stopped), and 1f shows the flight view in its safe state, its frame now scrolling.
+  - No migration.
 - **Checked locally:**
   - Screenshots at 375, 390 and 1440 in both themes, next to the design file's 1a/1b. Also: the boost, the start and near Mars (phone and wide), a small crew, reduced motion, the final seconds, the idle pause, and the `/kit` states.
   - A scripted check passed in full:

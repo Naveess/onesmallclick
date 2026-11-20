@@ -70,68 +70,16 @@
   padding: 0 5px;
 }
 
-.safe__track.window {
+/* The flight view in its safe state, with the coasting line under it (prompt 33). */
+.safe__flight {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 12px;
-}
-
-.safe__lane {
-  position: relative;
-  height: 64px;
-  filter: saturate(0.2) brightness(0.75);
-}
-
-.safe__earth,
-.safe__mars {
-  position: absolute;
-  top: 0;
-}
-
-.safe__earth {
-  left: -6px;
-}
-
-.safe__mars {
-  right: -6px;
-  display: flex;
-  line-height: 0;
-}
-
-.safe__route {
-  position: absolute;
-  left: 62px;
-  right: 62px;
-  top: 12px;
-  bottom: 12px;
-}
-
-.safe__dash {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 19px;
-  height: 2px;
-  background: repeating-linear-gradient(90deg, var(--dash) 0 4px, transparent 4px 8px);
-}
-
-.safe__bar {
-  position: absolute;
-  left: 0;
-  top: 18px;
-  height: 4px;
-  background: var(--dash-solid);
-}
-
-.safe__probe {
-  position: absolute;
-  top: 20px;
-  transform: translate(-50%, -50%);
-  filter: grayscale(1) brightness(0.8);
 }
 
 .safe__foot {
+  margin: 0;
+  padding: 0 2px;
   display: flex;
   justify-content: space-between;
   align-items: baseline;

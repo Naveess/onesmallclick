@@ -279,6 +279,10 @@ function AccountView() {
           {account.google ? " with Google" : ""}. Your progress follows you to any device you sign in on.
         </p>
       </div>
+      {/* Near the top, so it's easy to get back to the game (Nav, prompt 34). */}
+      <Link className="pbtn pbtn--blue pbtn--block signin__back" href="/">
+        Back to the mission
+      </Link>
 
       <Window className="signin__card">
         <h2 className="signin__label">COUNTRY</h2>
@@ -340,7 +344,7 @@ function AccountView() {
         </p>
       )}
       <p className="signin__small">
-        <a href="/privacy">Privacy</a> · <Link href="/">Back to the mission</Link>
+        <a href="/privacy">Privacy</a>
       </p>
     </Frame>
   );
