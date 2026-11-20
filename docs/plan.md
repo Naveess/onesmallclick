@@ -651,7 +651,7 @@ Done and committed (checked locally where it says so):
 - `npm run build` passes.
 
 Still to do in 9a (in this order):
-1. **Finish the load test** (docs/load-test.md): find why about 1 in 20 tap batches waited about 3 s at 100 players (probably the probe's periodic save or D1 flush blocking it; locally D1 is slow, so check before changing anything), then the 500 and 1,000 stages, then 2,000 on its own (the first try at 2,000 hung the local dev server). Decide on relay objects from the numbers.
+1. **Finish the load test** (docs/load-test.md). **Most important:** the local probe was fine at 100 players but fell over somewhere between 100 and 500 (everyone dropped, answers took 20–30 s, and 2,000 hung the dev server). Find out whether that's the laptop or real per-player or per-batch work in the probe, and fix the script's stage counting. Re-run in steps (100, 200, 300…), and also look at the 3 s stalls one run showed at 100. Decide on relay objects from the numbers.
 2. **Monitoring:** write down where the logs are (Cloudflare dashboard → Workers → onesmallclick → Logs; search "network-cap", "app-crash"); Workers Logs are already on in wrangler.jsonc.
 3. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
 4. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
