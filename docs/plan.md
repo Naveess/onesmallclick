@@ -19,7 +19,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
   - [x] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46); migration 0010 applied and deployed by Claude at Nav's request (prompt 47, version 93ab7f08); checked by Nav on the live site and approved (prompt 48), mission reset afterwards.
-  - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
+  - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch; **waits for the payday setup**, see docs/todo.md "Payday"): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
   - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
@@ -569,7 +569,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 ## 8d: Crew emails (added 2026-11-20)
 
-**Goal:** bring signed-in players back at the two moments that matter most on each leg. At halfway, an email asks them to help make the push. At arrival, a round-up shows their contribution, shouts out the top contributors and invites everyone to vote on the next destination, including "if you missed out, don't worry, help us on the next journey!". After 8c, before launch. It needs onesmallclick.io in Email Service and Workers Paid (both from Nav's payday, 2026-11-20).
+**Goal:** bring signed-in players back at the two moments that matter most on each leg. At halfway, an email asks them to help make the push. At arrival, a round-up shows their contribution, shouts out the top contributors and invites everyone to vote on the next destination, including "if you missed out, don't worry, help us on the next journey!". After 8c, before launch. **Moved to the payday plan (2026-11-20):** it can't fully work until onesmallclick.io is bought and added to Cloudflare, Email Service is turned on for it, and Workers Paid is switched on. Email sign-in needs the same three, so both go live together after payday (docs/todo.md, "Payday").
 
 **Idea from Nav (2026-11-20, while approving 8c).** Only accounts get emails, which also gives players a reason to sign in.
 
@@ -793,7 +793,7 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 
 ### Before phase 8 (14, 16, 17 and 18 decided 2026-11-19)
 14. ~~**Email service**~~ **Decided: Cloudflare Email Service**, with the sending code in one file so switching to Resend is a one-file change. Nav switches on Workers Paid when the domain is connected. See the next section.
-15. **Domain** *(brief)*: **Nav is buying onesmallclick.io on the next payday Friday** and adding it to Cloudflare. Until then email sign-in stays off on the live site (Google can work on workers.dev if Google accepted that redirect address). It's needed for the sign-in email's sender address (and probably for Google's sign-in address, since Google may reject workers.dev), so sign-in goes live for real players once it's connected.
+15. **Domain** *(brief)*: **Nav is buying onesmallclick.io on payday**, together with Email Service and Workers Paid (the payday plan in docs/todo.md) and adding it to Cloudflare. Until then email sign-in stays off on the live site (Google can work on workers.dev if Google accepted that redirect address). It's needed for the sign-in email's sender address (and probably for Google's sign-in address, since Google may reject workers.dev), so sign-in goes live for real players once it's connected.
 16. ~~**Country for leaderboards**~~ **Decided: detected** from Cloudflare's location header when the account is made, **and changeable once.** Free changes would make country boards easy to game.
 17. ~~**Rude names**~~ **Decided: generated names only at launch**, like `orbit_otter`, **picked from three offers.** Custom names with a blocklist and a report button can come later.
 18. ~~**Two devices, one account**~~ **Decided:** when progress merges, **keep the higher level of each upgrade and the higher patch count, and add credits and km together.**
