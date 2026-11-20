@@ -20,7 +20,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
   - [x] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46); migration 0010 applied and deployed by Claude at Nav's request (prompt 47, version 93ab7f08); checked by Nav on the live site and approved (prompt 48), mission reset afterwards.
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch; **waits for the payday setup**, see docs/todo.md "Payday"): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
-  - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c)
+  - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; waiting for the deploy and Nav's checks.
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
@@ -429,6 +429,24 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **`/privacy`:** a plain HTML page (`scripts/build-pages.mjs`) covering the device cookie, the game data, the browser storage, sign-in data, what other players see, Cloudflare (hosting, Turnstile with a link to its Turnstile Privacy Addendum, which invisible mode requires, and Email Service), Google, and how to delete or ask (privacy@onesmallclick.io). Linked from the sign-in screens; phase 9 links the legal pages from everywhere.
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
+
+**E4b part 1 as built (2026-11-20, prompts 49–50; not deployed yet; no migration)**
+- **Answers (prompt 50):** the share image is laid out at 360px and drawn at exactly 3× (1080 × 1080), and the Mars facts page is built now, ahead of E4.
+- **The medal pace line** sits under "Your taps today" (1a/1b), from the arrival estimate the home already shows:
+  - "Gold if we arrive by 15 Dec · on pace for Silver", a bar and "2.4 days to Gold". On Gold pace it reads "top tier · hold it"; on Bronze pace it aims for Silver ("Silver if we arrive by…", the days to Silver).
+  - The rule is in `shared/medals.ts` (`medalFor`, `medalPace`), counted from the leg's launch with the medal days in content/campaign.json (Gold by day 25, Silver by day 30). Part 2 should award the medal at arrival with the same `medalFor`.
+  - Hidden while the probe is idle (no estimate) and in orbit.
+  - The medals are 10×15, drawn in code from the design's `medal()` (`src/game/rewardArt.ts`), shown at 2×. The `--medal-*` colours are now in `src/styles/theme.css`.
+- **The Destination file card** (below the vote on phones, under the vote in the right-hand column on desktop):
+  - "DESTINATION FILE · MARS", today's fact, "Fact N of 30", and "Next fact at 00:00 UTC" with a countdown.
+  - Fact 1 on the leg's launch day (UTC), then the next one each midnight UTC, round again after 30 (`src/game/facts.ts`). Everyone sees the same fact.
+  - Shown only on legs whose stop has facts in content/facts/ (Mars for now).
+  - "Share fact" opens the design's share card preview (a modal dialog): "Save image" downloads a 1080 × 1080 PNG (`src/game/shareCard.ts`), "Copy link" copies `/destinations/mars#fact-N`, and "Close". What happened shows in the dialog.
+  - The card stays deep space in both themes, with the fixed `--space-*` colours (two more palette colours added there: `--space-deep`, `--space-rule`). The share icon is the design's own (`buildIcons()`).
+- **`/destinations/mars`:** a plain HTML page (`scripts/build-pages.mjs`) with all 30 facts, each with its NASA source and the quote that supports it, and an anchor per fact (`#fact-12`; the linked fact gets an orange border). One page per file in content/facts/.
+- **Checked locally:**
+  - Screenshots at 375, 390 and 1440 in both themes: the pace line on Gold and on Bronze pace (and hidden when idle), the card, the share dialog, the saved PNG (also with the longest fact), and the Mars page.
+  - `npm run build` passes, and the badge, arrival and click checks pass again.
 
 **8c as built (2026-11-20, prompts 45–46; deployed with migration 0010 on 2026-11-20, prompt 47; waiting for Nav's checks)**
 - **Answers (prompt 46):**

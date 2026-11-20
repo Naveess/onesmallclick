@@ -103,6 +103,14 @@
   }
 }
 
+/* The right column: the vote, then the Destination file (E4b part 1). */
+.home__side {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
 .home__thrust--wide {
   gap: 12px;
   padding-top: 0;

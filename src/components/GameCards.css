@@ -113,6 +113,89 @@
   font-size: 14px;
 }
 
+/* --- Medal pace (E4b part 1; the design's box under "Your taps today") --- */
+.pace {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+.pace__line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-soft);
+}
+
+.pace__medal {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.pace__name--gold {
+  color: var(--medal-gold-text);
+}
+.pace__name--silver {
+  color: var(--medal-silver-text);
+}
+.pace__name--bronze {
+  color: var(--medal-bronze-text);
+}
+
+.pace__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pace__bar {
+  flex: 1;
+  height: 8px;
+  background: var(--field);
+  border: 2px solid var(--line-dim);
+}
+
+.pace__fill {
+  height: 100%;
+  transition: width 0.6s steps(6);
+}
+/* The fill is the medal we're aiming for: gold, or silver once gold is out of reach. */
+.pace__fill--gold {
+  background: var(--medal-gold-2);
+}
+.pace__fill--silver {
+  background: var(--medal-silver-2);
+}
+
+.pace__gap {
+  font-size: 16px;
+  line-height: 1;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.arrival--wide .pace {
+  max-width: 560px;
+}
+.arrival--wide .pace__line {
+  font-size: 14px;
+}
+.arrival--wide .pace__gap {
+  font-size: 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pace__fill {
+    transition: none;
+  }
+}
+
 /* --- Signal --- */
 .signal {
   display: flex;

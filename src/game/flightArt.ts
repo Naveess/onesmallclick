@@ -61,8 +61,8 @@ function rng(seed: number) {
   };
 }
 
-/** Draws on a w×h canvas and returns it as a PNG data URL. */
-function px(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void): string {
+/** Draws on a w×h canvas and returns it as a PNG data URL. Also used by rewardArt.ts. */
+export function px(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void): string {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
@@ -85,7 +85,7 @@ function grid(rows: string[], pal: Record<string, string>): string {
 }
 
 const cache = new Map<string, string>();
-function once(key: string, make: () => string): string {
+export function once(key: string, make: () => string): string {
   let v = cache.get(key);
   if (v === undefined) {
     v = make();

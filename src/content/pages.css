@@ -303,3 +303,60 @@
   align-items: center;
   color: var(--text-muted);
 }
+
+/* --- A destination's facts (/destinations/<stop>, E4b part 1) --- */
+.dest-page__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dest-page__label img {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.dest-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dest-fact.window {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  /* Clear the page head when a link jumps here (#fact-12). */
+  scroll-margin-top: 16px;
+}
+
+/* The fact a shared link points at. */
+.dest-fact:target {
+  border-color: var(--orange);
+}
+
+.dest-fact__n {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-orange);
+}
+
+.dest-fact__text {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.dest-fact__source {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.dest-fact__source a {
+  color: var(--text-blue);
+  text-underline-offset: 3px;
+}

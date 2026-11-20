@@ -8,6 +8,7 @@ import { PixelIcon } from "../components/PixelIcon";
 import { ThrustButton } from "../components/ThrustButton";
 import { castVote, openArrival, ping, switches, thrust, useGame } from "../game/store";
 import { BranchVote } from "../components/BranchVote";
+import { DestinationFile } from "../components/DestinationFile";
 import { milestonesFor } from "../../shared/milestones";
 import { int } from "../game/format";
 import { useDocumentTitle } from "./useDocumentTitle";
@@ -104,12 +105,16 @@ export function GamePage() {
           />
         );
         const orbit = view.orbit ? { at: probe.arrivedAt!, destName: view.destName, onCredits: openArrival } : null;
+        // Today's fact about where we're going (E4b part 1), on legs whose stop has its facts.
+        const destFile = view.fact && (
+          <DestinationFile wide={wide} stop={probe.stop} destName={view.destName} fact={view.fact} leftS={view.factLeftS} />
+        );
 
         if (!wide) {
           return (
             <main className="home" aria-label="Mission">
               <h1 className="visually-hidden">OneSmallClick mission control</h1>
-              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} />
+              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               {track}
               {signal}
               <section className="home__thrust" aria-label="Thrust">
@@ -129,6 +134,7 @@ export function GamePage() {
               </section>
               <div className="home__spacer" aria-hidden="true" />
               {vote}
+              {destFile}
               {switches.ads && <AdSlot width={320} height={50} />}
             </main>
           );
@@ -138,7 +144,7 @@ export function GamePage() {
           <main className="home home--wide" aria-label="Mission">
             <h1 className="visually-hidden">OneSmallClick mission control</h1>
             <div className="home__top">
-              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} />
+              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               <dl className="home__stats">
                 <div>
                   <dt>TRAVELLED</dt>
@@ -173,7 +179,10 @@ export function GamePage() {
                   Upgrades · {view.affordable} affordable · {int(player.credits)} cr
                 </button>
               </section>
-              {vote}
+              <div className="home__side">
+                {vote}
+                {destFile}
+              </div>
             </div>
             {switches.ads && (
               <div className="home__ad">

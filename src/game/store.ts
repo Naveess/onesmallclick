@@ -20,6 +20,8 @@ import type { AccountInfo } from "../../shared/account";
 import { BADGE_INFO, type EarnedBadge } from "../../shared/badges";
 import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
 import { stopName } from "../../shared/campaign";
+import { medalPace } from "../../shared/medals";
+import { factOfDay } from "./facts";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
 import { request, startProbe, type Connection } from "./probeClient";
@@ -759,6 +761,12 @@ function derive({ now, probe, player }: GameState) {
     quietS: safe ? Math.max(0, (now - probe.safeSince!) / 1000) : 0,
     setbackMs: setback,
     arrivalBeforeAt: arrivalAt === null ? null : arrivalAt - setback,
+    /** The medal we're on pace for (E4b part 1); null while paused or in orbit, when there's no estimate to judge. */
+    pace: arrivalAt === null || probe.arrivedAt !== null ? null : medalPace(probe.missionStartedAt, arrivalAt),
+    /** Today's Destination file fact, or null on a leg whose stop has no facts yet. */
+    fact: factOfDay(probe.stop, probe.missionStartedAt, now),
+    /** Seconds to the next fact (midnight UTC). */
+    factLeftS: Math.max(0, (nextUtcMidnight(now) - now) / 1000),
     /** Seconds sooner thanks to your taps today: what they moved the shared probe, at today's pace. */
     savedS: player.tapMovedToday / pace,
     signalLeftS,

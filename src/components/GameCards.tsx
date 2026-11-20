@@ -1,4 +1,6 @@
 import { KEEPER_DAYS, ROMAN, keeperLevel } from "../../shared/badges";
+import { MEDAL_NAMES, type MedalPace } from "../../shared/medals";
+import { medalArt } from "../game/rewardArt";
 import { hms, int, longDate, minSec } from "../game/format";
 import type { VoteOption } from "../game/store";
 import { PixelButton } from "./PixelButton";
@@ -44,12 +46,15 @@ export function ArrivalEstimate({
   savedS,
   wide = false,
   orbit = null,
+  pace = null,
 }: {
   arrivalAt: number | null;
   savedS: number;
   wide?: boolean;
   /** In orbit (phase 8c): when we arrived, and a way back to the credits. */
   orbit?: { at: number; destName: string; onCredits: () => void } | null;
+  /** The medal we're on pace for (E4b part 1); null hides the line. */
+  pace?: MedalPace | null;
 }) {
   if (orbit) {
     return (
@@ -76,7 +81,33 @@ export function ArrivalEstimate({
         <PixelIcon name="up" size={9} tone="blue" />
         Your taps today: {minSec(savedS)} sooner
       </p>
+      {pace && <MedalPaceLine pace={pace} />}
     </section>
+  );
+}
+
+const dayMonth = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+
+/** The design's medal box: "Gold if we arrive by 14 Feb · on pace for Silver", a bar, and the days to go. */
+function MedalPaceLine({ pace }: { pace: MedalPace }) {
+  const { medal, target } = pace;
+  const gap = medal === "gold" ? "top tier · hold it" : `${pace.gapDays.toFixed(1)} days to ${MEDAL_NAMES[target]}`;
+  return (
+    <div className="pace">
+      <p className="pace__line">
+        <img className="pace__medal" src={medalArt(medal)} alt="" width={20} height={30} />
+        <span>
+          {MEDAL_NAMES[target]} if we arrive by {dayMonth.format(new Date(pace.targetBy))} ·{" "}
+          <span className={`pace__name pace__name--${medal}`}>on pace for {MEDAL_NAMES[medal]}</span>
+        </span>
+      </p>
+      <div className="pace__row">
+        <div className="pace__bar" aria-hidden="true">
+          <div className={`pace__fill pace__fill--${target}`} style={{ width: `${Math.round(pace.bar * 100)}%` }} />
+        </div>
+        <span className="pace__gap num">{gap}</span>
+      </div>
+    </div>
   );
 }
 

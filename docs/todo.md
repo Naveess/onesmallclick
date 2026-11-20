@@ -149,7 +149,7 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
   - Neptune
   - heliopause
   - a "branch not chosen yet" icon
-- [ ] **Medals, 10×15: Gold, Silver, Bronze** (drawn in code). Approve the colours first (Art kit), then tidy by hand in the free workbench.
+- [ ] **Medals, 10×15: Gold, Silver, Bronze** (drawn in code). Colours approved; in use on the game home's pace line since E4b part 1 (`src/game/rewardArt.ts`). Tidy by hand in the free workbench, then swap them in there.
 - [ ] **Map extras (drawn in code):**
   - heliopause ring 58×58
   - probe-position ring 36×36 (shown at 2×)

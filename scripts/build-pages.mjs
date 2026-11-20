@@ -1,13 +1,15 @@
 // Builds the plain HTML content pages (phase 7b) into public/, before Vite runs:
 //   public/how-to-play.html            → /how-to-play        (the design's 1l)
 //   public/milestones/<slug>.html      → /milestones/<slug>  (one fact page per milestone)
+//   public/destinations/<stop>.html    → /destinations/<stop> (E4b part 1: a destination's 30 facts, one anchor each)
 //   public/content.css                 → their stylesheet (the game's fonts, theme and kit, plus src/content/pages.css)
 // The text is in the HTML itself, so search engines (and AdSense) can read it without running scripts.
-// Content: content/milestones.json. These outputs are generated, so they're git-ignored.
+// Content: content/milestones.json, content/facts/<stop>.json and content/campaign.json. These outputs are
+// generated, so they're git-ignored.
 // Runs on `npm run dev` and `npm run build`. No dependencies: plain Node.
 
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,7 +22,13 @@ const out = (p, text) => {
 };
 
 const { milestones } = JSON.parse(read("content/milestones.json"));
+const { stops } = JSON.parse(read("content/campaign.json"));
+// Every destination with its facts written (only Mars so far; the rest come in E3).
+const destinations = readdirSync(join(root, "content/facts"))
+  .filter((f) => f.endsWith(".json"))
+  .map((f) => JSON.parse(read(`content/facts/${f}`)));
 const gb = new Intl.NumberFormat("en-GB");
+const longDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 // ---------- The stylesheet ----------
 
@@ -235,6 +243,39 @@ ${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${e
   });
 }
 
+// ---------- One page per destination's facts (E4b part 1, prompts 49–50) ----------
+
+/** The 32px icon each destination has (the Destination file card uses the same). */
+const DEST_ICON = { mars: "/sprites/mars-32.png" };
+
+function destinationPage(d) {
+  const name = stops.find((s) => s.id === d.destination)?.name ?? d.destination;
+  const total = d.facts.length;
+  const iconSrc = DEST_ICON[d.destination];
+  return page({
+    path: `/destinations/${d.destination}`,
+    title: `${total} facts about ${name} · Destination file · OneSmallClick`,
+    description: `${total} fun facts about ${name}, each checked against NASA, from OneSmallClick's Destination file: one a day while the crew flies there.`,
+    body: `      <div>
+        <p class="page__label page__label--orange dest-page__label">${iconSrc ? `<img src="${iconSrc}" alt="" width="32" height="32" />` : ""}DESTINATION FILE · ${esc(name.toUpperCase())}</p>
+        <h1 id="page-title" class="page__title">${total} facts about ${esc(name)}</h1>
+      </div>
+      <p class="page__note">While the crew flies OSC-1 to ${esc(name)}, the game home shows one of these each day, with a new one at 00:00 UTC. Every fact was checked against the NASA page linked under it on ${longDate.format(new Date(d.checked))}.</p>
+      <ol class="dest-facts">
+${d.facts
+  .map(
+    (f) => `        <li id="fact-${f.n}" class="window dest-fact">
+          <p class="dest-fact__n num">Fact ${f.n} of ${total}</p>
+          <p class="dest-fact__text">${esc(f.fact)}</p>
+          <p class="dest-fact__source">Source: <a href="${esc(f.source.url)}" rel="noopener">${esc(f.source.label)}</a>, which says: “${esc(f.quote)}”</p>
+        </li>`,
+  )
+  .join("\n")}
+      </ol>
+      <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Help push the probe</a>`,
+  });
+}
+
 // ---------- Privacy (phase 8a: sign-in starts storing email addresses) ----------
 
 const PRIVACY_UPDATED = "20 November 2026";
@@ -304,8 +345,12 @@ ${paras.map((p) => `        <p>${p}</p>`).join("\n")}
 // ---------- Write ----------
 
 rmSync(join(root, "public", "milestones"), { recursive: true, force: true });
+rmSync(join(root, "public", "destinations"), { recursive: true, force: true });
 out("content.css", css);
 out("how-to-play.html", howToPlay);
 out("privacy.html", privacy);
 milestones.forEach((m, i) => out(`milestones/${m.slug}.html`, factPage(m, i)));
-console.log(`build-pages: how-to-play, privacy + ${milestones.length} milestone pages, content.css ${cssVersion}`);
+destinations.forEach((d) => out(`destinations/${d.destination}.html`, destinationPage(d)));
+console.log(
+  `build-pages: how-to-play, privacy + ${milestones.length} milestone pages + ${destinations.length} destination pages, content.css ${cssVersion}`,
+);
