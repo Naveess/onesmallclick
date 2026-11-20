@@ -654,7 +654,7 @@ Still to do in 9a (in this order):
 2. **Monitoring:** write down where the logs are (Cloudflare dashboard → Workers → onesmallclick → Logs; search "network-cap", "app-crash"); Workers Logs are already on in wrangler.jsonc.
 3. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
 4. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
-5. Re-run the earlier scripted checks (auth, clicks, badges, arrival) and the cap test.
+5. Re-run the earlier scripted checks (auth, clicks, badges, arrival: in the old session's scratchpad, so they may need rewriting into scripts/) and `node scripts/cap-test.mjs`.
 6. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
 
 
