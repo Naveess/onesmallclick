@@ -43,7 +43,7 @@ One shared probe on a real Earth–Mars route, flown by everyone at once. The he
 
 ## Brand Commitments
 
-- Name: OneSmallClick. Domain onesmallclick.io (being bought on payday, 2026-11-20; onesmallclick.com is taken and .co.uk reads as UK-only).
+- Name: OneSmallClick. Domain onesmallclick.io (to be bought on payday, with Email Service and Workers Paid; onesmallclick.com is taken and .co.uk reads as UK-only).
 - Binding visual commitment from the owner: 16-bit SNES-era pixel art, made with PixelLab against one locked palette, scaled only by whole numbers with crisp pixel rendering. The approved Claude Design file (design/OneSmallClick.dc.html) is the visual source of truth; CLAUDE.md holds its rules.
 - Voice: hopeful and shared, like a mission control room run by the whole world.
 

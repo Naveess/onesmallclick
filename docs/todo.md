@@ -20,12 +20,9 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 
 ## Before phase 8
 - [x] **The retune** (prompts 27-28): deployed from c132a88 with migration 0006, approved by Nav 19 Nov.
-- [ ] **Buy onesmallclick.io and add it to Cloudflare** (Nav, payday Friday; .com is taken and .co.uk reads as UK-only, so .io it is). Then switch on Workers Paid for Email Service.
 - [x] **A Google OAuth client** (Nav, 19 Nov): made, with GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the Cloudflare dashboard.
 - [x] **Deploy 8a**: migration 0007 applied and 02849c8 deployed 19 Nov (Claude ran both at Nav's request).
 - [x] **The 8a checks** (Nav, 19 Nov: all fine, approved): Google on phone and laptop (one account, merged), once-per-account ping, sign out, email says "opens soon", read /privacy.
-- [ ] **Email sign-in on the live site** (after the domain): onboard onesmallclick.io in Email Service, switch on Workers Paid, then add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc).
-- [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing, once the domain is on Cloudflare).
 
 ### Tonight (19 Nov)
 - [ ] **The 8a checks** (above).
@@ -50,8 +47,19 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Steady Finger, Iron Thumb, Ten Thousand Club (click badges: 1,500 / 5,000 / 10,000 clicks; added 19 Nov)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
-## 8d: Crew emails (added 20 Nov, after 8c, before launch)
-- [ ] **Buy onesmallclick.io and set up Email Service and Workers Paid** (Nav, today, 20 Nov). These are needed for email sign-in and crew emails.
+## Payday: domain, Email Service and Workers Paid (moved here 20 Nov)
+Email sign-in and 8d (crew emails) can't fully work until all three setup steps are done, so both wait for payday. Everything else carries on meanwhile.
+
+### 1. Setup (Nav, on payday)
+- [ ] **Buy onesmallclick.io and add it to Cloudflare** (.com is taken and .co.uk reads as UK-only, so .io it is).
+- [ ] **Turn on Email Service for onesmallclick.io** (onboard the domain; its DNS records are added in Cloudflare).
+- [ ] **Switch on Workers Paid** ($5/month). Email Service needs it, and so does launch traffic.
+
+### 2. Email sign-in goes live (Claude Code, after step 1)
+- [ ] Add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc), deploy, and test an email link on Nav's phone.
+- [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing).
+
+### 3. 8d: Crew emails (added 20 Nov; after step 1, before launch)
 - [ ] **Set up the crew sender** (e.g. `crew@onesmallclick.io`), separate from the sign-in sender.
 - [ ] **Approve the decisions** in docs/plan.md (22–25): sender, top 10 named, existing accounts asked once.
 - [ ] **Build 8d** (docs/plan.md): the opt-in box and toggle, one-click unsubscribe, the halfway and arrival emails, batched sending, /admin previews and test sends.
