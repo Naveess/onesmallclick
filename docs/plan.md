@@ -18,7 +18,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
-  - [ ] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46) with migration 0010; waiting for the deploy and Nav's checks.
+  - [ ] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46); migration 0010 applied and deployed by Claude at Nav's request (prompt 47, version 93ab7f08); waiting for Nav's checks.
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
   - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
@@ -430,7 +430,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
 
-**8c as built (2026-11-20, prompts 45–46; waiting for migration 0010, the deploy and Nav's checks)**
+**8c as built (2026-11-20, prompts 45–46; deployed with migration 0010 on 2026-11-20, prompt 47; waiting for Nav's checks)**
 - **Answers (prompt 46):**
   - The orbit pause is approved.
   - The branch vote closes at the next midnight UTC, or the one after if that's under 12 hours away; ties are settled by a logged random draw.
