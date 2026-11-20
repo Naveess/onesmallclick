@@ -31,6 +31,10 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
   - Only accounts appear on leaderboards and in the credits
 - Individual and country leaderboards, ranked by distance pushed today
 - Mission credits listing everyone who helped, shown on arrival
+- Crew emails (added 2026-11-20, phase 8d): signed-in players who opt in get two emails per leg:
+  - halfway: "help us make the push", with their own stats and the medal race;
+  - arrival: their total contribution, a shout-out to the top contributors, "if you missed out, don't worry, help us on the next journey!", and the next-destination vote.
+  - Opt-in only, one-click unsubscribe, and sent from a separate address from the sign-in emails.
 - "People here now" counter
 - After Mars, players vote on the next destination
 - Anti-cheat: an invisible bot check on pings and votes, a generous per-network daily cap, and clicks sent in batches every few seconds
@@ -50,6 +54,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - Milestone fact pages (one per milestone)
 - Sign in / profile: badges and stats
 - Privacy policy, terms, contact
+- Email unsubscribe confirmation (8d)
 
 ## Data & storage
 - Cloudflare Workers with static assets
@@ -58,6 +63,7 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
 - Personal progress is saved on the server, keyed to the device ID or the account, so offline thrust can be checked
 - The browser keeps only the anonymous device ID and a local cache
 - Cloudflare Turnstile handles the bot checks
+- Cloudflare Email Service sends sign-in links and, from 8d, the opt-in crew emails. Each account's email choice and a record of every crew email sent are kept in D1
 - Pixel-art sprites are stored as PNG files at actual size in the site's assets
 
 ## Monetisation
