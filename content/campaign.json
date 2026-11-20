@@ -1,0 +1,935 @@
+{
+  "_about": "DRAFT for Nav's approval (E0, prompt 43, 2026-11-20). The Grand Tour: stops, branches, distances, probes and their upgrade names, planet tech and cosmetics. Nothing reads this file yet; 8c and the E phases will. Upgrade effects and prices stay as in shared/upgrades.ts: only names and flavour lines change per probe. The planet tech here is smaller than the design's and credits-only, so it never changes trip speed (docs/expansion.md, 'Planet tech'). Distances are the gap between average distances from the Sun (or a moon's distance from its planet), from distanceSources; TODO marks what isn't checked.",
+  "legDays": 30,
+  "medalDays": {
+    "gold": 25,
+    "silver": 30
+  },
+  "landingBurnKm": 2000000,
+  "distanceSources": {
+    "sun": {
+      "label": "NASA NSSDC planetary fact sheet, distance from the Sun (million km): Mars 228.0, Jupiter 778.5, Saturn 1432.0, Uranus 2867.0, Neptune 4515.0, Pluto 5906.4",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/"
+    },
+    "ceres": {
+      "label": "JPL Small-Body Database: Ceres a = 2.77 au",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=Ceres"
+    },
+    "vesta": {
+      "label": "JPL Small-Body Database: Vesta a = 2.36 au",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=Vesta"
+    },
+    "arrokoth": {
+      "label": "JPL Small-Body Database: Arrokoth a = 44.1 au",
+      "url": "https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=Arrokoth"
+    },
+    "au": {
+      "label": "JPL astrodynamic parameters: 1 au = 149,597,870,700 m",
+      "url": "https://ssd.jpl.nasa.gov/astro_par.html"
+    },
+    "jovian": {
+      "label": "NASA NSSDC Jovian satellites (thousand km): Europa 671.1, Ganymede 1070.4",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/joviansatfact.html"
+    },
+    "saturnian": {
+      "label": "NASA NSSDC Saturnian satellites (thousand km): Titan 1,221.87, Enceladus 238.02",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/saturniansatfact.html"
+    },
+    "uranian": {
+      "label": "NASA NSSDC Uranian satellites (thousand km): Miranda 129.90, Titania 436.30",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/uraniansatfact.html"
+    }
+  },
+  "missions": [
+    {
+      "n": 1,
+      "legs": [
+        "mars"
+      ],
+      "probes": [
+        "pathfinder"
+      ]
+    },
+    {
+      "n": 2,
+      "legs": [
+        "ceres|vesta",
+        "jupiter"
+      ],
+      "probes": [
+        "ceres-hopper",
+        "vesta-surveyor"
+      ]
+    },
+    {
+      "n": 3,
+      "legs": [
+        "europa|ganymede",
+        "saturn"
+      ],
+      "probes": [
+        "europa-lander",
+        "ganymede-orbiter"
+      ]
+    },
+    {
+      "n": 4,
+      "legs": [
+        "titan|enceladus",
+        "uranus"
+      ],
+      "probes": [
+        "titan-glider",
+        "plume-diver"
+      ]
+    },
+    {
+      "n": 5,
+      "legs": [
+        "miranda|titania",
+        "neptune"
+      ],
+      "probes": [
+        "cliff-climber",
+        "titania-lander"
+      ]
+    },
+    {
+      "n": 6,
+      "legs": [
+        "pluto|arrokoth"
+      ],
+      "probes": [
+        "heart-lander",
+        "snowman-flyby"
+      ]
+    },
+    {
+      "n": 7,
+      "legs": [
+        "heliopause",
+        "interstellar"
+      ],
+      "probes": [
+        "long-voyager"
+      ]
+    }
+  ],
+  "stops": [
+    {
+      "id": "earth",
+      "name": "Earth",
+      "kind": "start",
+      "region": "Inner system"
+    },
+    {
+      "id": "mars",
+      "name": "Mars",
+      "kind": "planet",
+      "region": "Inner system",
+      "from": "earth",
+      "distanceKm": 480000000,
+      "distanceNote": "The game's route since phase 4 (the probe's travel path, as the design has it), not the gap in distance from the Sun (about 78M km).",
+      "mission": 1,
+      "tech": {
+        "short": "Dust filters",
+        "name": "Martian dust filters",
+        "what": "Credits from your taps, for the whole crew, forever",
+        "gold": "Tap credits +5%",
+        "silver": "Tap credits +3%",
+        "bronze": "Tap credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "mars-dust",
+          "name": "Mars-dust sky"
+        },
+        {
+          "slot": "trail",
+          "id": "red-dust",
+          "name": "Red dust trail"
+        }
+      ],
+      "branchVote": [
+        "ceres",
+        "vesta"
+      ]
+    },
+    {
+      "id": "ceres",
+      "name": "Ceres",
+      "kind": "branch",
+      "region": "Asteroid belt",
+      "from": "mars",
+      "distanceKm": 186400000,
+      "mission": 2,
+      "probe": "ceres-hopper",
+      "tech": {
+        "short": "Brine batteries",
+        "name": "Salt-brine batteries",
+        "what": "Offline cap for the whole crew, forever",
+        "gold": "Offline cap +40 min",
+        "silver": "Offline cap +30 min",
+        "bronze": "Offline cap +20 min"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "salt-glow",
+          "name": "Salt-glow sky"
+        }
+      ]
+    },
+    {
+      "id": "vesta",
+      "name": "Vesta",
+      "kind": "branch",
+      "region": "Asteroid belt",
+      "from": "mars",
+      "distanceKm": 125100000,
+      "mission": 2,
+      "probe": "vesta-surveyor",
+      "tech": {
+        "short": "Ore smelter",
+        "name": "Vesta ore smelter",
+        "what": "Upgrade prices for the whole crew, forever",
+        "gold": "Upgrades 5% cheaper",
+        "silver": "Upgrades 3% cheaper",
+        "bronze": "Upgrades 2% cheaper"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "basalt",
+          "name": "Basalt-grey paint"
+        }
+      ]
+    },
+    {
+      "id": "jupiter",
+      "name": "Jupiter",
+      "kind": "planet",
+      "region": "Gas giants",
+      "from": [
+        "ceres",
+        "vesta"
+      ],
+      "distanceKm": {
+        "ceres": 364100000,
+        "vesta": 425400000
+      },
+      "mission": 2,
+      "tech": {
+        "short": "Slingshot",
+        "name": "Gravity slingshot",
+        "what": "Credits from auto-thrust, for the whole crew, forever",
+        "gold": "Auto credits +5%",
+        "silver": "Auto credits +3%",
+        "bronze": "Auto credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "storm-bands",
+          "name": "Storm-band sky"
+        }
+      ],
+      "branchVote": [
+        "europa",
+        "ganymede"
+      ]
+    },
+    {
+      "id": "europa",
+      "name": "Europa",
+      "kind": "branch",
+      "region": "Gas giants",
+      "from": "jupiter",
+      "distanceKm": 671100,
+      "mission": 3,
+      "probe": "europa-lander",
+      "tech": {
+        "short": "Ice drill",
+        "name": "Europa ice drill",
+        "what": "Credits from your taps",
+        "gold": "Tap credits +5%",
+        "silver": "Tap credits +3%",
+        "bronze": "Tap credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "ice-crack",
+          "name": "Ice-crack paint"
+        }
+      ]
+    },
+    {
+      "id": "ganymede",
+      "name": "Ganymede",
+      "kind": "branch",
+      "region": "Gas giants",
+      "from": "jupiter",
+      "distanceKm": 1070400,
+      "mission": 3,
+      "probe": "ganymede-orbiter",
+      "tech": {
+        "short": "Mag shield",
+        "name": "Magnetic shield",
+        "what": "Auto-thrust credits keep paying in safe mode",
+        "gold": "50% in safe mode",
+        "silver": "35% in safe mode",
+        "bronze": "20% in safe mode",
+        "note": "Replaces the design's 'safe-mode setback halved', which would change trip speed."
+      },
+      "cosmetics": [
+        {
+          "slot": "trail",
+          "id": "aurora",
+          "name": "Aurora trail"
+        }
+      ]
+    },
+    {
+      "id": "saturn",
+      "name": "Saturn",
+      "kind": "planet",
+      "region": "Gas giants",
+      "from": [
+        "europa",
+        "ganymede"
+      ],
+      "distanceKm": 653500000,
+      "distanceNote": "From Jupiter's distance from the Sun; the moon legs before it are tiny next to this.",
+      "mission": 3,
+      "tech": {
+        "short": "Ring sails",
+        "name": "Ring-dust sails",
+        "what": "Credits from auto-thrust",
+        "gold": "Auto credits +5%",
+        "silver": "Auto credits +3%",
+        "bronze": "Auto credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "trail",
+          "id": "ring-dust",
+          "name": "Ring-dust trail"
+        }
+      ],
+      "branchVote": [
+        "titan",
+        "enceladus"
+      ]
+    },
+    {
+      "id": "titan",
+      "name": "Titan",
+      "kind": "branch",
+      "region": "Gas giants",
+      "from": "saturn",
+      "distanceKm": 1221870,
+      "mission": 4,
+      "probe": "titan-glider",
+      "tech": {
+        "short": "Methane tanks",
+        "name": "Methane fuel tanks",
+        "what": "Offline cap",
+        "gold": "Offline cap +40 min",
+        "silver": "Offline cap +30 min",
+        "bronze": "Offline cap +20 min"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "orange-haze",
+          "name": "Orange-haze sky"
+        }
+      ]
+    },
+    {
+      "id": "enceladus",
+      "name": "Enceladus",
+      "kind": "branch",
+      "region": "Gas giants",
+      "from": "saturn",
+      "distanceKm": 238020,
+      "mission": 4,
+      "probe": "plume-diver",
+      "tech": {
+        "short": "Geyser boost",
+        "name": "Geyser boost",
+        "what": "Credits for each Ping",
+        "gold": "+300 credits a Ping",
+        "silver": "+200 credits a Ping",
+        "bronze": "+100 credits a Ping"
+      },
+      "cosmetics": [
+        {
+          "slot": "trail",
+          "id": "geyser",
+          "name": "Geyser-plume trail"
+        }
+      ]
+    },
+    {
+      "id": "uranus",
+      "name": "Uranus",
+      "kind": "planet",
+      "region": "Ice giants",
+      "from": [
+        "titan",
+        "enceladus"
+      ],
+      "distanceKm": 1435000000,
+      "mission": 4,
+      "tech": {
+        "short": "Side-spin gyros",
+        "name": "Side-spin gyros",
+        "what": "Upgrade prices",
+        "gold": "Upgrades 4% cheaper",
+        "silver": "Upgrades 3% cheaper",
+        "bronze": "Upgrades 2% cheaper"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "side-spin-teal",
+          "name": "Side-spin teal paint"
+        }
+      ],
+      "branchVote": [
+        "miranda",
+        "titania"
+      ]
+    },
+    {
+      "id": "miranda",
+      "name": "Miranda",
+      "kind": "branch",
+      "region": "Ice giants",
+      "from": "uranus",
+      "distanceKm": 129900,
+      "mission": 5,
+      "probe": "cliff-climber",
+      "tech": {
+        "short": "Cliff anchors",
+        "name": "Cliff anchors",
+        "what": "Credits from your taps",
+        "gold": "Tap credits +5%",
+        "silver": "Tap credits +3%",
+        "bronze": "Tap credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "patchwork",
+          "name": "Patchwork paint"
+        }
+      ]
+    },
+    {
+      "id": "titania",
+      "name": "Titania",
+      "kind": "branch",
+      "region": "Ice giants",
+      "from": "uranus",
+      "distanceKm": 436300,
+      "mission": 5,
+      "probe": "titania-lander",
+      "tech": {
+        "short": "Fairy lights",
+        "name": "Fairy lights",
+        "what": "Credits from taps between midnight and 6 am, your local time",
+        "gold": "Night tap credits +15%",
+        "silver": "Night tap credits +10%",
+        "bronze": "Night tap credits +5%",
+        "note": "The design says 00:00 to 06:00 UTC; local time matches the Night Shift badge."
+      },
+      "cosmetics": [
+        {
+          "slot": "trail",
+          "id": "fairy-lights",
+          "name": "Fairy-light trail"
+        }
+      ]
+    },
+    {
+      "id": "neptune",
+      "name": "Neptune",
+      "kind": "planet",
+      "region": "Ice giants",
+      "from": [
+        "miranda",
+        "titania"
+      ],
+      "distanceKm": 1648000000,
+      "mission": 5,
+      "tech": {
+        "short": "Storm riders",
+        "name": "Storm riders",
+        "what": "Credits from auto-thrust",
+        "gold": "Auto credits +5%",
+        "silver": "Auto credits +3%",
+        "bronze": "Auto credits +2%"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "deep-blue",
+          "name": "Deep-blue storm sky"
+        }
+      ],
+      "branchVote": [
+        "pluto",
+        "arrokoth"
+      ]
+    },
+    {
+      "id": "pluto",
+      "name": "Pluto",
+      "kind": "branch",
+      "region": "Kuiper belt",
+      "from": "neptune",
+      "distanceKm": 1391400000,
+      "mission": 6,
+      "probe": "heart-lander",
+      "tech": {
+        "short": "Nitrogen tanks",
+        "name": "Heart nitrogen tanks",
+        "what": "Offline cap",
+        "gold": "Offline cap +40 min",
+        "silver": "Offline cap +30 min",
+        "bronze": "Offline cap +20 min"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "heart",
+          "name": "Heart paint"
+        }
+      ]
+    },
+    {
+      "id": "arrokoth",
+      "name": "Arrokoth",
+      "kind": "branch",
+      "region": "Kuiper belt",
+      "from": "neptune",
+      "distanceKm": 2082300000,
+      "mission": 6,
+      "probe": "snowman-flyby",
+      "tech": {
+        "short": "Snowman scanner",
+        "name": "Snowman scanner",
+        "what": "Credits for each milestone postcard",
+        "gold": "+600 credits a postcard",
+        "silver": "+400 credits a postcard",
+        "bronze": "+200 credits a postcard"
+      },
+      "cosmetics": [
+        {
+          "slot": "paint",
+          "id": "snowman-red",
+          "name": "Snowman-red paint"
+        }
+      ]
+    },
+    {
+      "id": "heliopause",
+      "name": "Heliopause",
+      "kind": "planet",
+      "region": "Heliopause",
+      "from": [
+        "pluto",
+        "arrokoth"
+      ],
+      "distanceKm": "TODO",
+      "distanceNote": "TODO: no NASA page read on 2026-11-20 gives the heliopause's distance from the Sun. The design's ~11B km from the Kuiper belt is unchecked.",
+      "mission": 7,
+      "probe": "long-voyager",
+      "tech": {
+        "short": "Wind sail",
+        "name": "Interstellar wind sail",
+        "what": "All credits",
+        "gold": "All credits +3%",
+        "silver": "All credits +2%",
+        "bronze": "All credits +1%"
+      },
+      "cosmetics": [
+        {
+          "slot": "sky",
+          "id": "interstellar",
+          "name": "Interstellar sky"
+        }
+      ]
+    },
+    {
+      "id": "interstellar",
+      "name": "Interstellar space",
+      "kind": "endless",
+      "region": "Interstellar",
+      "from": "heliopause",
+      "mission": 7,
+      "distanceKm": null,
+      "distanceNote": "Endless: distance records and monthly trophies instead of an arrival (docs/expansion.md)."
+    }
+  ],
+  "probes": [
+    {
+      "id": "pathfinder",
+      "name": "OSC-1 Pathfinder",
+      "mission": 1,
+      "pitch": "The first probe, from Earth to Mars.",
+      "art": "design/sprites (shipping)",
+      "upgrades": {
+        "cold": {
+          "name": "Cold-gas jets",
+          "line": "Small puffs of gas to keep us moving."
+        },
+        "ion": {
+          "name": "Ion drive",
+          "line": "A gentle push that never stops."
+        },
+        "sail": {
+          "name": "Solar sail",
+          "line": "Sunlight pushing on a huge thin sail."
+        },
+        "hands": {
+          "name": "Steady hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Crew chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "ceres-hopper",
+      "name": "OSC-2 Ceres Hopper",
+      "mission": 2,
+      "pitch": "Hops between the bright salt patches on Ceres.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Hop jets",
+          "line": "Little bursts that bounce us along."
+        },
+        "ion": {
+          "name": "Brine-cooled ion drive",
+          "line": "Runs cool and pushes for longer."
+        },
+        "sail": {
+          "name": "Salt-shine sail",
+          "line": "Catches sunlight like Ceres' bright salt."
+        },
+        "hands": {
+          "name": "Steady hop hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Hop-hop chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "vesta-surveyor",
+      "name": "OSC-2 Vesta Surveyor",
+      "mission": 2,
+      "pitch": "Maps the giant crater at Vesta's south pole.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Survey thrusters",
+          "line": "Fine nudges for a perfect map."
+        },
+        "ion": {
+          "name": "Mapping ion drive",
+          "line": "Slow, steady and precise."
+        },
+        "sail": {
+          "name": "Basalt-shine sail",
+          "line": "Sunlight off a rocky world."
+        },
+        "hands": {
+          "name": "Steady survey hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Rheasilvia chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "europa-lander",
+      "name": "OSC-3 Europa Lander",
+      "mission": 3,
+      "pitch": "Built to land on Europa's ice and drill toward the ocean underneath.",
+      "art": "design/sprites/stills/probe-europa-lander.png",
+      "upgrades": {
+        "cold": {
+          "name": "Ice-skate thrusters",
+          "line": "Glide over the ice."
+        },
+        "ion": {
+          "name": "Radiation-proof ion drive",
+          "line": "Shrugs off Jupiter's radiation."
+        },
+        "sail": {
+          "name": "Plutonium power core",
+          "line": "Power where sunlight is weak."
+        },
+        "hands": {
+          "name": "Steady drill hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Ocean song",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "ganymede-orbiter",
+      "name": "OSC-3 Ganymede Orbiter",
+      "mission": 3,
+      "pitch": "Circles the biggest moon in the Solar System.",
+      "art": "design/sprites/stills/probe-ganymede-orbiter.png",
+      "upgrades": {
+        "cold": {
+          "name": "Aurora jets",
+          "line": "Puffs timed to Ganymede's auroras."
+        },
+        "ion": {
+          "name": "Magnet-guided ion drive",
+          "line": "Rides the moon's own magnetic field."
+        },
+        "sail": {
+          "name": "Jupiter-shine core",
+          "line": "Power for the long Jovian night."
+        },
+        "hands": {
+          "name": "Steady orbiter hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Biggest-moon chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "titan-glider",
+      "name": "OSC-4 Titan Glider",
+      "mission": 4,
+      "pitch": "Glides through Titan's thick orange haze.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Haze gliders",
+          "line": "Small fins for thick air."
+        },
+        "ion": {
+          "name": "Methane-proof ion drive",
+          "line": "Built for the coldest skies."
+        },
+        "sail": {
+          "name": "Orange-sky wing",
+          "line": "A long wing for long glides."
+        },
+        "hands": {
+          "name": "Steady pilot hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Dune song",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "plume-diver",
+      "name": "OSC-4 Plume Diver",
+      "mission": 4,
+      "pitch": "Dives through Enceladus' icy jets.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Plume puffers",
+          "line": "Little puffs between the jets."
+        },
+        "ion": {
+          "name": "Geyser-proof ion drive",
+          "line": "Sealed against the spray."
+        },
+        "sail": {
+          "name": "Ring-light core",
+          "line": "Power from the far Sun and Saturn's glow."
+        },
+        "hands": {
+          "name": "Steady diver hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Tiger-stripe chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "cliff-climber",
+      "name": "OSC-5 Cliff Climber",
+      "mission": 5,
+      "pitch": "Climbs Miranda's huge cliffs.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Rope-line jets",
+          "line": "Short hops, rope tight."
+        },
+        "ion": {
+          "name": "Clifftop ion drive",
+          "line": "Steady power for a long climb."
+        },
+        "sail": {
+          "name": "Long-night core",
+          "line": "Power so far from the Sun."
+        },
+        "hands": {
+          "name": "Steady climber hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Echo chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "titania-lander",
+      "name": "OSC-5 Titania Lander",
+      "mission": 5,
+      "pitch": "Lands on the moon named after the fairy queen.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Fairy jets",
+          "line": "Light little puffs."
+        },
+        "ion": {
+          "name": "Moonlight ion drive",
+          "line": "Quiet and steady."
+        },
+        "sail": {
+          "name": "Queen's core",
+          "line": "Power for a royal visit."
+        },
+        "hands": {
+          "name": "Steady lander hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Midsummer chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "heart-lander",
+      "name": "OSC-6 Heart Lander",
+      "mission": 6,
+      "pitch": "Aims for the heart-shaped plain on Pluto.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Nitrogen puffers",
+          "line": "Cold puffs for a cold world."
+        },
+        "ion": {
+          "name": "Cold-heart ion drive",
+          "line": "Keeps going in the deep dark."
+        },
+        "sail": {
+          "name": "Deep-dark core",
+          "line": "Power at the edge of sunlight."
+        },
+        "hands": {
+          "name": "Steady heart hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Heartbeat chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "snowman-flyby",
+      "name": "OSC-6 Snowman Flyby",
+      "mission": 6,
+      "pitch": "Flies past snowman-shaped Arrokoth.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Snowball thrusters",
+          "line": "Tiny pushes, big distances."
+        },
+        "ion": {
+          "name": "Kuiper ion drive",
+          "line": "Made for the far belt."
+        },
+        "sail": {
+          "name": "Faint-Sun core",
+          "line": "Power where the Sun is just a bright star."
+        },
+        "hands": {
+          "name": "Steady flyby hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Snowman song",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    },
+    {
+      "id": "long-voyager",
+      "name": "OSC-7 Long Voyager",
+      "mission": 7,
+      "pitch": "Built to leave the Sun's bubble and keep going.",
+      "art": "TODO PixelLab",
+      "upgrades": {
+        "cold": {
+          "name": "Attitude jets",
+          "line": "Keeps the dish pointed home."
+        },
+        "ion": {
+          "name": "Long-haul ion drive",
+          "line": "Years of gentle push."
+        },
+        "sail": {
+          "name": "Long-life power core",
+          "line": "Power for the longest trip."
+        },
+        "hands": {
+          "name": "Steady voyager hands",
+          "line": "+2 km on every tap."
+        },
+        "chant": {
+          "name": "Golden-record chant",
+          "line": "The crew taps as one: +25% tap power."
+        }
+      }
+    }
+  ],
+  "firstGoldCosmetic": {
+    "slot": "paint",
+    "id": "gold-foil",
+    "name": "Gold foil paint",
+    "note": "The design unlocks it with Gold at Mars; suggested: the crew's first Gold anywhere."
+  }
+}

@@ -17,9 +17,15 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
-  - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
+  - [ ] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43): docs/expansion.md, content/campaign.json and content/facts/mars.json are drafts waiting for Nav's approval.
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
+- [ ] **E1: The campaign map** (1m)
+- [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
+- [ ] **E3: A content pipeline for each new leg**
+- [ ] **E4: Sharing, fun facts and destination pages**
+- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
+- [ ] **E5: Later ideas from the brief**
 
 ## What changed from the order in prompt 06
 
@@ -400,7 +406,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 **Split in three (agreed 2026-11-19).** The retune came first and was approved; 8a was built on 2026-11-19.
 - **8a: Accounts and sign-in (1i).** Email link and Google sign-in, linking the device and merging its progress, sign-out, generated names, country, delete account and the privacy page. Migration 0007 (0006 went to the retune). Email sign-in goes live once onesmallclick.io is set up in Email Service; Google works as soon as its redirect address is accepted.
 - **8b: Leaderboards (1g), profile (1j) and badges.** Needs the profile badge sprites (todo); placeholders until they're made. Also awards the click badges (Steady Finger 1,500, Iron Thumb 5,000, Ten Thousand Club 10,000) from the flight view phase's click counts.
-- **8c: Arrival and credits (1k).** The credits, the next-destination vote and the new mission. **Changed 2026-11-19:** the vote becomes the Grand Tour's two-way branch (Ceres or Vesta), read from content/campaign.json once E0 is approved; the Venus flyby moves into the daily vote pool as a detour. The arrival rewards (medal, planet tech, passport stamp, cosmetic) and the landing burn are planned in E0.
+- **8c: Arrival and credits (1k).** The credits, the next-destination vote and the new mission. **Changed by E0 (2026-11-20, prompt 43):**
+  - The next-destination vote is a **two-way branch read from content/campaign.json**: at Mars, Ceres or Vesta (later Europa or Ganymede, and so on). It replaces the old three-way "Europa, Psyche or a Venus flyby".
+  - The Venus flyby can return as a detour option in the daily vote pool (content/vote-options.json), with a checked fact.
+  - The vote shows each branch's probe, distance and planet tech (1k), and the winner starts mission 2 with that branch's probe. Its art and names come in E2; until then OSC-1 flies on with a placeholder card.
+  - The credits roll for everyone who helped, with names for signed-in players.
+  - The arrival rewards (medal, planet tech, stamp, cosmetic) and the landing burn are E4b, and part 2 must be live before this first arrival.
 
 **8a as built (2026-11-19, prompt 30; deployed from 02849c8 with migration 0007 and approved by Nav, 2026-11-19)**
 - **Answers (prompt 30):** signed in, pings and votes are once per account per day; signing out leaves the browser as a brand-new guest device (progress stays with the account); one of the three name offers is the device's own name; delete account is included; the privacy page lists privacy@onesmallclick.io; the screens the design lacks are built from the kit in 1i's style.
@@ -530,6 +541,119 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **A traffic spike on the free plan.** Move to Workers Paid before launch (decision 20).
 
 ---
+
+## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
+
+The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Each phase waits for Nav's approval of the E0 decisions it depends on (docs/expansion.md, section 11). The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
+
+### E1: The campaign map (1m)
+
+**Goal:** the star chart of the whole tour, on phone and desktop, as the design's 1m.
+
+**What gets built**
+- `/map` (the "Map" tab in the bottom bar and the wide header): every stop from content/campaign.json, laid out as the design does. Phone: a vertical chart with a pixel scroll indicator. Desktop: full width, with a pixel scrollbar and drag to pan.
+- Each stop's state:
+  - visited (medal and date, and your stamp if you helped);
+  - current (the probe's live position on the leg);
+  - next vote (both branches teased);
+  - future (dimmed);
+  - not taken.
+- Tapping a stop opens its card: name, distance, probe, planet tech (with Gold/Silver/Bronze), today's fact or the stop's fact, and a link to its destination page.
+- The design file's two wrong distances and its loose facts are corrected to the sourced versions.
+
+**Data changes:** none (the map reads content/campaign.json and the missions table from 8c).
+
+**How you test it:** open `/map` at 375, 390 and 1440 in both themes, next to the design. In `/admin`, finish a leg and vote: the map moves the probe on, marks the branch not taken, and shows the medal.
+
+**Main risks:** a long scrolling chart on small phones (keep it to CSS and pixel art, lazy-load the far stops' art). Whole-number scaling of every body (the todo's "Whole-number scaling" item).
+
+### E2: Per-mission probes and upgrade names, and per-leg balance
+
+**Goal:** each mission flies its own probe with renamed upgrades; each leg takes about 30 days whatever its length.
+
+**What gets built**
+- The probe for the current mission everywhere OSC-1 shows now (flight view, safe mode, the share card), from content/campaign.json.
+- The new probe reveal (1n), once per mission: "OSC-3 Europa Lander… Your upgrades have new names".
+- Upgrade names and flavour lines per probe. Effects and prices are unchanged (shared/upgrades.ts).
+- **The leg's length** scales coasting and the crew's top speed, so any leg takes the same time for the same crowd; credits per tap don't change (docs/expansion.md, section 2). Moon legs show speed in km/h.
+- **Per-leg recalibration** (if approved): each leg's `CREW_HALF_KM_S` scales with how hard the crew pushed on the previous leg, so a steady crew stays near 30 days as upgrades carry over (docs/expansion.md, section 3). `npm run sim` gains a whole-tour table.
+
+**Data changes:** the Probe's mission row gets the stop, leg length and calibration. D1 `missions` gets the stop and branch.
+
+**How you test it:** `npm run sim` shows each leg near 30 days for a steady crew. In `/admin`, jump to a moon leg: the flight view shows km/h and the right probe; the reveal shows once.
+
+**Main risks:** a balance change to a live game. Ship it at a leg boundary, and keep the sim as the check.
+
+### E3: A content pipeline for each new leg
+
+**Goal:** adding a leg is filling in content files, checked by a script, not writing code.
+
+**What gets built**
+- One folder of content per stop: milestones (4–6, with fact pages), the daily vote pool, 30 facts, postcards with licences, and the branch teaser. Same format as content/milestones.json, content/vote-options.json and content/facts/mars.json.
+- `npm run check-leg <stop>`: refuses a leg with a missing sprite, thruster sheet, stamp icon, upgrade name, fact source, postcard licence or next branch.
+- The "Before each new leg" checklist in docs/todo.md, run monthly about a week before arrival.
+- Ceres and Vesta first.
+
+**Data changes:** none (content files only).
+
+**How you test it:** the checker passes for Ceres and Vesta and fails on purpose for a stop with a fact missing its source.
+
+**Main risks:** the monthly fact-checking load (30 facts and 4–6 milestones per branch, both branches). Start each pair a month ahead.
+
+### E4: Sharing, fun facts and destination pages
+
+**Goal:** the daily fact on the game home, shareable, collected on a page per destination; and the map and results as share cards.
+
+**What gets built**
+- The Destination file card (1a/1b): today's fact for the current destination, "Fact N of 30", changing at 00:00 UTC, with "Share fact" (the design's 1080×1080 card: "Save image", "Copy link").
+- `/destinations/<slug>`: plain HTML built at deploy time like the milestone pages, with all 30 facts and their sources.
+- The map share card ("The crew chose Europa") and the branch-result and arrival share texts (docs/expansion.md, section 8).
+
+**Data changes:** none (content/facts/*.json).
+
+**How you test it:** the card's fact changes with the mission day (move the clock in `/admin`). The share card saves a 1080×1080 PNG. /destinations/mars lists 30 facts with sources and passes the content-page checks.
+
+**Main risks:** none big. Every fact needs its source before it ships (Product principle 5).
+
+### E4b: Collective rewards: medals, planet tech, stamps, cosmetics and the landing burn
+
+**Goal:** arriving somewhere feels like an event the whole crew earned (1k, 1o, 1j).
+
+**What gets built**
+- **Part 1, before launch:** the medal pace line on the game home (1a: "Gold if we arrive by… · on pace for Silver"), and E4's Destination file card for Mars. Both are cheap, and the Mars leg is the first one players see.
+- **Part 2, before the first arrival (within 3 weeks of launch):**
+  - **Medals:** Gold by day 25, Silver by 30, Bronze after, from the leg's start to arrival.
+  - **Planet tech:** the credits-only perks (docs/expansion.md, section 9), applied by the Probe to credits, prices and the offline cap.
+  - **Passport stamps** in the medal's colour for everyone who helped (one credited tap on the leg), on the profile.
+  - **Cosmetics:** one unlock per stop (skies, THRUST trails, probe paint), picked on the profile ("Tap to switch").
+  - **The landing burn (1o):** the last hour before arrival, the crew's pushed km (taps count double) fill a 2,000,000 km bar; the landing time is fixed at the start of the hour. Success gives a gold-framed postcard; a miss still lands ("Rough landing, but we made it").
+  - **The arrival screen's rewards (1k),** including the "you weren't on this leg" version.
+
+**Data changes:** D1 `missions` gets medal, days and the landing burn; new tables `stamps` and `cosmetics_owned`, plus the cosmetics in use. Merged on sign-in, deleted with the account (docs/expansion.md, section 9).
+
+**How you test it:**
+- In `/admin`, finish a leg at day 24, 28 and 33: Gold, Silver and Bronze, each with its perk strength.
+- A device that tapped once gets the stamp and unlock; one that didn't sees the "push on the next leg" card.
+- Run the landing burn with two tabs tapping: the bar fills, and the probe lands on time either way.
+
+**Main risks:** the burn's timing (the arrival estimate moves while people tap: hence the fixed landing time). Perks must never change trip speed: they act on credits, prices and the offline cap only.
+
+### E5: Later ideas from the brief
+
+**Goal:** the extras that keep a long tour lively. Each one gets its own small plan and approval first.
+
+**What gets built (candidates)**
+- **Monthly country trophies:** a monthly country leaderboard with a trophy on the profile, and the main draw of the interstellar leg.
+- **Streamer mode:** a Twitch chat plays as one crew (chat commands push THRUST), with an overlay view.
+- **Chiptune sound:** short 16-bit sounds for THRUST, Ping, milestones and the landing burn, off by default, with a mute button.
+- **Achievements beyond badges:** distance records on the interstellar leg, tour-wide stamps.
+- **A rewarded ad for a short thrust boost,** only if approved for H5 Games Ads, never for pings, and never tied to medals, stamps or planet tech (AdSense rules).
+
+**Data changes:** per idea.
+
+**How you test it:** per idea.
+
+**Main risks:** ads tied to rewards would break AdSense rules: keep them separate. Twitch's terms for streamer mode.
 
 ## Decisions you need to make, by phase
 

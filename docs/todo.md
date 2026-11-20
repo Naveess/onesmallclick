@@ -78,11 +78,12 @@ Agreed rules (19 Nov):
 - [x] **Add the five new PixelLab sprites to design/sprites/stills/** (Europa Lander, Ganymede Orbiter, Jupiter, Saturn, Europa), with rows in design/sprites/README.md (19 Nov).
 - [ ] **Back up the five new sprites to Drive** (Nav; OneSmallClick › Sprites).
 - [x] **Add the medal colours to docs/tokens.css** as an agreed exception (`--medal-*`, 19 Nov; CLAUDE.md updated). They go into src/styles/theme.css with the first phase that uses them.
-- [ ] **Check the design's fun facts against sources** (in E0).
+- [x] **Check the design's fun facts against sources** (E0, 2026-11-20): 13 true, 8 need rewording, 2 wrong (Jupiter's 1,300 Earths, Titan's lakes), 1 unsupported (Miranda's cliff), and Olympus Mons is wrong by NASA's figures. See docs/expansion.md, section 10.
+- [ ] **The live Olympus Mons vote fact** (content/vote-options.json, approved 19 Nov) says 22 km and 2.5× Everest, but its NASA source now says more than 40 km from base to summit. Nav: approve the reworded fact (docs/expansion.md, section 10).
 
 ### E0: plan the campaign (after 8b, before 8c)
-- [ ] **Run the expansion planning prompt** (plan only, from Nav's build hub). It plans the new screens into build phases, writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch (Mars → Ceres or Vesta) read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds the expansion phases to docs/plan.md.
-- [ ] **Nav approves**:
+- [x] **Run the expansion planning prompt** (prompt 43, 2026-11-20): docs/expansion.md, content/campaign.json and content/facts/mars.json drafted; 8c and E1–E5 added to docs/plan.md. Was: (plan only, from Nav's build hub). It plans the new screens into build phases, writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch (Mars → Ceres or Vesta) read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds the expansion phases to docs/plan.md.
+- [ ] **Nav approves** (the 14 decisions in docs/expansion.md, section 11):
   - each stop's planet tech, with a sim of the stacked totals;
   - what carries between missions (suggested: everything, with upgrades renamed rather than reset);
   - who counts as "helped";
@@ -148,6 +149,11 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
   - Mars and Earth at growing sizes (a few fixed whole-number sizes)
   - the Sun, 20×20
   - small Vesta, 16×14
+- [ ] **Stamp icons for the branch moons, 16×16** (added in E0; the list above has the planets only): Vesta, Europa, Ganymede, Titan, Enceladus, Miranda, Titania, Pluto, Arrokoth.
+- [ ] **Thruster sheets for every new probe** (added in E0): 5 frames each, like `thruster-sheet.png`, for the flight view.
+- [ ] **Gold postcard frame** for a successful landing burn (1o), and the postcard art for each stop (added in E0).
+- [ ] **The map share card**, 1080×1080 (added in E0).
+- [ ] **Cosmetic art for each stop** (added in E0; the list is in docs/expansion.md, section 9): skies as nebula tiles, THRUST trails as 32×8 particle strips, paints as 64×40 repaints of each probe.
 - [ ] **UI icons, 9×9: map, flag, share, close** (drawn in code). Export to SVG like the other ten in `design/icons/`; not PixelLab.
 - [ ] **Whole-number scaling:** the campaign map and the desktop arrival (1k) show `mars.png` at half size. Use the 64px Mars instead.
 

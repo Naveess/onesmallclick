@@ -1,0 +1,277 @@
+{
+  "_about": "DRAFT for Nav's approval (E0, prompt 43). Mars's 30 fun facts for the Destination file card and /destinations/mars, one a day. Every fact was checked on 2026-11-20 against the NASA page in 'source'; 'quote' is the supporting text from that page. None repeats a milestone fact (content/milestones.json). This file is the template for the other destinations: same fields, 30 facts, a source and quote for each.",
+  "destination": "mars",
+  "checked": "2026-11-20",
+  "facts": [
+    {
+      "n": 1,
+      "fact": "A day on Mars is called a sol, short for solar day.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Martian days are called sols — short for \"solar day.\""
+    },
+    {
+      "n": 2,
+      "fact": "Mars spins once every 24.6 hours, about 40 minutes longer than a day on Earth.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "it completes one rotation every 24.6 hours, which is very similar to one day on Earth (23.9 hours)."
+    },
+    {
+      "n": 3,
+      "fact": "A year on Mars lasts 687 Earth days.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "A year on Mars lasts 669.6 sols, which is the same as 687 Earth days."
+    },
+    {
+      "n": 4,
+      "fact": "Mars is about half the size of Earth, with a radius of 3,390 km.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "With a radius of 2,106 miles (3,390 kilometers), Mars is about half the size of Earth."
+    },
+    {
+      "n": 5,
+      "fact": "Mars is small, but its surface has nearly the same area as all of Earth's dry land.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "its surface has nearly the same area as Earth's dry land."
+    },
+    {
+      "n": 6,
+      "fact": "Sunlight takes about 13 minutes to reach Mars.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "it takes sunlight 13 minutes to travel from the Sun to Mars."
+    },
+    {
+      "n": 7,
+      "fact": "Mars is on average 228 million km from the Sun, 1.5 times as far as Earth.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "From an average distance of 142 million miles (228 million kilometers), Mars is 1.5 astronomical units away from the Sun."
+    },
+    {
+      "n": 8,
+      "fact": "Mars is tilted 25 degrees, close to Earth's 23.4, so it has seasons too.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Mars' axis of rotation is tilted 25 degrees … Earth, which has an axial tilt of 23.4 degrees."
+    },
+    {
+      "n": 9,
+      "fact": "Seasons on Mars last longer than ours, because a Martian year is longer.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Mars has distinct seasons, but they last longer than seasons here on Earth"
+    },
+    {
+      "n": 10,
+      "fact": "Mars has two small moons, Phobos and Deimos, that may be captured asteroids.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Mars has two small moons, Phobos and Deimos, that may be captured asteroids."
+    },
+    {
+      "n": 11,
+      "fact": "Phobos and Deimos are potato-shaped: too small for gravity to pull them round.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "They're potato-shaped because they have too little mass for gravity to make them spherical."
+    },
+    {
+      "n": 12,
+      "fact": "The moons are named after the horses that pulled the chariot of Ares, the Greek god of war.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "The moons get their names from the horses that pulled the chariot of the Greek god of war, Ares"
+    },
+    {
+      "n": 13,
+      "fact": "Asaph Hall discovered both of Mars' moons in 1877.",
+      "source": {
+        "label": "NASA: Phobos",
+        "url": "https://science.nasa.gov/mars/moons/phobos/"
+      },
+      "quote": "Asaph Hall discovered both the Red Planet's moons in 1877."
+    },
+    {
+      "n": 14,
+      "fact": "Phobos is creeping closer to Mars, by about 1.8 metres every hundred years.",
+      "source": {
+        "label": "NASA: Phobos",
+        "url": "https://science.nasa.gov/mars/moons/phobos/"
+      },
+      "quote": "It's nearing Mars at a rate of six feet (1.8 meters) every hundred years."
+    },
+    {
+      "n": 15,
+      "fact": "In about 50 million years Phobos will crash into Mars or break up into a ring.",
+      "source": {
+        "label": "NASA: Phobos",
+        "url": "https://science.nasa.gov/mars/moons/phobos/"
+      },
+      "quote": "the moon will either crash into Mars in 50 million years or break up into a ring."
+    },
+    {
+      "n": 16,
+      "fact": "Stickney, the biggest crater on Phobos, takes up about half of the moon's surface.",
+      "source": {
+        "label": "NASA: Phobos",
+        "url": "https://science.nasa.gov/mars/moons/phobos/"
+      },
+      "quote": "Stickney crater is about 6-miles (9.7 kilometers) wide, and takes up about half the moon's surface."
+    },
+    {
+      "n": 17,
+      "fact": "Deimos goes round Mars once every 30 hours.",
+      "source": {
+        "label": "NASA: Deimos",
+        "url": "https://science.nasa.gov/mars/moons/deimos/"
+      },
+      "quote": "Deimos orbits Mars every 30 hours."
+    },
+    {
+      "n": 18,
+      "fact": "Deimos looks smoother than Phobos because loose dirt fills many of its craters.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "covered in loose dirt that often fills the craters on its surface, making it appear smoother than pockmarked Phobos."
+    },
+    {
+      "n": 19,
+      "fact": "Olympus Mons is the biggest volcano in the Solar System, more than 40 km tall from base to summit.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Olympus Mons stands more than 25 miles (that's more than 132,000 feet, or 40 kilometers) tall from base to summit"
+    },
+    {
+      "n": 20,
+      "fact": "The base of Olympus Mons covers an area as big as the US state of Arizona.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "with the base covering an area as large as the state of Arizona."
+    },
+    {
+      "n": 21,
+      "fact": "Valles Marineris, the Solar System's biggest canyon, is about 3,870 km long: long enough to stretch from California to New York.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "extends about 2,400 miles (3,870 kilometers) in length … long enough to stretch from California to New York"
+    },
+    {
+      "n": 22,
+      "fact": "At its deepest, Valles Marineris drops about 9.3 km from rim to floor.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "descends about 5.8 miles (9.3 kilometers) at its deepest, from the rim to the canyon floor."
+    },
+    {
+      "n": 23,
+      "fact": "Sunsets on Mars look blue: fine dust lets blue light through near the Sun.",
+      "source": {
+        "label": "NASA: Sunset in Mars' Gale Crater",
+        "url": "https://science.nasa.gov/resource/sunset-in-mars-gale-crater/"
+      },
+      "quote": "Dust in the Martian atmosphere has fine particles that permit blue light to penetrate the atmosphere more efficiently"
+    },
+    {
+      "n": 24,
+      "fact": "Mars looks red because iron in its rocks and dust has rusted.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "The reason Mars looks reddish is due to oxidization — or rusting — of iron in the rocks"
+    },
+    {
+      "n": 25,
+      "fact": "The ancient Romans named Mars after their god of war, because its red colour looked like blood.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "Mars was named by the ancient Romans for their god of war because its reddish color was reminiscent of blood."
+    },
+    {
+      "n": 26,
+      "fact": "The ancient Egyptians called Mars \"Her Desher\", which means \"the red one\".",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "the Egyptians called it \"Her Desher,\" meaning \"the red one.\""
+    },
+    {
+      "n": 27,
+      "fact": "Mars can be as warm as 20 °C or as cold as about -153 °C.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "The temperature on Mars can be as high as 70 degrees Fahrenheit (20 degrees Celsius) or as low as about -225 degrees Fahrenheit (-153 degrees Celsius)."
+    },
+    {
+      "n": 28,
+      "fact": "Martian dust storms can cover much of the planet, and the dust can take months to settle.",
+      "source": {
+        "label": "NASA: Mars facts",
+        "url": "https://science.nasa.gov/mars/facts/"
+      },
+      "quote": "winds on Mars are strong enough to create dust storms that cover much of the planet … it can be months before all of the dust settles."
+    },
+    {
+      "n": 29,
+      "fact": "Viking 1 sent the first pictures from the surface of Mars after landing on 20 July 1976.",
+      "source": {
+        "label": "NASA: Mars",
+        "url": "https://science.nasa.gov/mars/"
+      },
+      "quote": "until July 20, 1976, when NASA's Viking 1 lander touched down safely and began transmitting the first images from the surface"
+    },
+    {
+      "n": 30,
+      "fact": "On 19 April 2021 the Ingenuity helicopter made the first powered flight on another planet.",
+      "source": {
+        "label": "NASA: Ingenuity Mars Helicopter",
+        "url": "https://science.nasa.gov/mission/mars-2020-perseverance/ingenuity-mars-helicopter/"
+      },
+      "quote": "took to the Martian air for its initial flight on April 19, 2021— the first powered flight on another planet."
+    }
+  ]
+}
