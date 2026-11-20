@@ -79,11 +79,11 @@ Agreed rules (19 Nov):
 - [ ] **Back up the five new sprites to Drive** (Nav; OneSmallClick › Sprites).
 - [x] **Add the medal colours to docs/tokens.css** as an agreed exception (`--medal-*`, 19 Nov; CLAUDE.md updated). They go into src/styles/theme.css with the first phase that uses them.
 - [x] **Check the design's fun facts against sources** (E0, 2026-11-20): 13 true, 8 need rewording, 2 wrong (Jupiter's 1,300 Earths, Titan's lakes), 1 unsupported (Miranda's cliff), and Olympus Mons is wrong by NASA's figures. See docs/expansion.md, section 10.
-- [ ] **The live Olympus Mons vote fact** (content/vote-options.json, approved 19 Nov) says 22 km and 2.5× Everest, but its NASA source now says more than 40 km from base to summit. Nav: approve the reworded fact (docs/expansion.md, section 10).
+- [x] **The live Olympus Mons vote fact** (reworded 2026-11-20, prompt 44; live after the next deploy) (content/vote-options.json, approved 19 Nov) says 22 km and 2.5× Everest, but its NASA source now says more than 40 km from base to summit. Nav: approve the reworded fact (docs/expansion.md, section 10).
 
 ### E0: plan the campaign (after 8b, before 8c)
 - [x] **Run the expansion planning prompt** (prompt 43, 2026-11-20): docs/expansion.md, content/campaign.json and content/facts/mars.json drafted; 8c and E1–E5 added to docs/plan.md. Was: (plan only, from Nav's build hub). It plans the new screens into build phases, writes docs/expansion.md, drafts content/campaign.json and content/facts/mars.json (30 facts with sources), switches **8c's next-destination vote to a two-way branch (Mars → Ceres or Vesta) read from content/campaign.json** (instead of Europa / Psyche / a Venus flyby, which moves into the daily vote pool as a detour), and adds the expansion phases to docs/plan.md.
-- [ ] **Nav approves** (the 14 decisions in docs/expansion.md, section 11):
+- [x] **Nav approves** (the 14 decisions in docs/expansion.md, section 11; all as recommended, 2026-11-20, prompt 44):
   - each stop's planet tech, with a sim of the stacked totals;
   - what carries between missions (suggested: everything, with upgrades renamed rather than reset);
   - who counts as "helped";

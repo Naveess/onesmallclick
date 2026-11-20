@@ -17,7 +17,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
-  - [ ] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43): docs/expansion.md, content/campaign.json and content/facts/mars.json are drafts waiting for Nav's approval.
+  - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
@@ -544,7 +544,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
-The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Each phase waits for Nav's approval of the E0 decisions it depends on (docs/expansion.md, section 11). The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
+The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
 
 ### E1: The campaign map (1m)
 

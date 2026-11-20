@@ -1,6 +1,6 @@
 # The Grand Tour: expansion plan (E0)
 
-Draft for Nav's approval, written 2026-11-20 (prompt 43). It plans the campaign beyond Mars as build phases (E1–E5 in docs/plan.md). It's a plan only: no app code, and no game rule changes until you approve them.
+Written 2026-11-20 (prompt 43). **Approved by Nav on 2026-11-20 (prompt 44): every recommendation in section 11.** It plans the campaign beyond Mars as build phases (E1–E5 in docs/plan.md). It's a plan only: no app code, and no game rule changes until you approve them.
 
 The drafts that go with it:
 - `content/campaign.json`: stops, branches, distances, probes, upgrade names, planet tech and cosmetics.
@@ -310,7 +310,7 @@ Three slots, as in the design (1j): sky, THRUST trail and probe paint. Helpers u
 
 **Already live:** the daily vote option "Zoom in on Olympus Mons" (`content/vote-options.json`, approved 19 Nov) says "about 22 km high: two and a half times the height of Mount Everest" and cites NASA's Mars facts page. That page (updated 10 July 2026) now says "more than 25 miles (… 40 kilometers) tall from base to summit". The 22 km figure is height above Mars' average surface level, which that page doesn't give. **Recommended fix:** "Olympus Mons on Mars is the biggest volcano in the Solar System: more than 40 km tall from base to summit." It needs your OK, because it changes approved content.
 
-## 11. Decisions still open (with my recommendation)
+## 11. Decisions (approved 2026-11-20, prompt 44: all as recommended)
 
 1. **Recalibrate the crew balance each leg** (section 3). *Recommend yes.* Without it, carried upgrades make Gold automatic from leg 2.
 2. **Moon legs:** 30 days with the speed shown in km/h (A), or shorter legs (B). *Recommend A.*

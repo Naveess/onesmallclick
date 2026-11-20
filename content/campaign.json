@@ -1,5 +1,5 @@
 {
-  "_about": "DRAFT for Nav's approval (E0, prompt 43, 2026-11-20). The Grand Tour: stops, branches, distances, probes and their upgrade names, planet tech and cosmetics. Nothing reads this file yet; 8c and the E phases will. Upgrade effects and prices stay as in shared/upgrades.ts: only names and flavour lines change per probe. The planet tech here is smaller than the design's and credits-only, so it never changes trip speed (docs/expansion.md, 'Planet tech'). Distances are the gap between average distances from the Sun (or a moon's distance from its planet), from distanceSources; TODO marks what isn't checked.",
+  "_about": "Approved by Nav on 2026-11-20 (E0, prompts 43–44). The Grand Tour: stops, branches, distances, probes and their upgrade names, planet tech and cosmetics. Nothing reads this file yet; 8c and the E phases will. Upgrade effects and prices stay as in shared/upgrades.ts: only names and flavour lines change per probe. The planet tech here is smaller than the design's and credits-only, so it never changes trip speed (docs/expansion.md, 'Planet tech'). Distances are the gap between average distances from the Sun (or a moon's distance from its planet), from distanceSources; TODO marks what isn't checked.",
   "legDays": 30,
   "medalDays": {
     "gold": 25,
