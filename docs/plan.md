@@ -650,13 +650,20 @@ Done and committed (checked locally where it says so):
 - **docs/launch-checklist.md:** the phone checklist for Nav, and what 9b must do before the launch reset.
 - `npm run build` passes.
 
+Done in prompt 55 (2026-11-20):
+- **The load test, finished** (docs/load-test.md). The collapse between 100 and 500 players was real work in the probe: every tap batch rebuilt "who's online" about seven times from every socket's attachment (N×N work a second). **Fixed:** the list is kept for 5 s and cleared whenever a socket opens, closes or changes, and a socket's "last seen" is rewritten every 15 s, not on every batch. After the fix: 2,000 players at 33 ms (p95 134 ms) with nobody dropped; it fell over locally at 3,000. 2,000 players is about Cloudflare's soft limit for one object (1,000 requests a second), so **no relay objects for now**; the next step past ~1,500 players tapping at once would be sending tap batches less often in a big crowd. The script now counts each stage on its own, times out stuck connections and stops after a stage that fell over.
+- **Rows written are counted** and shown in /admin ("Rows written an hour (probe / D1)").
+- **Monitoring** written down in docs/launch-checklist.md ("Monitoring").
+- **The scripted checks moved into scripts/** (`check-auth.mjs`, `check-clicks.mjs`, `check-badges.mjs`, `check-arrival.mjs`; each takes the base URL, default localhost:5173). Re-run after the probe change: sign-in 37/37 and arrival 18/18 pass; clicks passed its 8 probe checks and then stopped at the step that reads local D1 through wrangler, which (like `check-badges.mjs` and `cap-test.mjs`) couldn't start on this laptop ("spawn UNKNOWN": six old dev servers from this morning were still running and Claude wasn't allowed to stop them).
+
+**Waiting for Nav (prompt 55): storage costs.** Each player with the game open writes about 2,200 rows an hour to the probe's SQLite and 1,000 to D1. On the free plan that's ~45 player-hours a day before the probe's writes run out; on Workers Paid, past the included 50 million a month, about $75 a day for 1,000 players around the clock. Proposal: save each player's progress every 60 s instead of 5 s (the shared distance stays at 5 s), update rows in place instead of replacing them, flush to D1 every 5 minutes instead of 30 s, and update "last seen" at most hourly: about 15× fewer rows. The cost: after a probe restart (deploy or crash) players can lose up to a minute of credits, and the leaderboards' "today" lags up to 5 minutes.
+
 Still to do in 9a (in this order):
-1. **Finish the load test** (docs/load-test.md). **Most important:** the local probe was fine at 100 players but fell over somewhere between 100 and 500 (everyone dropped, answers took 20–30 s, and 2,000 hung the dev server). Find out whether that's the laptop or real per-player or per-batch work in the probe, and fix the script's stage counting. Re-run in steps (100, 200, 300…), and also look at the 3 s stalls one run showed at 100. Decide on relay objects from the numbers.
-2. **Monitoring:** write down where the logs are (Cloudflare dashboard → Workers → onesmallclick → Logs; search "network-cap", "app-crash"); Workers Logs are already on in wrangler.jsonc.
+1. The storage change above, once Nav OKs it, then measure again.
+2. Re-run `check-clicks.mjs`, `check-badges.mjs` and `node scripts/cap-test.mjs` once the old dev servers are stopped.
 3. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
 4. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
-5. Re-run the earlier scripted checks (auth, clicks, badges, arrival: in the old session's scratchpad, so they may need rewriting into scripts/) and `node scripts/cap-test.mjs`.
-6. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
+5. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
 
 
 **Goal:** ready for real players.

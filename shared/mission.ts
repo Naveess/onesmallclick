@@ -170,6 +170,8 @@ export interface AdminState {
   sockets: number;
   lastSavedAt: number;
   lastD1FlushAt: number;
+  /** Rows written since the probe last started (real ms `since`): its own SQLite and the D1 flush. Storage is billed by these (phase 9a). */
+  rowsWritten: { since: number; sqlite: number; d1: number };
   /** The crew's raw push before balancing: taps and catch-ups over the last hour, and connected auto-thrust (km/s). */
   crewRawKmS: number;
   autoRawKmS: number;

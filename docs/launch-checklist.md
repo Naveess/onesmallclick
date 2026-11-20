@@ -38,3 +38,15 @@ The results are in docs/plan.md ("Phase 9a as built").
 - An accessibility pass: keyboard only (every control reachable, a visible focus ring, dialogs trap focus and Esc closes them), text contrast in both themes, labels on icon buttons, reduced motion.
 - Screenshots at 375, 390 and 1440 in both themes.
 - The scripted checks: sign-in, clicks, badges, arrival and the network cap.
+
+## Monitoring (where to look once it's live)
+
+- **Logs:** Cloudflare dashboard → Workers & Pages → `onesmallclick` → **Logs** (Workers Logs are on: `observability` in wrangler.jsonc; kept 3 days on the free plan, 7 on Workers Paid). Or `npx wrangler tail onesmallclick` for a live stream.
+- **What to search for:**
+  - `app-crash`: the app's crash screen came up, or an uncaught error in a browser (`POST /api/report`, at most 3 a page load; message, page and browser only).
+  - `network-cap`: a network hit the 50 pings or 50 votes a day cap (hash prefix only). Lots of these from one hash prefix = a bot or a school; a spread of them = the cap is too low.
+  - `D1 flush failed`: the probe couldn't write km and progress to D1 (it retries). Repeated = D1 trouble, or the free plan's daily row-write limit.
+  - `failed` in general: every other storage error the probe logs (votes, pings, badges, milestones, credits).
+  - Durable Object `overloaded` errors: the probe is getting more than it can handle (see docs/load-test.md).
+- **Storage use:** `/admin` → "Rows written an hour (probe / D1)", since the probe last started. Rows written are what's billed (docs/load-test.md, "Storage"). The dashboard's D1 → `onesmallclick` → Metrics shows the same for D1 over time, and Workers & Pages → Durable Objects for the probe.
+- **People:** `/admin` shows the open sockets, "people here" and the network cap's busiest networks today.

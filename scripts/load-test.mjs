@@ -10,7 +10,8 @@
 //   - how long the probe takes to answer a tap batch ("credited");
 //   - how many "state" updates each player gets a second (the probe sends at most one a second);
 //   - how late each update reaches players compared with the fastest one (the fan-out spread);
-//   - connection failures and drops.
+//   - connection failures and drops (each stage counts its own).
+// It stops after a stage where most players are gone or answers take over 10 s.
 // Every simulated player is a real device in that database and adds real km to that probe.
 
 const args = process.argv.slice(2);
@@ -19,6 +20,7 @@ const opt = (name, dflt) => args.find((a) => a.startsWith(`--${name}=`))?.split(
 const STAGES = opt("players", "100,500,1000").split(",").map(Number);
 const SECONDS = Number(opt("seconds", "45"));
 const BATCH_MS = 2_000;
+const CONNECT_TIMEOUT_MS = 10_000;
 const local = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(base);
 if (!local && !args.includes("--live")) {
   console.error(`${base} isn't local. The live site needs --live (and Nav's OK: the players and km are real there).`);
@@ -49,7 +51,7 @@ class Player {
     this.batches = 0;
   }
   async start() {
-    const res = await fetch(`${base}/api/session`, { headers: { Origin: base } });
+    const res = await fetch(`${base}/api/session`, { headers: { Origin: base }, signal: AbortSignal.timeout(CONNECT_TIMEOUT_MS) });
     const cookie = res.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
     if (!res.ok || !cookie) throw new Error(`session ${res.status}`);
     this.ws = new WebSocket(`${base.replace(/^http/, "ws")}/api/probe`, { headers: { Cookie: cookie, Origin: base } });
@@ -71,8 +73,22 @@ class Player {
       this.open = false;
     };
     await new Promise((resolve, reject) => {
-      this.ws.onopen = resolve;
-      this.ws.onerror = () => reject(new Error("WebSocket failed"));
+      const timer = setTimeout(() => {
+        reject(new Error("WebSocket timed out"));
+        try {
+          this.ws.close();
+        } catch {
+          // never opened
+        }
+      }, CONNECT_TIMEOUT_MS);
+      this.ws.onopen = () => {
+        clearTimeout(timer);
+        resolve();
+      };
+      this.ws.onerror = () => {
+        clearTimeout(timer);
+        reject(new Error("WebSocket failed"));
+      };
     });
     this.open = true;
     // Like the app: a batch every 2 s, starting at a random moment so players don't all send together.
@@ -102,15 +118,18 @@ class Player {
 }
 
 const players = [];
-let failed = 0;
 const rows = [];
-console.log(`Load test against ${base}: stages ${STAGES.join(", ")} players, ${SECONDS} s each.\n`);
+console.log(`Load test against ${base}: stages ${STAGES.join(", ")} players, ${SECONDS} s each.
+`);
 
 for (const target of STAGES) {
-  // Connect the new players, 25 at a time.
+  // Top up to `target` live players, 25 at a time. Each stage counts only its own failures and drops.
   const t0 = Date.now();
-  while (players.length + failed < target) {
-    const batch = Math.min(25, target - players.length - failed);
+  let failed = 0;
+  const droppedBefore = players.filter((p) => p.dropped).length;
+  const need = target - players.filter((p) => p.open).length;
+  while (players.filter((p) => p.open).length < target && failed <= Math.max(5, need / 10)) {
+    const batch = Math.min(25, target - players.filter((p) => p.open).length);
     const started = await Promise.allSettled(
       Array.from({ length: batch }, async () => {
         const p = new Player();
@@ -137,7 +156,7 @@ for (const target of STAGES) {
     players: target,
     connected: live.length,
     failed,
-    dropped: players.filter((p) => p.dropped).length,
+    dropped: players.filter((p) => p.dropped).length - droppedBefore,
     connectS: connectS.toFixed(1),
     batchesPerS: (batches / SECONDS).toFixed(0),
     ackP50: pct(acks, 50),
@@ -155,6 +174,11 @@ for (const target of STAGES) {
       `answer p50 ${fmt(row.ackP50)} ms, p95 ${fmt(row.ackP95)} ms, max ${fmt(row.ackMax)} ms · ${row.statesPerS} updates/s each · ` +
       `fan-out spread p50 ${fmt(row.spreadP50)} ms, p95 ${fmt(row.spreadP95)} ms`,
   );
+  // A stage that fell over (most players gone, or answers over 10 s) makes the next ones meaningless.
+  if (row.connected < target / 2 || !(row.ackP95 < 10_000)) {
+    console.log(`Stopping: the probe didn't hold ${target} players.`);
+    break;
+  }
 }
 
 console.log("\n| Players | Connected | Failed | Dropped | Tap batches/s | Answer p50 | p95 | max | Unanswered | Updates/s each | Spread p50 | p95 |");

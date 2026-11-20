@@ -97,6 +97,14 @@ import {
 const SAVE_MS = 5_000;
 const D1_FLUSH_MS = 30_000;
 const BROADCAST_MS = 1_000;
+/**
+ * How long the list of who's online is kept between tap batches (phase 9a, load test). Every batch needs it several
+ * times, and rebuilding it reads every socket's attachment, so with N players that was N×N work a second.
+ * Sockets opening, closing and buying clear it at once; only silent sockets (DEAD_SOCKET_MS, 90 s) wait for it.
+ */
+const ONLINE_CACHE_MS = 5_000;
+/** A socket's `seen` time is rewritten at most this often (it only has to beat DEAD_SOCKET_MS). */
+const SEEN_EVERY_MS = 15_000;
 /** A device may bank this many taps: a full batch plus some network jitter. */
 const TAP_BUCKET = MAX_TAPS_PER_S * (BATCH_MS / 1000) * 1.5;
 /** Most taps a single message may claim; anything above is ignored as malformed. */
@@ -315,6 +323,8 @@ export class Probe extends DurableObject<Env> {
   private alarmAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
   private dead = new WeakSet<WebSocket>();
+  /** onlineDevices() and its auto-thrust total, kept for ONLINE_CACHE_MS; null when a socket opened, closed or changed. */
+  private online: { at: number; ids: Map<string, number>; auto: number } | null = null;
 
   private dirty = false;
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -323,10 +333,23 @@ export class Probe extends DurableObject<Env> {
   private lastBroadcastAt = 0;
   private lastSavedAt = 0;
   private lastD1FlushAt = 0;
+  /** Rows written since this object started (real ms): its own SQLite, and D1 by the 30 s flush. */
+  private rows = { since: Date.now(), sqlite: 0, d1: 0 };
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
-    this.sql = ctx.storage.sql;
+    // Every statement's rows written are counted (phase 9a): they're what storage is billed by, shown in /admin.
+    const raw = ctx.storage.sql;
+    this.sql = {
+      exec: (query: string, ...bindings: SqlStorageValue[]) => {
+        const cursor = raw.exec(query, ...bindings);
+        this.rows.sqlite += cursor.rowsWritten;
+        return cursor;
+      },
+      get databaseSize() {
+        return raw.databaseSize;
+      },
+    } as SqlStorage;
     // Heartbeats are answered by the runtime, so they don't wake this object or count as requests.
     ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair(HEARTBEAT_PING, HEARTBEAT_PONG));
     ctx.blockConcurrencyWhile(() => this.load());
@@ -630,7 +653,8 @@ export class Probe extends DurableObject<Env> {
       );
     }
     try {
-      await db.batch(statements);
+      const results = await db.batch(statements);
+      for (const r of results) this.rows.d1 += r.meta?.rows_written ?? 0;
       this.lastD1FlushAt = seen;
     } catch (err) {
       console.error("D1 flush failed; will retry", err);
@@ -834,8 +858,9 @@ export class Probe extends DurableObject<Env> {
 
   /** Open, live sockets' players and their raw auto-thrust (several tabs, or two devices on one account, count once). */
   private onlineDevices(except?: WebSocket): Map<string, number> {
-    const ids = new Map<string, number>();
     const real = Date.now();
+    if (!except && this.online && real - this.online.at < ONLINE_CACHE_MS) return this.online.ids;
+    const ids = new Map<string, number>();
     for (const ws of this.ctx.getWebSockets()) {
       if (ws === except || ws.readyState !== WebSocket.OPEN || this.dead.has(ws)) continue;
       const a = ws.deserializeAttachment() as Attachment | null;
@@ -846,6 +871,11 @@ export class Probe extends DurableObject<Env> {
         continue;
       }
       ids.set(whoOf(a).key, a.auto ?? 0);
+    }
+    if (!except) {
+      let auto = 0;
+      for (const v of ids.values()) auto += v;
+      this.online = { at: real, ids, auto };
     }
     return ids;
   }
@@ -870,6 +900,7 @@ export class Probe extends DurableObject<Env> {
   /** A socket that went silent without closing: close it, and count its device away from its last heartbeat. */
   private dropDead(ws: WebSocket, aliveReal: number) {
     this.dead.add(ws);
+    this.online = null;
     // Its auto-thrust was connected until its last heartbeat (for the idle pause).
     const a = ws.deserializeAttachment() as Attachment | null;
     if (a && a.auto > 0) this.mission.lastActiveAt = Math.max(this.mission.lastActiveAt, aliveReal + this.clockOffsetMs);
@@ -882,6 +913,10 @@ export class Probe extends DurableObject<Env> {
   }
 
   private autoRaw(except?: WebSocket): number {
+    if (!except) {
+      this.onlineDevices();
+      if (this.online) return this.online.auto;
+    }
     let sum = 0;
     for (const auto of this.onlineDevices(except).values()) sum += auto;
     return sum;
@@ -1918,6 +1953,7 @@ export class Probe extends DurableObject<Env> {
       const a = ws.deserializeAttachment() as Attachment | null;
       if (a && whoOf(a).key === key) ws.serializeAttachment({ ...a, auto } satisfies Attachment);
     }
+    this.online = null;
   }
 
   /** Sends this player's progress to all its tabs and devices (after a buy elsewhere, or /admin). */
@@ -2014,6 +2050,7 @@ export class Probe extends DurableObject<Env> {
 
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
+    this.online = null;
     server.serializeAttachment({
       deviceId,
       accountId: w.accountId,
@@ -2044,7 +2081,7 @@ export class Probe extends DurableObject<Env> {
     const att = ws.deserializeAttachment() as Attachment;
     const { deviceId } = att;
     const w = whoOf(att);
-    ws.serializeAttachment({ ...att, seen: Date.now() } satisfies Attachment);
+    if (Date.now() - (att.seen ?? 0) >= SEEN_EVERY_MS) ws.serializeAttachment({ ...att, seen: Date.now() } satisfies Attachment);
     const dev = await this.device(w, this.now());
     const now = this.now();
     const p = this.prog(w.key, now);
@@ -2108,6 +2145,7 @@ export class Probe extends DurableObject<Env> {
   }
 
   async webSocketClose(ws: WebSocket, code: number, reason: string) {
+    this.online = null;
     try {
       ws.close(code, reason);
     } catch {
@@ -2117,6 +2155,7 @@ export class Probe extends DurableObject<Env> {
   }
 
   async webSocketError(ws: WebSocket) {
+    this.online = null;
     if (!this.dead.has(ws)) await this.left(ws);
   }
 
@@ -2216,6 +2255,7 @@ export class Probe extends DurableObject<Env> {
       if (a?.deviceId !== deviceId) continue;
       try {
         ws.close(4001, "signed out"); // webSocketClose settles the account as it leaves
+        this.online = null;
       } catch {
         // already closing
       }
@@ -2243,6 +2283,7 @@ export class Probe extends DurableObject<Env> {
       this.dead.add(ws);
       try {
         ws.close(4001, reason);
+        this.online = null;
       } catch {
         // already closing
       }
@@ -2268,6 +2309,7 @@ export class Probe extends DurableObject<Env> {
       sockets: this.ctx.getWebSockets().length,
       lastSavedAt: this.lastSavedAt,
       lastD1FlushAt: this.lastD1FlushAt,
+      rowsWritten: { ...this.rows },
       crewRawKmS: this.hourKmS(now),
       autoRawKmS: this.autoRaw(),
       lastActiveAt: this.mission.lastActiveAt,

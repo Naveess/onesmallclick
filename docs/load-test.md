@@ -6,9 +6,51 @@ Each simulated player gets its own device, opens the probe's WebSocket and sends
 
 What it reports per stage: connection failures and drops; how long the probe takes to answer a tap batch ("credited"), at the median (p50), the slowest 1 in 20 (p95) and the slowest; how many "state" updates each player gets a second (at most one a second by design); and how much later updates reach some players than others (the fan-out spread).
 
+Each stage counts only its own failures and drops, gives up on connecting after a 10 s timeout, and the run stops after a stage the probe didn't hold (most players gone, or the slowest 1 in 20 answers over 10 s).
+
 Locally the probe runs in workerd through Vite on one laptop, alongside the simulated players, so the numbers are a rough guide, not the real thing. The live test is phase 9b.
 
-## Results so far (2026-11-20, local)
+## The finding and the fix (prompt 55, 2026-11-20)
+
+**The cause was real work in the probe, not just the laptop.** Every tap batch asked "who's online?" about seven times (for the balance factor, the auto-thrust total, the idle pause, the snapshot's "people here"), and each answer read every open socket's attachment. With N players sending N/2 batches a second, that's N×N work a second: 4 million attachment reads a second at 1,000 players. A real crowd would have hit it too.
+
+**The fix** (`worker/probe.ts`): the online list and its auto-thrust total are kept for 5 s between batches. Any socket opening, closing, signing in or out, or buying an upgrade clears it at once, so only a socket that goes silent without closing waits for it (that takes 90 s to notice anyway). A socket's "last seen" time is now rewritten every 15 s, not on every batch.
+
+Before and after, same laptop, same run (30 s stages):
+
+| Players | Answer p50 before | p95 before | p50 after | p95 after | Updates/s each after |
+|---|---|---|---|---|---|
+| 100 | 8 ms | 28 ms | 6 ms | 8 ms | 1.00 |
+| 200 | 12 ms | 25 ms | 7 ms | 11 ms | 1.00 |
+| 400 | 53 ms | 109 ms | 8 ms | 17 ms | 1.00 |
+| 600 | – | – | 10 ms | 19 ms | 1.00 |
+| 800 | – | – | 13 ms | 38 ms | 1.00 |
+| 1,000 | – | – | 16 ms | 36 ms | 1.00 |
+| 1,500 | – | – | 18 ms | 78 ms | 1.00 |
+| 2,000 | – | – | 33 ms | 134 ms | 1.00 |
+| 3,000 | – | – | fell over: 2,375 connected, answers 60–74 s, then the dev server hung | | |
+
+Nobody failed to connect or dropped up to 2,000. The "before" answers doubled with every extra 100 players, the N×N pattern; "after" they grow slowly.
+
+**What this means for launch.** 2,000 players tapping is 1,000 tap batches a second, which is Cloudflare's documented soft limit for one Durable Object (1,000 requests a second, "not guaranteed throughput"). So one probe should be good for about **1,500 players tapping at the same moment** with headroom. Past that, the cheapest next step is to have the app send its tap batch less often when the crowd is big (every 4 s instead of 2 s above ~1,500 online, which halves the load and changes nothing the player sees). Relay objects (several small objects that each collect taps from part of the crowd and pass on one total a second) are only worth building if the live test in 9b shows real crowds past that. **No relay objects for now.** The 3,000 collapse was local (one laptop running the probe, the dev server and 3,000 simulated players, with six other dev servers open); the live test in 9b gives the real number.
+
+The 3 s stalls seen once at 100 players didn't come back in four runs after restarting the dev server (slowest at 100: 40–48 ms), so they look like the laptop.
+
+## Storage: rows written (prompt 55)
+
+Cloudflare bills both D1 and the probe's own SQLite by **rows written**: 100,000 a day each on the free plan (after that, writes fail until midnight UTC), and on Workers Paid 50 million a month each included, then $1 a million. `/admin` now shows rows written an hour for both (since the probe last started).
+
+Measured with 100 simulated players tapping for 90 s: each player with the game open costs about **2,200 rows an hour in the probe's SQLite** (their progress is saved every 5 s, about 3 rows each time: the row is replaced, plus its index) and **about 1,000 rows an hour in D1** (the 30 s flush: today's km with its three indexes, the device's last seen, the progress copy).
+
+| | Free plan (now) | Workers Paid |
+|---|---|---|
+| Probe SQLite | runs out after ~45 player-hours a day | ~23,000 player-hours a month included, then ~$0.0022 a player-hour |
+| D1 | runs out after ~100 player-hours a day | ~50,000 player-hours a month included, then ~$0.001 a player-hour |
+
+So on Workers Paid, 1,000 players around the clock would cost roughly **$75 a day** in rows written alone. **That needs fixing before launch** (proposal in docs/plan.md, "Phase 9a status"): save each player's progress every 60 s instead of 5 s (the shared distance keeps its 5 s save), update in place instead of replacing the row, flush to D1 every 5 minutes, and touch "last seen" at most once an hour. That should cut both by about 15×. The cost: if the probe restarts (a deploy, or a crash), players lose up to a minute of credits instead of 5 s, and the leaderboards' "today" lags up to 5 minutes.
+
+## Earlier results (2026-11-20, before the fix)
+
 
 | Players | Connected | Tap batches/s | Answer p50 | p95 | max | Updates/s each | Spread p50 | p95 |
 |---|---|---|---|---|---|---|---|---|

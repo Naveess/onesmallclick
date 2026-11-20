@@ -93,6 +93,11 @@ function NetworkCap({ adminKey }: { adminKey: string }) {
 }
 
 const when = (ms: number) => (ms ? new Date(ms).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "never");
+/** Rows written an hour since the probe started (storage is billed by rows written), from its counters. */
+const perHour = (rows: number, state: AdminState) => {
+  const hours = Math.max(1 / 60, (Date.now() - state.rowsWritten.since) / 3_600_000);
+  return Math.round(rows / hours).toLocaleString("en-GB");
+};
 
 export function AdminPage() {
   useDocumentTitle("Admin · OneSmallClick");
@@ -252,6 +257,12 @@ export function AdminPage() {
                   <dt>Last saved / D1 flush</dt>
                   <dd className="num">
                     {when(state.lastSavedAt)} / {when(state.lastD1FlushAt)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Rows written an hour (probe / D1)</dt>
+                  <dd className="num">
+                    {perHour(state.rowsWritten.sqlite, state)} / {perHour(state.rowsWritten.d1, state)}
                   </dd>
                 </div>
               </dl>
