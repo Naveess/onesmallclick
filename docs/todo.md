@@ -50,6 +50,14 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Steady Finger, Iron Thumb, Ten Thousand Club (click badges: 1,500 / 5,000 / 10,000 clicks; added 19 Nov)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
+## 8d: Crew emails (added 20 Nov, after 8c, before launch)
+- [ ] **Buy onesmallclick.io and set up Email Service and Workers Paid** (Nav, today, 20 Nov). These are needed for email sign-in and crew emails.
+- [ ] **Set up the crew sender** (e.g. `crew@onesmallclick.io`), separate from the sign-in sender.
+- [ ] **Approve the decisions** in docs/plan.md (22–25): sender, top 10 named, existing accounts asked once.
+- [ ] **Build 8d** (docs/plan.md): the opt-in box and toggle, one-click unsubscribe, the halfway and arrival emails, batched sending, /admin previews and test sends.
+- [ ] **Check the opt-in and email wording** against UK rules (PECR and GDPR) before launch. Claude isn't a lawyer.
+- [ ] **Privacy page:** add crew emails and how to stop them (with 8d).
+
 ## Expansion: the Grand Tour (planned 19 Nov 2026)
 
 The idea: a visible campaign beyond Mars, so players always have a "what's next".
@@ -176,4 +184,5 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
 - [ ] **Privacy page (phase 9) must mention Cloudflare Turnstile**, which runs on Ping, and the device cookie (`osc_device`, HttpOnly, 400 days).
 - [x] **Signal Keeper badge names (phase 8).** Done in 8b: the signal card shows your real level and the days to the next.
 - [ ] **Add onesmallclick.io to the Turnstile widget's hostnames** when the domain is connected, or Ping will fail there.
+- [ ] **Crew emails before launch:** the opt-in box must be live before real players sign up, so nobody has to be asked later (8d).
 - [ ] **Postcard photos.** Pick a real space photo for each of the six milestones, check each licence (prefer public-domain NASA/JPL) and note the credit line. Decide whether to keep them as photos or convert them to pixel art (open question in the brief).

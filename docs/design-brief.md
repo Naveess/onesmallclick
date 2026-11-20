@@ -39,6 +39,7 @@ Read the design's files from that link. Match how it looks, using this codebase'
 - **Leaderboards**: individual players and countries.
 - **Accounts at launch**: sign-in by email magic link or Google. Playing without an account still works, tied to the device.
 - **After Mars**: crew credits, then players vote on the next destination.
+- **Crew emails** (added 2026-11-20, phase 8d): opt-in emails for signed-in players at halfway and on arrival. The design has no screens for them: the opt-in box, the email toggle, the unsubscribe page and the emails themselves are built from the kit in the game's style.
 - **Badges**: Signal Keeper I–IV (ping streaks), First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch.
 - **Signal badge per ping** (decided 2026-11-18): blue with more than 6 hours left on the timer, orange under 6 hours, red in the final 60 seconds.
 

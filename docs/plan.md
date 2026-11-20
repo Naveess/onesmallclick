@@ -19,6 +19,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
+  - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
@@ -412,6 +413,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - The vote shows each branch's probe, distance and planet tech (1k), and the winner starts mission 2 with that branch's probe. Its art and names come in E2; until then OSC-1 flies on with a placeholder card.
   - The credits roll for everyone who helped, with names for signed-in players.
   - The arrival rewards (medal, planet tech, stamp, cosmetic) and the landing burn are E4b, and part 2 must be live before this first arrival.
+- **8d: Crew emails (added 2026-11-20).** Two opt-in emails per leg to signed-in players: halfway and arrival. See "8d: Crew emails" below.
 
 **8a as built (2026-11-19, prompt 30; deployed from 02849c8 with migration 0007 and approved by Nav, 2026-11-19)**
 - **Answers (prompt 30):** signed in, pings and votes are once per account per day; signing out leaves the browser as a brand-new guest device (progress stays with the account); one of the three name offers is the device's own name; delete account is included; the privacy page lists privacy@onesmallclick.io; the screens the design lacks are built from the kit in 1i's style.
@@ -510,6 +512,53 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Merging progress when one person has two devices** (decision 18).
 - **The email needs a domain you own.** Sign-in emails can't come from workers.dev, so onesmallclick.io has to be on Cloudflare before this phase, not at launch.
 - **Display names on public boards** (decision 17).
+
+## 8d: Crew emails (added 2026-11-20)
+
+**Goal:** bring signed-in players back at the two moments that matter most on each leg. At halfway, an email asks them to help make the push. At arrival, a round-up shows their contribution, shouts out the top contributors and invites everyone to vote on the next destination, including "if you missed out, don't worry, help us on the next journey!". After 8c, before launch. It needs onesmallclick.io in Email Service and Workers Paid (both from Nav's payday, 2026-11-20).
+
+**Idea from Nav (2026-11-20, while approving 8c).** Only accounts get emails, which also gives players a reason to sign in.
+
+**What gets built**
+- **Consent (opt-in, never pre-ticked).** These are game updates, not sign-in emails, so they're treated as marketing:
+  - an unticked "Email me mission updates (about two a month)" box when an account is made (the name picker);
+  - a toggle on the account page and the profile;
+  - existing accounts are asked once in the game (a small card), never opted in automatically;
+  - stored with when and where consent was given.
+- **One-click unsubscribe in every email.** A signed link that works without signing in, plus the `List-Unsubscribe` and `List-Unsubscribe-Post` headers, with a small confirmation page.
+- **The halfway email** goes out when the leg's Halfway milestone is reached. It shows:
+  - your km, clicks, pings and votes this leg, and where that puts you in the crew (e.g. "top 12%");
+  - the crew's numbers and the medal race ("On pace for Silver: 2 days faster and we get Gold");
+  - one button: "Make the push".
+- **The arrival email** goes out when the probe arrives. It shows:
+  - your total contribution for the leg, the medal and the planet tech earned (once E4b exists);
+  - the top 10 contributors by their public generated names (already public on the leaderboards);
+  - for anyone who didn't help: "If you missed out, don't worry, help us on the next journey!";
+  - the main button: "Vote now: Ceres or Vesta?", while the destination vote is open.
+- **Sending:**
+  - all of it through `worker/email.ts`;
+  - from a separate address from the sign-in emails (e.g. `crew@onesmallclick.io`), so spam reports on updates can't hurt sign-in links;
+  - in batches over a few minutes, not all at once;
+  - each send recorded, so nobody gets the same email twice;
+  - deleted and opted-out accounts skipped.
+- **The emails themselves:** plain text plus simple HTML in the game's voice, with a pixel header image hosted on the site. No tracking pixels and no tracked links.
+- **`/admin`:** preview each email for any account, send a test to yourself, and see the last send's numbers.
+- **The privacy page** gets a section on crew emails and how to stop them.
+
+**Data changes** (the next free migration number)
+- `accounts`: `email_updates` (on/off), `email_updates_at` and `email_updates_source`.
+- `email_sends` (account_id, mission_id, kind, sent_at), one row per account per mission per kind.
+
+**How you test it**
+- Opt in on a test account. In `/admin`, move the distance past halfway: one halfway email arrives with the right numbers, and moving past it again sends nothing new.
+- Move to arrival: the arrival email arrives, with the top contributors and the vote button. A test account that didn't help gets the "next journey" line.
+- Click unsubscribe in the email: it works without signing in, and the next send skips you.
+- A guest and an opted-out account get nothing.
+
+**Main risks**
+- **Consent rules (UK PECR and GDPR).** Opt-in plus easy unsubscribe is the safe pattern. Claude isn't a lawyer, so check the wording before launch.
+- **Deliverability.** Keep it to two emails per leg, use a separate sender, keep the content plain, and send in batches. Email Service is still in public beta, so check its sending limits.
+- **Cost.** Workers Paid includes 3,000 emails a month, then about $0.35 per 1,000.
 
 ## Phase 9: Launch hardening, ads and legal pages
 
@@ -697,6 +746,12 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 
 Also decided 2026-11-19 (evening): **the flight view** replaces the straight track on the game home (the transfer-orbit view, design 2a/2b, was rejected); **click badges** Steady Finger 1,500, Iron Thumb 5,000 and Ten Thousand Club 10,000; **the medal colours** are approved; **the Grand Tour rules** are agreed (docs/todo.md). **The domain:** onesmallclick.io, bought on payday Friday (.com is taken and .co.uk reads as UK-only).
 
+### Before 8d (added 2026-11-20; recommendations in brackets)
+22. **Crew emails go ahead** *(decided 2026-11-20, Nav's idea)*: halfway and arrival, accounts only, opt-in.
+23. **The sender address** *(`crew@onesmallclick.io`, separate from the sign-in sender)*.
+24. **How many top contributors to name** *(top 10 by km this leg, using their generated names)*.
+25. **Existing accounts** *(asked once in the game; nobody is opted in automatically)*.
+
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
 20. **AdSense:** is the account set up for this site? Ads stay off until it's approved.
@@ -715,6 +770,7 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
   - It has been in public beta since April 2026, so its API could still change.
 - **The safeguard:** the sending code lives in one small function, so switching to Resend is a one-file change.
 - **Google sign-in sends no email at all**, which keeps volumes low.
+- **Crew emails (8d, added 2026-11-20)** use the same service and file, from a separate sender address, at about two per signed-in, opted-in player per leg. They're the main email volume once there are players.
 
 | Service | Free tier | Paid | Notes |
 |---|---|---|---|
@@ -736,6 +792,7 @@ Prices were checked on 2026-11-18 from Cloudflare's docs and from pricing summar
   - The D1 free tier is plenty for testing.
 - **Turnstile and Google sign-in are free.**
 - **Workers Paid ($5/month)** is needed for Cloudflare Email Service and for launch traffic.
+- **Crew emails (8d):** the 3,000 emails a month included with Workers Paid cover about 1,500 opted-in players at two emails a leg. After that it's about $0.35 per 1,000.
 - **The domain:** the yearly cost of onesmallclick.io.
 
 ## Cloudflare resources the plan will need (none created yet)
@@ -745,4 +802,5 @@ Prices were checked on 2026-11-18 from Cloudflare's docs and from pricing summar
 | 4 | D1 database; the `Probe` Durable Object (declared in `wrangler.jsonc`, made on deploy); admin secret | Me (with your OK), and you for the secret |
 | 5 | Turnstile widget (site key and secret) | You, in the dashboard (I'll list the steps) |
 | 8 | Google OAuth client; email sender on onesmallclick.io; secrets | You |
+| 8d | The crew email sender (e.g. crew@onesmallclick.io) in Email Service | You, in the dashboard (Claude lists the steps) |
 | 9 | Custom domain on the Worker; AdSense | You |

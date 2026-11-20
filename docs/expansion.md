@@ -166,6 +166,7 @@ Everything is text or a self-made image, with no tracking and no ad links:
 - **Branch result text:** "OneSmallClick · The crew chose Europa (61% of 12,481 votes) · Next stop: Saturn · onesmallclick.io".
 - **Arrival text:** "OneSmallClick · Mars reached on day 24 · Gold · Planet tech: Martian dust filters · I helped" (the last part only if you did).
 - **The daily fact:** the design's share card (1a), "Save image" and "Copy link", linking to the destination page.
+- **Crew emails (8d, added 2026-11-20):** opt-in halfway and arrival emails for signed-in players reuse these texts. The arrival email's main button is the branch vote ("Vote now: Ceres or Vesta?"), so it drives turnout while the 24-hour destination vote is open.
 
 ## 9. The rewards
 
