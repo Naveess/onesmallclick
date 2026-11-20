@@ -2,6 +2,7 @@
 //   public/how-to-play.html            → /how-to-play        (the design's 1l)
 //   public/milestones/<slug>.html      → /milestones/<slug>  (one fact page per milestone)
 //   public/destinations/<stop>.html    → /destinations/<stop> (E4b part 1: a destination's 30 facts, one anchor each)
+//   public/privacy.html, terms.html, contact.html → /privacy, /terms, /contact (8a; terms and contact from phase 9a)
 //   public/content.css                 → their stylesheet (the game's fonts, theme and kit, plus src/content/pages.css)
 // The text is in the HTML itself, so search engines (and AdSense) can read it without running scripts.
 // Content: content/milestones.json, content/facts/<stop>.json and content/campaign.json. These outputs are
@@ -117,6 +118,9 @@ ${body}
         <a href="/">Play OneSmallClick</a>
         <a href="/how-to-play">How to play</a>
         <a href="/log">Mission log</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/contact">Contact</a>
       </footer>
     </div>
     <script>
@@ -276,15 +280,143 @@ ${d.facts
   });
 }
 
+// ---------- Who runs the site (phase 9a, prompt 54) ----------
+
+// The contact address moves to an @onesmallclick.io one after payday (docs/todo.md, "Payday").
+const OPERATOR = { name: "websitesbynavee.co.uk", url: "https://websitesbynavee.co.uk" };
+const CONTACT_EMAIL = "naveessharma@gmail.com";
+const mailto = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
+const operatorLink = `<a href="${OPERATOR.url}" rel="noopener">${OPERATOR.name}</a>`;
+const LEGAL_UPDATED = "20 November 2026";
+
+/** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML. */
+function sectionsHtml(id, sections) {
+  return sections
+    .map(
+      ([title, paras], i) => `      <section class="window prose" aria-labelledby="${id}-${i}">
+        <h2 id="${id}-${i}" class="page__h2">${esc(title)}</h2>
+${paras.map((p) => `        <p>${p}</p>`).join("\n")}
+      </section>`,
+    )
+    .join("\n");
+}
+
+// ---------- Terms (phase 9a) ----------
+
+const termsSections = [
+  [
+    "Who runs OneSmallClick",
+    [
+      `OneSmallClick is a free browser game run by ${operatorLink}. Questions, problems or anything else: ${mailto}, or see the <a href="/contact">contact page</a>.`,
+      "By playing you agree to these terms. They're written to be read, not to trip anyone up.",
+    ],
+  ],
+  [
+    "The game",
+    [
+      "Everyone pushes the same probe. The mission, its route, the votes and the numbers behind them can change as we balance the game, and a mission can be reset or paused (for example once, at launch, when the test mission restarts and everyone keeps their progress).",
+      "Credits, upgrades, badges, medals and names are part of the game only. They have no money value and can't be sold or swapped for anything.",
+      "There's nothing to buy. We may show ads in marked slots on some pages; the <a href=\"/privacy\">privacy page</a> says what that means for your data.",
+    ],
+  ],
+  [
+    "Playing fair",
+    [
+      "Push with your own taps. Don't use bots, scripts or auto-clickers, and don't use extra devices or accounts to get extra pings or votes.",
+      "To keep this fair the game limits taps per second, checks pings and votes for bots, and caps pings and votes from one network each day. If someone cheats anyway, we may remove the progress it earned or block the device or account.",
+      "Don't attack, overload or try to break into the game or the people who play it.",
+    ],
+  ],
+  [
+    "Your account",
+    [
+      "Signing in is optional. Crew names are generated, so nobody can pick an offensive one. Keep your sign-in to yourself.",
+      "You can delete your account at any time from the sign-in page. The km you pushed stay in the mission, without your name.",
+    ],
+  ],
+  [
+    "Age",
+    [
+      "Anyone can play as a guest. If you're under 13, ask a parent or guardian before you sign in. (Google accounts need you to be 13 or older in most countries anyway.)",
+    ],
+  ],
+  [
+    "Facts and content",
+    [
+      "Every fact in the game links to the source we checked it against. If you spot a mistake, please tell us and we'll fix it.",
+      "The game's art, text and code belong to OneSmallClick, apart from the parts other people made and licensed: the fonts (Pixelify Sans and VT323, SIL Open Font License) and the pixel flags (from flag-icons, MIT licence).",
+    ],
+  ],
+  [
+    "No guarantees",
+    [
+      "We run OneSmallClick as well as we can, but it's provided as it is: it may be down, slow or wrong at times, and progress can be lost if something breaks.",
+      "As far as the law allows, we aren't responsible for losses from using it, or from not being able to. Nothing here takes away rights you have under UK consumer law.",
+    ],
+  ],
+  [
+    "Changes",
+    [
+      `If these terms change, this page changes too, with a new date. Last updated ${LEGAL_UPDATED}. These terms are under the law of England and Wales.`,
+    ],
+  ],
+];
+
+const terms = page({
+  path: "/terms",
+  current: "/terms",
+  title: "Terms · OneSmallClick",
+  description: "The terms for playing OneSmallClick: who runs it, playing fair, accounts, age, and what we can and can't promise.",
+  body: `      <div>
+        <p class="page__label">TERMS</p>
+        <h1 id="page-title" class="page__title">Playing OneSmallClick</h1>
+      </div>
+      <p class="page__note">The short version: it's free, play fair, under-13s ask a parent before signing in, and things can change as we balance the game. Updated ${LEGAL_UPDATED}.</p>
+${sectionsHtml("terms", termsSections)}
+      <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
+});
+
+// ---------- Contact (phase 9a) ----------
+
+const contact = page({
+  path: "/contact",
+  current: "/contact",
+  title: "Contact · OneSmallClick",
+  description: "How to get in touch about OneSmallClick: bugs, a fact that looks wrong, your data, or anything else.",
+  body: `      <div>
+        <p class="page__label">CONTACT</p>
+        <h1 id="page-title" class="page__title">Mission control</h1>
+      </div>
+      <section class="window prose" aria-labelledby="contact-0">
+        <h2 id="contact-0" class="page__h2">Email</h2>
+        <p>${mailto}</p>
+        <p>OneSmallClick is run by ${operatorLink}. One person reads every message, so replies can take a few days.</p>
+      </section>
+      <section class="window prose" aria-labelledby="contact-1">
+        <h2 id="contact-1" class="page__h2">Good things to write about</h2>
+        <p>A bug: what you did, what happened, and your phone or browser.</p>
+        <p>A fact that looks wrong: which one, and a source if you have it. Every fact links to the page we checked it against.</p>
+        <p>Your data: a copy of it, or a question about it. To delete your account straight away, use the <a href="/sign-in">sign-in page</a>. More on the <a href="/privacy">privacy page</a>.</p>
+        <p>Cheating you've spotted, ideas for the route, or anything else.</p>
+      </section>
+      <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
+});
+
 // ---------- Privacy (phase 8a: sign-in starts storing email addresses) ----------
 
-const PRIVACY_UPDATED = "20 November 2026";
 const privacySections = [
+  [
+    "Who runs OneSmallClick",
+    [
+      `OneSmallClick is run by ${operatorLink}, which decides what's collected and why (the “data controller”). For anything about your data, email ${mailto}.`,
+    ],
+  ],
   [
     "Playing as a guest",
     [
       "The first time you open the game, your browser gets a random device id in a cookie (osc_device). It's signed so nobody can fake it, and it holds nothing about you. It lasts up to 400 days.",
       "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km and THRUST clicks you push each day, your pings and votes, your credits, upgrades and patches, and the badges you earn. For the Night Shift badge, the game checks the time zone Cloudflare’s network gives for your connection while you tap; it isn’t stored.",
+      "When you Ping or vote, the game counts how many pings and votes came from your network that day, so one person can't cast dozens from lots of devices (the limit is 50 of each). Your network address isn't stored: it's mixed with a secret and the date, and only that scrambled result is kept, for two days.",
       "Your browser also keeps a few things for itself: your light or dark theme, a copy of the probe's position so the page opens fast, and which milestone moments you've already seen.",
     ],
   ],
@@ -294,6 +426,7 @@ const privacySections = [
       "Signing in is optional. If you sign in with an email link, we keep your email address. If you sign in with Google, we keep your email address and Google's id for your account, and nothing else from Google: no name, no photo, no contacts.",
       "Your account also has its generated crew name and a country (detected when the account is made; you can change it once). A sign-in cookie (osc_session) keeps you signed in for up to 90 days; a short cookie (osc_oauth) lasts 10 minutes while you're away at Google.",
       "A sign-in link is stored only as a scrambled code (a hash), and it stops working after one use or 15 minutes.",
+      "Anyone can play as a guest. If you're under 13, ask a parent or guardian before you sign in.",
     ],
   ],
   [
@@ -316,7 +449,7 @@ const privacySections = [
     [
       "Sign out at any time: your progress stays with your account, and the device carries on as a new guest.",
       "Delete your account from the sign-in page: your email, name and account progress are deleted straight away (the database's own backups roll off within 30 days). The km you pushed stay in the mission without your name.",
-      "For a copy of your data, or anything else about privacy, email <a href=\"mailto:privacy@onesmallclick.io\">privacy@onesmallclick.io</a>.",
+      `For a copy of your data, or anything else about privacy, email ${mailto}.`,
     ],
   ],
 ];
@@ -330,15 +463,8 @@ const privacy = page({
         <p class="page__label">PRIVACY</p>
         <h1 id="page-title" class="page__title">What we keep, and why</h1>
       </div>
-      <p class="page__note">The short version: a random id for your device, your game, and your email only if you sign in. Updated ${PRIVACY_UPDATED}.</p>
-${privacySections
-  .map(
-    ([title, paras], i) => `      <section class="window prose" aria-labelledby="privacy-${i}">
-        <h2 id="privacy-${i}" class="page__h2">${esc(title)}</h2>
-${paras.map((p) => `        <p>${p}</p>`).join("\n")}
-      </section>`,
-  )
-  .join("\n")}
+      <p class="page__note">The short version: a random id for your device, your game, and your email only if you sign in. Updated ${LEGAL_UPDATED}.</p>
+${sectionsHtml("privacy", privacySections)}
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
 });
 
@@ -349,8 +475,10 @@ rmSync(join(root, "public", "destinations"), { recursive: true, force: true });
 out("content.css", css);
 out("how-to-play.html", howToPlay);
 out("privacy.html", privacy);
+out("terms.html", terms);
+out("contact.html", contact);
 milestones.forEach((m, i) => out(`milestones/${m.slug}.html`, factPage(m, i)));
 destinations.forEach((d) => out(`destinations/${d.destination}.html`, destinationPage(d)));
 console.log(
-  `build-pages: how-to-play, privacy + ${milestones.length} milestone pages + ${destinations.length} destination pages, content.css ${cssVersion}`,
+  `build-pages: how-to-play, privacy, terms, contact + ${milestones.length} milestone pages + ${destinations.length} destination pages, content.css ${cssVersion}`,
 );

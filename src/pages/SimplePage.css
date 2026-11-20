@@ -47,3 +47,13 @@
   font-size: 1.0625rem;
   color: var(--text-soft);
 }
+
+/* The legal links (phase 9a), small under the card's main link. */
+.launch__legal {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.launch__legal a {
+  color: var(--text-muted);
+}

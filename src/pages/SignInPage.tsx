@@ -162,7 +162,7 @@ function GuestForm({ crew }: { crew: number }) {
         </p>
       )}
       <p className="signin__small">
-        No password. We never post anything for you. <a href="/privacy">Privacy</a>
+        No password. We never post anything for you. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
       </p>
       <Link href="/" className="signin__guest">
         Keep playing as guest{crew > 0 && ` · Crew #${int(crew)}`}
@@ -344,7 +344,7 @@ function AccountView() {
         </p>
       )}
       <p className="signin__small">
-        <a href="/privacy">Privacy</a>
+        <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a>
       </p>
     </Frame>
   );

@@ -57,7 +57,7 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 
 ### 2. Email sign-in goes live (Claude Code, after step 1)
 - [ ] Add the `send_email` binding and `EMAIL_FROM` (see wrangler.jsonc), deploy, and test an email link on Nav's phone.
-- [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing).
+- [ ] **privacy@onesmallclick.io**: set up where it forwards (Cloudflare Email Routing). Then switch the privacy, terms and contact pages from naveessharma@gmail.com to it (`CONTACT_EMAIL` in scripts/build-pages.mjs; prompt 54).
 
 ### 3. 8d: Crew emails (added 20 Nov; after step 1, before launch)
 - [ ] **Set up the crew sender** (e.g. `crew@onesmallclick.io`), separate from the sign-in sender.

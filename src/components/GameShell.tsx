@@ -132,13 +132,25 @@ export function GameShell({ tab, children }: GameShellProps) {
 
           {children({ wide, openUpgrades })}
 
-          {!wide && (
+          {!wide ? (
             <footer className="game-foot">
               <Link href="/how-to-play">How to play</Link>
               <Link href="/log">Mission log</Link>
               <Link href="/profile">Profile</Link>
               <Link href="/sign-in">{player.account ? "Account" : "Sign in"}</Link>
               <ThemeLink />
+              {/* Phase 9a: the legal pages, linked from every page. */}
+              <span className="game-foot__legal">
+                <Link href="/privacy">Privacy</Link>
+                <Link href="/terms">Terms</Link>
+                <Link href="/contact">Contact</Link>
+              </span>
+            </footer>
+          ) : (
+            <footer className="game-foot game-foot--wide">
+              <Link href="/privacy">Privacy</Link>
+              <Link href="/terms">Terms</Link>
+              <Link href="/contact">Contact</Link>
             </footer>
           )}
         </div>

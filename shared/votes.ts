@@ -92,4 +92,4 @@ export interface LiveVote {
 /** What POST /api/vote answers. */
 export type VoteResult =
   | { ok: true; option: number; tallies: number[] }
-  | { ok: false; reason: "already-voted" | "closed" | "bot-check" | "no-device" | "unavailable"; option?: number };
+  | { ok: false; reason: "already-voted" | "closed" | "bot-check" | "busy-network" | "no-device" | "unavailable"; option?: number };

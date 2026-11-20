@@ -636,6 +636,13 @@ export async function ping() {
     case "bot-check":
       showToast({ tier: null, title: "Ping didn't go through", body: "The bot check failed. Please try again." });
       break;
+    case "busy-network":
+      showToast({
+        tier: null,
+        title: "Ping didn't go through",
+        body: "Lots of pings came from your network today, so we're holding more until 00:00 UTC.",
+      });
+      break;
     default:
       showToast({ tier: null, title: "Ping didn't go through", body: "We couldn't reach the probe. Please try again." });
   }
@@ -679,6 +686,13 @@ export async function castVote(index: number) {
       break;
     case "bot-check":
       showToast({ tier: null, title: "Vote didn't go through", body: "The bot check failed. Please try again." });
+      break;
+    case "busy-network":
+      showToast({
+        tier: null,
+        title: "Vote didn't go through",
+        body: "Lots of votes came from your network today, so we're holding more until 00:00 UTC.",
+      });
       break;
     default:
       showToast({ tier: null, title: "Vote didn't go through", body: "We couldn't reach the probe. Please try again." });

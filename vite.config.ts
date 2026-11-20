@@ -17,7 +17,7 @@ function contentPages(): Plugin {
       server.middlewares.use((request, _res, next) => {
         const req = request as unknown as { url?: string }; // no Node types in this config's tsconfig
         const [path, query] = (req.url ?? "").split("?");
-        if (/^\/(how-to-play|milestones\/[a-z0-9-]+|destinations\/[a-z0-9-]+)$/.test(path)) req.url = `${path}.html${query ? `?${query}` : ""}`;
+        if (/^\/(how-to-play|privacy|terms|contact|milestones\/[a-z0-9-]+|destinations\/[a-z0-9-]+)$/.test(path)) req.url = `${path}.html${query ? `?${query}` : ""}`;
         next();
       });
     },

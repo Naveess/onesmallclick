@@ -41,6 +41,57 @@ async function call(key: string, action: string, body?: object): Promise<AdminSt
   return data as AdminState;
 }
 
+interface NetworkReport {
+  cap: { ping: number; vote: number };
+  networks: number;
+  top: { net: string; pings: number; votes: number }[];
+}
+
+/** Today's busiest networks against the per-network cap (phase 9a). Hash prefixes only: no addresses. */
+function NetworkCap({ adminKey }: { adminKey: string }) {
+  const [report, setReport] = useState<NetworkReport | null>(null);
+  const [error, setError] = useState("");
+  const load = async () => {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/networks", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setReport((await res.json()) as NetworkReport);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, [adminKey]);
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-networks">
+      <h2 id="admin-networks" className="admin__h2">
+        Network cap · today
+      </h2>
+      <p className="admin__note">
+        Each network (an IPv4 address or an IPv6 /64, stored only as a daily hash) gets {report?.cap.ping ?? "…"} pings and{" "}
+        {report?.cap.vote ?? "…"} votes a day. Only ones that went through count. {report ? `${report.networks} networks so far today.` : ""}
+      </p>
+      {report && report.top.length > 0 && (
+        <ul className="admin__note">
+          {report.top.map((n) => (
+            <li key={n.net} className="num">
+              {n.net} · {n.pings} pings · {n.votes} votes
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <p className="admin__note">Couldn't load: {error}</p>}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={() => void load()}>
+          Refresh
+        </PixelButton>
+      </div>
+    </Window>
+  );
+}
+
 const when = (ms: number) => (ms ? new Date(ms).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "never");
 
 export function AdminPage() {
@@ -314,6 +365,8 @@ export function AdminPage() {
                 </PixelButton>
               </div>
             </Window>
+
+            <NetworkCap adminKey={key} />
 
             <Window
               as="form"

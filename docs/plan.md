@@ -21,7 +21,9 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46); migration 0010 applied and deployed by Claude at Nav's request (prompt 47, version 93ab7f08); checked by Nav on the live site and approved (prompt 48), mission reset afterwards.
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch; **waits for the payday setup**, see docs/todo.md "Payday"): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
   - [x] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; live (c6e1027f) and approved (prompt 52).
-- [ ] **Phase 9: Launch hardening, ads and legal pages**
+- [ ] **Phase 9: Launch hardening, ads and legal pages** (split in two, prompt 54)
+  - [ ] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **In progress**: see "Phase 9a status" below.
+  - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test, then the launch reset)
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
 - [ ] **E3: A content pipeline for each new leg**
@@ -633,6 +635,28 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Cost.** Workers Paid includes 3,000 emails a month, then about $0.35 per 1,000.
 
 ## Phase 9: Launch hardening, ads and legal pages
+
+**Phase 9a status (2026-11-20, prompts 53–54; IN PROGRESS, not deployed; migration 0011 not applied live)**
+
+Answers (prompt 54): split phase 9 into 9a (now) and 9b (after payday); the cap is 50 pings and 50 votes per network per day; the site is run by websitesbynavee.co.uk, contact naveessharma@gmail.com for now; anyone can play as a guest, under-13s ask a parent before signing in; Lighthouse runs with npx (not added to the project).
+
+Done and committed (checked locally where it says so):
+- **The per-network daily cap** (`shared/caps.ts`, `worker/caps.ts`, migration 0011 `network_caps`). Ping and vote check it before the bot check and count only the ones that go through; over the cap they're refused with "busy-network" and a toast ("Lots of pings came from your network today…"). The network is an IPv4 address or an IPv6 /64, kept only as an HMAC with the day (keyed from DEVICE_SECRET); rows before yesterday are deleted as new counts land. `/admin` has a "Network cap · today" card (`GET /api/admin/networks`: hash prefixes and counts only). **Checked:** a scripted run of 51 devices on one network passed all 9 checks (50 pings and 50 votes go through, the 51st of each is refused, only a 32-hex hash is stored, the /admin report, old days cleared); the IPv6 prefix was checked by hand.
+- **Terms and Contact pages** (`/terms`, `/contact`, plain HTML from `scripts/build-pages.mjs`), and the privacy page now names websitesbynavee.co.uk as the data controller, gives naveessharma@gmail.com instead of privacy@onesmallclick.io (not set up yet), explains the network cap, and has the under-13 line. **Checked:** all three build and load (200); not yet looked at in screenshots.
+- **Privacy · Terms · Contact linked from every page:** the content pages' footer, the game's phone footer (its own row) and a new small desktop footer, the sign-in screens and the "Lost signal" page. Not yet checked in screenshots.
+- **The crash screen** (`src/components/CrashScreen.tsx`): an error boundary around the app ("Something went wrong · Reload"), plus `POST /api/report`, which writes app crashes and up to 3 uncaught errors per page load to the Workers Logs (nothing stored). `/?crash` shows it in local dev only. Not yet checked in a browser.
+- **The load test script** (`scripts/load-test.mjs`): local by default, refuses the live site without `--live`. First result in docs/load-test.md.
+- **docs/launch-checklist.md:** the phone checklist for Nav, and what 9b must do before the launch reset.
+- `npm run build` passes.
+
+Still to do in 9a (in this order):
+1. **Finish the load test** (docs/load-test.md): find why about 1 in 20 tap batches waited about 3 s at 100 players (probably the probe's periodic save or D1 flush blocking it; locally D1 is slow, so check before changing anything), then the 500 and 1,000 stages, then 2,000 on its own (the first try at 2,000 hung the local dev server). Decide on relay objects from the numbers.
+2. **Monitoring:** write down where the logs are (Cloudflare dashboard → Workers → onesmallclick → Logs; search "network-cap", "app-crash"); Workers Logs are already on in wrangler.jsonc.
+3. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
+4. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
+5. Re-run the earlier scripted checks (auth, clicks, badges, arrival) and the cap test.
+6. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
+
 
 **Goal:** ready for real players.
 

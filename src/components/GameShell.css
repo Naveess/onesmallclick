@@ -198,6 +198,18 @@
   color: var(--text);
 }
 
+/* The legal links: their own row under the others on phones. */
+.game-foot__legal {
+  display: flex;
+  justify-content: center;
+  gap: 0 18px;
+  width: 100%;
+}
+
+.game-foot--wide {
+  padding-top: 0;
+}
+
 /* --- Phone tab bar --- */
 .tabbar {
   position: fixed;

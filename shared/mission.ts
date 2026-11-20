@@ -142,7 +142,7 @@ export type PingResult =
       setbackMs: number;
       pingStreakDays: number;
     }
-  | { ok: false; reason: "already-pinged" | "just-saved" | "bot-check" | "no-device" | "unavailable" };
+  | { ok: false; reason: "already-pinged" | "just-saved" | "bot-check" | "busy-network" | "no-device" | "unavailable" };
 
 /** Browser → server. */
 export type ClientMessage =

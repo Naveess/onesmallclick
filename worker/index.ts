@@ -11,6 +11,7 @@
 //   GET  /api/leaderboard     ?board=players|countries → today's top km and your row (worker/boards.ts)
 //   GET  /api/credits         ?mission=<id> → the mission credits for an arrived leg (phase 8c)
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
+//   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
@@ -20,12 +21,14 @@
 //   POST /api/admin/close-vote  }   (closes today's vote now; its effect applies)
 //   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
 //   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
+//   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
 
 import type { SessionInfo } from "../shared/account";
 import type { PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
 import { credits, leaderboard, profile } from "./boards";
+import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 
 export { Probe } from "./probe";
@@ -56,6 +59,7 @@ export default {
     if (path === "/api/leaderboard" && request.method === "GET") return leaderboard(request, env, url, await probe(env).boardDay());
     if (path === "/api/credits" && request.method === "GET") return credits(env, url);
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
+    if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
     if (path.startsWith("/api/auth/")) return auth(request, env, path.slice("/api/auth/".length), url);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
@@ -156,6 +160,9 @@ async function ping(request: Request, env: Env): Promise<Response> {
   const id = await readDevice(request, env.DEVICE_SECRET);
   if (!id) return fail("no-device", 401);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown };
+  // The per-network daily cap (phase 9a), before the bot check so a capped network doesn't cost a Turnstile call.
+  const ticket = await capCheck(request, env, "ping");
+  if (!ticket) return fail("busy-network", 429);
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "ping"))) {
     return fail("bot-check", 403);
   }
@@ -163,6 +170,7 @@ async function ping(request: Request, env: Env): Promise<Response> {
   const row = signedIn ? null : await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
   const name = signedIn?.account.name ?? row?.name ?? "a crew member";
   const result = await probe(env).ping(id, signedIn?.account.id ?? null, name);
+  if (result.ok) await capCount(env, ticket);
   return json(result);
 }
 
@@ -178,11 +186,40 @@ async function vote(request: Request, env: Env): Promise<Response> {
   if (!id) return fail("no-device", 401);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown; round?: unknown; option?: unknown };
   if (typeof body.round !== "string" || body.round.length > 20 || !Number.isInteger(body.option)) return fail("closed", 400);
+  const ticket = await capCheck(request, env, "vote");
+  if (!ticket) return fail("busy-network", 429);
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "vote"))) {
     return fail("bot-check", 403);
   }
   const signedIn = await readSession(request, env);
-  return json(await probe(env).castVote(id, signedIn?.account.id ?? null, body.round, body.option as number));
+  const result = await probe(env).castVote(id, signedIn?.account.id ?? null, body.round, body.option as number);
+  if (result.ok) await capCount(env, ticket);
+  return json(result);
+}
+
+/** A crash in the app (src/components/CrashScreen.tsx), logged for Workers Logs. Size-capped; nothing is stored. */
+async function crashReport(request: Request, url: URL): Promise<Response> {
+  const origin = request.headers.get("Origin");
+  if (origin && new URL(origin).host !== url.host) return new Response(null, { status: 403 });
+  const text = (await request.text()).slice(0, 4000);
+  let body: Record<string, unknown> = {};
+  try {
+    body = JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    // keep it empty
+  }
+  const field = (k: string, n: number) => (typeof body[k] === "string" ? (body[k] as string).slice(0, n) : "");
+  console.error(
+    JSON.stringify({
+      event: "app-crash",
+      message: field("message", 300),
+      path: field("path", 200),
+      stack: field("stack", 1200),
+      component: field("component", 600),
+      ua: (request.headers.get("User-Agent") ?? "").slice(0, 200),
+    }),
+  );
+  return new Response(null, { status: 204 });
 }
 
 const LOG_PAGE = 30;
@@ -232,6 +269,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
 
   const stub = probe(env);
   if (action === "state" && request.method === "GET") return json(await stub.adminState());
+  if (action === "networks" && request.method === "GET") return json(await capReport(env));
   if (request.method !== "POST") return json({ error: "Not found" }, 404);
 
   const body = (await request.json().catch(() => ({}))) as { km?: unknown; hours?: unknown };

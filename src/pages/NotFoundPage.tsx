@@ -19,6 +19,9 @@ export function NotFoundPage() {
             </h1>
             <p className="launch__lede">There's nothing at this address.</p>
             <a href="/">Back to OneSmallClick</a>
+            <p className="launch__legal">
+              <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a>
+            </p>
           </Window>
         </main>
       </div>
