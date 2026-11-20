@@ -179,6 +179,7 @@ export function ProfilePage() {
                 void share(
                   shareText({
                     missionDay: view.missionDay,
+                    destName: view.destName,
                     progress: view.progress,
                     kmToday: player.kmToday,
                     arrivalAt: view.arrivalAt,

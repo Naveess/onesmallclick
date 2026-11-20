@@ -85,6 +85,8 @@ export interface LiveVote {
   options: { id: string; label: string; votes: number }[];
   /** Server time it closes (00:00 UTC). */
   closesAt: number;
+  /** "branch" on arrival (phase 8c): the crew picks the next stop; option ids are "branch:<stop id>". */
+  kind?: "daily" | "branch";
 }
 
 /** What POST /api/vote answers. */

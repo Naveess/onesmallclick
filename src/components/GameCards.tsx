@@ -39,7 +39,32 @@ export function SafeChip() {
 /* ---------- Live arrival estimate ---------- */
 
 /** `arrivalAt` is null while the probe is paused for lack of players (decision 5): the date is on hold. */
-export function ArrivalEstimate({ arrivalAt, savedS, wide = false }: { arrivalAt: number | null; savedS: number; wide?: boolean }) {
+export function ArrivalEstimate({
+  arrivalAt,
+  savedS,
+  wide = false,
+  orbit = null,
+}: {
+  arrivalAt: number | null;
+  savedS: number;
+  wide?: boolean;
+  /** In orbit (phase 8c): when we arrived, and a way back to the credits. */
+  orbit?: { at: number; destName: string; onCredits: () => void } | null;
+}) {
+  if (orbit) {
+    return (
+      <section className={wide ? "arrival arrival--wide" : "arrival"} aria-labelledby="arrival-label">
+        <h2 id="arrival-label" className="arrival__label">
+          {orbit.destName} orbit reached
+        </h2>
+        <p className="arrival__lede">We made it. We arrived on</p>
+        <p className="arrival__date">{longDate(orbit.at)}</p>
+        <button type="button" className="arrival__credits" onClick={orbit.onCredits}>
+          Watch the credits again
+        </button>
+      </section>
+    );
+  }
   return (
     <section className={wide ? "arrival arrival--wide" : "arrival"} aria-labelledby="arrival-label">
       <h2 id="arrival-label" className="arrival__label">

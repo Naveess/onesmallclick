@@ -18,11 +18,12 @@ import {
 } from "../../shared/mission";
 import type { AccountInfo } from "../../shared/account";
 import { BADGE_INFO, type EarnedBadge } from "../../shared/badges";
-import type { ReachedMilestone } from "../../shared/milestones";
+import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
+import { stopName } from "../../shared/campaign";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
 import { request, startProbe, type Connection } from "./probeClient";
-import { MILESTONES, UPGRADES, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
+import { UPGRADES, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
 import { preloadTurnstile, turnstileToken } from "./turnstile";
 
 // The game's state for the screens.
@@ -44,6 +45,12 @@ export type VoteOption = LiveVote["options"][number];
 /** Shared by everyone. */
 export interface ProbeState {
   missionStartedAt: number; // epoch ms, server clock
+  /** This leg of the Grand Tour (phase 8c): content/campaign.json ids. */
+  stop: string;
+  fromStop: string;
+  /** When the probe reached `stop` (it's in orbit, waiting for the branch vote), or null on the way. */
+  arrivedAt: number | null;
+  lastArrival: { missionId: number; stop: string; at: number } | null;
   /** The route, including setbacks already made permanent. */
   routeKm: number;
   /** What to show: the server's distance, plus coasting and auto-thrust since, plus this device's taps not yet credited. */
@@ -137,6 +144,8 @@ export interface GameState {
   welcome: WelcomeBack | null;
   /** A milestone moment (1e) to show: the newest milestone this browser hasn't seen yet. */
   moment: ReachedMilestone | null;
+  /** The arrival screen (1k) to show: the latest arrival this browser hasn't seen yet, or one reopened from the home. */
+  arrival: { missionId: number; stop: string; at: number } | null;
 }
 
 /** Test switches, from the URL: ?crew=handful  ?ads=off */
@@ -228,6 +237,10 @@ function initialState(): GameState {
     ready: server !== null,
     probe: {
       missionStartedAt: server?.missionStartedAt ?? now,
+      stop: server?.stop ?? "mars",
+      fromStop: server?.fromStop ?? "earth",
+      arrivedAt: server?.arrivedAt ?? null,
+      lastArrival: server?.lastArrival ?? null,
       routeKm: server?.routeKm ?? ROUTE_KM,
       distanceKm: server ? distanceAt(server, now) : 0,
       coastKmS: server?.coastKmS ?? COAST_KM_S,
@@ -272,6 +285,7 @@ function initialState(): GameState {
     toast: null,
     welcome: null,
     moment: null,
+    arrival: null,
   };
 }
 
@@ -302,6 +316,10 @@ function compose(base: GameState, connection = base.connection): GameState {
       ...base.probe,
       ...(p && {
         missionStartedAt: p.missionStartedAt,
+        stop: p.stop ?? "mars",
+        fromStop: p.fromStop ?? "earth",
+        arrivedAt: p.arrivedAt ?? null,
+        lastArrival: p.lastArrival ?? null,
         routeKm: p.routeKm,
         distanceKm: Math.min(p.routeKm, distanceAt(p, now) + optimisticKm * (p.crewFactor ?? 1)),
         coastKmS: p.coastKmS,
@@ -383,7 +401,7 @@ function onMessage(msg: ServerMessage) {
   if (msg.t === "credited") inFlight.delete(msg.seq);
   if (msg.t !== "me") {
     server = msg.probe;
-    next = withMoment(next, msg.probe);
+    next = withArrival(withMoment(next, msg.probe), msg.probe);
   }
   if (msg.t === "hello" || msg.t === "state") writeCache(msg.probe);
   set(compose(next));
@@ -424,6 +442,46 @@ function withMoment(s: GameState, p: ProbeSnapshot): GameState {
   }
   if (top && top.n > seen && (!s.moment || s.moment.n < top.n)) return { ...s, moment: top };
   return s;
+}
+
+// --- The arrival screen: each browser sees each arrival once (within a few days of it) ---
+
+const ARRIVAL_KEY = "osc.arrivalSeen";
+const ARRIVAL_SHOW_MS = 3 * DAY_MS;
+let arrivalSeenInMemory = 0;
+
+function readArrivalSeen(): number {
+  try {
+    return Number(localStorage.getItem(ARRIVAL_KEY) ?? 0) || arrivalSeenInMemory;
+  } catch {
+    return arrivalSeenInMemory;
+  }
+}
+
+function withArrival(s: GameState, p: ProbeSnapshot): GameState {
+  const a = p.lastArrival;
+  if (!a || s.arrival || a.missionId <= readArrivalSeen()) return s;
+  if (p.at - a.at > ARRIVAL_SHOW_MS) return s; // long ago: it's in the log
+  return { ...s, arrival: a };
+}
+
+/** Closes the arrival screen; it won't open by itself again. */
+export function dismissArrival() {
+  const a = state.arrival;
+  if (!a) return;
+  arrivalSeenInMemory = Math.max(arrivalSeenInMemory, a.missionId);
+  try {
+    localStorage.setItem(ARRIVAL_KEY, String(Math.max(readArrivalSeen(), a.missionId)));
+  } catch {
+    // fine: remembered for this visit
+  }
+  set({ ...state, arrival: null });
+}
+
+/** "Watch the credits again" from the home. */
+export function openArrival() {
+  const a = state.probe.lastArrival;
+  if (a) set({ ...state, arrival: a });
 }
 
 /** "Keep flying": this milestone (and any before it) is seen. */
@@ -672,7 +730,7 @@ function derive({ now, probe, player }: GameState) {
   const pace = Math.max(1, probe.paceKmS);
   const toGoKm = Math.max(0, probe.routeKm - probe.distanceKm);
   const signalLeftS = safe ? 0 : Math.max(0, (probe.signalDeadline - clock) / 1000);
-  const next = MILESTONES.find((m) => m.km > probe.distanceKm) ?? null;
+  const next = milestonesFor(probe.stop).find((m) => m.km > probe.distanceKm) ?? null;
   const upgrades = UPGRADES.map((def) => {
     const level = player.levels[def.key];
     const cost = upgradeCost(def.key, level);
@@ -692,6 +750,11 @@ function derive({ now, probe, player }: GameState) {
     safe,
     /** The probe is waiting for a tap (decision 5). */
     paused,
+    /** In orbit at this leg's stop, waiting for the branch vote (phase 8c). */
+    orbit: probe.arrivedAt !== null,
+    /** This leg's destination and start, by name. */
+    destName: stopName(probe.stop),
+    fromName: stopName(probe.fromStop),
     /** Safe mode: how long ago the signal was lost, and the arrival date before this outage. */
     quietS: safe ? Math.max(0, (now - probe.safeSince!) / 1000) : 0,
     setbackMs: setback,

@@ -5,21 +5,16 @@ import {
   EARTH_RADII,
   FLAME,
   MARS_RADII,
-  ceresArt,
-  ceresSwatch,
   cometArt,
-  earthArt,
+  destinationArt,
   flameArt,
-  jupiterArt,
-  marsArt,
   miniProbeArt,
   phobosArt,
   stepDown,
   stepUp,
   streaksArt,
-  vestaArt,
-  vestaSwatch,
 } from "../game/flightArt";
+import { nextStop, stop as campaignStop, stopName } from "../../shared/campaign";
 import type { Milestone } from "../game/rules";
 import { SPRITES, STILLS } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
@@ -60,6 +55,11 @@ interface FlightViewProps {
   signalLeftS: number;
   /** The idle pause: nobody is tapping, so the probe waits (decision 5). */
   paused: boolean;
+  /** This leg of the Grand Tour (phase 8c): where it's heading and where it started. */
+  stop?: string;
+  fromStop?: string;
+  /** In orbit at `stop`, waiting for the branch vote. */
+  orbit?: boolean;
   handle?: Ref<FlightHandle>;
 }
 
@@ -101,6 +101,9 @@ export function FlightView({
   urgent,
   signalLeftS,
   paused,
+  stop = "mars",
+  fromStop = "earth",
+  orbit = false,
   handle,
 }: FlightViewProps) {
   const [ref, measured] = useWidth<HTMLDivElement>();
@@ -158,16 +161,19 @@ export function FlightView({
   const ahead: number[] = [];
   for (let x = px + 40; x < mx - mR - 8; x += 12) ahead.push(x);
 
-  const far = wide
-    ? [
-        { img: ceresArt(), w: 16, h: 16, x: W - 64, y: 50, label: "Ceres?" },
-        { img: vestaArt(), w: 16, h: 14, x: W - 30, y: 96, label: "Vesta?" },
-        { img: jupiterArt(), w: 16, h: 16, x: W - 190, y: 44, label: "Jupiter" },
-      ]
-    : [
-        { img: ceresArt(), w: 16, h: 16, x: W - 64, y: 44, label: "Ceres?" },
-        { img: vestaArt(), w: 16, h: 14, x: W - 26, y: 74, label: "Vesta?" },
-      ];
+  // Where this leg goes, and what's beyond it (content/campaign.json): the two branches voted on at the
+  // destination, or the one stop that follows it.
+  const destName = stopName(stop);
+  const fromName = stopName(fromStop);
+  const beyond = campaignStop(stop)?.branchVote ?? (nextStop(stop) ? [nextStop(stop)!.id] : []);
+  const fork = beyond.length === 2;
+  const further = beyond[0] ? nextStop(beyond[0]) : undefined;
+  const small = (id: string) => destinationArt(id, 7); // 16×16
+  const far = [
+    ...(beyond[0] ? [{ id: beyond[0], x: W - 64, y: wide ? 50 : 44, label: fork ? `${stopName(beyond[0])}?` : stopName(beyond[0]) }] : []),
+    ...(fork ? [{ id: beyond[1], x: W - (wide ? 30 : 26), y: wide ? 96 : 74, label: `${stopName(beyond[1])}?` }] : []),
+    ...(wide && further ? [{ id: further.id, x: W - 190, y: 44, label: further.name }] : []),
+  ].map((b) => ({ ...b, img: small(b.id), w: 16, h: 16 }));
 
   // The route strip along the bottom: Earth, the probe, Mars, then the fork to Ceres or Vesta.
   const SW = W - 24;
@@ -189,7 +195,9 @@ export function FlightView({
         ref={ref}
         className={classes}
         role="img"
-        aria-label={`Flight view: the probe is ${pct} of the way to Mars, moving at ${speed} km per second; after Mars the crew votes Ceres or Vesta`}
+        aria-label={`Flight view: the probe is ${pct} of the way to ${destName}, moving at ${speed} km per second${
+          fork ? `; at ${destName} the crew votes ${stopName(beyond[0])} or ${stopName(beyond[1])}` : ""
+        }`}
       >
         <div className="flight__stars flight__stars--far" />
         <div className="flight__stars flight__stars--near" />
@@ -230,13 +238,13 @@ export function FlightView({
         ))}
 
         <span className="flight__mars-glow" style={at(mx - mR - 12, cy - mR - 12, { width: mS + 22, height: mS + 22 })} />
-        <img className="flight__planet" src={marsArt(mR)} alt="" width={mS} height={mS} style={at(mx - mR - 1, cy - mR - 1)} />
-        {f > 0.85 && (
+        <img className="flight__planet" src={destinationArt(stop, mR)} alt="" width={mS} height={mS} style={at(mx - mR - 1, cy - mR - 1)} />
+        {stop === "mars" && f > 0.85 && (
           <img className="flight__phobos" src={phobosArt()} alt="" width={6} height={4} style={at(mx - mR - 14, cy - Math.round(mR * 0.7))} />
         )}
         <img
           className="flight__planet flight__earth"
-          src={earthArt(eR)}
+          src={destinationArt(fromStop, eR)}
           alt=""
           width={eS}
           height={eS}
@@ -319,6 +327,10 @@ export function FlightView({
           <div className="flight__chip flight__chip--safe">
             SAFE MODE · ENGINE OFF<span>Drifting. Ping to wake the probe.</span>
           </div>
+        ) : orbit ? (
+          <div className="flight__chip flight__chip--idle">
+            IN {destName.toUpperCase()} ORBIT<span>The crew is voting on where next.</span>
+          </div>
         ) : urgent ? (
           <div className="flight__chip flight__chip--low">
             SIGNAL <span className="flight__chip-num">{hms(signalLeftS)}</span> · PING NOW
@@ -334,7 +346,7 @@ export function FlightView({
             <span className="flight__info-num">{int(online)}</span> crew pushing
           </span>
           <span>
-            Mars looks <span className="flight__info-num flight__info-num--orange">{(mR / mR0).toFixed(1)}×</span> bigger than at launch
+            {destName} looks <span className="flight__info-num flight__info-num--orange">{(mR / mR0).toFixed(1)}×</span> bigger than at launch
           </span>
         </div>
 
@@ -356,21 +368,33 @@ export function FlightView({
               ))}
             <img className="flight__mini" src={miniProbeArt()} alt="" width={24} height={10} style={at(xp - 12, 9)} />
             <span className="flight__mars-dot" style={at(xm - 5, 9)} />
-            <span className="flight__dash" style={at(xm + 5, 13, { width: xk - xm - 5 })} />
-            <span className="flight__fork" style={at(xk, 2)} />
-            <span className="flight__dash" style={at(xk, 2, { width: xf - xk })} />
-            <span className="flight__dash" style={at(xk, 24, { width: xf - xk })} />
-            <span className="flight__branch" style={at(xf, -1)}>
-              <img src={ceresSwatch()} alt="" width={8} height={8} />
-              Ceres
-            </span>
-            <span className="flight__branch" style={at(xf, 21)}>
-              <img src={vestaSwatch()} alt="" width={8} height={8} />
-              Vesta
-            </span>
+            {fork ? (
+              <>
+                <span className="flight__dash" style={at(xm + 5, 13, { width: xk - xm - 5 })} />
+                <span className="flight__fork" style={at(xk, 2)} />
+                <span className="flight__dash" style={at(xk, 2, { width: xf - xk })} />
+                <span className="flight__dash" style={at(xk, 24, { width: xf - xk })} />
+                {beyond.map((id, i) => (
+                  <span key={id} className="flight__branch" style={at(xf, i === 0 ? -1 : 21)}>
+                    <img src={destinationArt(id, 3)} alt="" width={8} height={8} />
+                    {stopName(id)}
+                  </span>
+                ))}
+              </>
+            ) : beyond[0] ? (
+              <>
+                <span className="flight__dash" style={at(xm + 5, 13, { width: xf - xm - 5 })} />
+                <span className="flight__branch" style={at(xf, 10)}>
+                  <img src={destinationArt(beyond[0], 3)} alt="" width={8} height={8} />
+                  {stopName(beyond[0])}
+                </span>
+              </>
+            ) : null}
           </div>
-          <span className="flight__strip-label">EARTH</span>
-          <span className="flight__strip-label flight__strip-label--vote">CREW VOTE AT MARS</span>
+          <span className="flight__strip-label">{fromName.toUpperCase()}</span>
+          <span className="flight__strip-label flight__strip-label--vote">
+            {fork ? `CREW VOTE AT ${destName.toUpperCase()}` : `ON TO ${destName.toUpperCase()}`}
+          </span>
         </div>
       </div>
 

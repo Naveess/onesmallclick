@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
-import { buyUpgrade, dismissMoment, dismissWelcome, handOver, useGame } from "../game/store";
+import { buyUpgrade, dismissArrival, dismissMoment, dismissWelcome, handOver, useGame } from "../game/store";
+import { ArrivalScreen } from "./ArrivalScreen";
 import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
@@ -25,7 +26,7 @@ interface GameShellProps {
 export function GameShell({ tab, children }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
-  const { probe, player, view, toast, welcome, moment, connection, now } = useGame();
+  const { probe, player, view, toast, welcome, moment, arrival, connection, now } = useGame();
   const safe = view.safe;
   const openUpgrades = () => setUpgradesOpen(true);
 
@@ -42,6 +43,20 @@ export function GameShell({ tab, children }: GameShellProps) {
     );
   }
 
+  if (arrival) {
+    return (
+      <>
+        <Sky fixed milestone />
+        <div className={wide ? "game game--wide" : "game"}>
+          <div className="game__main">
+            <ArrivalScreen arrival={arrival} wide={wide} onClose={dismissArrival} />
+          </div>
+        </div>
+        <Toast toast={toast} wide={wide} />
+      </>
+    );
+  }
+
   if (moment) {
     return (
       <>
@@ -54,6 +69,7 @@ export function GameShell({ tab, children }: GameShellProps) {
               missionDay={view.missionDayAt(moment.at)}
               today={{
                 missionDay: view.missionDay,
+                destName: view.destName,
                 progress: view.progress,
                 kmToday: player.kmToday,
                 arrivalAt: view.arrivalAt,

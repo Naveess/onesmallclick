@@ -41,3 +41,19 @@ export interface ProfileInfo {
 
 /** How many players the Players board lists. */
 export const BOARD_TOP = 50;
+
+/** The mission credits for one leg (phase 8c): GET /api/credits?mission=<id>. */
+export interface CreditsInfo {
+  missionId: number;
+  stop: string;
+  fromStop: string;
+  startedAt: number;
+  arrivedAt: number;
+  /** Everyone who helped (at least one credited tap), guests included. */
+  crew: number;
+  taps: number;
+  /** Signed-in crew who helped, most km first: every name (prompt 46). */
+  names: { name: string; cc: string | null; km: number }[];
+  /** Guests who helped, counted but not named. */
+  guests: number;
+}

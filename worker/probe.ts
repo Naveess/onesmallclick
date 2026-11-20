@@ -13,7 +13,6 @@ import {
   SIGNAL_URGENT_S,
   SIGNAL_WINDOW_MS,
   arrivalAt,
-  crewFactor,
   distanceAt,
   probeClock,
   setbackMs,
@@ -26,7 +25,18 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
 } from "../shared/mission";
-import { TODAY_PACE_MIN_MS, TODAY_PACE_MS } from "../shared/balance";
+import { CREW_HALF_KM_S, CREW_TOP_KM_S, TODAY_PACE_MIN_MS, TODAY_PACE_MS } from "../shared/balance";
+import {
+  BRANCH_PREFIX,
+  FIRST_STOP,
+  START_STOP,
+  branchStopId,
+  legKm,
+  nextStop,
+  probeFor,
+  stop as campaignStop,
+  stopName,
+} from "../shared/campaign";
 import {
   MAX_LEVEL,
   OFFLINE_CAP_MS,
@@ -42,7 +52,7 @@ import {
   type UpgradeLevels,
   type WelcomeBack,
 } from "../shared/upgrades";
-import { MILESTONES, type ReachedMilestone } from "../shared/milestones";
+import { MILESTONES, milestonesFor, type ReachedMilestone } from "../shared/milestones";
 import { CLICK_BADGES } from "../shared/clicks";
 import {
   CLICK_BADGE_IDS,
@@ -103,6 +113,15 @@ const TRACK_EVERY_MS = 10 * MINUTE_MS;
 interface Mission {
   id: number;
   destination: string;
+  /** This leg of the Grand Tour (phase 8c): its destination and start (content/campaign.json ids). */
+  stop: string;
+  fromStop: string;
+  /** The leg's length before setbacks and votes. Coasting and the crew's top speed scale with it. */
+  legKm: number;
+  /** The crew balance for this leg (CREW_HALF_KM_S, recalibrated at each launch). */
+  crewHalf: number;
+  /** When the probe reached `stop` (it waits in orbit for the branch vote), or null on the way. */
+  arrivedAt: number | null;
   /** Grows with each safe-mode setback (decision: the probe drifted off course). */
   routeKm: number;
   startedAt: number;
@@ -224,6 +243,11 @@ type MissionRow = {
   moved_ms: number | null;
   last_active_at: number | null;
   paused_since: number | null;
+  stop: string | null;
+  from_stop: string | null;
+  leg_km: number | null;
+  crew_half: number | null;
+  arrived_at: number | null;
 };
 
 /** One sample of the probe's track, for today's pace. */
@@ -280,6 +304,10 @@ export class Probe extends DurableObject<Env> {
   private vote!: VoteRound;
   /** Set while a round is being closed, so two callers can't close it twice. */
   private closingVote: Promise<void> | null = null;
+  /** An arrival is being handled (crediting the crew awaits D1). */
+  private arriving = false;
+  /** The latest arrival this tour (kept in meta; the launch reset clears it). */
+  private lastArrival: { missionId: number; stop: string; at: number } | null = null;
   private lastLogId = 0;
   /** Milestones the current mission has reached. */
   private reached: ReachedMilestone[] = [];
@@ -337,10 +365,22 @@ export class Probe extends DurableObject<Env> {
       ["moved_ms", "REAL"],
       ["last_active_at", "INTEGER"],
       ["paused_since", "INTEGER"],
+      ["stop", "TEXT"],
+      ["from_stop", "TEXT"],
+      ["leg_km", "REAL"],
+      ["crew_half", "REAL"],
+      ["arrived_at", "INTEGER"],
     ]) {
       if (!cols.has(col)) this.sql.exec(`ALTER TABLE mission ADD COLUMN ${col} ${type}`);
     }
 
+    const lastId = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'last_arrival_mission'`).toArray()[0]?.value;
+    if (lastId !== undefined) {
+      const r = this.sql
+        .exec<{ id: number; stop: string | null; arrived_at: number | null }>(`SELECT id, stop, arrived_at FROM mission WHERE id = ?`, lastId)
+        .toArray()[0];
+      if (r?.arrived_at) this.lastArrival = { missionId: r.id, stop: r.stop ?? FIRST_STOP, at: r.arrived_at };
+    }
     const offset = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'clock_offset_ms'`).toArray()[0];
     this.clockOffsetMs = offset?.value ?? 0;
 
@@ -362,6 +402,12 @@ export class Probe extends DurableObject<Env> {
         movedMs: row.moved_ms ?? Math.max(0, row.at - row.started_at),
         lastActiveAt: row.last_active_at ?? this.now(),
         pausedSince: row.paused_since,
+        // Missions from before 8c were all Earth → Mars.
+        stop: row.stop ?? FIRST_STOP,
+        fromStop: row.from_stop ?? START_STOP,
+        legKm: row.leg_km ?? ROUTE_KM,
+        crewHalf: row.crew_half ?? CREW_HALF_KM_S,
+        arrivedAt: row.arrived_at,
       };
       if (row.signal_deadline === null || row.moved_ms === null) this.saveSignal();
     } else {
@@ -409,12 +455,23 @@ export class Probe extends DurableObject<Env> {
     await this.scheduleAlarm();
   }
 
-  private async startMission(id: number) {
+  /** A new leg: Earth → Mars unless told otherwise (the launch reset, or a fresh object). */
+  private async startMission(
+    id: number,
+    leg: { stop: string; fromStop: string; legKm: number; crewHalf: number } = {
+      stop: FIRST_STOP,
+      fromStop: START_STOP,
+      legKm: ROUTE_KM,
+      crewHalf: CREW_HALF_KM_S,
+    },
+  ) {
     const now = this.now();
     this.mission = {
       id,
-      destination: "Mars",
-      routeKm: ROUTE_KM,
+      destination: stopName(leg.stop),
+      ...leg,
+      arrivedAt: null,
+      routeKm: leg.legKm,
       startedAt: now,
       distanceKm: 0,
       at: now,
@@ -434,8 +491,8 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     this.sql.exec(
       `INSERT OR REPLACE INTO mission (id, destination, route_km, started_at, distance_km, at, signal_deadline, safe_since, auto_kms,
-         moved_ms, last_active_at, paused_since)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL)`,
+         moved_ms, last_active_at, paused_since, stop, from_stop, leg_km, crew_half, arrived_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, NULL, ?, ?, ?, ?, NULL)`,
       m.id,
       m.destination,
       m.routeKm,
@@ -446,12 +503,20 @@ export class Probe extends DurableObject<Env> {
       null,
       0,
       now,
+      m.stop,
+      m.fromStop,
+      m.legKm,
+      m.crewHalf,
     );
     try {
       await this.env.DB.prepare(
-        `INSERT OR IGNORE INTO missions (id, destination, route_km, started_at) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO missions (id, destination, route_km, started_at, stop, from_stop, leg_km, crew_half)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (id) DO UPDATE SET destination = excluded.destination, route_km = excluded.route_km,
+           started_at = excluded.started_at, arrived_at = NULL, stop = excluded.stop, from_stop = excluded.from_stop,
+           leg_km = excluded.leg_km, crew_half = excluded.crew_half, crew_count = NULL, taps = NULL, branch = NULL`,
       )
-        .bind(id, m.destination, m.routeKm, now)
+        .bind(id, m.destination, m.routeKm, now, m.stop, m.fromStop, m.legKm, m.crewHalf)
         .run();
     } catch (err) {
       console.error("missions insert failed", err);
@@ -494,7 +559,7 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     this.sql.exec(
       `UPDATE mission SET route_km = ?, distance_km = ?, at = ?, auto_kms = ?, signal_deadline = ?, safe_since = ?,
-         last_safe_from = ?, last_safe_to = ?, moved_ms = ?, last_active_at = ?, paused_since = ? WHERE id = ?`,
+         last_safe_from = ?, last_safe_to = ?, moved_ms = ?, last_active_at = ?, paused_since = ?, arrived_at = ? WHERE id = ?`,
       m.routeKm,
       m.distanceKm,
       m.at,
@@ -506,6 +571,7 @@ export class Probe extends DurableObject<Env> {
       m.movedMs,
       m.lastActiveAt,
       m.pausedSince,
+      m.arrivedAt,
       m.id,
     );
     this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('clock_offset_ms', ?)`, this.clockOffsetMs);
@@ -610,11 +676,21 @@ export class Probe extends DurableObject<Env> {
     return Date.now() + this.clockOffsetMs;
   }
 
-  /** The probe's motion: coasting plus connected auto-thrust, or nothing at all while it's paused. */
+  /** This leg's length as a share of Earth → Mars. Coasting and the crew's top speed scale with it, so a leg of
+   * any length takes about as long for the same crowd; your km per tap and credits don't change (phase 8c, E0). */
+  private legScale(): number {
+    return this.mission.legKm / ROUTE_KM;
+  }
+
+  private coastKmS(): number {
+    return COAST_KM_S * this.legScale();
+  }
+
+  /** The probe's motion: coasting plus connected auto-thrust, or nothing at all while it's paused (or in orbit). */
   private moving() {
     const m = this.mission;
     const paused = m.pausedSince !== null;
-    return { ...m, coastKmS: paused ? 0 : COAST_KM_S, autoKmS: paused ? 0 : m.autoKmS };
+    return { ...m, coastKmS: paused ? 0 : this.coastKmS(), autoKmS: paused ? 0 : m.autoKmS };
   }
 
   private snapshot(now: number): ProbeSnapshot {
@@ -626,6 +702,10 @@ export class Probe extends DurableObject<Env> {
     return {
       missionId: m.id,
       destination: m.destination,
+      stop: m.stop,
+      fromStop: m.fromStop,
+      arrivedAt: m.arrivedAt,
+      lastArrival: this.lastArrival,
       missionStartedAt: m.startedAt,
       routeKm: m.routeKm,
       distanceKm: distanceAt(moving, now),
@@ -649,12 +729,22 @@ export class Probe extends DurableObject<Env> {
 
   private liveVote(): LiveVote {
     const v = this.vote;
+    const branch = this.isBranch();
     return {
       round: v.round,
-      question: VOTE_QUESTION,
-      options: v.ids.map((id, i) => ({ id, label: voteOption(id)?.label ?? id, votes: v.tallies[i] ?? 0 })),
+      question: branch ? "Where next? The route splits" : VOTE_QUESTION,
+      options: v.ids.map((id, i) => {
+        const to = branchStopId(id);
+        return { id, label: to ? stopName(to) : (voteOption(id)?.label ?? id), votes: v.tallies[i] ?? 0 };
+      }),
       closesAt: v.closesAt,
+      kind: branch ? "branch" : "daily",
     };
+  }
+
+  /** The open round is a branch vote (on arrival at a stop with two ways on). */
+  private isBranch(): boolean {
+    return this.vote.ids.some((id) => branchStopId(id) !== null);
   }
 
   /** Moves the stored distance and moving time up to `t` (never backwards), so km can be added on top. */
@@ -703,7 +793,7 @@ export class Probe extends DurableObject<Env> {
     if (s && moved - s.movedMs >= TODAY_PACE_MIN_MS) {
       return Math.max(1, (distanceAt(this.moving(), now) - s.distanceKm) / ((moved - s.movedMs) / 1000));
     }
-    return COAST_KM_S + this.tapPaceKmS(now, PACE_WINDOW_MIN) * this.factor(now) + this.mission.autoKmS;
+    return this.coastKmS() + this.tapPaceKmS(now, PACE_WINDOW_MIN) * this.factor(now) + this.mission.autoKmS;
   }
 
   /** The arrival estimate at today's pace (null while paused). */
@@ -737,7 +827,9 @@ export class Probe extends DurableObject<Env> {
 
   /** How far each crew km moves the probe right now: last hour's taps and catch-ups plus everyone connected's auto-thrust, balanced. */
   private factor(now: number, except?: WebSocket): number {
-    return crewFactor(this.hourKmS(now) + this.autoRaw(except));
+    // shared/balance.ts's crewFactor, with this leg's top speed (scaled to its length) and its recalibrated balance.
+    const raw = this.hourKmS(now) + this.autoRaw(except);
+    return (CREW_TOP_KM_S * this.legScale()) / (Math.max(0, raw) + this.mission.crewHalf);
   }
 
   /** Open, live sockets' players and their raw auto-thrust (several tabs, or two devices on one account, count once). */
@@ -852,11 +944,18 @@ export class Probe extends DurableObject<Env> {
       const pauseAt = this.pausesAt();
       if (pauseAt !== null) at = Math.min(at, pauseAt);
       // When the probe reaches the next milestone without help (rounded up to the minute, so taps don't rewrite it).
-      const next = MILESTONES.find((ms) => !this.reached.some((r) => r.n === ms.n));
+      const next = milestonesFor(m.stop).find((ms) => !this.reached.some((r) => r.n === ms.n));
       if (next) {
         const now = this.now();
         const left = next.km - distanceAt(this.moving(), now);
-        const reach = left <= 0 ? now : now + (left / (COAST_KM_S + m.autoKmS)) * 1000;
+        const reach = left <= 0 ? now : now + (left / (this.coastKmS() + m.autoKmS)) * 1000;
+        at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
+      }
+      // When the probe arrives without help (phase 8c).
+      if (m.arrivedAt === null) {
+        const now = this.now();
+        const left = m.routeKm - distanceAt(this.moving(), now);
+        const reach = left <= 0 ? now : now + (left / (this.coastKmS() + m.autoKmS)) * 1000;
         at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
       }
     }
@@ -930,7 +1029,7 @@ export class Probe extends DurableObject<Env> {
   private async wake(deviceId: string, now: number) {
     const m = this.mission;
     m.lastActiveAt = Math.max(m.lastActiveAt, now);
-    if (m.pausedSince === null) return;
+    if (m.pausedSince === null || m.arrivedAt !== null) return; // in orbit the probe waits for the branch vote
     const pausedMs = Math.max(0, now - m.pausedSince);
     // The signal and any setback waited with the probe.
     if (m.safeSince !== null) m.safeSince += pausedMs;
@@ -1048,9 +1147,15 @@ export class Probe extends DurableObject<Env> {
 
   /** Records any milestone the probe has passed: everyone connected gets the moment, and it goes in the log. */
   private async checkMilestones() {
+    await this.checkReached();
+    await this.checkArrival();
+  }
+
+  /** Milestones on this leg the probe has passed (only Earth → Mars has them so far). */
+  private async checkReached() {
     const now = this.now();
     const d = distanceAt(this.moving(), now);
-    const fresh = MILESTONES.filter((ms) => ms.km <= d && !this.reached.some((r) => r.n === ms.n));
+    const fresh = milestonesFor(this.mission.stop).filter((ms) => ms.km <= d && !this.reached.some((r) => r.n === ms.n));
     if (fresh.length === 0) return;
     const m = this.mission;
     for (const ms of fresh) {
@@ -1151,6 +1256,192 @@ export class Probe extends DurableObject<Env> {
     }
   }
 
+
+  // ---------- Arrival and the next leg (phase 8c) ----------
+
+  /** When the probe reached the end of the route: now, or earlier if the alarm was late. */
+  private reachedAt(now: number): number {
+    const m = this.mission;
+    const speed = m.pausedSince === null ? this.coastKmS() + m.autoKmS : 0;
+    if (speed <= 0) return now;
+    return Math.min(now, Math.max(m.at, m.at + ((m.routeKm - m.distanceKm) / speed) * 1000));
+  }
+
+  /** The probe reached this leg's stop: it goes into orbit, the crew is credited, and the branch vote opens. */
+  private async checkArrival() {
+    const m = this.mission;
+    if (m.arrivedAt !== null || this.arriving) return;
+    const now = this.now();
+    if (distanceAt(this.moving(), now) < m.routeKm) return;
+    this.arriving = true;
+    try {
+      await this.arrive(this.reachedAt(now));
+    } finally {
+      this.arriving = false;
+    }
+  }
+
+  private async arrive(at: number) {
+    const m = this.mission;
+    this.rebase(at);
+    m.distanceKm = m.routeKm;
+    m.arrivedAt = at;
+    // In orbit: the probe, the signal timer and any setback wait (like the idle pause), and taps don't wake it.
+    m.pausedSince = at;
+    m.autoKmS = 0;
+    this.saveSignal();
+    this.lastArrival = { missionId: m.id, stop: m.stop, at };
+    this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('last_arrival_mission', ?)`, m.id);
+    this.broadcast();
+    const crew = await this.creditCrew(at);
+    const day = Math.max(1, Math.ceil((at - m.startedAt) / DAY_MS));
+    await this.log(
+      "arrival",
+      `Arrived at ${stopName(m.stop)}`,
+      `Day ${day}. ${gb.format(crew.count)} crew pushed us here with ${gb.format(crew.taps)} taps.`,
+      { stop: m.stop, from: m.fromStop, days: (at - m.startedAt) / DAY_MS, crew: crew.count, taps: crew.taps },
+    );
+    const here = campaignStop(m.stop);
+    const now = this.now();
+    if (here?.branchVote?.length === 2) {
+      await this.abandonVote(now); // today's daily vote gives way to the branch vote
+      await this.openBranchVote(now, here.branchVote);
+    } else {
+      await this.launchNext(nextStop(m.stop)?.id ?? null, now);
+    }
+    await this.scheduleAlarm();
+    this.broadcast();
+  }
+
+  /** Snapshots who helped on this leg (at least one credited tap) into D1's mission_crew: the credits, and E4b's stamps. */
+  private async creditCrew(at: number): Promise<{ count: number; taps: number }> {
+    await this.flushD1();
+    const m = this.mission;
+    const db = this.env.DB;
+    try {
+      await db.prepare(`DELETE FROM mission_crew WHERE mission_id = ?`).bind(m.id).run(); // a re-run leg starts clean
+      await db
+        .prepare(
+          `INSERT OR REPLACE INTO mission_crew (mission_id, player_key, account_id, name, country, km, taps)
+           SELECT ?, CASE WHEN d.account_id IS NOT NULL THEN 'a:' || d.account_id ELSE d.device_id END AS k,
+             MAX(d.account_id), MAX(a.name), COALESCE(MAX(a.country), MAX(v.country)), SUM(d.km), SUM(d.taps)
+           FROM daily_km d LEFT JOIN accounts a ON a.id = d.account_id LEFT JOIN devices v ON v.id = d.device_id
+           WHERE d.day >= ? AND d.day <= ? GROUP BY k HAVING SUM(d.taps) > 0`,
+        )
+        .bind(m.id, utcDay(m.startedAt), utcDay(at))
+        .run();
+      const row = await db
+        .prepare(`SELECT COUNT(*) AS n, COALESCE(SUM(taps), 0) AS taps FROM mission_crew WHERE mission_id = ?`)
+        .bind(m.id)
+        .first<{ n: number; taps: number }>();
+      const count = row?.n ?? 0;
+      const taps = row?.taps ?? 0;
+      await db.prepare(`UPDATE missions SET arrived_at = ?, crew_count = ?, taps = ? WHERE id = ?`).bind(at, count, taps, m.id).run();
+      return { count, taps };
+    } catch (err) {
+      console.error("crediting the crew failed", err);
+      return { count: 0, taps: 0 };
+    }
+  }
+
+  /**
+   * The next leg's crew balance (E0, section 3; prompt 46): the crew's push over the last 3 full days of this
+   * leg, against the Mars leg's average. A steady crew keeps legs near 30 days as upgrades carry over.
+   */
+  private async nextCrewHalf(at: number): Promise<number> {
+    const m = this.mission;
+    try {
+      const rows = (
+        await this.env.DB.prepare(`SELECT day, SUM(km) AS km FROM daily_km WHERE day >= ? AND day <= ? GROUP BY day ORDER BY day`)
+          .bind(utcDay(m.startedAt), utcDay(at))
+          .all<{ day: string; km: number }>()
+      ).results;
+      const total = rows.reduce((sum, r) => sum + r.km, 0);
+      const whole = total / Math.max(1, (at - m.startedAt) / 1000);
+      const full = rows.filter((r) => r.day < utcDay(at)).slice(-3);
+      const recent = full.length > 0 ? full.reduce((sum, r) => sum + r.km, 0) / (full.length * 86_400) : whole;
+      let base = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'crew_base_kms'`).toArray()[0]?.value;
+      if (m.stop === FIRST_STOP || !base) {
+        base = whole; // the Mars leg sets the yardstick
+        this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('crew_base_kms', ?)`, base);
+      }
+      if (!(base > 0) || !(recent > 0)) return CREW_HALF_KM_S;
+      return Math.min(CREW_HALF_KM_S * 50, Math.max(CREW_HALF_KM_S / 4, (CREW_HALF_KM_S * recent) / base));
+    } catch (err) {
+      console.error("recalibration failed", err);
+      return m.crewHalf;
+    }
+  }
+
+  /** Sets off on the next leg, towards `to` from the stop we're at. With no known next leg, the probe stays in orbit. */
+  private async launchNext(to: string | null, now: number) {
+    const m = this.mission;
+    const km = to ? legKm(m.stop, to) : null;
+    if (!to || km === null) return;
+    const crewHalf = await this.nextCrewHalf(m.arrivedAt ?? now);
+    const from = m.stop;
+    await this.startMission(m.id + 1, { stop: to, fromStop: from, legKm: km, crewHalf });
+    const probe = probeFor(to, from);
+    const length = km >= 1e6 ? `${gb.format(Math.round(km / 1e6))} million km` : `${gb.format(Math.round(km))} km`;
+    await this.log("leg_start", `On to ${stopName(to)}`, `${probe?.name ?? "The probe"} sets off on a ${length} leg.`, {
+      stop: to,
+      from,
+      legKm: km,
+      probe: probe?.id ?? null,
+    });
+    this.retune(this.now());
+    this.saveSignal();
+  }
+
+  /** On arrival: the crew votes on the next stop. Closes at the next midnight UTC, or the one after if that's under 12 hours away. */
+  private async openBranchVote(now: number, options: string[]) {
+    const ids = options.map((id) => BRANCH_PREFIX + id);
+    let closesAt = Math.floor(now / DAY_MS) * DAY_MS + DAY_MS;
+    if (closesAt - now < 12 * 3_600_000) closesAt += DAY_MS;
+    await this.startRound(now, `branch-${this.mission.id}`, ids, closesAt);
+    await this.log("branch_open", `Where next? ${stopName(options[0])} or ${stopName(options[1])}`, "The crew votes on the next stop.", {
+      options,
+      closesAt,
+    });
+  }
+
+  /** The branch vote's winner is the next stop. A tie (or no votes) is settled by a random draw, and the log says so. */
+  private async closeBranchVote(now: number) {
+    const v = this.vote;
+    const total = v.tallies.reduce((a, b) => a + b, 0);
+    const top = Math.max(...v.tallies);
+    const leaders = v.ids.map((_, i) => i).filter((i) => v.tallies[i] === top);
+    const w = leaders[Math.floor(Math.random() * leaders.length)];
+    const to = branchStopId(v.ids[w])!;
+    this.sql.exec(`UPDATE vote_round SET closed_at = ?, winner = ?, tallies = ? WHERE round = ?`, now, w, JSON.stringify(v.tallies), v.round);
+    try {
+      await this.env.DB.batch([
+        this.env.DB.prepare(`UPDATE vote_days SET tallies = ?, winner = ?, effect_hours = 0, closed_at = ? WHERE round = ?`).bind(
+          JSON.stringify(v.tallies),
+          w,
+          now,
+          v.round,
+        ),
+        this.env.DB.prepare(`UPDATE missions SET branch = ? WHERE id = ?`).bind(to, this.mission.id),
+      ]);
+    } catch (err) {
+      console.error("branch vote close failed", err);
+    }
+    const pct = total > 0 ? Math.round((v.tallies[w] / total) * 100) : 0;
+    const body =
+      total === 0
+        ? "Nobody voted, so a random draw picked it."
+        : `${pct}% of ${gb.format(total)} vote${total === 1 ? "" : "s"}.${leaders.length > 1 ? " It was a tie, settled by a random draw." : ""}`;
+    await this.log("branch_result", `The crew chose ${stopName(to)}`, body, {
+      round: v.round,
+      stop: to,
+      votes: v.tallies[w],
+      total,
+      tie: leaders.length > 1,
+    });
+    await this.launchNext(to, now);
+  }
+
   // ---------- The daily crew vote ----------
 
   /** Opens a new round: today's UTC day (with ".2", ".3" if /admin already closed one today). */
@@ -1166,9 +1457,14 @@ export class Probe extends DurableObject<Env> {
       .flatMap((r) => JSON.parse(r.options) as string[]);
     const ids = pickOptions(round, recent);
     const closesAt = Math.floor(now / DAY_MS) * DAY_MS + DAY_MS;
+    await this.startRound(now, round, ids, closesAt);
+  }
+
+  /** Opens a round with these options (a daily vote, or a branch vote on arrival). */
+  private async startRound(now: number, round: string, ids: string[], closesAt: number) {
     this.vote = { round, openedAt: now, closesAt, ids, tallies: ids.map(() => 0) };
     this.sql.exec(
-      `INSERT INTO vote_round (round, opened_at, closes_at, options, tallies) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO vote_round (round, opened_at, closes_at, options, tallies) VALUES (?, ?, ?, ?, ?)`,
       round,
       now,
       closesAt,
@@ -1215,6 +1511,7 @@ export class Probe extends DurableObject<Env> {
 
   /** The winner takes effect on the route (and so the arrival date), and the result goes in the log. */
   private async closeVote(now: number) {
+    if (this.isBranch()) return this.closeBranchVote(now);
     const v = this.vote;
     const m = this.mission;
     const total = v.tallies.reduce((a, b) => a + b, 0);
@@ -2097,6 +2394,8 @@ export class Probe extends DurableObject<Env> {
     this.devices.clear(); // pings and km per day are re-read from D1
     this.lastPingAt = 0;
     this.sql.exec(`DELETE FROM pace`);
+    this.sql.exec(`DELETE FROM meta WHERE key IN ('crew_base_kms', 'last_arrival_mission')`); // the tour starts again from Earth
+    this.lastArrival = null;
     await this.startMission(this.mission.id + 1);
     await this.abandonVote(now);
     await this.openVote(now);

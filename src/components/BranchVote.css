@@ -1,0 +1,234 @@
+/* The branch vote on arrival (1k, phase 8c). Sizes and colours are the design's. */
+
+.branch {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.branch__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 2px 0;
+}
+
+.branch__label {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.branch__left {
+  font-size: 18px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The little fork diagram: here, then the two ways on. */
+.branch__fork {
+  position: relative;
+  height: 46px;
+}
+
+.branch__fork > span {
+  position: absolute;
+}
+
+.branch__here {
+  left: 0;
+  top: 18px;
+  width: 8px;
+  height: 8px;
+  background: var(--orange);
+}
+
+.branch__here-label {
+  left: 0;
+  top: 30px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.branch__stem {
+  left: 8px;
+  top: 21px;
+  width: 36px;
+  height: 2px;
+  background: var(--blue);
+}
+
+.branch__split {
+  left: 44px;
+  top: 9px;
+  width: 2px;
+  height: 28px;
+  background: var(--line);
+}
+
+.branch__row {
+  left: 44px;
+  width: 150px;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--line) 0 4px, transparent 4px 8px);
+}
+
+.branch__row--a {
+  top: 9px;
+}
+
+.branch__row--b {
+  top: 35px;
+}
+
+.branch__row--mine {
+  background: var(--orange);
+}
+
+.branch__name {
+  left: 96px;
+  padding: 0 5px;
+  font-size: 11px;
+  color: var(--text-soft);
+  background: var(--field);
+}
+
+.branch__name--a {
+  top: 1px;
+}
+
+.branch__name--b {
+  top: 27px;
+}
+
+.branch__option.window {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+
+.branch__option--mine.window {
+  border-color: var(--orange);
+}
+
+.branch__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.branch__kick {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.branch__title {
+  font: 500 22px/1.05 var(--font-ui);
+}
+
+.branch__dist {
+  font-size: 19px;
+  line-height: 1;
+  color: var(--text-blue);
+}
+
+.branch__pct {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.branch__bar {
+  height: 6px;
+  background: var(--field);
+  border: 2px solid var(--line-dim);
+}
+
+.branch__fill {
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.6s steps(6);
+}
+
+.branch__option--mine .branch__fill {
+  background: var(--orange);
+}
+
+.branch__box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--field);
+  border: 2px solid var(--line-dim);
+}
+
+.branch__box--tech {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  border-color: var(--blue-shadow);
+}
+
+.branch__box-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.branch__box-label--blue {
+  color: var(--text-blue);
+}
+
+.branch__box-name {
+  font-size: 15px;
+}
+
+.branch__box-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+/* The perk's three strengths, by the medal the crew earns on arrival. */
+.branch__medals {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.branch__medals li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.branch__medals .num {
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--text-blue);
+}
+
+.branch__box--tech > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.branch__vote {
+  min-height: 46px;
+}
+
+.branch__foot {
+  font-size: 11px;
+  color: var(--text-muted);
+}

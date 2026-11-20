@@ -1,0 +1,131 @@
+/* The arrival screen (1k, phase 8c). Sizes and colours are the design's. */
+
+.arrival-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+/* The design only shows the phone layout for the credits and vote: wide screens get a centred column. */
+.arrival-screen--wide {
+  width: min(100%, 560px);
+  margin: 0 auto;
+}
+
+.arrival-screen__art {
+  position: relative;
+  height: 264px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 0 24px rgb(var(--glow-mars) / 0.35));
+}
+
+.arrival-screen__planet {
+  image-rendering: pixelated;
+}
+
+.arrival-screen__probe {
+  position: absolute;
+  right: 6px;
+  top: 18px;
+  display: flex;
+  filter: drop-shadow(0 0 6px rgb(var(--glow-blue) / 0.8));
+}
+
+.arrival-screen__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arrival-screen__kick {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.arrival-screen__title {
+  font: 600 34px/1 var(--font-ui);
+  text-shadow: 3px 3px 0 var(--orange-shadow);
+}
+
+.arrival-screen__when {
+  font-size: 24px;
+  color: var(--text-orange-soft);
+}
+
+.arrival-screen__stats {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.arrival-screen__credits {
+  position: relative;
+  flex: none;
+  height: 170px;
+  overflow: hidden;
+  background: var(--field);
+  border: 2px solid var(--line-blue);
+  outline: 2px solid var(--outline);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 22%, #000 78%, transparent);
+}
+
+.arrival-screen__credits > .arrival-screen__note {
+  padding: 60px 16px 0;
+  text-align: center;
+}
+
+.arrival-screen__roll {
+  animation-name: arrival-roll;
+  animation-iteration-count: infinite;
+}
+
+/* Reduced motion: no roll; the list scrolls by hand instead. */
+.arrival-screen__roll--still {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-mask-image: none;
+}
+
+@keyframes arrival-roll {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.arrival-screen__names {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 0;
+  list-style: none;
+}
+
+.arrival-screen__names li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+}
+
+.arrival-screen__note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.arrival-screen__next.window {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}

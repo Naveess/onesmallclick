@@ -14,6 +14,8 @@ const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "sho
 
 interface Today {
   missionDay: number;
+  /** Where this leg is heading ("Mars" unless the tour has moved on). */
+  destName?: string;
   progress: number;
   kmToday: number;
   /** Null while the probe is paused. */
@@ -37,7 +39,7 @@ export function shareText(t: Today): string {
   const cells = Math.round(pct / 10);
   return [
     `OneSmallClick · Day ${t.missionDay}`,
-    `${"▰".repeat(cells)}${"▱".repeat(10 - cells)} ${pct}% to Mars`,
+    `${"▰".repeat(cells)}${"▱".repeat(10 - cells)} ${pct}% to ${t.destName ?? "Mars"}`,
     `I pushed ${int(t.kmToday)} km today`,
     `Arrival: ${t.arrivalAt === null ? "on hold" : shortDate.format(new Date(t.arrivalAt))}`,
   ].join("\n");

@@ -6,9 +6,10 @@ import { GameShell } from "../components/GameShell";
 import { SafeMode } from "../components/SafeMode";
 import { PixelIcon } from "../components/PixelIcon";
 import { ThrustButton } from "../components/ThrustButton";
-import { castVote, ping, switches, thrust, useGame } from "../game/store";
+import { castVote, openArrival, ping, switches, thrust, useGame } from "../game/store";
+import { BranchVote } from "../components/BranchVote";
+import { milestonesFor } from "../../shared/milestones";
 import { int } from "../game/format";
-import { MILESTONES } from "../game/rules";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
 
@@ -37,13 +38,16 @@ export function GamePage() {
           online: probe.online,
           handful: switches.handful,
           arrivalAt: view.arrivalAt,
-          milestones: MILESTONES,
+          milestones: milestonesFor(probe.stop),
           nextMilestone: view.nextMilestone,
           toNextKm: view.toNextKm,
           safe: view.safe,
           urgent: view.signalUrgent,
           signalLeftS: view.signalLeftS,
           paused: view.paused,
+          stop: probe.stop,
+          fromStop: probe.fromStop,
+          orbit: view.orbit,
         };
         const track = <FlightView handle={flight} wide={wide} {...flightProps} />;
         if (view.safe) {
@@ -75,7 +79,19 @@ export function GamePage() {
             onPing={() => void ping()}
           />
         );
-        const vote = (
+        // On arrival the daily vote gives way to the branch vote (phase 8c).
+        const vote =
+          probe.vote.kind === "branch" ? (
+            <BranchVote
+              at={probe.stop}
+              options={probe.vote.options}
+              total={view.voteTotal}
+              mine={player.voteChoice}
+              leftS={view.voteLeftS}
+              onVote={(i) => void castVote(i)}
+              busy={player.voting || connection !== "live"}
+            />
+          ) : (
           <VoteCard
             wide={wide}
             question={probe.vote.question}
@@ -87,12 +103,13 @@ export function GamePage() {
             busy={player.voting || connection !== "live"}
           />
         );
+        const orbit = view.orbit ? { at: probe.arrivedAt!, destName: view.destName, onCredits: openArrival } : null;
 
         if (!wide) {
           return (
             <main className="home" aria-label="Mission">
               <h1 className="visually-hidden">OneSmallClick mission control</h1>
-              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} />
+              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} />
               {track}
               {signal}
               <section className="home__thrust" aria-label="Thrust">
@@ -121,7 +138,7 @@ export function GamePage() {
           <main className="home home--wide" aria-label="Mission">
             <h1 className="visually-hidden">OneSmallClick mission control</h1>
             <div className="home__top">
-              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} />
+              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} />
               <dl className="home__stats">
                 <div>
                   <dt>TRAVELLED</dt>

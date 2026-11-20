@@ -442,3 +442,16 @@
   letter-spacing: 0.12em;
   color: var(--text-orange);
 }
+
+/* In orbit (phase 8c): a link back to the arrival screen and its credits. */
+.arrival__credits {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  font: 13px var(--font-ui);
+  color: var(--text-blue);
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}

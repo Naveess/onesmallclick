@@ -7,7 +7,7 @@
 // The top of each board is worked out at most once a minute per Worker instance and reused;
 // your own row is looked up for each request.
 
-import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type ProfileInfo } from "../shared/boards";
+import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
 
@@ -146,4 +146,35 @@ export async function profile(request: Request, env: Env, day: string): Promise<
     signedIn: acct !== null,
   };
   return json(body);
+}
+
+/** The credits for one arrived leg. They never change after arrival, so browsers may keep them a while. */
+export async function credits(env: Env, url: URL): Promise<Response> {
+  const id = Number(url.searchParams.get("mission"));
+  if (!Number.isInteger(id) || id < 1) return json({ error: "mission must be a mission id" }, 400);
+  const m = await env.DB.prepare(
+    `SELECT id, stop, from_stop, started_at, arrived_at, crew_count, taps FROM missions WHERE id = ? AND arrived_at IS NOT NULL`,
+  )
+    .bind(id)
+    .first<{ id: number; stop: string | null; from_stop: string | null; started_at: number; arrived_at: number; crew_count: number | null; taps: number | null }>();
+  if (!m) return json({ error: "No arrival for that mission yet" }, 404);
+  const named = await env.DB.prepare(
+    `SELECT name, country AS cc, km FROM mission_crew WHERE mission_id = ? AND account_id IS NOT NULL ORDER BY km DESC, name`,
+  )
+    .bind(id)
+    .all<{ name: string | null; cc: string | null; km: number }>();
+  const names = named.results.map((r) => ({ name: r.name ?? "crew", cc: r.cc, km: r.km }));
+  const crew = m.crew_count ?? names.length;
+  const body: CreditsInfo = {
+    missionId: m.id,
+    stop: m.stop ?? "mars",
+    fromStop: m.from_stop ?? "earth",
+    startedAt: m.started_at,
+    arrivedAt: m.arrived_at,
+    crew,
+    taps: m.taps ?? 0,
+    names,
+    guests: Math.max(0, crew - names.length),
+  };
+  return Response.json(body, { headers: { "Cache-Control": "public, max-age=300" } });
 }

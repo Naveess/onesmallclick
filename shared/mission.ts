@@ -72,6 +72,13 @@ export function setbackMs(safeSince: number | null, now: number): number {
 export interface ProbeSnapshot {
   missionId: number;
   destination: string;
+  /** This leg of the Grand Tour (phase 8c): where it's heading and where it started (content/campaign.json ids). */
+  stop: string;
+  fromStop: string;
+  /** When the probe reached `stop`, or null on the way. In orbit it waits there for the branch vote. */
+  arrivedAt: number | null;
+  /** The latest arrival this tour (this leg's in orbit, or the last one), so everyone sees its arrival screen once. */
+  lastArrival: { missionId: number; stop: string; at: number } | null;
   missionStartedAt: number;
   routeKm: number;
   /** Distance at `at`. Between updates the browser adds coasting and auto-thrust (distanceAt). */

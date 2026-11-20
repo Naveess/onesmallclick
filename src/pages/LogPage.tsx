@@ -13,6 +13,8 @@ import "./LogPage.css";
 interface Entry {
   id: number;
   at: number;
+  /** The day of its own leg (phase 8c: the log covers the whole tour). */
+  day?: number | null;
   kind: string;
   title: string;
   body: string;
@@ -32,6 +34,10 @@ const LOOKS: Record<string, Look> = {
   signal_restored: { label: "SIGNAL", icon: "signal", tone: "orange" },
   close_save: { label: "SIGNAL", icon: "signal", tone: "orange" },
   milestone: { label: "MILESTONE", icon: "star", tone: "orange" },
+  arrival: { label: "ARRIVAL", icon: "star", tone: "orange" },
+  branch_open: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
+  branch_result: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
+  leg_start: { label: "NEW LEG", icon: "up", tone: "blue" },
 };
 const FALLBACK: Look = { label: "LOG", icon: "log", tone: "blue" };
 
@@ -136,7 +142,7 @@ export function LogPage() {
                     <PixelIcon name={look.icon} size={9} tone={look.tone} />
                   </span>
                   <p className="log__meta">
-                    <span className="log__day num">DAY {view.missionDayAt(e.at)}</span>
+                    <span className="log__day num">DAY {e.day ?? view.missionDayAt(e.at)}</span>
                     <span className="log__kind">{look.label}</span>
                   </p>
                   <h2 className="log__entry-title">{e.title}</h2>

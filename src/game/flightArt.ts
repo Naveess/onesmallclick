@@ -238,6 +238,37 @@ export function jupiterArt(): string {
   );
 }
 
+// ---------- Every stop on the Grand Tour (phase 8c) ----------
+
+/** Each stop's look, from the design's mapSprites() palettes (Europa from its sprite's colours). */
+const BODIES: Record<string, BallOpts> = {
+  ceres: { a: GREY, b: GREY_DARK, f: 2.4, th: 0.6, seed: 3 },
+  vesta: { a: ["#1a1410", "#3a2f26", "#66574a", "#9a8a78", "#cdbfae"], b: ["#120e0b", "#2a221b", "#4a3f35", "#716253", "#9e8f7f"], f: 2.2, seed: 5 },
+  jupiter: { bands: 6, a: ["#2a1406", "#5c3214", "#a0602a", "#d89a5a", "#f2d2a2"], b: ["#2c2418", "#5e5040", "#a69276", "#dccbae", "#f6ecd8"], seed: 4 },
+  europa: { a: ["#1c2433", "#46536b", "#8a9ab5", "#cfdaee", "#f4f8ff"], b: ["#2a1a10", "#5a3a24", "#8a5a38", "#c89a6e", "#e8c8a0"], f: 2.6, th: 0.66, seed: 6 },
+  ganymede: { a: ["#16130f", "#352e25", "#5e5446", "#8f8574", "#c6bfb0"], b: ["#1d2230", "#3c4458", "#6f7a92", "#a9b3c8", "#dfe5f0"], f: 1.9, th: 0.52, seed: 8 },
+  saturn: { bands: 5, a: ["#2a2010", "#5c4824", "#a0864e", "#d8c08a", "#f4e6c0"], b: ["#2c2418", "#5e5040", "#a69276", "#dccbae", "#f6ecd8"], seed: 2 },
+  titan: { bands: 5, a: ["#2a1606", "#5a3210", "#9a5a1c", "#d08c3a", "#f2c27a"], b: ["#2e1a08", "#64391a", "#a8682a", "#dc9c4c", "#f6d08e"], seed: 2 },
+  enceladus: { a: ["#1c2433", "#46536b", "#8a9ab5", "#cfdaee", "#f4f8ff"], b: ["#16304a", "#2c5a80", "#5a94c0", "#a6d2f0", "#e4f4ff"], f: 3, th: 0.66, seed: 4 },
+  uranus: { bands: 7, a: ["#0c2a30", "#1a5560", "#3c8c96", "#7cc4c8", "#bfe8e6"], b: ["#0e3036", "#1e5e68", "#46989e", "#8ad0d2", "#ccf0ee"], seed: 6 },
+  miranda: { a: GREY, b: ["#1a1c26", "#3a3e50", "#6a7088", "#a4aac0", "#dfe3ee"], f: 3.2, th: 0.5, seed: 11 },
+  titania: { a: ["#17140f", "#332d25", "#5c544a", "#8e8578", "#c3bbae"], b: GREY_DARK, f: 2.6, seed: 13 },
+  neptune: { bands: 6, a: ["#081436", "#13286e", "#2450b0", "#4a84e0", "#8cbcff"], b: ["#0a1840", "#17307e", "#2c5ec4", "#5a94ec", "#a6ccff"], seed: 9 },
+  pluto: { a: ["#1e130c", "#4a2e1c", "#8a5a38", "#c89a6e", "#e8c8a0"], b: ["#24100a", "#52241a", "#8c4630", "#c27454", "#e0a888"], f: 2, seed: 7 },
+  arrokoth: { a: ["#1e0c08", "#4a1e14", "#86402a", "#b86a48", "#e0a080"], b: ["#180a06", "#3c1a10", "#6c3420", "#985838", "#c48a68"], f: 2.4, seed: 12 },
+  heliopause: { a: ["#13285a", "#2b4c86", "#5a94c0", "#8ccfff", "#ffd9a8"], b: ["#1b2a55", "#2b5a8f", "#7fb0e6", "#b9e2ff", "#ffb37a"], f: 1.6, seed: 14 },
+};
+
+/**
+ * Any stop at radius R (a (2R+2)px image, drawn 1:1): Mars and Earth as before, the rest from BODIES.
+ * Until PixelLab art arrives (E2), every destination on the tour is drawn this way.
+ */
+export function destinationArt(stop: string, R: number): string {
+  if (stop === "mars") return marsArt(R);
+  if (stop === "earth") return earthArt(R);
+  return once(`${stop}${R}`, () => ball(R, BODIES[stop] ?? { a: GREY, b: GREY_DARK, seed: 1 }));
+}
+
 /** Phobos once Mars is close, 6×4 (the design draws it as a grey chip with a shadowed corner). */
 export function phobosArt(): string {
   return once("phobos", () => grid(["ggggdd", "ggggdd", "ggggdd", "dddddd"], { g: "#8a8f9f", d: "#41444f" }));

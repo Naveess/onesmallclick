@@ -18,8 +18,9 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
-  - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
+  - [ ] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46) with migration 0010; waiting for the deploy and Nav's checks.
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
+  - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
@@ -428,6 +429,59 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **`/privacy`:** a plain HTML page (`scripts/build-pages.mjs`) covering the device cookie, the game data, the browser storage, sign-in data, what other players see, Cloudflare (hosting, Turnstile with a link to its Turnstile Privacy Addendum, which invisible mode requires, and Email Service), Google, and how to delete or ask (privacy@onesmallclick.io). Linked from the sign-in screens; phase 9 links the legal pages from everywhere.
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
+
+**8c as built (2026-11-20, prompts 45–46; waiting for migration 0010, the deploy and Nav's checks)**
+- **Answers (prompt 46):**
+  - The orbit pause is approved.
+  - The branch vote closes at the next midnight UTC, or the one after if that's under 12 hours away; ties are settled by a logged random draw.
+  - The credits show every signed-in name (reduce to the top 1,000 if the crowd gets big).
+  - The per-leg balance is built now, not in E2.
+  - The arrival rewards wait for E4b.
+  - The medal pace line and the Destination file card are a small phase straight after 8c.
+- **The tour** comes from `content/campaign.json` through `shared/campaign.ts`.
+  - The `Probe` knows each leg's stop, start, length and crew balance.
+  - A row in D1 `missions` is one leg.
+  - The launch reset starts the tour again from Earth → Mars.
+- **Arrival:** when the probe reaches the leg's end (from taps, coasting or `/admin`):
+  - it goes into orbit: the probe, the signal timer and any setback wait, like the idle pause;
+  - taps still earn credits but don't move or wake it;
+  - the crew is snapshotted into `mission_crew`: everyone with at least one credited tap on the leg's days, with km and taps;
+  - the log says "Arrived at Mars · Day N. N crew pushed us here with N taps".
+- **The branch vote:**
+  - At a stop with two ways on, the daily vote gives way to "Where next? The route splits". It's the same vote system, with option ids `branch:<stop>`.
+  - The winner launches the next leg: a fresh mission row, the leg's length from the campaign, the log's "The crew chose Ceres" and "On to Ceres · OSC-2 Ceres Hopper sets off on a 186 million km leg".
+  - At a stop with no vote (Ceres, Vesta), the next leg launches straight away.
+- **The per-leg balance:**
+  - Coasting and the crew's top speed scale with the leg's length (leg km ÷ 480M), so any leg takes about as long. For example, the Ceres leg coasts at 8.155 km/s.
+  - The crew balance is recalibrated at each launch: the last 3 full days' push against the Mars leg's average. It's steadier than the whole-leg average the E0 sim tried: the second leg comes out at 27.3 days, not 24.6.
+  - Km per tap and credits don't change.
+- **The arrival screen (1k)** shows once per browser, within 3 days of an arrival (an arrival with no vote, like Ceres, still gets its screen).
+  - The destination, with OSC-1 in orbit.
+  - "MARS ORBIT REACHED · We made it", the date and time, and "N days · N crew · N taps".
+  - The rolling credits: every signed-in name with its flag, guests as "…and N guest crew". It rolls in pixel steps; with reduced motion it's a list you scroll.
+  - The branch vote, or "On to Jupiter" once the probe has moved on.
+  - `GET /api/credits?mission=<id>` serves it.
+- **The branch vote card (1k):** each branch shows its distance from here, its new probe (name and pitch; the art comes in E2), its planet tech with Gold/Silver/Bronze, a live percentage and a vote button. On the game home it replaces the daily vote card while in orbit.
+- **The game home on any leg:**
+  - The flight view draws the leg's destination and start in the design's code-drawn style (`destinationArt` in `src/game/flightArt.ts`).
+  - The fork or the next stop come from the campaign, with "CREW VOTE AT MARS" or "ON TO VESTA".
+  - In orbit: "IN MARS ORBIT · The crew is voting on where next", and the arrival card reads "Mars orbit reached · We arrived on…" with "Watch the credits again".
+  - Only the Earth → Mars leg has milestones until E3.
+- **The mission log** covers the whole tour since the launch reset, with each entry's day counted from its own leg. New entries: ARRIVAL, ROUTE VOTE and NEW LEG.
+- **Migration 0010:** the new `missions` columns (stop, from_stop, leg_km, crew_half, crew_count, taps, branch) and `mission_crew`.
+- **Checked locally:**
+  - A scripted run passed all 18 checks:
+    - arrival and orbit;
+    - the vote closing at midnight UTC;
+    - the credits naming the signed-in player and counting the guests;
+    - taps in orbit earning credits without moving the probe;
+    - 2 votes to 1 choosing Ceres;
+    - the Ceres leg's length and coasting;
+    - the log;
+    - Ceres going on to Jupiter by itself;
+    - the reset going back to Mars.
+  - The badge, click and sign-in checks pass again, and `npm run build` passes.
+  - Screenshots: the arrival screen at 390 in both themes and at 1440, the home in orbit, and the Vesta leg.
 
 **8b as built (2026-11-20, prompts 37–38; deployed with migration 0009 on 2026-11-20, prompt 39; waiting for Nav's checks)**
 - **Answers (prompt 38):**
