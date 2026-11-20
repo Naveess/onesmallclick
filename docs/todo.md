@@ -29,8 +29,8 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 
 ### Tonight (19 Nov)
 - [ ] **The 8a checks** (above).
-- [ ] **Flight view phase** (docs/plan.md): built and pushed (prompt 32). Nav: apply migration 0008, deploy, check. Then approve or reject the two new flight view colours (`--space-dusk`, `--glow-mars`, end of docs/tokens.css).
-- [ ] **8b: do the click badges count clicks in one day or in all time?** The design's bar uses today's clicks (Steady Finger at 1,500 today); "You've clicked" follows it for now.
+- [x] **Flight view phase** (docs/plan.md): deployed by Nav with migration 0008; checks passed (prompt 33). New colours approved.
+- [ ] **Flight view follow-up** (prompt 33): 1f safe mode uses the flight view; the idle chip goes into the design file; the click bar counts all-time clicks (decided: badges are all-time for now). Confirm counts survive a reload on live.
 - [ ] **After the flight view is approved:** delete `src/components/JourneyTrack.tsx` and `JourneyTrack.css`.
 - [ ] **8b planning**, if there's time.
 

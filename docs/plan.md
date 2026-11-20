@@ -15,7 +15,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
-  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32) with migration 0008; waiting for Nav's deploy and checks.
+  - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up from Nav's decisions next (see "Decided after the checks" below).
   - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges)
   - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
@@ -336,7 +336,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Performance on phones.** Many moving layers; keep them to CSS transforms and `steps()`, and cap the sparks and particles.
 - **Whole-number scaling** of Mars and Earth as they grow: use a few fixed sizes rather than smooth scaling.
 
-**As built (2026-11-19, prompt 32; waiting for Nav's migration, deploy and checks)**
+**As built (2026-11-19, prompt 32; deployed by Nav, checked 2026-11-20)**
 - **`FlightView`** (`src/components/FlightView.tsx` and `.css`) replaces `JourneyTrack` on the game home, phone and wide. Its layout follows the design's `flightVals()`, measured from the window's real width.
   - It has every piece of 1a/1b:
     - the stars and speed lines streaming left;
@@ -372,6 +372,11 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - Taps not yet confirmed show straight away and are corrected by the server's reply.
 - **Migration 0008:** `daily_km.taps`, and an index on `daily_km (device_id, day)` for a guest's all-time sum.
 - `JourneyTrack.tsx` and its CSS are kept but no longer used (removed once the flight view is approved).
+- **Decided after the checks (prompt 33, 2026-11-20):**
+  1. Safe mode (1f) uses the flight view (in its safe state) instead of its own muted track.
+  2. The two new colours are approved.
+  3. The idle-pause chip goes into the design file.
+  4. The click badges count **all-time** clicks for now, so the bar in "You've clicked" moves to the all-time total.
 - **Checked locally:**
   - Screenshots at 375, 390 and 1440 in both themes, next to the design file's 1a/1b. Also: the boost, the start and near Mars (phone and wide), a small crew, reduced motion, the final seconds, the idle pause, and the `/kit` states.
   - A scripted check passed in full:

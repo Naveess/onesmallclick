@@ -248,7 +248,7 @@
 
 /* The flight view (game home 1a/1b, prompt 32) stays deep space in light mode too: the design
    hard-codes the dark theme's colours in it, like THRUST. All are palette colours except the two
-   marked NEW, which the flight view design introduced (19 Nov evening). */
+   marked NEW, which the flight view design introduced (19 Nov evening; approved by Nav 2026-11-20). */
 :root {
   --space-1: #0e1a40; /* kf-0e1a40 · window gradient, left (behind Earth) */
   --space-2: #081128; /* kf-081128 */
