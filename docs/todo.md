@@ -30,7 +30,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 ### Tonight (19 Nov)
 - [ ] **The 8a checks** (above).
 - [x] **Flight view phase** (docs/plan.md): deployed by Nav with migration 0008; checks passed (prompt 33). New colours approved.
-- [ ] **Flight view follow-up** (prompts 33–35): built and pushed. It covers 1f safe mode using the flight view, the idle chip in the design file, the click bar counting all-time clicks, and "Back to the mission" near the top of the account page. Nav: `npm run deploy` and check. Also still to confirm: the counts survive a reload on live.
+- [ ] **Flight view follow-up** (prompts 33–35): deployed 2026-11-20 (prompt 36). It covers 1f safe mode using the flight view, the idle chip in the design file, the click bar counting all-time clicks, and "Back to the mission" near the top of the account page. Nav: check it live. Also still to confirm: the counts survive a reload on live.
 - [ ] **Friends testing (prompt 34):** if the Google OAuth consent screen's publishing status is "Testing", only listed test users can sign in. Nav adds them or publishes the app. Email sign-in stays off until the domain is set up.
 - [ ] **After the flight view is approved:** delete `src/components/JourneyTrack.tsx` and `JourneyTrack.css`.
 - [ ] **8b planning**, if there's time.

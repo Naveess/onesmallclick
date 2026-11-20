@@ -377,7 +377,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   2. The two new colours are approved.
   3. The idle-pause chip goes into the design file.
   4. The click badges count **all-time** clicks for now, so the bar in "You've clicked" moves to the all-time total.
-- **Follow-up as built (2026-11-20, prompts 34–35; waiting for Nav's deploy):**
+- **Follow-up as built (2026-11-20, prompts 34–35; deployed by Claude at Nav's request, prompt 36):**
   - The safe-mode screen shows the flight view in its safe state, with the "Coasting · thrusters asleep" line under it. This replaces its muted track. The rest of 1f is unchanged.
   - "You've clicked" keeps today's odometer, but its bar and "to go" now count all-time clicks.
   - The account page (`/sign-in`, signed in) has a full-width "Back to the mission" button under your name. The footer keeps only the Privacy link.
