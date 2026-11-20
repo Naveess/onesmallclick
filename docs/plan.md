@@ -20,7 +20,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **E0: Grand Tour planning** (plan only, before 8c). Planned 2026-11-20 (prompt 43) and approved by Nav (prompt 44): every recommendation in docs/expansion.md, section 11. Next: 8c.
   - [x] **8c: Arrival and credits** (its destination vote is the Grand Tour's first branch, Ceres or Vesta). Built 2026-11-20 (prompts 45–46); migration 0010 applied and deployed by Claude at Nav's request (prompt 47, version 93ab7f08); checked by Nav on the live site and approved (prompt 48), mission reset afterwards.
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch; **waits for the payday setup**, see docs/todo.md "Payday"): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
-  - [ ] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; waiting for the deploy and Nav's checks.
+  - [x] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; live (c6e1027f) and approved (prompt 52).
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
@@ -430,7 +430,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
 
-**E4b part 1 as built (2026-11-20, prompts 49–50; deployed 2026-11-20, prompt 51, version c6e1027f; no migration; waiting for Nav's checks)**
+**E4b part 1 as built (2026-11-20, prompts 49–50; deployed 2026-11-20, prompt 51, version c6e1027f; no migration; approved by Nav, prompt 52)**
 - **Answers (prompt 50):** the share image is laid out at 360px and drawn at exactly 3× (1080 × 1080), and the Mars facts page is built now, ahead of E4.
 - **The medal pace line** sits under "Your taps today" (1a/1b), from the arrival estimate the home already shows:
   - "Gold if we arrive by 15 Dec · on pace for Silver", a bar and "2.4 days to Gold". On Gold pace it reads "top tier · hold it"; on Bronze pace it aims for Silver ("Silver if we arrive by…", the days to Silver).
