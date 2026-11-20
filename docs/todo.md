@@ -24,7 +24,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] **Deploy 8a**: migration 0007 applied and 02849c8 deployed 19 Nov (Claude ran both at Nav's request).
 - [x] **The 8a checks** (Nav, 19 Nov: all fine, approved): Google on phone and laptop (one account, merged), once-per-account ping, sign out, email says "opens soon", read /privacy.
 
-### Tonight (19 Nov)
+### 19 Nov evening (mostly done)
 - [ ] **The 8a checks** (above).
 - [x] **Flight view phase** (docs/plan.md): deployed by Nav with migration 0008; checks passed (prompt 33). New colours approved.
 - [ ] **Flight view follow-up** (prompts 33–35): deployed 2026-11-20 (prompt 36). It covers 1f safe mode using the flight view, the idle chip in the design file, the click bar counting all-time clicks, and "Back to the mission" near the top of the account page. Nav: check it live. Also still to confirm: the counts survive a reload on live.
