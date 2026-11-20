@@ -36,6 +36,11 @@ The whole world flies one real probe to Mars, one small click at a time, and whe
   - arrival: their total contribution, a shout-out to the top contributors, "if you missed out, don't worry, help us on the next journey!", and the next-destination vote.
   - Opt-in only, one-click unsubscribe, and sent from a separate address from the sign-in emails.
 - "People here now" counter
+- Sharing and invites (added 2026-11-20, phase S), built to raise the K-factor (shares per player × the share who join):
+  - one-tap share to WhatsApp, X, Facebook, Reddit, Telegram, the phone's share sheet and copy link, at every big moment, especially the urgent ones (the signal's final hour, the landing burn, the vote closing);
+  - personal crew links with rich previews, and an invite landing that drops new players straight into the game;
+  - recruiter badges for friends who actually play;
+  - a K-factor panel in /admin.
 - After Mars, players vote on the next destination
 - Anti-cheat: an invisible bot check on pings and votes, a generous per-network daily cap, and clicks sent in batches every few seconds
 

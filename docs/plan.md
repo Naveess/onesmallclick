@@ -24,6 +24,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Phase 9: Launch hardening, ads and legal pages** (split in two, prompt 54)
   - [ ] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **In progress**: see "Phase 9a status" below.
   - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test, then the launch reset)
+- [ ] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts.
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
 - [ ] **E3: A content pipeline for each new leg**
@@ -687,6 +688,66 @@ Still to do in 9a (in this order):
 
 ---
 
+## S: Sharing and invites (K-factor) (added 2026-11-20)
+
+**Goal:** make the game spread. Every big moment is easy to share to WhatsApp, X, Facebook and the rest. Every share carries a personal crew link, and new players who come through it land straight in the game. Build it after 9a and before E1, so it's ready for launch.
+
+**Why (Nav's idea, 2026-11-20).** A friend suggested the K-factor: K = i × c, where *i* is invites (shares) per player and *c* is the share of invitees who become players. K above 1 means each player brings in more than one new player, which is exponential growth ([Wikipedia](https://en.wikipedia.org/wiki/K-factor_(marketing))). It only counts direct invites. Shared content also brings in visitors who then share themselves (the "social K-factor"). So the phase works on three levers:
+- **Raise *i*** (more shares): one-tap share at the moments people feel something, and shares that make the sharer look good.
+- **Raise *c*** (more invitees become players): a rich preview in the chat, a landing that drops them straight into play with "orbit_otter invited you", and no sign-up wall.
+- **Shorten the cycle** (how fast a share turns into a new sharer): urgent moments, such as the signal's final hour, the landing burn and the vote closing, which get answered in minutes, not days.
+
+**What gets built**
+- **One share kit**, used everywhere:
+  - on phones, the native share sheet (`navigator.share`), which covers WhatsApp, Messenger, Instagram and the rest;
+  - plus explicit buttons: WhatsApp (`wa.me`), X (the tweet intent link), Facebook (the sharer link), Reddit, Telegram, and Copy link, plus "Save image" where there's a card;
+  - plain links only: no share SDKs, no third-party scripts and no tracking. That keeps pages fast and private, and keeps AdSense happy.
+- **Personal crew links:** `/c/<code>` for each player (a short random code, not the email). Every share adds the moment and the channel (e.g. `?m=milestone&v=wa`), so we know what's working.
+- **Rich link previews:**
+  - Open Graph and Twitter card tags on every shareable page;
+  - for crew links, the Worker rewrites the page's title and description on the fly (HTMLRewriter, built into Workers, so no new library), e.g. "orbit_otter pushed 41,200 km toward Mars. Help the crew";
+  - preview images (1200×630, pixel art) made ahead of time for each moment, milestone and destination, with a default for everything else. Personal numbers go in the text, not the image, so nothing has to be drawn on demand.
+- **Share moments** (each with a short prefilled message and the crew link):
+  - the milestone moment (upgrading 7b's "Share result");
+  - arrival and its medal;
+  - the branch vote ("Vote with me: Ceres or Vesta?");
+  - the signal's final hour and safe mode ("The probe's about to go quiet. Ping it!"), which are urgent;
+  - the landing burn ("2M km in the next hour, we need you"), urgent;
+  - a badge earned;
+  - your leaderboard rank, and the **country rivalry** ("🇬🇧 UK is #4 on the countries board. Help us pass 🇫🇷 France");
+  - the daily fact (E4b part 1 already has the card);
+  - the fact and destination pages.
+- **A Wordle-style result line**, easy to paste anywhere: e.g. "OneSmallClick · Day 12 🚀 ▓▓▓▓▓░░░░░ 48% to Mars · I pushed 41,200 km 🇬🇧 · onesmallclick.io/c/k7p2".
+- **The invite landing:** a crew link opens the game with a small "orbit_otter invited you to the crew" banner and THRUST ready. No sign-in is needed to play.
+- **Recruits** (conversions, not shares, so nobody is rewarded for spamming):
+  - a recruit counts when a **new** device arrives through your link and actually plays (e.g. 50 credited taps or a Ping);
+  - once per device, never your own devices or account, and capped per day;
+  - the recruiter badges: Crew Recruiter I / II / III (1, 5 and 25 recruits);
+  - "Your recruits have pushed X km" on the profile.
+- **The K-factor panel in /admin**, for the last 7 days:
+  - active players, shares (by moment and channel), crew-link visits, new players from links and recruits;
+  - *i* = shares per active player, *c* = recruits per share, **K = i × c**;
+  - the median time from a share to the recruit's first tap (the cycle time).
+- **E4's remaining sharing work** moves here: the map share card and the branch-result and arrival texts.
+
+**Data changes** (the next free migration number)
+- `share_links` (code, player key, created_at).
+- `share_counts` (day, moment, channel, shares, visits), as counters only, with no personal data.
+- `recruits` (recruiter key, recruit device, arrived_at, converted_at).
+
+**How you test it**
+- On a phone, share a milestone to WhatsApp: the preview shows the pixel image and your line. Open it on another phone: the invite banner shows, and after 50 taps the recruit counts once.
+- Each button opens the right app or site with the message filled in. Copy link works on a laptop.
+- Your own second device doesn't count as a recruit.
+- /admin shows the shares, visits, recruits and K for the test.
+- Paste a crew link into a link-preview checker (e.g. the Facebook and X debuggers once the domain is live).
+
+**Main risks**
+- **Spam.** Reward recruits who play, never shares. Cap recruits per day, and never let players message other people's contacts.
+- **Previews need the real domain.** Links shared before launch point at workers.dev. Build the links from the site's own address, so they switch to onesmallclick.io when it's connected.
+- **Privacy.** The crew code isn't the email or name. The privacy page gets a line on crew links and recruit counts.
+- **No rewards linked to ads**, ever (AdSense).
+
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
 The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
@@ -752,7 +813,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 **What gets built**
 - The Destination file card (1a/1b): today's fact for the current destination, "Fact N of 30", changing at 00:00 UTC, with "Share fact" (the design's 1080×1080 card: "Save image", "Copy link").
 - `/destinations/<slug>`: plain HTML built at deploy time like the milestone pages, with all 30 facts and their sources.
-- The map share card ("The crew chose Europa") and the branch-result and arrival share texts (docs/expansion.md, section 8).
+- ~~The map share card ("The crew chose Europa") and the branch-result and arrival share texts (docs/expansion.md, section 8).~~ **Moved to phase S (Sharing and invites, 2026-11-20).**
 
 **Data changes:** none (content/facts/*.json).
 
@@ -847,6 +908,11 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 23. **The sender address** *(`crew@onesmallclick.io`, separate from the sign-in sender)*.
 24. **How many top contributors to name** *(top 10 by km this leg, using their generated names)*.
 25. **Existing accounts** *(asked once in the game; nobody is opted in automatically)*.
+
+### Before phase S (added 2026-11-20; recommendations in brackets)
+26. **What counts as a recruit** *(a new device that arrives through your link and makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter)*.
+27. **Recruiter badges** *(Crew Recruiter I / II / III at 1, 5 and 25 recruits)*.
+28. **Share buttons** *(the phone's own share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy link; no share SDKs)*.
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*

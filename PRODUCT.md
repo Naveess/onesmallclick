@@ -29,6 +29,7 @@ One shared probe on a real Earth–Mars route, flown by everyone at once. The he
 - Daily rituals: a ping (one per device, or per account when signed in) resets a shared signal timer; one crew vote a day changes the route or the date; milestones unlock fact cards and postcards.
 - Play works without an account (anonymous device ID). Sign-in by email link or Google is optional and keeps progress across devices. Only accounts appear on leaderboards and in the credits.
 - When the probe arrives: mission credits for everyone who helped, then a vote on the next destination.
+- Sharing and invites (phase S): one-tap shares to the big apps at every big moment, personal crew links with rich previews, and recruiter badges for friends who play. Plain share links only: no share SDKs and no tracking scripts. Growth is measured with the K-factor (shares per player × the share who join) in /admin.
 - Crew emails (from phase 8d, opt-in, accounts only): a halfway "help us make the push" and an arrival round-up with your contribution and the top contributors. At most two per leg, with one-click unsubscribe, and never tracking pixels.
 - Content pages (mission log, milestone fact pages, leaderboards, how to play) carry most of the AdSense display ads.
 
