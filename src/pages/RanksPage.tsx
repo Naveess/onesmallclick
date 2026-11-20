@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Board, BoardResult, BoardRow } from "../../shared/boards";
+import { Flag } from "../components/Flag";
 import { GameShell } from "../components/GameShell";
 import { PixelIcon } from "../components/PixelIcon";
 import { countryName } from "../game/countries";
@@ -29,7 +30,7 @@ function Row({ row, board }: { row: BoardRow; board: Board }) {
   return (
     <li className="ranks__row">
       <span className={rankClass(row.rank)}>{row.rank ?? "–"}</span>
-      <span className="ranks__cc">{row.cc ?? "··"}</span>
+      <Flag cc={row.cc} label={countryName(row.cc)} />
       <span className="ranks__name">{board === "countries" ? countryName(row.cc) : row.name}</span>
       <span className="ranks__km num">{int(row.km)} km</span>
     </li>
@@ -114,7 +115,7 @@ export function RanksPage() {
               {board === "players" && !shown.signedIn ? (
                 <>
                   <span className="ranks__me-rank">–</span>
-                  <span className="ranks__cc">{me.cc ?? "··"}</span>
+                  <Flag cc={me.cc} label={countryName(me.cc)} />
                   <span className="ranks__name">
                     {me.name} (you)
                     <span className="ranks__me-hint">Sign in to appear on the board</span>
@@ -124,7 +125,7 @@ export function RanksPage() {
               ) : (
                 <>
                   <span className="ranks__me-rank num">{me.rank === null ? "–" : `#${int(me.rank)}`}</span>
-                  <span className="ranks__cc">{me.cc ?? "··"}</span>
+                  <Flag cc={me.cc} label={countryName(me.cc)} />
                   <span className="ranks__name">
                     {board === "countries" ? `${countryName(me.cc)} (yours)` : `${me.name} (you)`}
                   </span>

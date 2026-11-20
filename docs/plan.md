@@ -449,6 +449,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Text:**
   - The delete-account text now lists badges.
   - The privacy page (updated 20 November) mentions click counts, badges, the Night Shift time zone check, and that the Players board shows signed-in names only.
+- **After Nav's checks (prompts 40–41, 2026-11-20):**
+  - **Pixel flags** on both boards, in place of the two-letter code box: next to each player's name and each country. There are 256 flags at 16×12, shown at 2× (`src/components/Flag.tsx`).
+    - Made by `scripts/make-flags.mjs` from flag-icons (MIT, credited in `design/sprites/flags/`).
+    - 54 busy flags were tidied by hand (`scripts/flags/overrides.json`).
+    - Flags keep their real colours (an agreed palette exception).
+  - **The signal card's wording** before Signal Keeper I: "Ping streak · 2-day ping streak · 1 day to Signal Keeper I" (it used to say "Signal Keeper I · 1 day to I").
 - **Checked locally:**
   - A scripted run passed all 18 checks: each badge rule, Halfway Crew not going to someone who pushed only after halfway, the merge of two devices' badges, the leaderboards as guest and signed in, the profile, and delete account removing badges.
   - The 8a sign-in checks and the click-count checks pass again, and `npm run build` passes.

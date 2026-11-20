@@ -1,0 +1,615 @@
+{
+  "_about": "Hand-tidied 16x12 flags (prompt 41). 'rows' + 'palette' replace a flag outright. 'union' stamps the clean 8x6 Union Jack canton. 'tidy' wipes the emblem's noise (colours used by few pixels, within 'area') back to the band colour around it ('dir': row or col bands) and draws a simple hand-made 'shape' in colours 'c' (1, 2, 3) at its centre. Shapes are in scripts/make-flags.mjs.",
+  "gb": {
+    "palette": {
+      "r": "#c8102e",
+      "w": "#ffffff",
+      "b": "#012169"
+    },
+    "rows": [
+      "rwbbbbwrrwbbbbwr",
+      "wrwbbbwrrwbbbwrw",
+      "bwrwbbwrrwbbwrwb",
+      "bbwrwbwrrwbwrwbb",
+      "wwwwwwwrrwwwwwww",
+      "rrrrrrrrrrrrrrrr",
+      "rrrrrrrrrrrrrrrr",
+      "wwwwwwwrrwwwwwww",
+      "bbwrwbwrrwbwrwbb",
+      "bwrwbbwrrwbbwrwb",
+      "wrwbbbwrrwbbbwrw",
+      "rwbbbbwrrwbbbbwr"
+    ]
+  },
+  "eu": {
+    "palette": {
+      "a": "#003399",
+      "y": "#ffcc00"
+    },
+    "rows": [
+      "aaaaaaaaaaaaaaaa",
+      "aaaaaayaayaaaaaa",
+      "aaaayaaaaaayaaaa",
+      "aaaaaaaaaaaaaaaa",
+      "aaayaaaaaaaayaaa",
+      "aaaaaaaaaaaaaaaa",
+      "aaaaaaaaaaaaaaaa",
+      "aaayaaaaaaaayaaa",
+      "aaaaaaaaaaaaaaaa",
+      "aaaayaaaaaayaaaa",
+      "aaaaaayaayaaaaaa",
+      "aaaaaaaaaaaaaaaa"
+    ]
+  },
+  "au": {
+    "union": true
+  },
+  "nz": {
+    "union": true
+  },
+  "ck": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "ring",
+      "c": [
+        "#ffffff"
+      ]
+    }
+  },
+  "tv": {
+    "union": true
+  },
+  "hm": {
+    "union": true
+  },
+  "nu": {
+    "union": true
+  },
+  "io": {
+    "union": true
+  },
+  "fj": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#ce1126"
+      ]
+    }
+  },
+  "ky": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#c8102e"
+      ]
+    }
+  },
+  "fk": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#3399ff"
+      ]
+    }
+  },
+  "ms": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#3a8f3e"
+      ]
+    }
+  },
+  "pn": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#3a8f3e"
+      ]
+    }
+  },
+  "tc": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#f8d100"
+      ]
+    }
+  },
+  "vg": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#3a8f3e"
+      ]
+    }
+  },
+  "bm": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#c8102e"
+      ]
+    }
+  },
+  "gs": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "shield",
+      "c": [
+        "#ffffff",
+        "#3399ff"
+      ]
+    }
+  },
+  "sh": {
+    "_note": "flag-icons draws Saint Helena, Ascension and Tristan da Cunha as the Union Jack",
+    "same": "gb"
+  },
+  "ai": {
+    "union": true,
+    "tidy": {
+      "area": [
+        8,
+        0,
+        8,
+        12
+      ],
+      "shape": "disc",
+      "c": [
+        "#ffffff",
+        "#f18a00"
+      ]
+    }
+  },
+  "es": {
+    "tidy": {
+      "shape": "shield",
+      "c": [
+        "#c8b100",
+        "#aa151b"
+      ]
+    }
+  },
+  "pt": {
+    "tidy": {
+      "shape": "disc",
+      "c": [
+        "#ffcc00",
+        "#ffffff"
+      ]
+    }
+  },
+  "mx": {
+    "tidy": {
+      "dir": "col",
+      "shape": "crest",
+      "c": [
+        "#7a5230",
+        "#006847"
+      ]
+    }
+  },
+  "ec": {
+    "tidy": {
+      "shape": "shield",
+      "c": [
+        "#7a5230",
+        "#4b9cd3"
+      ]
+    }
+  },
+  "eg": {
+    "tidy": {
+      "shape": "crest",
+      "c": [
+        "#c09300",
+        "#c09300"
+      ]
+    }
+  },
+  "sv": {
+    "tidy": {
+      "shape": "tri",
+      "c": [
+        "#e6b800",
+        "#2a8f3e"
+      ]
+    }
+  },
+  "ni": {
+    "tidy": {
+      "shape": "tri",
+      "c": [
+        "#e6b800",
+        "#3399ff"
+      ]
+    }
+  },
+  "gt": {
+    "tidy": {
+      "dir": "col",
+      "shape": "disc",
+      "c": [
+        "#3a8f3e",
+        "#ffffff"
+      ]
+    }
+  },
+  "bo": {
+    "tidy": {
+      "shape": "disc",
+      "c": [
+        "#7a5230",
+        "#4b9cd3"
+      ]
+    }
+  },
+  "py": {
+    "tidy": {
+      "shape": "disc",
+      "c": [
+        "#3a8f3e",
+        "#ffffff"
+      ]
+    }
+  },
+  "ad": {
+    "tidy": {
+      "dir": "col",
+      "shape": "shield",
+      "c": [
+        "#c09300",
+        "#d52b1e"
+      ]
+    }
+  },
+  "md": {
+    "tidy": {
+      "dir": "col",
+      "shape": "shield",
+      "c": [
+        "#7a5230",
+        "#cc092f"
+      ]
+    }
+  },
+  "me": {
+    "tidy": {
+      "shape": "crest",
+      "c": [
+        "#c09300",
+        "#c09300"
+      ]
+    }
+  },
+  "rs": {
+    "tidy": {
+      "shape": "shield",
+      "c": [
+        "#c09300",
+        "#c6363c"
+      ]
+    }
+  },
+  "sm": {
+    "tidy": {
+      "shape": "shield",
+      "c": [
+        "#c09300",
+        "#5eb6e4"
+      ]
+    }
+  },
+  "li": {
+    "tidy": {
+      "shape": "crown",
+      "c": [
+        "#ffd83d"
+      ]
+    }
+  },
+  "va": {
+    "tidy": {
+      "dir": "col",
+      "shape": "crest",
+      "c": [
+        "#c09300",
+        "#ffffff"
+      ]
+    }
+  },
+  "af": {
+    "tidy": {
+      "dir": "col",
+      "shape": "disc",
+      "c": [
+        "#ffffff",
+        "#be0000"
+      ]
+    }
+  },
+  "kz": {
+    "tidy": {
+      "area": [
+        4,
+        0,
+        12,
+        12
+      ],
+      "shape": "disc",
+      "c": [
+        "#ffe700",
+        "#ffe700"
+      ]
+    }
+  },
+  "kh": {
+    "tidy": {
+      "shape": "temple",
+      "c": [
+        "#ffffff"
+      ]
+    }
+  },
+  "lk": {
+    "tidy": {
+      "area": [
+        5,
+        0,
+        11,
+        12
+      ],
+      "dir": "col",
+      "shape": "shield",
+      "c": [
+        "#ffbe29",
+        "#ffbe29"
+      ]
+    }
+  },
+  "sa": {
+    "tidy": {
+      "shape": "saudi",
+      "c": [
+        "#ffffff"
+      ]
+    }
+  },
+  "mt": {
+    "tidy": {
+      "area": [
+        0,
+        0,
+        8,
+        8
+      ],
+      "dir": "col",
+      "shape": "cross",
+      "c": [
+        "#9a9a9a"
+      ]
+    }
+  },
+  "hr": {
+    "tidy": {
+      "shape": "checker",
+      "c": [
+        "#ff0000",
+        "#ffffff"
+      ]
+    }
+  },
+  "ht": {
+    "tidy": {
+      "shape": "haiti",
+      "c": [
+        "#ffffff",
+        "#016a16"
+      ]
+    }
+  },
+  "er": {
+    "palette": {
+      "r": "#ea0437",
+      "g": "#12ad2b",
+      "b": "#4189dd",
+      "y": "#ffc726"
+    },
+    "rows": [
+      "rggggggggggggggg",
+      "rrrrgggggggggggg",
+      "rrrrrrrggggggggg",
+      "rrrrrrrrrggggggg",
+      "rrryyrrrrrrrgggg",
+      "rryrryrrrrrrrrrg",
+      "rryrryrrrrrrrrrb",
+      "rrryyrrrrrrrbbbb",
+      "rrrrrrrrrbbbbbbb",
+      "rrrrrrrbbbbbbbbb",
+      "rrrrbbbbbbbbbbbb",
+      "rbbbbbbbbbbbbbbb"
+    ]
+  },
+  "ki": {
+    "tidy": {
+      "area": [
+        0,
+        0,
+        16,
+        7
+      ],
+      "shape": "sun",
+      "c": [
+        "#fcd116"
+      ]
+    }
+  },
+  "bz": {
+    "palette": {
+      "r": "#ce1126",
+      "b": "#003f87",
+      "w": "#ffffff",
+      "g": "#3a8f3e",
+      "y": "#7a5230"
+    },
+    "rows": [
+      "rrrrrrrrrrrrrrrr",
+      "bbbbbbbbbbbbbbbb",
+      "bbbbbbwwwwbbbbbb",
+      "bbbbbwggggwbbbbb",
+      "bbbbwgwwwwgwbbbb",
+      "bbbbwgwyywgwbbbb",
+      "bbbbwgwyywgwbbbb",
+      "bbbbwgwwwwgwbbbb",
+      "bbbbbwggggwbbbbb",
+      "bbbbbbwwwwbbbbbb",
+      "bbbbbbbbbbbbbbbb",
+      "rrrrrrrrrrrrrrrr"
+    ]
+  },
+  "gu": {
+    "palette": {
+      "r": "#c62139",
+      "n": "#00297b",
+      "s": "#5bc0eb",
+      "g": "#3a8f3e",
+      "y": "#e6d38c"
+    },
+    "rows": [
+      "rrrrrrrrrrrrrrrr",
+      "rnnnnnnnnnnnnnnr",
+      "rnnnnnnrrnnnnnnr",
+      "rnnnnnrssrnnnnnr",
+      "rnnnnrssssrnnnnr",
+      "rnnnnrsgssrnnnnr",
+      "rnnnnrsgssrnnnnr",
+      "rnnnnryyyyrnnnnr",
+      "rnnnnnryyrnnnnnr",
+      "rnnnnnnrrnnnnnnr",
+      "rnnnnnnnnnnnnnnr",
+      "rrrrrrrrrrrrrrrr"
+    ]
+  },
+  "mp": {
+    "tidy": {
+      "shape": "star",
+      "c": [
+        "#ffffff"
+      ],
+      "rare": 30
+    }
+  },
+  "vi": {
+    "tidy": {
+      "shape": "shield",
+      "c": [
+        "#ffd100",
+        "#162c69"
+      ]
+    }
+  },
+  "sz": {
+    "tidy": {
+      "shape": "nguni",
+      "c": [
+        "#ffffff",
+        "#000000"
+      ],
+      "rare": 30
+    }
+  },
+  "un": {
+    "tidy": {
+      "shape": "disc",
+      "c": [
+        "#ffffff",
+        "#4b92db"
+      ]
+    }
+  },
+  "gi": {
+    "tidy": {
+      "shape": "castle",
+      "c": [
+        "#da000c"
+      ]
+    }
+  }
+}

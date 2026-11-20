@@ -73,11 +73,11 @@ export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays,
   // Your Signal Keeper level from today's streak (phase 8b: 3 / 7 / 21 / 30 days).
   const level = keeperLevel(streakDays);
   const nextDays = level < KEEPER_DAYS.length ? KEEPER_DAYS[level] - streakDays : 0;
-  const keeperName = `Signal Keeper ${ROMAN[Math.max(0, level - 1)]}`;
+  // Before Signal Keeper I it's just a streak (prompt 40: "Signal Keeper I · 1 day to I" read as if you had it).
+  const keeperName = level > 0 ? `Signal Keeper ${ROMAN[level - 1]}` : "Ping streak";
+  const toNext = `${nextDays} day${nextDays === 1 ? "" : "s"} to ${level > 0 ? ROMAN[level] : "Signal Keeper I"}`;
   const keeperNote =
-    level === KEEPER_DAYS.length
-      ? `${streakDays}-day ping streak · top level`
-      : `${streakDays}-day ping streak · ${nextDays} day${nextDays === 1 ? "" : "s"} to ${ROMAN[level]}`;
+    level === KEEPER_DAYS.length ? `${streakDays}-day ping streak · top level` : `${streakDays}-day ping streak · ${toNext}`;
   const timer = (
     <div
       className={urgent ? "signal__timer signal__timer--urgent" : "signal__timer"}

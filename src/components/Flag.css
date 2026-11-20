@@ -1,0 +1,24 @@
+/* A 16×12 pixel flag shown at 2×, from the flags sprite sheet. */
+.flag {
+  display: inline-block;
+  flex: none;
+  width: 32px;
+  height: 24px;
+  background-image: url("/sprites/flags-16x12.png");
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  outline: 2px solid var(--outline);
+}
+
+/* No flag for this code: the code in a box, as before. */
+.flag--code {
+  width: auto;
+  min-width: 32px;
+  height: auto;
+  font: 16px var(--font-num);
+  text-align: center;
+  color: var(--text-soft);
+  background: none;
+  border: 2px solid var(--line);
+  outline: none;
+}
