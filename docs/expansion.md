@@ -161,6 +161,8 @@ E3 builds a checker that refuses a leg with anything missing.
 
 ## 8. Social sharing
 
+*Extended 2026-11-20: sharing and invites are now their own phase (S, in docs/plan.md), built before E1, with crew links, previews, recruits and K-factor tracking. The texts below are still the starting point.*
+
 Everything is text or a self-made image, with no tracking and no ad links:
 - **The map card:** a 1080×1080 PNG made in the browser, like the design's fact share card. The star chart is cropped around the probe, with "The crew chose Europa" and the date.
 - **Branch result text:** "OneSmallClick · The crew chose Europa (61% of 12,481 votes) · Next stop: Saturn · onesmallclick.io".

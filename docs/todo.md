@@ -45,6 +45,7 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
   - Mission Patch
   - Signal Keeper I, II, III, IV (ping streaks; one design that gets grander at each level)
   - Steady Finger, Iron Thumb, Ten Thousand Club (click badges: 1,500 / 5,000 / 10,000 clicks; added 19 Nov)
+  - Crew Recruiter I, II, III (recruit badges: 1 / 5 / 25 recruits; added 20 Nov with phase S)
   - Cheapest route: one `create_image_pro` call at 32×32 costs 10 generations and returns 64 candidates. Give it the signal badge as the style reference, pick the best one for each badge, then tidy them in the free workbench. Back up the masters to Drive (OneSmallClick › Sprites).
 
 ## Payday: domain, Email Service and Workers Paid (moved here 20 Nov)
@@ -65,6 +66,13 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 - [ ] **Build 8d** (docs/plan.md): the opt-in box and toggle, one-click unsubscribe, the halfway and arrival emails, batched sending, /admin previews and test sends.
 - [ ] **Check the opt-in and email wording** against UK rules (PECR and GDPR) before launch. Claude isn't a lawyer.
 - [ ] **Privacy page:** add crew emails and how to stop them (with 8d).
+
+## Phase S: Sharing and invites (added 20 Nov; after 9a, before E1)
+- [ ] **Approve decisions 26–28** in docs/plan.md: what counts as a recruit, the recruiter badges, and which share buttons.
+- [ ] **Build phase S** (docs/plan.md): the share kit, crew links, link previews, share moments, the invite landing, recruits and the K-factor panel in /admin.
+- [ ] **Preview images** (1200×630) for each moment, milestone and destination. Claude Code composes them from the existing sprites; PixelLab only if a moment needs new art.
+- [ ] **After the domain is live:** check crew-link previews in the Facebook and X link debuggers.
+- [ ] **Privacy page:** a line on crew links and recruit counts.
 
 ## Expansion: the Grand Tour (planned 19 Nov 2026)
 
