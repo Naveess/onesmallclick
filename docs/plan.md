@@ -16,7 +16,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
   - [x] **8a: Accounts and sign-in** (deployed from 02849c8 with migration 0007, 2026-11-19; Nav's checks tonight)
   - [ ] **Flight view** (added 2026-11-19, before 8b): the game home's flight view replaces the straight track, plus "You've clicked". Built 2026-11-19 (prompt 32), deployed by Nav with migration 0008; checks passed 2026-11-20 (prompt 33) except that the counts after a reload weren't confirmed. Follow-up built 2026-11-20 (prompt 35), waiting for Nav's deploy.
-  - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38) with migration 0009; waiting for the deploy and Nav's checks.
+  - [ ] **8b: Leaderboards, profile and badges** (now also awards the three click badges). Built 2026-11-20 (prompts 37–38); migration 0009 applied and deployed by Claude at Nav's request (prompt 39, version 4982850b); waiting for Nav's checks.
   - [ ] **E0: Grand Tour planning** (plan only, before 8c; see docs/todo.md "Expansion: the Grand Tour")
   - [ ] **8c: Arrival and credits** (its destination vote becomes the Grand Tour's first branch, Ceres or Vesta, once E0 is approved)
 - [ ] **Phase 9: Launch hardening, ads and legal pages**
@@ -416,7 +416,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **Migration 0007:** `accounts`, `sessions`, `login_tokens`, `account_id` on `devices` and `daily_km`, indexes for pings and votes by account.
 - **Checked locally** with a scripted run of two devices on one email (merge, once-per-account ping and vote, names, country, sign out, delete, Google off locally, a forged callback refused): all 37 checks passed, plus the retune checks again. Screenshots of every screen at phone and desktop width. The real Google round trip can only be tried in Nav's browser.
 
-**8b as built (2026-11-20, prompts 37–38; waiting for migration 0009, the deploy and Nav's checks)**
+**8b as built (2026-11-20, prompts 37–38; deployed with migration 0009 on 2026-11-20, prompt 39; waiting for Nav's checks)**
 - **Answers (prompt 38):**
   - Signal Keeper I–IV at 3 / 7 / 21 / 30-day ping streaks.
   - Night Shift is THRUST taps credited between 02:00 and 04:59 local time.
