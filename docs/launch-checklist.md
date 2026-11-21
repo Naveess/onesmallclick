@@ -32,7 +32,7 @@ Use mobile data for one run and Wi-Fi for another.
 
 ## Automated (Claude, phase 9a)
 
-The results are in docs/plan.md ("Phase 9a as built").
+Done 2026-11-21 (prompt 57); the results are in docs/plan.md ("Phase 9a status"). Scripts used are in the session scratchpad, not the project, except the scripted checks in `scripts/`.
 
 - Lighthouse (`npx lighthouse`, not part of the project) on the game home, How to play, a milestone page, the Mars facts page and Privacy: phone and desktop.
 - An accessibility pass: keyboard only (every control reachable, a visible focus ring, dialogs trap focus and Esc closes them), text contrast in both themes, labels on icon buttons, reduced motion.

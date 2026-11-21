@@ -658,11 +658,20 @@ Done in prompt 55 (2026-11-20):
 
 **Storage costs (prompt 55 proposal, OK'd by Nav in prompt 56, built).** Each player with the game open wrote about 2,200 rows an hour to the probe's SQLite and 1,000 to D1 (about $75 a day for 1,000 players around the clock on Workers Paid, and only ~45 player-hours a day on the free plan). Now: players' progress is saved every 60 s (the shared distance stays at 5 s), rows are updated in place instead of replaced, D1 gets km, taps and progress every 5 minutes, "last seen" is written at most hourly (also on page loads), and the /admin clock offset only when it changes. The km waiting for D1 are kept in a new table in the probe's SQLite (`d1_queue`, written with the 60 s save), so a restart loses at most a minute of them, not 5 minutes; a flush only takes off what D1 confirmed, and one flush runs at a time. **Measured after:** about 227 rows a player-hour in the probe and 77 in D1, about 10× fewer (a little short of the 15× estimate). Checked: sign-in 37/37 and arrival 18/18 still pass; a scripted restart test showed the queued taps survive a restart and the queue is empty after the flush. Locally, the dev server's code reload leaves the old copy of the probe running, and it flushed its own copy too, so that test double-counted. On Cloudflare only one copy runs, which it enforces when a copy touches its storage, so every flush now reads the probe's storage before sending. The trade-offs Nav accepted: after a restart players can lose up to a minute of credits, and the leaderboards' "today" lags up to 5 minutes.
 
-Still to do in 9a (in this order):
-1. Re-run `check-clicks.mjs`, `check-badges.mjs` and `node scripts/cap-test.mjs` once the old dev servers are stopped.
-2. **Screenshots** of /terms, /contact, /privacy, the footers (phone and desktop), the crash screen and the busy-network toast, at 375, 390 and 1440 in both themes.
-3. **Lighthouse and the accessibility pass** (docs/launch-checklist.md, "Automated"), and fix what they find.
-4. Changelog, commit, push; then Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`.
+Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.md, "Automated").
+- **Scripted checks, all pass** (after the storage change): `cap-test.mjs` (now takes a base URL), `check-clicks.mjs`, `check-badges.mjs` (earlier this session: `check-auth.mjs` 37/37, `check-arrival.mjs` 18/18).
+- **Screenshots** (headless Edge, 39 of them): /terms, /contact, /privacy, /sign-in, the game home with its footers, and the crash screen at 375, 390 and 1440 in both themes, plus the busy-network toast (the ping answered "busy-network", the real refusal's reply) on a phone in both themes and on desktop. No sideways scroll and no page errors anywhere. **Fixed:** on a phone, sign-in's "Privacy · Terms" wrapped one link per line and had no Contact link; they're now on a line of their own with Contact.
+- **Lighthouse 12** (`npx`, Edge, the built site served with brotli like Cloudflare) on the game home, How to play, a milestone page, the Mars facts page, Privacy, Terms and Contact, phone and desktop:
+  - Accessibility **100 on every page in both themes** after two fixes on the milestone pages: the postcard stamp's number was 4.14:1 on the paper (now `--text-stamp` is #8a4620, already in the palette, 5.70:1; its border keeps #a8582a; the in-game postcard gets it too), and the source links were 16px tall (now 24px targets).
+  - Best practices 100 (the game home's only miss is console errors from having no API behind the static server).
+  - SEO 100 once **`public/robots.txt`** exists: until now `/robots.txt` served the game page live, which crawlers read as a broken robots file. A Sitemap line waits for the domain (9b).
+  - Performance: content pages 95–100 on a phone and 100 on desktop; the game home 89 on a phone (LCP 3.8 s on Lighthouse's slow-4G) and 100 on desktop. Content pages' phone LCP (~2.9 s) is the fonts: they're set to stay invisible until loaded (on purpose, so the pixel text never changes font), and Lighthouse's slow-4G shows that wait. Left as is.
+  - **For Nav:** Lighthouse flags the game home on a phone for small text: about 40% of its text is the design's 11px labels (flight view, vote footer, "You've clicked", streak, header line, fact card), and it wants 60% at 12px or more. It's at 59.7%, so it fails the audit only just. Left as designed unless Nav wants the labels at 12px.
+- **Keyboard only:** every control on the game home is reachable by Tab at 390 and 1440 (21 and 17 stops) with a visible focus ring (THRUST's is the 8-sided blue plate); the Upgrades sheet and the Share fact dialog are modal `<dialog>`s, so Tab stays out of the page behind, Esc closes them and focus goes back to the button that opened them.
+- **Reduced motion:** with it on, nothing animates on the game home, How to play or sign-in (3–14 animations run without it).
+
+Still to do in 9a:
+1. Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`. Then Nav's phone checks (docs/launch-checklist.md) and Lighthouse on the live site.
 
 
 **Goal:** ready for real players.

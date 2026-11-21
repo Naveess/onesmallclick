@@ -1,11 +1,11 @@
 // Phase 9a: checks the per-network cap locally (npm run dev must be running; needs .dev.vars with ADMIN_KEY).
-//   node scripts/cap-test.mjs        (from the project folder)
+//   node scripts/cap-test.mjs [base]   (from the project folder; base defaults to http://localhost:5173)
 // 51 fresh devices on one network ping and vote; the 51st of each is refused. Takes about 5 minutes,
 // because the game accepts at most one ping every 5 seconds. Clears the local network_caps table.
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const base = "http://localhost:5173";
+const base = (process.argv[2] ?? "http://localhost:5173").replace(/\/$/, "");
 const KEY = /^ADMIN_KEY\s*=\s*"?([^"\r\n]+)"?/m.exec(readFileSync(new URL("../.dev.vars", import.meta.url), "utf-8"))[1];
 const TOKEN = "XXXX.DUMMY.TOKEN.XXXX";
 let fails = 0;

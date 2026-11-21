@@ -194,6 +194,12 @@
   padding-left: 18px;
 }
 
+/* Phase 9a (Lighthouse): each source link is a 24px-tall target at least. */
+.sources li a {
+  display: inline-block;
+  padding-block: 4px;
+}
+
 .sources a,
 .page__links a {
   color: var(--text-blue);

@@ -133,6 +133,12 @@
   color: var(--text-muted);
 }
 
+/* Phase 9a: the legal links on a line of their own, so they don't wrap one by one on a phone. */
+.signin__legal {
+  display: block;
+  margin-top: 4px;
+}
+
 .signin__small--warm {
   color: var(--text-warm-soft);
 }

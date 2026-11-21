@@ -109,7 +109,7 @@
   --text-warm-muted: #c9a888; /* ki-c9a888 · captions on orange windows */
   --text-on-blue: #05081a; /* ki-05081a · text on blue or white fills */
   --text-ink: #3a2a1a; /* ki-3a2a1a · handwriting on postcards */
-  --text-stamp: #a8582a; /* ki-a8582a · postcard stamp text */
+  --text-stamp: #8a4620; /* kf-8a4620 · postcard stamp text (phase 9a: was ki-a8582a, 4.14:1 on --paper; this is 5.70:1) */
 }
 
 [data-theme="light"] {

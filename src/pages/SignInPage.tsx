@@ -162,7 +162,10 @@ function GuestForm({ crew }: { crew: number }) {
         </p>
       )}
       <p className="signin__small">
-        No password. We never post anything for you. <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+        No password. We never post anything for you.
+        <span className="signin__legal">
+          <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a>
+        </span>
       </p>
       <Link href="/" className="signin__guest">
         Keep playing as guest{crew > 0 && ` · Crew #${int(crew)}`}

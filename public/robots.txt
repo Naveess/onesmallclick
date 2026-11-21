@@ -1,0 +1,4 @@
+# OneSmallClick. Everything is open to crawlers except the game's API.
+# (Phase 9a: without this file the game page was served here.) A Sitemap line comes with the domain (9b).
+User-agent: *
+Disallow: /api/
