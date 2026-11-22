@@ -14,7 +14,7 @@
 .track__ends {
   display: flex;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-muted);
 }
@@ -221,7 +221,7 @@
 }
 
 .track__foot .label-sm {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 

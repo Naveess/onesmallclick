@@ -50,7 +50,7 @@
 }
 
 .here-now__idling {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -63,7 +63,7 @@
 }
 
 .arrival__label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -212,7 +212,7 @@
 }
 
 .signal__label {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-muted);
 }
@@ -227,7 +227,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-orange-soft);
 }
 
@@ -345,7 +345,7 @@
 }
 
 .signal__badge-note {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-warm-muted);
 }
 
@@ -368,7 +368,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-muted);
 }
@@ -439,7 +439,7 @@
 }
 
 .vote__foot {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
@@ -521,7 +521,7 @@
 }
 
 .safe-chip__word {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--text-orange);
 }

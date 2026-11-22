@@ -15,7 +15,7 @@
 }
 
 .branch__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.12em;
   color: var(--text-muted);
@@ -90,7 +90,7 @@
 .branch__name {
   left: 96px;
   padding: 0 5px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-soft);
   background: var(--field);
 }
@@ -229,6 +229,6 @@
 }
 
 .branch__foot {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
 }
