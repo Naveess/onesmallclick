@@ -22,7 +22,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [ ] **8d: Crew emails** (added 2026-11-20, after 8c and before launch; **waits for the payday setup**, see docs/todo.md "Payday"): an opt-in halfway "help us make the push" email and an arrival round-up with your contribution, the top contributors and the next-destination vote. Needs the domain, Email Service and Workers Paid.
   - [x] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; live (c6e1027f) and approved (prompt 52).
 - [ ] **Phase 9: Launch hardening, ads and legal pages** (split in two, prompt 54)
-  - [ ] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **In progress**: see "Phase 9a status" below.
+  - [ ] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **Deployed 2026-11-21** (prompt 58, version 17358aa0); waiting for Nav's checks: see "Phase 9a status" below.
   - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test, then the launch reset)
 - [ ] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts.
 - [ ] **E1: The campaign map** (1m)
@@ -670,8 +670,11 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Keyboard only:** every control on the game home is reachable by Tab at 390 and 1440 (21 and 17 stops) with a visible focus ring (THRUST's is the 8-sided blue plate); the Upgrades sheet and the Share fact dialog are modal `<dialog>`s, so Tab stays out of the page behind, Esc closes them and focus goes back to the button that opened them.
 - **Reduced motion:** with it on, nothing animates on the game home, How to play or sign-in (3–14 animations run without it).
 
-Still to do in 9a:
-1. Nav's deploy: back up the live D1, apply migration 0011 remotely, `npm run deploy`. Then Nav's phone checks (docs/launch-checklist.md) and Lighthouse on the live site.
+**Deployed (prompt 58, 2026-11-21, by Claude at Nav's request):** live D1 backed up to `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-21-pre-9a.sql` (not in git: it holds emails), migration 0011 applied remotely, `npm run deploy` (version 17358aa0). Checked live: every page and `/api/health` answer 200, `/robots.txt` is the new text file, the served bundle is the new build, the milestone pages have the stamp and source-link fixes, and D1 has `network_caps` with 0011 recorded. The probe closed the vote by its own alarm at 00:00 UTC after the deploy. Nobody had tapped since, so the 5-minute D1 flush hasn't been seen live yet: added to Nav's phone checks (docs/launch-checklist.md, step 15).
+
+**Lighthouse on the live site** (prompt 59; content pages only, because every visit to the game home makes a live guest player): How to play, the Halfway milestone page, the Mars facts page, Privacy, Terms and Contact, phone and desktop. **Accessibility, best practices and SEO 100 on all 12 runs; performance 97–100** (phone LCP 1.1–1.5 s, desktop 0.3–0.7 s). Faster than the local runs, which waited longer for the fonts.
+
+Still to do in 9a: Nav's phone checks (docs/launch-checklist.md, "On your own phone"), then Nav's OK. Open question for Nav: the game home's 11px labels (Lighthouse small-text audit).
 
 
 **Goal:** ready for real players.

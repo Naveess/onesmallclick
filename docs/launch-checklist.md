@@ -21,6 +21,7 @@ Use mobile data for one run and Wi-Fi for another.
 12. **Turn on reduced motion** (iPhone: Settings → Accessibility → Motion → Reduce Motion; Android: Remove animations). Nothing flashes or scrolls on its own.
 13. **Larger text** (the phone's text size one or two steps up). Nothing overlaps.
 14. **A broken address**, like /nothing-here. It says "Lost signal" with a way back.
+15. **The leaderboard catches up** (phase 9a's storage change). After tapping in step 2, wait 5 minutes, then open Ranks: your km today are there. Before that they can be missing: D1 now gets them every 5 minutes.
 
 ## Before the launch reset (Claude, after payday: phase 9b)
 
