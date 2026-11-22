@@ -68,6 +68,16 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 - [ ] **Privacy page:** add crew emails and how to stop them (with 8d).
 
 ## Phase S: Sharing and invites (added 20 Nov; after 9a, before E1)
+
+**Start here (new chat, 22 Nov).** Phase 9a is live and checked; a full backup was taken (git tag `pre-S`, live D1 export `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-22-pre-S.sql`). Claude proposed this approach in prompt 60; Nav hasn't answered yet:
+1. Split S into **S1** (one share kit everywhere, personal crew links `/c/<code>` with the invite banner, link previews with pixel images made by script from the existing sprites, the share moments, the Wordle-style result line, share counts) and **S2** (recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin, the privacy line). Recommended: yes.
+2. Decision 26, what counts as a recruit: a new device through your link that makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter. Recommended: as written.
+3. Decision 27, recruiter badges: Crew Recruiter I / II / III at 1, 5 and 25. Recommended: as written.
+4. Decision 28, share buttons: the phone's share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy link; no share SDKs. Recommended: as written.
+5. Preview images (1200×630, about 20) composed by a script from the existing sprites and committed to the project. Recommended: yes.
+6. Links built from the site's own address, so they switch to onesmallclick.io when the domain is connected. Recommended: yes.
+7. The 12px labels (pushed, not live): deploy now or with S1.
+Next free migration number: 0012.
 - [ ] **Approve decisions 26–28** in docs/plan.md: what counts as a recruit, the recruiter badges, and which share buttons.
 - [ ] **Build phase S** (docs/plan.md): the share kit, crew links, link previews, share moments, the invite landing, recruits and the K-factor panel in /admin.
 - [ ] **Preview images** (1200×630) for each moment, milestone and destination. Claude Code composes them from the existing sprites; PixelLab only if a moment needs new art.
