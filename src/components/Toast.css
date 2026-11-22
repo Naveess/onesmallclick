@@ -80,3 +80,27 @@
   outline: 2px solid var(--text-orange);
   outline-offset: -4px;
 }
+
+/* A badge toast's Share button (phase S1). */
+.toast__share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 2px;
+  padding: 0 2px;
+  font: 600 14px/1 var(--font-ui);
+  color: var(--text-orange);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.toast__share:hover {
+  text-decoration: underline;
+}
+
+.toast__share:focus-visible {
+  outline: 2px solid var(--text-orange);
+  outline-offset: 2px;
+}

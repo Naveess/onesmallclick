@@ -1,11 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MILESTONES, MILESTONE_COUNT } from "../../shared/milestones";
 import type { ReachedMilestone } from "../../shared/milestones";
+import { resultLine, sentence, shareMessage } from "../../shared/share";
 import { int } from "../game/format";
-import { notify } from "../game/store";
 import { SPRITES } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
 import { PixelButton } from "./PixelButton";
+import { ShareSheet } from "./ShareSheet";
 import { Window } from "./Window";
 import "./MilestoneMoment.css";
 import "./Postcard.css";
@@ -33,32 +34,16 @@ interface MilestoneMomentProps {
   onClose: () => void;
 }
 
-/** The design's share card: "OneSmallClick · Day 63 / ▰▰▰▰▰▱▱▱▱▱ 50% to Mars / …". */
-export function shareText(t: Today): string {
-  const pct = Math.min(100, Math.max(0, Math.floor(t.progress * 100)));
-  const cells = Math.round(pct / 10);
-  return [
-    `OneSmallClick · Day ${t.missionDay}`,
-    `${"▰".repeat(cells)}${"▱".repeat(10 - cells)} ${pct}% to ${t.destName ?? "Mars"}`,
-    `I pushed ${int(t.kmToday)} km today`,
-    `Arrival: ${t.arrivalAt === null ? "on hold" : shortDate.format(new Date(t.arrivalAt))}`,
-  ].join("\n");
-}
-
-/** Shares the text (the share sheet on phones) or copies it, with the site address. Also used by the profile. */
-export async function share(text: string) {
-  const url = window.location.origin;
-  try {
-    if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
-      await navigator.share({ text: `${text}\n${url}` });
-      return;
-    }
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    notify("Copied", "Your result is on the clipboard. Paste it anywhere.");
-  } catch (err) {
-    if ((err as DOMException)?.name === "AbortError") return; // closed the share sheet
-    notify("Couldn't share", "Your browser didn't allow it. You can copy the text from the card instead.");
-  }
+/** The design's share card: "OneSmallClick · Day 63 🚀 / ▰▰▰▰▰▱▱▱▱▱ 50% to Mars / …" (shared/share.ts resultLine). */
+export function shareText(t: Today & { cc?: string | null }): string {
+  return resultLine({
+    missionDay: t.missionDay,
+    destName: t.destName ?? "Mars",
+    progress: t.progress,
+    kmToday: t.kmToday,
+    cc: t.cc,
+    arrival: t.arrivalAt === null ? "on hold" : shortDate.format(new Date(t.arrivalAt)),
+  });
 }
 
 /** Fireworks and pixel confetti, as the design's celebrate(): five bursts, 48 squares, all in steps. */
@@ -124,6 +109,7 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
   const reduceMotion = usePrefersReducedMotion();
   const m = MILESTONES.find((x) => x.n === reached.n)!;
   const text = shareText(today);
+  const [sharing, setSharing] = useState(false);
   const card = String(m.n).padStart(2, "0");
 
   useEffect(() => {
@@ -178,7 +164,7 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
       </p>
 
       <div className="moment__buttons">
-        <PixelButton variant="orange" onClick={() => void share(text)}>
+        <PixelButton variant="orange" onClick={() => setSharing(true)} aria-haspopup="dialog">
           Share result
         </PixelButton>
         <PixelButton variant="outline" onClick={onClose} autoFocus>
@@ -187,6 +173,17 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
       </div>
 
       <div ref={fx} className="moment__fx" aria-hidden="true" />
+      {sharing && (
+        <ShareSheet
+          moment="milestone"
+          detail={String(m.n)}
+          text={`${shareMessage("milestone", { milestone: sentence(m.title), dest: today.destName ?? "Mars" })}
+
+${text}`}
+          title="Share this milestone"
+          onClose={() => setSharing(false)}
+        />
+      )}
     </main>
   );
 }

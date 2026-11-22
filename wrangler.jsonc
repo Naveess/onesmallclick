@@ -9,7 +9,9 @@
     // The Cloudflare Vite plugin fills in the directory (Vite's build output) at build time.
     // Unknown paths such as /kit get index.html, and the app picks the page.
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    // Phase S1: crew links (/c/<code>) and the content pages people share get their link previews from the Worker.
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/c/*", "/milestones/*", "/destinations/*", "/how-to-play"]
   },
   "observability": { "enabled": true },
 

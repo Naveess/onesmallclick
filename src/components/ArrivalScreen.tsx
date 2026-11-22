@@ -9,6 +9,7 @@ import { usePrefersReducedMotion } from "../theme";
 import { BranchVote } from "./BranchVote";
 import { Flag } from "./Flag";
 import { PixelButton } from "./PixelButton";
+import { ShareNudge } from "./ShareNudge";
 import { Sprite } from "./Sprite";
 import { Window } from "./Window";
 import "./ArrivalScreen.css";
@@ -150,6 +151,15 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
         </Window>
       )}
 
+      <ShareNudge
+        moment="arrival"
+        detail={arrival.stop}
+        fill={{ dest: name, days }}
+        alt={days === null}
+        variant="orange"
+        label={`Share: we made it to ${name}`}
+        title={`Share the arrival at ${name}`}
+      />
       <PixelButton variant="outline" block onClick={onClose}>
         Back to the mission
       </PixelButton>

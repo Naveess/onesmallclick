@@ -366,3 +366,28 @@
   color: var(--text-blue);
   text-underline-offset: 3px;
 }
+
+/* The share row on pages people share (phase S1): plain links, filled in by a small script. */
+.page-share {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page-share__apps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.page-share__apps .pbtn {
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 14px;
+}
+
+.page-share__note {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}

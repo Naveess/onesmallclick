@@ -1,7 +1,11 @@
+import { useState } from "react";
+import { BADGE_INFO, type BadgeId } from "../../shared/badges";
 import type { BadgeTier } from "../../shared/mission";
-import { dismissToast, type Toast as ToastData } from "../game/store";
+import { shareMessage } from "../../shared/share";
+import { dismissToast, useGame, type Toast as ToastData } from "../game/store";
 import { STILLS } from "../sprites";
 import { PixelIcon } from "./PixelIcon";
+import { ShareSheet } from "./ShareSheet";
 import { Window } from "./Window";
 import "./Toast.css";
 
@@ -13,24 +17,44 @@ const BADGE: Record<BadgeTier, { src: string; alt: string }> = {
 
 /** A short message after a ping (the badge shows on the profile from phase 8). */
 export function Toast({ toast, wide }: { toast: ToastData | null; wide: boolean }) {
+  // The share sheet for a badge outlives the toast (it fades after a few seconds), and sits outside the live region.
+  const [sharing, setSharing] = useState<BadgeId | null>(null);
+  const { view } = useGame();
   return (
-    <div className={wide ? "toast-region toast-region--wide" : "toast-region"} role="status" aria-live="polite">
-      {toast && (
-        <Window key={toast.id} tone="orange" className="toast">
-          {toast.tier ? (
-            <img className="toast__badge" src={BADGE[toast.tier].src} alt={BADGE[toast.tier].alt} width={32} height={32} />
-          ) : (
-            <PixelIcon name="signal" size={27} tone="orange" />
-          )}
-          <div className="toast__text">
-            <p className="toast__title">{toast.title}</p>
-            <p className="toast__body">{toast.body}</p>
-          </div>
-          <button type="button" className="toast__close" onClick={dismissToast} aria-label="Dismiss">
-            ×
-          </button>
-        </Window>
+    <>
+      <div className={wide ? "toast-region toast-region--wide" : "toast-region"} role="status" aria-live="polite">
+        {toast && (
+          <Window key={toast.id} tone="orange" className="toast">
+            {toast.tier ? (
+              <img className="toast__badge" src={BADGE[toast.tier].src} alt={BADGE[toast.tier].alt} width={32} height={32} />
+            ) : (
+              <PixelIcon name="signal" size={27} tone="orange" />
+            )}
+            <div className="toast__text">
+              <p className="toast__title">{toast.title}</p>
+              <p className="toast__body">{toast.body}</p>
+              {toast.badge && (
+                <button type="button" className="toast__share" onClick={() => setSharing(toast.badge!)} aria-haspopup="dialog">
+                  <PixelIcon name="share" size={18} tone="orange" />
+                  Share
+                </button>
+              )}
+            </div>
+            <button type="button" className="toast__close" onClick={dismissToast} aria-label="Dismiss">
+              ×
+            </button>
+          </Window>
+        )}
+      </div>
+      {sharing && (
+        <ShareSheet
+          moment="badge"
+          detail={sharing}
+          text={shareMessage("badge", { badge: BADGE_INFO[sharing].name, dest: view.destName })}
+          title={`Share your ${BADGE_INFO[sharing].name} badge`}
+          onClose={() => setSharing(null)}
+        />
       )}
-    </div>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { branchStopId, legKm, probeFor, stop as campaignStop, stopName } from ".
 import { hms, int } from "../game/format";
 import type { VoteOption } from "../game/store";
 import { PixelIcon } from "./PixelIcon";
+import { ShareNudge } from "./ShareNudge";
 import { Window } from "./Window";
 import "./BranchVote.css";
 
@@ -118,6 +119,15 @@ export function BranchVote({ at, options, total, mine, leftS, onVote, busy = fal
       <p className="branch__foot">
         {int(total)} vote{total === 1 ? "" : "s"} · one vote each · a tie is settled by a random draw
       </p>
+      {names.length === 2 && (
+        <ShareNudge
+          moment="branch"
+          detail={at}
+          fill={{ a: names[0], b: names[1] }}
+          label="Ask the crew to vote"
+          title={`${names[0]} or ${names[1]}? Ask the crew`}
+        />
+      )}
     </section>
   );
 }

@@ -69,20 +69,16 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 
 ## Phase S: Sharing and invites (added 20 Nov; after 9a, before E1)
 
-**Start here (new chat, 22 Nov).** Phase 9a is live and checked; a full backup was taken (git tag `pre-S`, live D1 export `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-22-pre-S.sql`). Claude proposed this approach in prompt 60; Nav hasn't answered yet:
-1. Split S into **S1** (one share kit everywhere, personal crew links `/c/<code>` with the invite banner, link previews with pixel images made by script from the existing sprites, the share moments, the Wordle-style result line, share counts) and **S2** (recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin, the privacy line). Recommended: yes.
-2. Decision 26, what counts as a recruit: a new device through your link that makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter. Recommended: as written.
-3. Decision 27, recruiter badges: Crew Recruiter I / II / III at 1, 5 and 25. Recommended: as written.
-4. Decision 28, share buttons: the phone's share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy link; no share SDKs. Recommended: as written.
-5. Preview images (1200×630, about 20) composed by a script from the existing sprites and committed to the project. Recommended: yes.
-6. Links built from the site's own address, so they switch to onesmallclick.io when the domain is connected. Recommended: yes.
-7. The 12px labels (pushed, not live): deploy now or with S1.
-Next free migration number: 0012.
-- [ ] **Approve decisions 26–28** in docs/plan.md: what counts as a recruit, the recruiter badges, and which share buttons.
-- [ ] **Build phase S** (docs/plan.md): the share kit, crew links, link previews, share moments, the invite landing, recruits and the K-factor panel in /admin.
-- [ ] **Preview images** (1200×630) for each moment, milestone and destination. Claude Code composes them from the existing sprites; PixelLab only if a moment needs new art.
+**Where it stands (22 Nov, prompt 62).** Nav said yes to all seven: S split into S1 and S2, decisions 26–28 as written, preview images by script, links from the site's address, the 12px labels go out with S1. **S1 is built and pushed, not deployed** (docs/plan.md, "S1 status"). Next free migration number: 0013.
+- [ ] **Deploy S1** when Nav asks: back up the live D1, apply migration 0012 `--remote`, `npm run deploy` (the 12px labels go with it).
+- [ ] **Nav: approve the share texts** in content/share.json (each moment's message, preview line and image).
+- [ ] **Nav: check S1 on a phone** (share a milestone or the fact to WhatsApp, open the link on another phone: preview, invite banner).
+- [ ] **Build S2** after S1 is approved: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel.
+- [x] **Approve decisions 26–28** in docs/plan.md (prompt 62: all as written).
+- [x] **Build phase S1** (prompt 62): the share kit, crew links, link previews, share moments, the invite landing, share counts.
+- [x] **Preview images** (1200×630, 14 of them) by `scripts/make-previews.mjs` from the existing sprites (prompt 62). A new destination needs a line in the script and in shared/share.ts PREVIEW_IMAGES.
 - [ ] **After the domain is live:** check crew-link previews in the Facebook and X link debuggers.
-- [ ] **Privacy page:** a line on crew links and recruit counts.
+- [x] **Privacy page:** a "Sharing" section on crew links and the share counters (S1). S2 adds a line on recruit counts.
 
 ## Expansion: the Grand Tour (planned 19 Nov 2026)
 

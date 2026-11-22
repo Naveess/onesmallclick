@@ -1,0 +1,64 @@
+{
+  "_about": "Phase S1 (prompt 62): what each share says. 'message' is the text the sharer sends, before their crew link. 'preview' is the description in the link preview (WhatsApp, X, Facebook and the rest), written by the Worker for /c/<code>; its title is always 'previewTitle' below. 'image' is the preview picture in public/share/ (made by scripts/make-previews.mjs). Fill-ins: {name} the sharer, {km} their all-time km, {dest} where the probe is heading, {milestone} the milestone's title, {badge} the badge's name, {fact} the fact, {a} and {b} the branch vote's two stops, {rank} a leaderboard place, {country}/{flag} and {rival}/{rivalFlag} for the countries board, {days} the leg's days, {result} the result line. A moment can have 'messageAlt' for a second case (see each one). 'previewNew' replaces a preview that mentions {km} while the sharer has pushed nothing yet. Draft for Nav's approval.",
+  "previewTitle": "{name} invited you to the crew",
+  "previewNew": "{name} is flying one probe to {dest} with the whole world, one small click at a time. Tap THRUST and join the crew.",
+  "moments": {
+    "invite": {
+      "message": "I'm helping fly one probe to {dest}, one small click at a time. Join my crew:",
+      "preview": "{name} has pushed {km} km toward {dest}. Tap THRUST and help the crew get there.",
+      "image": "default"
+    },
+    "result": {
+      "message": "{result}",
+      "preview": "{name} has pushed {km} km toward {dest}. Tap THRUST and help the crew get there.",
+      "image": "default"
+    },
+    "milestone": {
+      "message": "{milestone} The whole crew is pushing OSC-1 to {dest}, and every tap counts:",
+      "preview": "The crew just reached a milestone: {milestone} {name} has pushed {km} km. Your turn.",
+      "image": "milestone-{slug}"
+    },
+    "arrival": {
+      "message": "We made it to {dest} in {days} days, and I was part of the crew. Where next is up to us:",
+      "messageAlt": "We made it to {dest}, and I was part of the crew. Where next is up to us:",
+      "preview": "The crew flew a probe all the way to {dest}. {name} helped push {km} km. Join for the next leg.",
+      "image": "arrival-{stop}"
+    },
+    "branch": {
+      "message": "Vote with me: {a} or {b}? The crew picks the probe's next stop today.",
+      "preview": "{a} or {b}? The crew is voting on the probe's next stop. Have your say.",
+      "image": "branch-{stop}"
+    },
+    "signal": {
+      "message": "Our probe is about to go quiet. Ping it before the signal runs out!",
+      "preview": "The probe's signal is running out. One Ping from anyone keeps it alive.",
+      "image": "signal"
+    },
+    "safe": {
+      "message": "Our probe has gone quiet in deep space. One Ping from anyone wakes it up. Help!",
+      "preview": "The probe has lost its signal and is drifting. One Ping from anyone wakes it up.",
+      "image": "safe"
+    },
+    "badge": {
+      "message": "I just earned {badge} on OneSmallClick. Help push our probe to {dest}:",
+      "preview": "{name} just earned {badge}. Join the crew flying one probe to {dest}.",
+      "image": "badge"
+    },
+    "rank": {
+      "message": "I'm #{rank} on today's OneSmallClick board. Can you beat me?",
+      "preview": "{name} has pushed {km} km toward {dest}. Can you beat them?",
+      "image": "default"
+    },
+    "country": {
+      "message": "{flag} {country} is #{rank} on today's countries board. Help us pass {rivalFlag} {rival}!",
+      "messageAlt": "{flag} {country} is #1 on today's countries board. Help us stay there!",
+      "preview": "Every tap counts for your country. Help push one probe to {dest}.",
+      "image": "countries"
+    },
+    "fact": {
+      "message": "Did you know? {fact}",
+      "preview": "{fact}",
+      "image": "destination-{stop}"
+    }
+  }
+}

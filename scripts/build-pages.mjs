@@ -10,7 +10,7 @@
 // Runs on `npm run dev` and `npm run build`. No dependencies: plain Node.
 
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -58,7 +58,67 @@ const icon = (name, size = 18) =>
     .trim()
     .replace(/width="9" height="9"/, `width="${size}" height="${size}" aria-hidden="true" focusable="false"`);
 
-function page({ path, title, description, body, current }) {
+/** The share row on pages people share (phase S1): plain links, filled in by a small script with this page's
+ * own address, so they're right on workers.dev now and on onesmallclick.io later. Keep the links in step with
+ * shared/share.ts channelHref(). Hidden until the script runs. */
+function shareRow(text) {
+  const apps = [
+    ["wa", "WhatsApp"],
+    ["x", "X"],
+    ["fb", "Facebook"],
+    ["rd", "Reddit"],
+    ["tg", "Telegram"],
+  ];
+  return `      <section class="page-share" aria-labelledby="share-label" data-text="${esc(text)}" hidden>
+        <h2 id="share-label" class="page__label">SHARE THIS PAGE</h2>
+        <button type="button" class="pbtn pbtn--blue pbtn--block page-share__sheet" data-share="sheet" hidden>Share…</button>
+        <div class="page-share__apps">
+${apps.map(([v, label]) => `          <a class="pbtn pbtn--outline" data-share="${v}" target="_blank" rel="noopener noreferrer">${label}</a>`).join("\n")}
+          <button type="button" class="pbtn pbtn--outline" data-share="copy">Copy link</button>
+        </div>
+        <p class="page-share__note" aria-live="polite"></p>
+      </section>
+      <script>
+        (function () {
+          var box = document.querySelector(".page-share");
+          var url = location.origin + location.pathname;
+          var text = box.getAttribute("data-text");
+          var e = encodeURIComponent;
+          var links = {
+            wa: "https://wa.me/?text=" + e(text + " " + url),
+            x: "https://x.com/intent/post?text=" + e(text) + "&url=" + e(url),
+            fb: "https://www.facebook.com/sharer/sharer.php?u=" + e(url),
+            rd: "https://www.reddit.com/submit?url=" + e(url) + "&title=" + e(text.slice(0, 280)),
+            tg: "https://t.me/share/url?url=" + e(url) + "&text=" + e(text)
+          };
+          var count = function (v) {
+            try {
+              fetch("/api/share", { method: "POST", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ m: "page", v: v }) }).catch(function () {});
+            } catch (x) {}
+          };
+          var note = box.querySelector(".page-share__note");
+          box.querySelectorAll("[data-share]").forEach(function (el) {
+            var v = el.getAttribute("data-share");
+            if (links[v]) el.href = links[v];
+            el.addEventListener("click", function () {
+              count(v);
+              if (v === "copy") {
+                navigator.clipboard.writeText(url).then(
+                  function () { note.textContent = "Link copied. Paste it anywhere."; },
+                  function () { note.textContent = "Couldn't copy. The link is " + url; }
+                );
+              } else if (v === "sheet") {
+                navigator.share({ title: document.title, text: text, url: url }).catch(function () {});
+              }
+            });
+          });
+          if (navigator.share && matchMedia("(pointer: coarse)").matches) box.querySelector(".page-share__sheet").hidden = false;
+          box.hidden = false;
+        })();
+      </script>`;
+}
+
+function page({ path, title, description, body, current, image = "default", share = null }) {
   const nav = [
     ["/", "Play"],
     ["/how-to-play", "How to play"],
@@ -74,6 +134,17 @@ function page({ path, title, description, body, current }) {
     <title>${esc(title)}</title>
     <meta name="description" content="${esc(description)}" />
     <meta name="theme-color" content="#0e1a40" />
+    <!-- Link previews (phase S1). The Worker makes these links absolute for the pages people share (worker/share.ts). -->
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="OneSmallClick" />
+    <meta property="og:title" content="${esc(title)}" />
+    <meta property="og:description" content="${esc(description)}" />
+    <meta property="og:url" content="${esc(path)}" />
+    <meta property="og:image" content="/share/${esc(image)}.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="OneSmallClick, a pixel-art space game" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/sprites/probe.png" type="image/png" />
     <link rel="preload" href="/fonts/pixelify-sans-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/vt323-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -109,6 +180,7 @@ function page({ path, title, description, body, current }) {
       </header>
       <main class="page__body" aria-labelledby="page-title">
 ${body}
+${share ? shareRow(share) : ""}
       </main>
       <aside class="ad-slot" aria-label="Advertisement">
         <div class="ad-slot__label" aria-hidden="true">ADVERTISEMENT</div>
@@ -208,6 +280,8 @@ function factPage(m, i) {
   const card = String(m.n).padStart(2, "0");
   return page({
     path: `/milestones/${m.slug}`,
+    image: `milestone-${m.slug}`,
+    share: `${/[.!?]$/.test(m.title) ? m.title : `${m.title}.`} The crew flying one probe to Mars got this far. Help push it on:`,
     title: `${m.name}: milestone ${m.n} of ${milestones.length} · OneSmallClick`,
     description: m.description,
     body: `      <div>
@@ -258,6 +332,8 @@ function destinationPage(d) {
   const iconSrc = DEST_ICON[d.destination];
   return page({
     path: `/destinations/${d.destination}`,
+    image: existsSync(join(root, "public", "share", `destination-${d.destination}.png`)) ? `destination-${d.destination}` : "default",
+    share: `${total} facts about ${name}, from the crew flying one probe there:`,
     title: `${total} facts about ${name} · Destination file · OneSmallClick`,
     description: `${total} fun facts about ${name}, each checked against NASA, from OneSmallClick's Destination file: one a day while the crew flies there.`,
     body: `      <div>
@@ -288,6 +364,8 @@ const CONTACT_EMAIL = "naveessharma@gmail.com";
 const mailto = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
 const operatorLink = `<a href="${OPERATOR.url}" rel="noopener">${OPERATOR.name}</a>`;
 const LEGAL_UPDATED = "20 November 2026";
+// The privacy page alone changed in phase S1 (crew links and share counts).
+const PRIVACY_UPDATED = "22 November 2026";
 
 /** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML. */
 function sectionsHtml(id, sections) {
@@ -430,6 +508,14 @@ const privacySections = [
     ],
   ],
   [
+    "Sharing",
+    [
+      "The first time you share, you get a crew link (like /c/k7p2qx). Its code is random: it isn't your name or your email. Anyone who opens it sees your crew name, and the link preview shows the km you've pushed.",
+      "We count shares and crew-link visits per day, by what was shared and where (WhatsApp, X and so on), as plain totals with nothing about who shared or who visited.",
+      "The share buttons are plain links: no WhatsApp, X, Facebook, Reddit or Telegram scripts run on our pages. Those apps only see what you choose to send.",
+    ],
+  ],
+  [
     "What other players see",
     [
       "Your crew name, never your email. It can appear in the mission log (for example “Signal restored by orbit_otter”), and on the leaderboards (signed-in players only; the countries board counts everyone’s km by country, without names), and in the mission credits when they arrive.",
@@ -463,7 +549,7 @@ const privacy = page({
         <p class="page__label">PRIVACY</p>
         <h1 id="page-title" class="page__title">What we keep, and why</h1>
       </div>
-      <p class="page__note">The short version: a random id for your device, your game, and your email only if you sign in. Updated ${LEGAL_UPDATED}.</p>
+      <p class="page__note">The short version: a random id for your device, your game, and your email only if you sign in. Updated ${PRIVACY_UPDATED}.</p>
 ${sectionsHtml("privacy", privacySections)}
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
 });

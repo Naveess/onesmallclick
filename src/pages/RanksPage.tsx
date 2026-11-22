@@ -6,6 +6,8 @@ import { PixelIcon } from "../components/PixelIcon";
 import { countryName } from "../game/countries";
 import { int } from "../game/format";
 import { Link } from "../router";
+import { ShareNudge } from "../components/ShareNudge";
+import { flagEmoji } from "../../shared/share";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./RanksPage.css";
 
@@ -34,6 +36,24 @@ function Row({ row, board }: { row: BoardRow; board: Board }) {
       <span className="ranks__name">{board === "countries" ? countryName(row.cc) : row.name}</span>
       <span className="ranks__km num">{int(row.km)} km</span>
     </li>
+  );
+}
+
+/** Share your place (phase S1): your rank on the players board, or your country's against the one just above it. */
+function RankShare({ board, rank, cc, rows }: { board: Board; rank: number; cc: string | null; rows: BoardRow[] }) {
+  if (board === "players") {
+    return <ShareNudge moment="rank" fill={{ rank }} label={`Share: I'm #${int(rank)} today`} title="Share your rank" />;
+  }
+  const rival = rows.find((r) => r.rank === rank - 1);
+  const country = countryName(cc);
+  return (
+    <ShareNudge
+      moment="country"
+      fill={{ rank, country, flag: flagEmoji(cc), rival: rival ? countryName(rival.cc) : "", rivalFlag: flagEmoji(rival?.cc) }}
+      alt={rank === 1 || !rival}
+      label={`Rally ${country}`}
+      title={`Rally ${country} on the countries board`}
+    />
   );
 }
 
@@ -133,6 +153,9 @@ export function RanksPage() {
                 </>
               )}
             </Link>
+          )}
+          {shown && me && me.rank !== null && (board === "countries" ? me.cc !== null : shown.signedIn) && (
+            <RankShare board={board} rank={me.rank} cc={me.cc} rows={shown.rows} />
           )}
           {shown && board === "players" && !shown.signedIn && (
             <p className="ranks__note">

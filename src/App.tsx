@@ -12,6 +12,8 @@ import { usePath } from "./router";
 // and the app picks the page from the URL (see router.ts).
 export function App() {
   const path = usePath();
+  // A crew link (phase S1) is the game. A good one is already tidied to "/" by game/share.ts; a mistyped one plays too.
+  if (path.startsWith("/c/")) return <GamePage />;
   switch (path) {
     case "/":
       return <GamePage />;

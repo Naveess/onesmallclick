@@ -1,5 +1,6 @@
 // The OneSmallClick Worker. Static files (the React app, sprites, fonts) are served
-// before this runs; only /api/* reaches it (see run_worker_first in wrangler.jsonc).
+// before this runs; only /api/* reaches it, plus from phase S1 the crew links and content pages
+// that get link previews (see run_worker_first in wrangler.jsonc).
 //
 //   GET  /api/health          { ok: true }
 //   GET  /api/session         sets the signed device cookie if needed; returns SessionInfo (name, crew number, account)
@@ -12,6 +13,9 @@
 //   GET  /api/credits         ?mission=<id> → the mission credits for an arrived leg (phase 8c)
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
+//   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
+//   GET  /c/<code>            the game with that crew link's link preview (phase S1; run_worker_first in wrangler.jsonc)
+//   GET  /milestones/*, /destinations/*, /how-to-play   content pages with absolute preview links (phase S1)
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
@@ -22,6 +26,7 @@
 //   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
 //   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
 //   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
+//   GET  /api/admin/shares      }   (phase S1: shares and crew-link visits, last 7 days)
 
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
@@ -30,6 +35,7 @@ import { accountInfo, auth, readSession, renewSession } from "./auth";
 import { credits, leaderboard, profile } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
+import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
 
 export { Probe } from "./probe";
 
@@ -50,6 +56,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    // Phase S1: pages the Worker sees first, for their link previews (run_worker_first in wrangler.jsonc).
+    if (path.startsWith("/c/") && request.method === "GET") return crewPage(request, env, url);
+    if (/^\/(milestones|destinations)\/|^\/how-to-play\/?$/.test(path)) return contentPage(request, env, url);
+
     if (path === "/api/health") return json({ ok: true });
     if (path === "/api/session" && request.method === "GET") return session(request, env);
     if (path === "/api/probe") return connect(request, env, url);
@@ -60,6 +70,9 @@ export default {
     if (path === "/api/credits" && request.method === "GET") return credits(env, url);
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
+    if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);
+    if (path === "/api/share" && request.method === "POST") return countShare(request, env);
+    if (path.startsWith("/api/crew/") && request.method === "GET") return crewInfo(request, env, path.slice("/api/crew/".length), url);
     if (path.startsWith("/api/auth/")) return auth(request, env, path.slice("/api/auth/".length), url);
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
@@ -271,6 +284,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
   const stub = probe(env);
   if (action === "state" && request.method === "GET") return json(await stub.adminState());
   if (action === "networks" && request.method === "GET") return json(await capReport(env));
+  if (action === "shares" && request.method === "GET") return json(await shareReport(env));
   if (request.method !== "POST") return json({ error: "Not found" }, 404);
 
   const body = (await request.json().catch(() => ({}))) as { km?: unknown; hours?: unknown };

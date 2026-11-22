@@ -24,7 +24,9 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Phase 9: Launch hardening, ads and legal pages** (split in two, prompt 54)
   - [x] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **Deployed 2026-11-21** (prompt 58, version 17358aa0) and checked by Nav (prompt 60): see "Phase 9a status" below.
   - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test, then the launch reset)
-- [ ] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts.
+- [ ] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts. Split in two (prompt 62):
+  - [ ] **S1: share kit, crew links, previews, share moments, counts.** Built and pushed 2026-11-22 (prompt 62), not deployed: needs migration 0012 `--remote`, then `npm run deploy`. See "S1 status" below.
+  - [ ] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.**
 - [ ] **E1: The campaign map** (1m)
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
 - [ ] **E3: A content pipeline for each new leg**
@@ -710,6 +712,22 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 
 **Goal:** make the game spread. Every big moment is easy to share to WhatsApp, X, Facebook and the rest. Every share carries a personal crew link, and new players who come through it land straight in the game. Build it after 9a and before E1, so it's ready for launch.
 
+**Split and decisions (Nav, prompt 62, 2026-11-22):** S1 = the share kit, crew links with the invite banner, link previews, the share moments, the result line and the share counts; S2 = recruits, recruiter badges, "your recruits have pushed X km" and the K-factor panel. Decisions 26–28 approved as written. Preview images made by a script from the existing sprites and committed. Links built from the site's own address. The 12px labels go out with S1.
+
+**S1 status (built 2026-11-22, prompt 62; pushed, not deployed):**
+- **Crew links:** `/c/<code>`, a random 6-character code per player (account when signed in, else device), made the first time they share (`GET /api/crew-link`). A guest's code moves to their account on sign-in if the account has none. Deleting the account deletes its code. Table `share_links` (migration 0012).
+- **One share kit** (`src/components/ShareSheet.tsx`): the phone's share sheet first (touch screens only), then WhatsApp, X, Facebook, Reddit, Telegram and Copy (copies the message and the link). Plain links, no SDKs. Every link is `…/c/<code>?m=<moment>&d=<detail>&v=<channel>`, built from the site's own address.
+- **Share moments:** the milestone moment (message + the result line), arrival, the branch vote ("Ask the crew to vote"), the signal's final hour (an orange "ask the crew to Ping" button under the signal card when under an hour is left and the probe isn't paused), safe mode ("Ask the crew to wake it"), a badge earned (Share on the badge toast), your rank and your country's ("Rally United Kingdom", naming the country just above), the daily fact (the card, Save image and the kit), the profile's mission card (the result line), and a share row on the milestone and destination pages. The landing burn's share waits for the landing burn (E-phases).
+- **Texts:** content/share.json (the message, the preview text and the image per moment): **a draft for Nav's approval.**
+- **Link previews:** Open Graph and Twitter card tags on the game and every content page. The Worker runs first for `/c/*`, `/milestones/*`, `/destinations/*` and `/how-to-play` (`run_worker_first`) and rewrites them with HTMLRewriter: a crew link gets "orbit_otter invited you to the crew", a line per moment (with the sharer's all-time km, or a no-km line for a new player) and the moment's image; links are made absolute from the request's own address. Crew links are `noindex`.
+- **Preview images:** 14 at 1200 × 630 in `public/share/` (default, six milestones, arrival at Mars, the Ceres/Vesta vote, signal, safe mode, badge, countries, Mars's destination file), made by `node scripts/make-previews.mjs` from the shipped sprites, fonts and kit with headless Edge. No PixelLab generations.
+- **The invite landing:** a crew link opens the game at `/` (the address is tidied before the first render) with "orbit_otter invited you to the crew" over it, on the game home and in safe mode. Not shown for your own link.
+- **Counts:** `share_counts` (day, moment, channel, shares, visits), counters only. A share is a share button pressed (`POST /api/share`); a visit is a crew link opened in the game (`GET /api/crew/<code>`, so preview robots don't count, nor your own link). /admin has a "Sharing · last 7 days" card.
+- **Privacy page:** a "Sharing" section (crew links, the counters, no share scripts), updated 22 November 2026.
+- **Checked locally:** codes made once per player, preview text and image per moment, own-link visits not counted, bad input refused (400) and other sites refused (403), /admin counts, the auth check (ALL PASS, incl. delete account), screenshots at 390 and 1280 wide (invite banner, share sheet on the profile and the fact card, ranks, a milestone page, the final-hour button, safe mode, the badge toast), no console errors, `npm run build` clean.
+- **To deploy:** back up the live D1, `npx wrangler d1 migrations apply onesmallclick --remote` (0012), then `npm run deploy`.
+- **After the domain is live:** check crew-link previews in the Facebook and X link debuggers; the bare game address (`/`) keeps relative preview links (the Worker doesn't see it, to save a request per game load), which most chat apps resolve but Facebook may not.
+
 **Why (Nav's idea, 2026-11-20).** A friend suggested the K-factor: K = i × c, where *i* is invites (shares) per player and *c* is the share of invitees who become players. K above 1 means each player brings in more than one new player, which is exponential growth ([Wikipedia](https://en.wikipedia.org/wiki/K-factor_(marketing))). It only counts direct invites. Shared content also brings in visitors who then share themselves (the "social K-factor"). So the phase works on three levers:
 - **Raise *i*** (more shares): one-tap share at the moments people feel something, and shares that make the sharer look good.
 - **Raise *c*** (more invitees become players): a rich preview in the chat, a landing that drops them straight into play with "orbit_otter invited you", and no sign-up wall.
@@ -927,10 +945,10 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 24. **How many top contributors to name** *(top 10 by km this leg, using their generated names)*.
 25. **Existing accounts** *(asked once in the game; nobody is opted in automatically)*.
 
-### Before phase S (added 2026-11-20; recommendations in brackets)
-26. **What counts as a recruit** *(a new device that arrives through your link and makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter)*.
-27. **Recruiter badges** *(Crew Recruiter I / II / III at 1, 5 and 25 recruits)*.
-28. **Share buttons** *(the phone's own share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy link; no share SDKs)*.
+### Before phase S (added 2026-11-20; all three approved as written by Nav, prompt 62, 2026-11-22)
+26. ~~**What counts as a recruit**~~ **Decided: a new device that arrives through your link and makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter** (built in S2).
+27. ~~**Recruiter badges**~~ **Decided: Crew Recruiter I / II / III at 1, 5 and 25 recruits** (built in S2).
+28. ~~**Share buttons**~~ **Decided: the phone's own share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy; no share SDKs** (built in S1).
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*

@@ -17,7 +17,7 @@ import {
   type ServerMessage,
 } from "../../shared/mission";
 import type { AccountInfo } from "../../shared/account";
-import { BADGE_INFO, type EarnedBadge } from "../../shared/badges";
+import { BADGE_INFO, type BadgeId, type EarnedBadge } from "../../shared/badges";
 import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
 import { stopName } from "../../shared/campaign";
 import { medalPace } from "../../shared/medals";
@@ -132,6 +132,8 @@ export interface Toast {
   tier: BadgeTier | null;
   title: string;
   body: string;
+  /** A badge just earned: the toast offers to share it (phase S1). */
+  badge?: BadgeId;
 }
 
 export interface GameState {
@@ -376,7 +378,8 @@ function onMessage(msg: ServerMessage) {
     serverToday = { ...serverToday, badges: msg.badges };
     set(compose(state));
     const names = msg.earned.map((id) => BADGE_INFO[id].name);
-    if (names.length === 1) showToast({ tier: null, title: `Badge earned: ${names[0]}`, body: BADGE_INFO[msg.earned[0]].how + ". See it on your profile." });
+    if (names.length === 1)
+      showToast({ tier: null, title: `Badge earned: ${names[0]}`, body: BADGE_INFO[msg.earned[0]].how + ". See it on your profile.", badge: msg.earned[0] });
     else if (names.length > 1) showToast({ tier: null, title: `${names.length} badges earned`, body: `${names.join(", ")}. See them on your profile.` });
     return;
   }
@@ -547,7 +550,8 @@ function showToast(t: Omit<Toast, "id">) {
   toastId += 1;
   set({ ...state, toast: { ...t, id: toastId } });
   window.clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(dismissToast, TOAST_MS);
+  // A badge toast has a Share button, so it stays a little longer.
+  toastTimer = window.setTimeout(dismissToast, t.badge ? TOAST_MS * 2 : TOAST_MS);
 }
 
 /** A short message (e.g. "Copied"), in the same toast as Ping's results. */

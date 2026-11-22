@@ -9,10 +9,15 @@ import { ThrustButton } from "../components/ThrustButton";
 import { castVote, openArrival, ping, switches, thrust, useGame } from "../game/store";
 import { BranchVote } from "../components/BranchVote";
 import { DestinationFile } from "../components/DestinationFile";
+import { InviteBanner } from "../components/InviteBanner";
+import { ShareNudge } from "../components/ShareNudge";
 import { milestonesFor } from "../../shared/milestones";
 import { int } from "../game/format";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
+
+/** The signal's "final hour": the ask-the-crew share shows under this many seconds left. */
+const SIGNAL_ASK_S = 3600;
 
 /** "/": the game home (1a phone, 1b wide), the shared probe is live from phase 4 (store.ts says what is still fake). */
 export function GamePage() {
@@ -51,9 +56,11 @@ export function GamePage() {
           orbit: view.orbit,
         };
         const track = <FlightView handle={flight} wide={wide} {...flightProps} />;
+        const invite = <InviteBanner known={player.known} destName={view.destName} />;
         if (view.safe) {
           return (
             <SafeMode
+              banner={invite}
               wide={wide}
               quietS={view.quietS}
               arrivalAt={view.arrivalAt}
@@ -68,6 +75,10 @@ export function GamePage() {
           );
         }
 
+        // The signal's final hour (phase S1): nobody has pinged today, so ask the crew. Urgent shares get answered fast.
+        const askPing = !view.paused && view.signalLeftS < SIGNAL_ASK_S && (
+          <ShareNudge moment="signal" variant="orange" label="Under an hour left · ask the crew to Ping" title="Ask the crew to Ping" />
+        );
         const clicks = <ClickCounter wide={wide} today={player.tapsToday} all={player.tapsAll} />;
         const signal = (
           <SignalCard
@@ -114,9 +125,11 @@ export function GamePage() {
           return (
             <main className="home" aria-label="Mission">
               <h1 className="visually-hidden">OneSmallClick mission control</h1>
+              {invite}
               <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               {track}
               {signal}
+              {askPing}
               <section className="home__thrust" aria-label="Thrust">
                 <ThrustButton onThrust={onThrust} />
                 <div className="home__rates">
@@ -143,6 +156,7 @@ export function GamePage() {
         return (
           <main className="home home--wide" aria-label="Mission">
             <h1 className="visually-hidden">OneSmallClick mission control</h1>
+            {invite}
             <div className="home__top">
               <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               <dl className="home__stats">
@@ -180,6 +194,7 @@ export function GamePage() {
                 </button>
               </section>
               <div className="home__side">
+                {askPing}
                 {vote}
                 {destFile}
               </div>

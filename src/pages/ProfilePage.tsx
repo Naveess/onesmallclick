@@ -3,7 +3,8 @@ import { BADGE_INFO, KEEPER_IDS, ROMAN, type BadgeId } from "../../shared/badges
 import type { ProfileInfo } from "../../shared/boards";
 import { CLICK_BADGES } from "../../shared/clicks";
 import { GameShell } from "../components/GameShell";
-import { share, shareText } from "../components/MilestoneMoment";
+import { shareText } from "../components/MilestoneMoment";
+import { ShareSheet } from "../components/ShareSheet";
 import { PixelButton } from "../components/PixelButton";
 import { PixelIcon, type IconTone } from "../components/PixelIcon";
 import type { IconName } from "../components/iconPaths";
@@ -65,6 +66,7 @@ export function ProfilePage() {
   const { player, view } = useGame();
   const [info, setInfo] = useState<ProfileInfo | null>(null);
   const [error, setError] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -173,27 +175,29 @@ export function ProfilePage() {
           </section>
 
           <div className="profile__actions">
-            <PixelButton
-              variant="blue"
-              onClick={() =>
-                void share(
-                  shareText({
-                    missionDay: view.missionDay,
-                    destName: view.destName,
-                    progress: view.progress,
-                    kmToday: player.kmToday,
-                    arrivalAt: view.arrivalAt,
-                    now: Date.now(),
-                  }),
-                )
-              }
-            >
+            <PixelButton variant="blue" onClick={() => setSharing(true)} aria-haspopup="dialog">
               Share my mission card
             </PixelButton>
             <Link href="/sign-in" className="profile__account">
               {player.account ? "Account" : "Sign in"}
             </Link>
           </div>
+          {sharing && (
+            <ShareSheet
+              moment="result"
+              text={shareText({
+                missionDay: view.missionDay,
+                destName: view.destName,
+                progress: view.progress,
+                kmToday: player.kmToday,
+                arrivalAt: view.arrivalAt,
+                now: Date.now(),
+                cc: info?.country ?? player.account?.country ?? null,
+              })}
+              title="Share your mission card"
+              onClose={() => setSharing(false)}
+            />
+          )}
           {!player.account && (
             <p className="profile__note">
               You're playing as a guest. <Link href="/sign-in">Sign in</Link> to keep your badges on every device and to

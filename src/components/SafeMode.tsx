@@ -2,10 +2,13 @@ import type { ReactNode } from "react";
 import { SETBACK_HOURS_PER_QUIET_HOUR } from "../../shared/mission";
 import { longDate } from "../game/format";
 import { PingButton } from "./PingButton";
+import { ShareNudge } from "./ShareNudge";
 import { Window } from "./Window";
 import "./SafeMode.css";
 
 interface SafeModeProps {
+  /** The invite banner when someone arrived through a crew link (phase S1). */
+  banner?: ReactNode;
   wide: boolean;
   quietS: number;
   /** Null while the probe is paused (the date is on hold). */
@@ -43,6 +46,7 @@ function later(ms: number): string {
 
 /** Safe mode (1f): the signal was lost. A setback, not game over; one ping from anyone wakes the probe. */
 export function SafeMode({
+  banner,
   wide,
   quietS,
   arrivalAt,
@@ -58,6 +62,7 @@ export function SafeMode({
     <main className={wide ? "safe safe--wide" : "safe"} aria-label="Safe mode">
       <div className="safe__vignette" aria-hidden="true" />
       <h1 className="visually-hidden">Safe mode: the probe has lost its signal</h1>
+      {banner}
 
       <section className="safe__lost" aria-labelledby="safe-lost-label">
         <h2 id="safe-lost-label" className="safe__label">
@@ -100,6 +105,7 @@ export function SafeMode({
             ? "You've used today's ping. Nothing is lost: one ping from anyone else brings it back."
             : "Nothing is lost. The distance is safe. One ping from anyone brings it back. You have 1 left today."}
         </p>
+        <ShareNudge moment="safe" label="Ask the crew to wake it" title="Ask the crew to wake the probe" />
       </section>
     </main>
   );

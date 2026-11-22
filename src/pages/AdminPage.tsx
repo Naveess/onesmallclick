@@ -92,6 +92,60 @@ function NetworkCap({ adminKey }: { adminKey: string }) {
   );
 }
 
+interface ShareReport {
+  since: string;
+  crewLinks: number;
+  rows: { day: string; moment: string; channel: string; shares: number; visits: number }[];
+}
+
+/** Shares and crew-link visits over the last 7 days (phase S1). Counters only. The K-factor panel comes in S2. */
+function Shares({ adminKey }: { adminKey: string }) {
+  const [report, setReport] = useState<ShareReport | null>(null);
+  const [error, setError] = useState("");
+  const load = async () => {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/shares", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setReport((await res.json()) as ShareReport);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, [adminKey]);
+  const total = (k: "shares" | "visits") => report?.rows.reduce((n, r) => n + r[k], 0) ?? 0;
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-shares">
+      <h2 id="admin-shares" className="admin__h2">
+        Sharing · last 7 days
+      </h2>
+      <p className="admin__note">
+        {report
+          ? `${total("shares")} shares, ${total("visits")} crew-link visits since ${report.since}. ${report.crewLinks} players have a crew link.`
+          : "…"}{" "}
+        A share is a share button pressed; a visit is a crew link opened in the game (not your own, not link-preview robots).
+      </p>
+      {report && report.rows.length > 0 && (
+        <ul className="admin__note">
+          {report.rows.map((r) => (
+            <li key={`${r.day}-${r.moment}-${r.channel}`} className="num">
+              {r.day} · {r.moment} · {r.channel} · {r.shares} shares · {r.visits} visits
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <p className="admin__note">Couldn't load: {error}</p>}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={() => void load()}>
+          Refresh
+        </PixelButton>
+      </div>
+    </Window>
+  );
+}
+
 const when = (ms: number) => (ms ? new Date(ms).toISOString().replace("T", " ").slice(0, 19) + " UTC" : "never");
 /** Rows written an hour since the probe started (storage is billed by rows written), from its counters. */
 const perHour = (rows: number, state: AdminState) => {
@@ -378,6 +432,7 @@ export function AdminPage() {
             </Window>
 
             <NetworkCap adminKey={key} />
+            <Shares adminKey={key} />
 
             <Window
               as="form"
