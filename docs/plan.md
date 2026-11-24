@@ -29,7 +29,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
-- [ ] **E3: A content pipeline for each new leg**. Built and pushed 2026-11-24 (prompts 73–74), not deployed; the Ceres and Vesta content waits for Nav's approval. See "E3 status" below.
+- [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
 - [ ] **E5: Later ideas from the brief**
@@ -863,7 +863,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 
 ### E3: A content pipeline for each new leg
 
-**E3 status (built 2026-11-24, prompts 73–74; pushed, not deployed):**
+**E3 status (built 2026-11-24, prompts 73–74; Ceres and Vesta content approved and DEPLOYED 2026-11-24, prompt 75, version 34f3aabd):**
 - **One file per stop and kind:** `content/milestones/<stop>.json` (Mars's six moved here unchanged, plus a `halfway` flag), `content/facts/<stop>.json` (as before), and `content/detours/<stop>.json` (each leg's detours; Mars's ten moved here). `content/vote-options.json` keeps the faster and steady options every leg shares. "Hold steady and save fuel for Mars" now reads "…for the arrival". Each file has `approved` (a date, or null while it waits for Nav). `shared/content.ts` lists them, one import per file.
 - **The game reads the current leg's files:** its milestones (the flight view's ticks and beacon, the moment "MILESTONE 3 OF 5", the log), the Halfway Crew badge on the leg's `halfway` milestone (no longer the fixed 240M km), its detours in the daily vote (a leg without detours gets a second steady option), the Destination file card, and the map card's first fact and "All 30 Ceres facts" link for any stop with facts. The milestone share's detail is `ceres-3` (Mars keeps `3`), and its text names the flying probe (`{probe}` in content/share.json). The postcard stamp shows only where a stamp exists (Mars).
 - **Pages:** `scripts/build-pages.mjs` builds every leg's milestone pages ("MARS → CERES · MILESTONE 3 OF 5 · 93,200,000 KM FROM MARS", the leg's probe on the postcard) and every destination page. Files waiting for approval get a DRAFT line and `noindex`.
