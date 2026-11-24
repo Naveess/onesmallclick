@@ -76,7 +76,7 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 - [x] **Nav: check S1 on a phone** (prompt 64: looks right).
 - [x] **Build S2** (prompts 64–65): recruits, recruiter badges, "your recruits have pushed X km", the K-factor card in /admin.
 - [x] **Deploy S2** (prompt 66): live D1 backed up (pre-S2), migration 0013 `--remote`, `npm run deploy` → 5875b23d.
-- [ ] **Nav: check S2 on two phones** (open your crew link on a phone that's never played, tap 50: Crew Recruiter I on your phone, the recruit on your profile, the K-factor card in /admin).
+- [x] **Nav: check S2 on two phones** (prompt 70: good) (open your crew link on a phone that's never played, tap 50: Crew Recruiter I on your phone, the recruit on your profile, the K-factor card in /admin).
 - [x] **Approve decisions 26–28** in docs/plan.md (prompt 62: all as written).
 - [x] **Build phase S1** (prompt 62): the share kit, crew links, link previews, share moments, the invite landing, share counts.
 - [x] **Preview images** (1200×630, 14 of them) by `scripts/make-previews.mjs` from the existing sprites (prompt 62). A new destination needs a line in the script and in shared/share.ts PREVIEW_IMAGES.
@@ -130,13 +130,13 @@ Agreed rules (19 Nov):
 ### E1: the campaign map build (prompt 68, 24 Nov)
 Nav approved the plan and both content items (prompt 68). Order of work:
 - [x] **One fact per stop** for the map, each checked against a NASA page on 24 Nov (in content/campaign.json, `fact` on each stop, with the source and quote). Five claims were reworded to what NASA actually says (Vesta, Miranda, Pluto, Arrokoth, interstellar). Mars uses content/facts/mars.json.
-- [x] **The map's share line** in content/share.json (moment `map`). **Nav: approve** its link-preview line ("See the whole route the crew is flying, from Earth to the edge of the Solar System.") and the in-orbit wording ("We're in orbit at {dest}. See the whole route the crew is flying:").
+- [x] **The map's share line** in content/share.json (moment `map`). Approved by Nav (prompt 70), with its link-preview line ("See the whole route the crew is flying, from Earth to the edge of the Solar System.") and the in-orbit wording ("We're in orbit at {dest}. See the whole route the crew is flying:").
 - [x] **`/api/tour`**: the legs flown so far (stop, dates, medal, winning branch, whether you helped), cached.
 - [x] **`/map`**: the star chart (phone vertical, desktop full width with drag and a pixel scrollbar), each stop's state, the probe's live spot, the stop card, Crew tech, Share the map; the fifth tab "Map" and the wide header link; the new probe sprites; moons without sprites drawn in code (src/game/mapArt.ts) until PixelLab makes them.
 - [x] **Badge medals** (made 24 Nov) on the profile and the badge toast.
 - [x] **Check** at 390 and 1440 in both themes; /admin: arrive, vote on the map, close the vote, the map moves on (24 Nov).
 - [x] **Deploy E1** (prompt 69): live D1 backed up (pre-E1), `npm run deploy` → f99de022.
-- [ ] **Nav: check `/map` on a phone and a laptop.**
+- [x] **Nav: check `/map` on a phone and a laptop** (prompt 70: good on both).
 - [ ] **Still open:** the heliopause's distance (no NASA page found on 24 Nov gives it; the map says "distance not yet charted").
 
 ### E2: PixelLab art for the expansion
