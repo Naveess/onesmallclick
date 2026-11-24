@@ -30,6 +30,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
+- [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
 - [ ] **E5: Later ideas from the brief**
@@ -794,6 +795,57 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Previews need the real domain.** Links shared before launch point at workers.dev. Build the links from the site's own address, so they switch to onesmallclick.io when it's connected.
 - **Privacy.** The crew code isn't the email or name. The privacy page gets a line on crew links and recruit counts.
 - **No rewards linked to ads**, ever (AdSense).
+
+## G: Grow: sharing on the home, the Players card, and sign-in nudges (added 2026-11-24)
+
+**Why (Nav, 2026-11-24).** Nav posted the game on Reddit. On 24 Nov 39 new devices arrived and 20 players pushed the probe, against 1–6 a day before, mostly from the US and UK. But:
+- **only 5 accounts exist** (2 new that day), so most new players are guests whose progress lives in one browser cookie and who don't show on the leaderboards or in the credits;
+- **the home has no always-there share button.** Phase S shares at moments, but someone who just wants to tell a friend has nowhere to tap;
+- **seeing the player numbers needs SQL** in the D1 console.
+
+Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
+
+**What gets built**
+1. **Sharing on the home** (with the existing share kit and the player's crew link):
+   - "Invite crew" in the wide header (next to the name button) and a share icon in the phone header, opening the share sheet with a short game pitch ("We're flying one probe to Mars together, one click at a time. Join my crew 🚀");
+   - a "Bring your crew" card on the game home, below the signal card (phone: below the vote). It shows the crew link with Copy; WhatsApp, X, Facebook and Reddit buttons; "Your recruits: N · they've pushed X km"; and the next Crew Recruiter badge. The ad slot stays at least 150px from THRUST;
+   - a gentle nudge after a player's first 200 clicks of the day: a toast, "Enjoying it? Bring a friend aboard", with Share;
+   - new share moments "header", "card" and "nudge" in `share_counts`, so the K-factor card shows which works.
+2. **Sign-in nudges** (guests only):
+   - **the leaderboards:** a "ghost row" where the guest would rank today: "You'd be #3 today: sign in to claim your spot";
+   - **the header:** a small "Guest · Save progress" chip linking to /sign-in;
+   - **after real progress** (first upgrade bought, first badge, or 500 clicks): "You've pushed 38,266 km. Sign in so you don't lose it";
+   - **welcome back:** "Keep this safe: sign in";
+   - **arrival and credits:** "Sign in to get your name in the mission credits";
+   - **the profile page for guests:** what signing in gives (leaderboards, credits, play on any device);
+   - say "Sign in with Google" while email sign-in is off live (email joins after payday);
+   - record which nudge led to each sign-up (e.g. `accounts.signup_source`).
+3. **The /admin Players card** (read-only; counts only, never emails or device IDs):
+   - accounts (total, new in the last 24 hours and 7 days);
+   - devices (total, new and active in the last 24 hours);
+   - players who pushed, per day for the last 14 days;
+   - new players by country (24 hours);
+   - shares and recruits today;
+   - sign-ups by nudge, and the guest-to-account rate.
+
+**Rules for the nudges**
+- Never block play, and every nudge can be dismissed.
+- At most one toast nudge a day, shared between the share and sign-in nudges.
+- Nothing in safe mode or the final 60 seconds.
+- Nothing for signed-in players.
+
+**Data changes** (the next free migration number): `accounts.signup_source`, and the new share moments (no schema change if `share_counts.moment` is free text).
+
+**How you test it**
+- As a guest, at 375, 390 and 1440 in both themes: the header button and chip, the card, the ghost row and each nudge. Check each shows at most once a day and never in safe mode or the final 60 seconds.
+- Signed in: no sign-in nudges.
+- Share from the header, the card and the nudge: each appears under its own moment in /admin.
+- Sign in from the ghost row: the Players card counts it under that nudge.
+- The Players card's numbers match the D1 console.
+
+**Main risks**
+- **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.
+- **Clutter on the home.** Keep the card compact on phones, and keep the 150px ad gap from THRUST.
 
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
