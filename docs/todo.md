@@ -68,6 +68,11 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 - [ ] **Check the opt-in and email wording** against UK rules (PECR and GDPR) before launch. Claude isn't a lawyer.
 - [ ] **Privacy page:** add crew emails and how to stop them (with 8d).
 
+## Phase G: Grow (added 24 Nov, next after the E4b part 2 step in progress)
+- [ ] **Run phase G** (docs/plan.md, "G: Grow"): the Invite crew button and Bring your crew card on the home, the share nudge, the sign-in nudges for guests, and the /admin Players card.
+- [ ] **Check as a guest and signed in**, on a phone and a laptop: no nagging (at most one toast a day, nothing in safe mode or the final 60 seconds).
+- [ ] **After a week:** read the Players card (the guest-to-account rate, and sign-ups by nudge) and the K-factor card (shares by moment), and keep what works.
+
 ## Phase S: Sharing and invites (added 20 Nov; after 9a, before E1)
 
 **Where it stands (22 Nov, prompt 62).** Nav said yes to all seven: S split into S1 and S2, decisions 26–28 as written, preview images by script, links from the site's address, the 12px labels go out with S1. **S1 is approved and live** (2026-11-23, prompt 63, version 0bf5a6ee; docs/plan.md, "S1 status"). **S2 is live** (2026-11-24, prompt 66, version 5875b23d; docs/plan.md, "S2 status"). Next free migration number: 0014.
