@@ -27,7 +27,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts. Split in two (prompt 62):
   - [x] **S1: share kit, crew links, previews, share moments, counts.** Built 2026-11-22 (prompt 62); approved by Nav and **deployed 2026-11-23** (prompt 63, version 0bf5a6ee). See "S1 status" below.
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
-- [ ] **E1: The campaign map** (1m)
+- [ ] **E1: The campaign map** (1m). Built and pushed 2026-11-24 (prompts 67–68), not deployed: see "E1 status" below.
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**
 - [ ] **E3: A content pipeline for each new leg**
 - [ ] **E4: Sharing, fun facts and destination pages**
@@ -800,6 +800,18 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
 
 ### E1: The campaign map (1m)
+
+**E1 status (built 2026-11-24, prompts 67–68; pushed, not deployed):**
+- **`/map`**, the fifth tab (Mission, Map, Upgrades, Log, Ranks) and a link in the wide header (the "map" icon traced from the design's buildIcons()). Phone: the vertical star chart, Earth at the bottom, opening centred on the probe, with the pixel scroll indicator down the right. Desktop: full width, drag to pan, the pixel bar along the bottom. Follows light and dark like the design (its colours through the theme tokens).
+- **Each stop's state** (src/game/mapLayout.ts, the design's buildMap()/lay() read from content/campaign.json): visited (date, medal, tech), next stop, the open branch vote (live %, orange glow), the branches after the next stop ("vote on arrival"), future (dimmed), not taken (grey). The path is solid where flown, dashed ahead, dotted where not taken; the probe sits at its live spot on the leg with its ring and "Day N of ~30".
+- **The stop card:** state and date, the probe (the new PixelLab sprites), the distance (the flown branch when there were two ways in), the medal line, your stamp if you pushed on that leg, the planet tech (unlocked at its medal, or a teaser with Gold), the fact (today's Destination file fact for the leg's destination, Mars's first fact otherwise, and one checked NASA fact for every other stop), a link to /destinations/mars, and on a voting stop the Vote button (the store's castVote).
+- **Crew tech · N:** the planet tech every arrival has unlocked, at its medal.
+- **Share the map:** the share kit with moment `map` ("We're 40% of the way to Jupiter. See the whole route the crew is flying:"; in orbit, "We're in orbit at {dest}. …"). Its link-preview line and the in-orbit wording are new and need Nav's OK (content/share.json).
+- **Data:** `GET /api/tour` (worker/boards.ts): every arrived leg, oldest first, with whether you helped (mission_crew). The map keeps only this tour's legs (from the last time the probe left Earth), so an /admin reset doesn't leave old arrivals on it. No migration.
+- **Art:** the nine new probes, Jupiter, Saturn and Europa now ship in `public/sprites/`; the other moons, the heliopause ring, the belts and the probe ring are drawn in code (src/game/mapArt.ts) until PixelLab makes them. **The 15 badge medals** now show on the profile (greyed until earned) and in the badge toast.
+- **Facts:** one per stop in content/campaign.json (`fact`, with the NASA source and quote), approved in prompt 68 and checked 24 Nov; five reworded to what NASA says.
+- **Checked locally:** 375/390 and 1440 wide in both themes; the flow in /admin (reset → arrive at Mars → vote Ceres on the map's card → close the vote → the Ceres Hopper on the Mars → Ceres leg, Mars visited with its Gold medal and tech); no horizontal scroll on phones; no console errors; `check-arrival.mjs` ALL PASS; `npm run build` clean.
+- **Not done:** the 1080×1080 map share card (later, as planned); the heliopause's distance (no NASA page found); PixelLab sprites for the drawn moons (the next 10 generations).
 
 **Goal:** the star chart of the whole tour, on phone and desktop, as the design's 1m.
 

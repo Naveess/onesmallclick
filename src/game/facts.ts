@@ -31,6 +31,11 @@ export function factOfDay(stop: string, legStartedAt: number, now: number): Fact
   return { n: f.n, total: facts.length, fact: f.fact };
 }
 
+/** A stop's first fact (the campaign map's card when it isn't the leg's destination), or null. */
+export function firstFact(stop: string): string | null {
+  return FACTS[stop]?.[0]?.fact ?? null;
+}
+
 /** Where a fact lives on the site, e.g. /destinations/mars#fact-12. */
 export function factPath(stop: string, n: number): string {
   return `/destinations/${stop}#fact-${n}`;

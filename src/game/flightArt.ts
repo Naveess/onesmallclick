@@ -20,7 +20,7 @@ export const EARTH_RADII = {
 // ---------- The design's helpers ----------
 
 /** 4×4 ordered dither, as in the design. */
-const BAYER = [
+export const BAYER = [
   [0, 8, 2, 10],
   [12, 4, 14, 6],
   [3, 11, 1, 9],
@@ -51,7 +51,7 @@ function fbm(x: number, y: number, s: number): number {
   return noise(x, y, s) * 0.55 + noise(x * 2, y * 2, s + 1) * 0.3 + noise(x * 4, y * 4, s + 2) * 0.15;
 }
 
-function rng(seed: number) {
+export function rng(seed: number) {
   return () => {
     seed |= 0;
     seed = (seed + 0x6d2b79f5) | 0;

@@ -13,6 +13,7 @@ import { countryName } from "../game/countries";
 import { int, millionsKm } from "../game/format";
 import { useGame } from "../game/store";
 import { Link } from "../router";
+import { badgeStill } from "../sprites";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./ProfilePage.css";
 
@@ -27,6 +28,8 @@ async function fetchProfile(): Promise<ProfileInfo> {
 
 interface Tile {
   key: string;
+  /** The badge whose medal the tile shows (PixelLab, 24 Nov). */
+  badge: BadgeId;
   name: string;
   how: string;
   icon: IconName;
@@ -54,6 +57,7 @@ function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
       : `${int(n)} recruit${n === 1 ? "" : "s"} · they've pushed ${int(info?.recruitKm ?? 0)} km${next ? ` · next level at ${next}` : ""}`;
   const t = (id: BadgeId, icon: IconName, tone: IconTone): Tile => ({
     key: id,
+    badge: id,
     name: BADGE_INFO[id].name,
     how: BADGE_INFO[id].how,
     icon,
@@ -144,7 +148,7 @@ export function ProfilePage() {
                   key={b.key}
                   className={["profile__badge", b.on && "profile__badge--on", b.wide && "profile__badge--wide"].filter(Boolean).join(" ")}
                 >
-                  <PixelIcon name={b.icon} size={27} tone={b.on ? b.tone : "muted"} />
+                  <img className="profile__badge-art" src={badgeStill(b.badge).src} alt="" width={32} height={32} />
                   <span className="profile__badge-name">{b.name}</span>
                   <span className="profile__badge-how">{b.how}</span>
                   <span className="visually-hidden">{b.on ? "Earned" : "Not earned yet"}</span>

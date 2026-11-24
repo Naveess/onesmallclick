@@ -46,6 +46,23 @@ export interface ProfileInfo {
 export const BOARD_TOP = 50;
 
 /** The mission credits for one leg (phase 8c): GET /api/credits?mission=<id>. */
+/** One leg the crew has flown (E1, the campaign map): GET /api/tour. */
+export interface TourLeg {
+  missionId: number;
+  stop: string;
+  fromStop: string;
+  startedAt: number;
+  arrivedAt: number;
+  /** The branch vote's winner at this stop, if it had one. */
+  branch: string | null;
+  /** You pushed on this leg (at least one credited tap): your stamp. */
+  helped: boolean;
+}
+
+export interface TourInfo {
+  legs: TourLeg[];
+}
+
 export interface CreditsInfo {
   missionId: number;
   stop: string;

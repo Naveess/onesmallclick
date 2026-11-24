@@ -7,7 +7,7 @@
 // The top of each board is worked out at most once a minute per Worker instance and reused;
 // your own row is looked up for each request.
 
-import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo } from "../shared/boards";
+import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo, type TourInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
 
@@ -160,6 +160,38 @@ export async function profile(request: Request, env: Env, day: string): Promise<
     recruitKm: Math.round(recruitKm.results[0]?.km ?? 0),
   };
   return json(body);
+}
+
+/** E1, the campaign map: every leg the crew has arrived at, oldest first, and which ones you helped on. */
+export async function tour(request: Request, env: Env): Promise<Response> {
+  const asking = await whoIsAsking(request, env);
+  const key = asking ? (asking.account ? `a:${asking.account.id}` : asking.deviceId) : null;
+  const db = env.DB;
+  const [legs, mine] = await db.batch<{
+    id?: number;
+    stop?: string | null;
+    from_stop?: string | null;
+    started_at?: number;
+    arrived_at?: number;
+    branch?: string | null;
+    mission_id?: number;
+  }>([
+    db.prepare(`SELECT id, stop, from_stop, started_at, arrived_at, branch FROM missions WHERE arrived_at IS NOT NULL ORDER BY id`),
+    db.prepare(`SELECT mission_id FROM mission_crew WHERE player_key = ?`).bind(key ?? ""),
+  ]);
+  const helped = new Set(mine.results.map((r) => r.mission_id));
+  const body: TourInfo = {
+    legs: legs.results.map((r) => ({
+      missionId: r.id!,
+      stop: r.stop ?? "mars",
+      fromStop: r.from_stop ?? "earth",
+      startedAt: r.started_at!,
+      arrivedAt: r.arrived_at!,
+      branch: r.branch ?? null,
+      helped: helped.has(r.id),
+    })),
+  };
+  return Response.json(body, { headers: { "Cache-Control": "private, max-age=60" } });
 }
 
 /** The credits for one arrived leg. They never change after arrival, so browsers may keep them a while. */

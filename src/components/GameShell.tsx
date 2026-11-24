@@ -15,7 +15,7 @@ import { WelcomeBack } from "./WelcomeBack";
 import "./GameShell.css";
 import "./PixelButton.css";
 
-export type GameTab = "mission" | "log" | "ranks" | "other";
+export type GameTab = "mission" | "map" | "log" | "ranks" | "other";
 
 interface GameShellProps {
   tab: GameTab;
@@ -99,6 +99,10 @@ export function GameShell({ tab, children }: GameShellProps) {
             {wide ? (
               <nav className="game-nav" aria-label="Game">
                 {safe ? <SafeChip /> : <HereNow online={probe.online} idling={probe.idling} wide />}
+                <Link href="/map" className="game-nav__item" aria-current={tab === "map" ? "page" : undefined}>
+                  <PixelIcon name="map" size={18} tone={tab === "map" ? "blue" : "muted"} />
+                  Map
+                </Link>
                 <button type="button" className="game-nav__item" onClick={openUpgrades} aria-haspopup="dialog">
                   <PixelIcon name="bolt" size={18} tone="muted" />
                   Upgrades
@@ -160,6 +164,10 @@ export function GameShell({ tab, children }: GameShellProps) {
             <Link href="/" className="tabbar__item" aria-current={tab === "mission" ? "page" : undefined}>
               <img src={STILLS.earthSmall.src} alt="" width={16} height={16} />
               Mission
+            </Link>
+            <Link href="/map" className="tabbar__item" aria-current={tab === "map" ? "page" : undefined}>
+              <PixelIcon name="map" size={18} tone={tab === "map" ? "blue" : "muted"} />
+              Map
             </Link>
             <button type="button" className="tabbar__item" onClick={openUpgrades} aria-haspopup="dialog">
               <PixelIcon name="bolt" size={18} tone="muted" />

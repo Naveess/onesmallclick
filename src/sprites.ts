@@ -101,4 +101,18 @@ export const STILLS = {
   badgeOrange: { name: "Signal badge, orange", src: "/sprites/signal-badge-orange.png", width: 32, height: 32 },
   badgeRed: { name: "Signal badge, red", src: "/sprites/signal-badge-red.png", width: 32, height: 32 },
   earthSmall: { name: "Earth, tab bar", src: "/sprites/earth-small.png", width: 16, height: 16 },
+  jupiter: { name: "Jupiter", src: "/sprites/jupiter.png", width: 96, height: 96 },
+  saturn: { name: "Saturn", src: "/sprites/saturn.png", width: 128, height: 80 },
+  europa: { name: "Europa", src: "/sprites/europa.png", width: 64, height: 64 },
 } satisfies Record<string, Still>;
+
+/** Each probe's still (content/campaign.json probe ids). OSC-1 is the original 64×40; the rest are 64×64 (PixelLab, 19 and 24 Nov). */
+export function probeStill(id: string): Still {
+  if (id === "pathfinder") return STILLS.probe;
+  return { name: id, src: `/sprites/probe-${id}.png`, width: 64, height: 64 };
+}
+
+/** A profile badge's 32×32 medal (PixelLab, 24 Nov; shared/badges.ts ids). */
+export function badgeStill(id: string): Still {
+  return { name: id, src: `/sprites/badges/badge-${id}.png`, width: 32, height: 32 };
+}

@@ -127,6 +127,18 @@ Agreed rules (19 Nov):
 ### E1: design (done 19 Nov)
 - [x] The campaign map (1m), the new probe reveal (1n), the landing burn (1o), the arrival rewards and two-branch vote (1k), the passport and cosmetics (1j), the medal pace line and Destination file card (1a/1b), and the medal colours on the Art kit.
 
+### E1: the campaign map build (prompt 68, 24 Nov)
+Nav approved the plan and both content items (prompt 68). Order of work:
+- [x] **One fact per stop** for the map, each checked against a NASA page on 24 Nov (in content/campaign.json, `fact` on each stop, with the source and quote). Five claims were reworded to what NASA actually says (Vesta, Miranda, Pluto, Arrokoth, interstellar). Mars uses content/facts/mars.json.
+- [x] **The map's share line** in content/share.json (moment `map`). **Nav: approve** its link-preview line ("See the whole route the crew is flying, from Earth to the edge of the Solar System.") and the in-orbit wording ("We're in orbit at {dest}. See the whole route the crew is flying:").
+- [x] **`/api/tour`**: the legs flown so far (stop, dates, medal, winning branch, whether you helped), cached.
+- [x] **`/map`**: the star chart (phone vertical, desktop full width with drag and a pixel scrollbar), each stop's state, the probe's live spot, the stop card, Crew tech, Share the map; the fifth tab "Map" and the wide header link; the new probe sprites; moons without sprites drawn in code (src/game/mapArt.ts) until PixelLab makes them.
+- [x] **Badge medals** (made 24 Nov) on the profile and the badge toast.
+- [x] **Check** at 390 and 1440 in both themes; /admin: arrive, vote on the map, close the vote, the map moves on (24 Nov).
+- [ ] **Deploy E1** when Nav asks (no migration): `npm run deploy`.
+- [ ] **Nav: check `/map` on a phone and a laptop.**
+- [ ] **Still open:** the heliopause's distance (no NASA page found on 24 Nov gives it; the map says "distance not yet charted").
+
 ### E2: PixelLab art for the expansion
 The design (E1) has settled the probes and map art, so the list below replaces the earlier draft. The current probe is the style reference. Made 19 Nov: Europa Lander, Ganymede Orbiter, Jupiter, Saturn and Europa.
 - [x] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor). Made 2026-11-24 (prompt 67) with the rest of the probes, below.

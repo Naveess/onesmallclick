@@ -120,7 +120,13 @@
       "id": "earth",
       "name": "Earth",
       "kind": "start",
-      "region": "Inner system"
+      "region": "Inner system",
+      "fact": {
+        "text": "Every planet except Earth was named after Greek and Roman gods and goddesses.",
+        "source": "https://science.nasa.gov/earth/facts/",
+        "quote": "All of the planets, except for Earth, were named after Greek and Roman gods and goddesses.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "mars",
@@ -179,7 +185,13 @@
           "id": "salt-glow",
           "name": "Salt-glow sky"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Ceres is the biggest object in the asteroid belt, and the only dwarf planet in the inner Solar System.",
+        "source": "https://science.nasa.gov/dwarf-planets/ceres/",
+        "quote": "Dwarf planet Ceres is the largest object in the asteroid belt between Mars and Jupiter.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "vesta",
@@ -204,7 +216,13 @@
           "id": "basalt",
           "name": "Basalt-grey paint"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Vesta is the second most massive body in the main asteroid belt, after Ceres.",
+        "source": "https://science.nasa.gov/solar-system/asteroids/4-vesta/",
+        "quote": "the second most massive body in the main asteroid belt",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "jupiter",
@@ -238,7 +256,13 @@
       "branchVote": [
         "europa",
         "ganymede"
-      ]
+      ],
+      "fact": {
+        "text": "Jupiter is more than twice as massive as all the other planets put together.",
+        "source": "https://science.nasa.gov/jupiter/",
+        "quote": "more than twice as massive as the other planets combined",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "europa",
@@ -263,7 +287,13 @@
           "id": "ice-crack",
           "name": "Ice-crack paint"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Europa's hidden ocean may hold twice as much water as all of Earth's oceans.",
+        "source": "https://science.nasa.gov/jupiter/jupiter-moons/europa/europa-facts/",
+        "quote": "its ocean may contain twice as much water as Earth's global ocean",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "ganymede",
@@ -289,7 +319,13 @@
           "id": "aurora",
           "name": "Aurora trail"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Ganymede is the biggest moon in the Solar System, even bigger than the planet Mercury.",
+        "source": "https://science.nasa.gov/jupiter/jupiter-moons/ganymede/",
+        "quote": "the largest moon in our solar system, even bigger than the planet Mercury",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "saturn",
@@ -321,7 +357,13 @@
       "branchVote": [
         "titan",
         "enceladus"
-      ]
+      ],
+      "fact": {
+        "text": "Saturn is the only planet whose average density is less than water's.",
+        "source": "https://science.nasa.gov/saturn/facts/",
+        "quote": "Saturn is the only planet in our solar system with an average density that is less than water.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "titan",
@@ -346,7 +388,13 @@
           "id": "orange-haze",
           "name": "Orange-haze sky"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Titan is the only moon with a thick atmosphere, and it has seas of liquid methane and ethane.",
+        "source": "https://science.nasa.gov/saturn/moons/titan/",
+        "quote": "It is the only moon with a thick atmosphere. ... liquid hydrocarbons like methane and ethane",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "enceladus",
@@ -371,7 +419,13 @@
           "id": "geyser",
           "name": "Geyser-plume trail"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Jets on Enceladus spray water vapour and ice into space, and the spray forms Saturn's E ring.",
+        "source": "https://science.nasa.gov/saturn/moons/enceladus/",
+        "quote": "geyser-like jets spewing water vapor and ice particles into space ... to form Saturn's E ring",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "uranus",
@@ -402,7 +456,13 @@
       "branchVote": [
         "miranda",
         "titania"
-      ]
+      ],
+      "fact": {
+        "text": "Uranus spins at nearly 90 degrees to its orbit, so it rolls around the Sun on its side.",
+        "source": "https://science.nasa.gov/uranus/facts/",
+        "quote": "Uranus rotates at a nearly 90-degree angle from the plane of its orbit.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "miranda",
@@ -427,7 +487,13 @@
           "id": "patchwork",
           "name": "Patchwork paint"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Miranda's giant canyons are up to 12 times as deep as the Grand Canyon.",
+        "source": "https://science.nasa.gov/uranus/moons/miranda/",
+        "quote": "Miranda's giant fault canyons are as much as 12 times as deep as the Grand Canyon.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "titania",
@@ -453,7 +519,13 @@
           "id": "fairy-lights",
           "name": "Fairy-light trail"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Titania, Uranus's biggest moon, is named after the queen of the fairies in Shakespeare's A Midsummer Night's Dream.",
+        "source": "https://science.nasa.gov/uranus/moons/titania/",
+        "quote": "Titania is named for the queen of the fairies in William Shakespeare's 16th century play",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "neptune",
@@ -484,7 +556,13 @@
       "branchVote": [
         "pluto",
         "arrokoth"
-      ]
+      ],
+      "fact": {
+        "text": "Neptune is the windiest world in the Solar System, with winds over 2,000 km/h.",
+        "source": "https://science.nasa.gov/neptune/neptune-facts/",
+        "quote": "speeds of more than 1,200 miles per hour (2,000 kilometers per hour)",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "pluto",
@@ -509,7 +587,13 @@
           "id": "heart",
           "name": "Heart paint"
         }
-      ]
+      ],
+      "fact": {
+        "text": "Pluto's biggest plains seem to be made of frozen nitrogen, with no craters at all.",
+        "source": "https://science.nasa.gov/dwarf-planets/pluto/facts/",
+        "quote": "The most prominent plains observed on Pluto appear to be made of frozen nitrogen gas and show no craters.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "arrokoth",
@@ -534,7 +618,13 @@
           "id": "snowman-red",
           "name": "Snowman-red paint"
         }
-      ]
+      ],
+      "fact": {
+        "text": "NASA's New Horizons flew past Arrokoth, far out in the Kuiper belt, on 1 January 2019.",
+        "source": "https://science.nasa.gov/solar-system/kuiper-belt/",
+        "quote": "On Jan. 1, 2019, the spacecraft flew by a Kuiper Belt object later named Arrokoth.",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "heliopause",
@@ -563,7 +653,13 @@
           "id": "interstellar",
           "name": "Interstellar sky"
         }
-      ]
+      ],
+      "fact": {
+        "text": "On 25 August 2012, Voyager 1 became the first spacecraft to leave the Sun's bubble, the heliosphere.",
+        "source": "https://science.nasa.gov/mission/voyager/voyager-1/",
+        "quote": "On Aug. 25, 2012, the spacecraft became the first to exit the heliosphere",
+        "checked": "2026-11-24"
+      }
     },
     {
       "id": "interstellar",
@@ -573,7 +669,13 @@
       "from": "heliopause",
       "mission": 7,
       "distanceKm": null,
-      "distanceNote": "Endless: distance records and monthly trophies instead of an arrival (docs/expansion.md)."
+      "distanceNote": "Endless: distance records and monthly trophies instead of an arrival (docs/expansion.md).",
+      "fact": {
+        "text": "Voyager 1 is the first human-made object to travel into interstellar space.",
+        "source": "https://science.nasa.gov/mission/voyager/voyager-1/",
+        "quote": "Voyager 1 is the first human-made object to venture into interstellar space.",
+        "checked": "2026-11-24"
+      }
     }
   ],
   "probes": [
@@ -931,5 +1033,6 @@
     "id": "gold-foil",
     "name": "Gold foil paint",
     "note": "The design unlocks it with Gold at Mars; suggested: the crew's first Gold anywhere."
-  }
+  },
+  "_aboutFacts": "Each stop's map fact (E1, prompt 68): one fact per stop for the campaign map, checked on 2026-11-24 against the NASA page in `source` (the quote is what the page says). Mars uses content/facts/mars.json instead. Approved by Nav in prompt 68."
 }

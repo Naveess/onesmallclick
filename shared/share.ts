@@ -18,6 +18,7 @@ export const MOMENTS = [
   "country",
   "fact",
   "page",
+  "map",
 ] as const;
 export type Moment = (typeof MOMENTS)[number];
 

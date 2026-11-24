@@ -2,6 +2,7 @@ import { AdminPage } from "./pages/AdminPage";
 import { GamePage } from "./pages/GamePage";
 import { KitPage } from "./pages/KitPage";
 import { LogPage } from "./pages/LogPage";
+import { MapPage } from "./pages/MapPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ConfirmPage, SignInPage } from "./pages/SignInPage";
 import { ProfilePage } from "./pages/ProfilePage";
@@ -23,6 +24,8 @@ export function App() {
       return <AdminPage />;
     case "/log":
       return <LogPage />;
+    case "/map":
+      return <MapPage />;
     case "/ranks":
       return <RanksPage />;
     case "/profile":

@@ -131,6 +131,16 @@
   opacity: 1;
 }
 
+/* The medal (32×32, 1:1): greyed out until it's earned. */
+.profile__badge-art {
+  image-rendering: pixelated;
+  filter: grayscale(1);
+}
+
+.profile__badge--on .profile__badge-art {
+  filter: none;
+}
+
 .profile__badge-name {
   font-size: 12px;
   line-height: 1.2;

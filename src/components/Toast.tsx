@@ -3,7 +3,7 @@ import { BADGE_INFO, type BadgeId } from "../../shared/badges";
 import type { BadgeTier } from "../../shared/mission";
 import { shareMessage } from "../../shared/share";
 import { dismissToast, useGame, type Toast as ToastData } from "../game/store";
-import { STILLS } from "../sprites";
+import { STILLS, badgeStill } from "../sprites";
 import { PixelIcon } from "./PixelIcon";
 import { ShareSheet } from "./ShareSheet";
 import { Window } from "./Window";
@@ -27,6 +27,8 @@ export function Toast({ toast, wide }: { toast: ToastData | null; wide: boolean 
           <Window key={toast.id} tone="orange" className="toast">
             {toast.tier ? (
               <img className="toast__badge" src={BADGE[toast.tier].src} alt={BADGE[toast.tier].alt} width={32} height={32} />
+            ) : toast.badge ? (
+              <img className="toast__badge" src={badgeStill(toast.badge).src} alt="" width={32} height={32} />
             ) : (
               <PixelIcon name="signal" size={27} tone="orange" />
             )}

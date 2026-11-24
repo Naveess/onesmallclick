@@ -12,6 +12,14 @@ export interface PlanetTech {
   bronze: string;
 }
 
+/** A stop's one map fact (E1), checked against the NASA page in `source`. */
+export interface StopFact {
+  text: string;
+  source: string;
+  quote: string;
+  checked: string;
+}
+
 export interface Stop {
   id: string;
   name: string;
@@ -25,6 +33,8 @@ export interface Stop {
   tech?: PlanetTech;
   /** The two branches the crew votes between on arriving here. */
   branchVote?: string[];
+  /** The campaign map's fact for this stop (E1; Mars uses content/facts/mars.json). */
+  fact?: StopFact;
 }
 
 export interface ProbeDef {

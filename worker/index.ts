@@ -11,6 +11,7 @@
 //   GET  /api/log             ?before=<id> → the current mission's log, newest first (30 at a time)
 //   GET  /api/leaderboard     ?board=players|countries → today's top km and your row (worker/boards.ts)
 //   GET  /api/credits         ?mission=<id> → the mission credits for an arrived leg (phase 8c)
+//   GET  /api/tour            the legs flown so far and which you helped on (E1, the campaign map)
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
 //   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
@@ -32,7 +33,7 @@ import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
-import { credits, leaderboard, profile } from "./boards";
+import { credits, leaderboard, profile, tour } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
@@ -68,6 +69,7 @@ export default {
     if (path === "/api/log" && request.method === "GET") return missionLog(env, url);
     if (path === "/api/leaderboard" && request.method === "GET") return leaderboard(request, env, url, await probe(env).boardDay());
     if (path === "/api/credits" && request.method === "GET") return credits(env, url);
+    if (path === "/api/tour" && request.method === "GET") return tour(request, env);
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
     if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);

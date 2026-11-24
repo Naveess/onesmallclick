@@ -1,6 +1,7 @@
 // The design's 9×9 UI icons, copied from design/icons/*.svg (exported from buildIcons()).
 // Each is one path in a 9×9 grid, drawn with currentColor by PixelIcon.
-// "share" (E4b part 1, the Destination file's "Share fact") is traced from buildIcons()' share grid directly.
+// "share" (E4b part 1, the Destination file's "Share fact") is traced from buildIcons()' share grid directly,
+// and "map" (E1, the Map tab) from its map grid.
 
 export const ICON_PATHS = {
   bolt: "M5 0h2v1h-2zM4 1h2v1h-2zM3 2h2v1h-2zM2 3h6v1h-6zM5 4h2v1h-2zM4 5h2v1h-2zM3 6h2v1h-2zM2 7h2v1h-2z",
@@ -14,6 +15,7 @@ export const ICON_PATHS = {
   trophy: "M0 0h9v1h-9zM0 1h1v1h-1zM2 1h5v1h-5zM8 1h1v1h-1zM0 2h1v1h-1zM2 2h5v1h-5zM8 2h1v1h-1zM1 3h7v1h-7zM2 4h5v1h-5zM4 5h1v1h-1zM4 6h1v1h-1zM2 7h5v1h-5z",
   up: "M4 0h1v1h-1zM3 1h3v1h-3zM2 2h5v1h-5zM1 3h7v1h-7zM3 4h3v1h-3zM3 5h3v1h-3zM3 6h3v1h-3zM3 7h3v1h-3z",
   user: "M3 0h3v1h-3zM2 1h5v1h-5zM2 2h5v1h-5zM3 3h3v1h-3zM1 5h7v1h-7zM0 6h9v1h-9zM0 7h9v1h-9z",
+  map: "M7 0h1v1h-1zM6 1h3v1h-3zM7 2h1v1h-1zM4 3h1v1h-1zM3 4h3v1h-3zM4 5h1v1h-1zM1 6h1v1h-1zM0 7h3v1h-3zM1 8h1v1h-1z",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
