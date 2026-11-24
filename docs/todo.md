@@ -135,7 +135,7 @@ Nav approved the plan and both content items (prompt 68). Order of work:
 - [x] **`/map`**: the star chart (phone vertical, desktop full width with drag and a pixel scrollbar), each stop's state, the probe's live spot, the stop card, Crew tech, Share the map; the fifth tab "Map" and the wide header link; the new probe sprites; moons without sprites drawn in code (src/game/mapArt.ts) until PixelLab makes them.
 - [x] **Badge medals** (made 24 Nov) on the profile and the badge toast.
 - [x] **Check** at 390 and 1440 in both themes; /admin: arrive, vote on the map, close the vote, the map moves on (24 Nov).
-- [ ] **Deploy E1** when Nav asks (no migration): `npm run deploy`.
+- [x] **Deploy E1** (prompt 69): live D1 backed up (pre-E1), `npm run deploy` → f99de022.
 - [ ] **Nav: check `/map` on a phone and a laptop.**
 - [ ] **Still open:** the heliopause's distance (no NASA page found on 24 Nov gives it; the map says "distance not yet charted").
 
