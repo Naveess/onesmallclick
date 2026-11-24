@@ -96,9 +96,60 @@ interface ShareReport {
   since: string;
   crewLinks: number;
   rows: { day: string; moment: string; channel: string; shares: number; visits: number }[];
+  /** Phase S2: the K-factor over the same 7 days (worker/share.ts shareReport). */
+  k: {
+    players: number;
+    shares: number;
+    visits: number;
+    arrived: number;
+    recruits: number;
+    overCap: number;
+    notCounted: number;
+    waiting: number;
+    i: number;
+    c: number;
+    k: number;
+    medianCycleMs: number | null;
+  };
 }
 
-/** Shares and crew-link visits over the last 7 days (phase S1). Counters only. The K-factor panel comes in S2. */
+/** "3 h 20 min", "12 min", "40 s": the cycle time. */
+function cycle(ms: number | null): string {
+  if (ms === null) return "none yet";
+  const s = Math.round(ms / 1000);
+  if (s < 60) return `${s} s`;
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m} min`;
+  const h = Math.floor(m / 60);
+  return h < 48 ? `${h} h ${m % 60} min` : `${Math.round(h / 24)} days`;
+}
+
+/** The K-factor over the last 7 days (phase S2): K = i × c. Above 1, each player brings in more than one. */
+function KFactor({ k }: { k: ShareReport["k"] }) {
+  return (
+    <div className="admin__note">
+      <p className="num" style={{ fontSize: 28, lineHeight: 1.1, color: k.k >= 1 ? "var(--text-orange)" : "var(--text-blue)" }}>
+        K = {k.k.toFixed(2)}
+      </p>
+      <ul>
+        <li className="num">
+          i = {k.i.toFixed(2)} shares per active player ({k.shares} shares ÷ {k.players} players who pushed)
+        </li>
+        <li className="num">
+          c = {k.c.toFixed(2)} recruits per share ({k.recruits} ÷ {k.shares})
+        </li>
+        <li className="num">
+          {k.visits} link visits · {k.arrived} new players arrived · {k.recruits} played (recruits
+          {k.overCap ? `, ${k.overCap} past a recruiter's 10 a day` : ""}) · {k.waiting} not yet · {k.notCounted} not counted (own
+          account or an older one)
+        </li>
+        <li className="num">Cycle time (median, link opened to 50 taps or a Ping): {cycle(k.medianCycleMs)}</li>
+      </ul>
+    </div>
+  );
+}
+
+/** Shares and crew-link visits over the last 7 days (phase S1), and the K-factor (phase S2). Counters only. */
 function Shares({ adminKey }: { adminKey: string }) {
   const [report, setReport] = useState<ShareReport | null>(null);
   const [error, setError] = useState("");
@@ -119,8 +170,9 @@ function Shares({ adminKey }: { adminKey: string }) {
   return (
     <Window as="section" className="admin__card" aria-labelledby="admin-shares">
       <h2 id="admin-shares" className="admin__h2">
-        Sharing · last 7 days
+        Sharing and K-factor · last 7 days
       </h2>
+      {report?.k && <KFactor k={report.k} />}
       <p className="admin__note">
         {report
           ? `${total("shares")} shares, ${total("visits")} crew-link visits since ${report.since}. ${report.crewLinks} players have a crew link.`

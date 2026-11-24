@@ -37,6 +37,9 @@ export interface ProfileInfo {
   /** The 30 UTC days of the ping grid, oldest first, ending today. */
   days: string[];
   signedIn: boolean;
+  /** Phase S2: new players who came through your crew link and played, and the km they've pushed since. */
+  recruits: number;
+  recruitKm: number;
 }
 
 /** How many players the Players board lists. */

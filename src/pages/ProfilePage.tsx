@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { BADGE_INFO, KEEPER_IDS, ROMAN, type BadgeId } from "../../shared/badges";
+import { BADGE_INFO, KEEPER_IDS, RECRUITER_IDS, ROMAN, type BadgeId } from "../../shared/badges";
 import type { ProfileInfo } from "../../shared/boards";
 import { CLICK_BADGES } from "../../shared/clicks";
+import { RECRUITER_LEVELS } from "../../shared/share";
 import { GameShell } from "../components/GameShell";
 import { shareText } from "../components/MilestoneMoment";
 import { ShareSheet } from "../components/ShareSheet";
@@ -31,15 +32,26 @@ interface Tile {
   icon: IconName;
   tone: IconTone;
   on: boolean;
+  /** Takes the whole row (Crew Recruiter). */
+  wide?: boolean;
 }
 
 /**
  * The badge tiles, in the design's order. Signal Keeper is one tile showing your highest level
  * (or what Signal Keeper I needs). Icons are the design's 9×9 ones until the PixelLab sprites exist.
  */
-function tiles(have: Set<BadgeId>): Tile[] {
+function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
   const keeper = [...KEEPER_IDS].reverse().find((id) => have.has(id));
   const keeperShown = keeper ?? KEEPER_IDS[0];
+  // Crew Recruiter I–III (phase S2): one tile that steps up, like Signal Keeper, across the last row.
+  const level = RECRUITER_IDS.filter((id) => have.has(id)).length;
+  const recruiterShown = RECRUITER_IDS[Math.max(0, level - 1)];
+  const n = info?.recruits ?? 0;
+  const next = RECRUITER_LEVELS[level];
+  const recruitHow =
+    n === 0
+      ? "Bring in a new player with your crew link: they count once they've played"
+      : `${int(n)} recruit${n === 1 ? "" : "s"} · they've pushed ${int(info?.recruitKm ?? 0)} km${next ? ` · next level at ${next}` : ""}`;
   const t = (id: BadgeId, icon: IconName, tone: IconTone): Tile => ({
     key: id,
     name: BADGE_INFO[id].name,
@@ -58,6 +70,7 @@ function tiles(have: Set<BadgeId>): Tile[] {
     t("clicks-1", "up", "blue"),
     t("clicks-2", "up", "blue"),
     t("clicks-3", "up", "orange"),
+    { ...t(recruiterShown, "user", "blue"), key: "recruiter", on: level > 0, how: recruitHow, wide: true },
   ];
 }
 
@@ -79,7 +92,7 @@ export function ProfilePage() {
   }, []);
 
   const have = new Set(player.badges.map((b) => b.id));
-  const shownTiles = tiles(have);
+  const shownTiles = tiles(have, info);
   const earned = shownTiles.filter((x) => x.on).length;
   const pinged = new Set(info?.pingDays ?? []);
   const keeperLevel = KEEPER_IDS.filter((id) => have.has(id)).length;
@@ -127,7 +140,10 @@ export function ProfilePage() {
             </h2>
             <ul className="profile__badges">
               {shownTiles.map((b) => (
-                <li key={b.key} className={b.on ? "profile__badge profile__badge--on" : "profile__badge"}>
+                <li
+                  key={b.key}
+                  className={["profile__badge", b.on && "profile__badge--on", b.wide && "profile__badge--wide"].filter(Boolean).join(" ")}
+                >
                   <PixelIcon name={b.icon} size={27} tone={b.on ? b.tone : "muted"} />
                   <span className="profile__badge-name">{b.name}</span>
                   <span className="profile__badge-how">{b.how}</span>

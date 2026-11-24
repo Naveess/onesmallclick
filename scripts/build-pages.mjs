@@ -365,7 +365,7 @@ const mailto = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
 const operatorLink = `<a href="${OPERATOR.url}" rel="noopener">${OPERATOR.name}</a>`;
 const LEGAL_UPDATED = "20 November 2026";
 // The privacy page alone changed in phase S1 (crew links and share counts).
-const PRIVACY_UPDATED = "22 November 2026";
+const PRIVACY_UPDATED = "24 November 2026";
 
 /** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML. */
 function sectionsHtml(id, sections) {
@@ -512,6 +512,7 @@ const privacySections = [
     [
       "The first time you share, you get a crew link (like /c/k7p2qx). Its code is random: it isn't your name or your email. Anyone who opens it sees your crew name, and the link preview shows the km you've pushed.",
       "We count shares and crew-link visits per day, by what was shared and where (WhatsApp, X and so on), as plain totals with nothing about who shared or who visited.",
+      "When someone new starts playing through your crew link, we note that their device came through your link, so we can count your recruits. You see how many recruits you have and the km they've pushed, never who they are.",
       "The share buttons are plain links: no WhatsApp, X, Facebook, Reddit or Telegram scripts run on our pages. Those apps only see what you choose to send.",
     ],
   ],

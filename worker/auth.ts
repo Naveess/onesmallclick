@@ -505,6 +505,7 @@ async function deleteAccount(request: Request, env: Env): Promise<Response> {
     env.DB.prepare(`DELETE FROM progress WHERE device_id = ?`).bind(`a:${id}`),
     env.DB.prepare(`DELETE FROM badges WHERE player_key = ?`).bind(`a:${id}`),
     env.DB.prepare(`DELETE FROM share_links WHERE player_key = ?`).bind(`a:${id}`),
+    env.DB.prepare(`DELETE FROM recruits WHERE recruiter_key = ?`).bind(`a:${id}`),
     env.DB.prepare(`DELETE FROM accounts WHERE id = ?`).bind(id),
   ]);
   const headers = new Headers();

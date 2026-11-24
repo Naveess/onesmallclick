@@ -69,16 +69,18 @@ Email sign-in and 8d (crew emails) can't fully work until all three setup steps 
 
 ## Phase S: Sharing and invites (added 20 Nov; after 9a, before E1)
 
-**Where it stands (22 Nov, prompt 62).** Nav said yes to all seven: S split into S1 and S2, decisions 26–28 as written, preview images by script, links from the site's address, the 12px labels go out with S1. **S1 is approved and live** (2026-11-23, prompt 63, version 0bf5a6ee; docs/plan.md, "S1 status"). Next free migration number: 0013.
+**Where it stands (22 Nov, prompt 62).** Nav said yes to all seven: S split into S1 and S2, decisions 26–28 as written, preview images by script, links from the site's address, the 12px labels go out with S1. **S1 is approved and live** (2026-11-23, prompt 63, version 0bf5a6ee; docs/plan.md, "S1 status"). **S2 is built and pushed, not deployed** (2026-11-24, prompts 64–65; docs/plan.md, "S2 status"). Next free migration number: 0014.
 - [x] **Deploy S1** (prompt 63): live D1 backed up (pre-S1), migration 0012 `--remote`, `npm run deploy` → 0bf5a6ee, with the 12px labels.
 - [x] **Nav: approve the share texts** in content/share.json (prompt 63: everything approved).
-- [ ] **Nav: check S1 on a phone** (share a milestone or the fact to WhatsApp, open the link on another phone: preview, invite banner).
-- [ ] **Build S2** after S1 is approved: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel.
+- [x] **Nav: check S1 on a phone** (prompt 64: looks right).
+- [x] **Build S2** (prompts 64–65): recruits, recruiter badges, "your recruits have pushed X km", the K-factor card in /admin.
+- [ ] **Deploy S2** when Nav asks: back up the live D1, apply migration 0013 `--remote`, `npm run deploy`.
+- [ ] **Nav: check S2 on two phones** (open your crew link on a phone that's never played, tap 50: Crew Recruiter I on your phone, the recruit on your profile, the K-factor card in /admin).
 - [x] **Approve decisions 26–28** in docs/plan.md (prompt 62: all as written).
 - [x] **Build phase S1** (prompt 62): the share kit, crew links, link previews, share moments, the invite landing, share counts.
 - [x] **Preview images** (1200×630, 14 of them) by `scripts/make-previews.mjs` from the existing sprites (prompt 62). A new destination needs a line in the script and in shared/share.ts PREVIEW_IMAGES.
 - [ ] **After the domain is live:** check crew-link previews in the Facebook and X link debuggers.
-- [x] **Privacy page:** a "Sharing" section on crew links and the share counters (S1). S2 adds a line on recruit counts.
+- [x] **Privacy page:** a "Sharing" section on crew links and the share counters (S1). S2's line on recruits added (prompt 65).
 
 ## Expansion: the Grand Tour (planned 19 Nov 2026)
 

@@ -19,6 +19,7 @@ import {
   CODE_PATTERN,
   DETAIL_PATTERN,
   PREVIEW_IMAGES,
+  RECRUIT_NEW_MS,
   isChannel,
   isMoment,
   previewImage,
@@ -135,9 +136,39 @@ export async function crewInfo(request: Request, env: Env, code: string, url: UR
   if (!own) {
     const m = url.searchParams.get("m");
     const v = url.searchParams.get("v");
-    await count(env, "visits", isMoment(m) ? m : "invite", isChannel(v) ? v : "copy");
+    const moment = isMoment(m) ? m : "invite";
+    const channel = isChannel(v) ? v : "copy";
+    await count(env, "visits", moment, channel);
+    if (me && !me.accountId) await noteArrival(env, me.deviceId, who.key, moment, channel);
   }
   return json({ name: who.name, own });
+}
+
+/** Phase S2: a new guest device arrived through someone's link (first seen under 30 minutes ago, never
+ * tapped). It becomes their recruit at 50 credited taps or a Ping (worker/probe.ts convertRecruit).
+ * Once per device: the first link it came through keeps it. */
+async function noteArrival(env: Env, deviceId: string, recruiterKey: string, moment: Moment, channel: string) {
+  const now = Date.now();
+  try {
+    const [dev, taps] = await env.DB.batch<{ created_at?: number; n?: number }>([
+      env.DB.prepare(`SELECT created_at FROM devices WHERE id = ?`).bind(deviceId),
+      env.DB.prepare(`SELECT COALESCE(SUM(taps), 0) AS n FROM daily_km WHERE device_id = ?`).bind(deviceId),
+    ]);
+    const created = dev.results[0]?.created_at;
+    if (created === undefined || now - created > RECRUIT_NEW_MS || (taps.results[0]?.n ?? 0) > 0) return;
+    // A link made as a guest whose owner has since signed in: the recruit counts for their account.
+    if (!recruiterKey.startsWith("a:")) {
+      const owner = await env.DB.prepare(`SELECT account_id FROM devices WHERE id = ?`).bind(recruiterKey).first<{ account_id: string | null }>();
+      if (owner?.account_id) recruiterKey = `a:${owner.account_id}`;
+    }
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO recruits (device_id, recruiter_key, moment, channel, arrived_at) VALUES (?, ?, ?, ?, ?)`,
+    )
+      .bind(deviceId, recruiterKey, moment, channel, now)
+      .run();
+  } catch (err) {
+    console.error("recruit arrival failed", err);
+  }
 }
 
 /** Where the probe is heading now, for "{dest}" (the newest leg; NULL is the first, Mars). */
@@ -232,14 +263,62 @@ export async function contentPage(request: Request, env: Env, url: URL): Promise
   return absolutize(new HTMLRewriter(), url.origin).transform(res);
 }
 
-/** /admin: shares and visits per day, moment and channel over the last 7 days. */
+/** /admin: shares and visits per day, moment and channel over the last 7 days, and (phase S2) the K-factor. */
 export async function shareReport(env: Env) {
   const since = utcDay(Date.now() - 6 * 86_400_000);
-  const rows = await env.DB.prepare(
-    `SELECT day, moment, channel, shares, visits FROM share_counts WHERE day >= ? ORDER BY day DESC, shares + visits DESC`,
-  )
-    .bind(since)
-    .all<{ day: string; moment: string; channel: string; shares: number; visits: number }>();
-  const links = await env.DB.prepare(`SELECT COUNT(*) AS n FROM share_links`).first<{ n: number }>();
-  return { since, rows: rows.results, crewLinks: links?.n ?? 0 };
+  const sinceMs = Date.parse(`${since}T00:00:00Z`);
+  const db = env.DB;
+  const [rows, links, active, arrivals, cycles] = await db.batch<{
+    day?: string;
+    moment?: string;
+    channel?: string;
+    shares?: number;
+    visits?: number;
+    n?: number;
+    status?: string;
+    ms?: number;
+  }>([
+    db.prepare(`SELECT day, moment, channel, shares, visits FROM share_counts WHERE day >= ? ORDER BY day DESC, shares + visits DESC`).bind(since),
+    db.prepare(`SELECT COUNT(*) AS n FROM share_links`),
+    // Active players: anyone who pushed (a player is the account when signed in, else the device).
+    db
+      .prepare(
+        `SELECT COUNT(DISTINCT CASE WHEN account_id IS NOT NULL THEN 'a:' || account_id ELSE device_id END) AS n
+         FROM daily_km WHERE day >= ? AND km > 0`,
+      )
+      .bind(since),
+    db.prepare(`SELECT status, COUNT(*) AS n FROM recruits WHERE arrived_at >= ? GROUP BY status`).bind(sinceMs),
+    db
+      .prepare(`SELECT converted_at - arrived_at AS ms FROM recruits WHERE arrived_at >= ? AND status IN ('recruit', 'over-cap') ORDER BY ms`)
+      .bind(sinceMs),
+  ]);
+  const shareRows = rows.results as { day: string; moment: string; channel: string; shares: number; visits: number }[];
+  const by = Object.fromEntries(arrivals.results.map((r) => [r.status!, r.n!]));
+  const shares = shareRows.reduce((n, r) => n + r.shares, 0);
+  const players = active.results[0]?.n ?? 0;
+  // New players who played: recruits, and those past a recruiter's daily cap (real players, just not rewarded).
+  const recruits = (by.recruit ?? 0) + (by["over-cap"] ?? 0);
+  const ms = cycles.results.map((r) => r.ms!);
+  const median = ms.length ? (ms.length % 2 ? ms[(ms.length - 1) / 2] : (ms[ms.length / 2 - 1] + ms[ms.length / 2]) / 2) : null;
+  const i = players ? shares / players : 0;
+  const c = shares ? recruits / shares : 0;
+  return {
+    since,
+    rows: shareRows,
+    crewLinks: links.results[0]?.n ?? 0,
+    k: {
+      players,
+      shares,
+      visits: shareRows.reduce((n, r) => n + r.visits, 0),
+      arrived: Object.values(by).reduce((n, x) => n + x, 0),
+      recruits,
+      overCap: by["over-cap"] ?? 0,
+      notCounted: (by.own ?? 0) + (by.existing ?? 0),
+      waiting: by.arrived ?? 0,
+      i,
+      c,
+      k: i * c,
+      medianCycleMs: median,
+    },
+  };
 }

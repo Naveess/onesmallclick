@@ -100,6 +100,11 @@
   text-align: right;
 }
 
+/* Crew Recruiter (phase S2): the tenth tile takes the whole last row, with your recruits under its name. */
+.profile__badge--wide {
+  grid-column: 1 / -1;
+}
+
 .profile__badges {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

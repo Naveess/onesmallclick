@@ -168,3 +168,14 @@ export function resultLine(t: {
     `Arrival: ${t.arrival}`,
   ].join("\n");
 }
+
+// ---------- Recruits (phase S2, decisions 26–27, prompts 64–65) ----------
+
+/** A device becomes a recruit at this many credited taps (or a Ping). */
+export const RECRUIT_TAPS = 50;
+/** "New": the device first opened the game at most this long before it opened the crew link. */
+export const RECRUIT_NEW_MS = 30 * 60_000;
+/** At most this many recruits a day count for one recruiter (badges and the profile). */
+export const RECRUITS_PER_DAY = 10;
+/** Crew Recruiter I / II / III. */
+export const RECRUITER_LEVELS = [1, 5, 25] as const;

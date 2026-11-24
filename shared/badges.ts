@@ -3,6 +3,7 @@
 // The server awards them (worker/probe.ts); the profile (1j) and the signal card show them.
 
 import { CLICK_BADGES } from "./clicks";
+import { RECRUITER_LEVELS } from "./share";
 
 export type BadgeId =
   | "first-ping"
@@ -16,7 +17,10 @@ export type BadgeId =
   | "patch"
   | "clicks-1"
   | "clicks-2"
-  | "clicks-3";
+  | "clicks-3"
+  | "recruit-1"
+  | "recruit-2"
+  | "recruit-3";
 
 /** A badge a player has, and when they earned it (epoch ms, the probe's clock). */
 export interface EarnedBadge {
@@ -40,6 +44,14 @@ export const HALFWAY_KM = 240_000_000;
 
 export const CLICK_BADGE_IDS: BadgeId[] = ["clicks-1", "clicks-2", "clicks-3"];
 
+/** Crew Recruiter I–III (phase S2): this many recruits (shared/share.ts RECRUITER_LEVELS). */
+export const RECRUITER_IDS: BadgeId[] = ["recruit-1", "recruit-2", "recruit-3"];
+
+/** The highest Crew Recruiter level (1–3) this many recruits reaches, or 0. */
+export function recruiterLevel(recruits: number): number {
+  return RECRUITER_LEVELS.filter((n) => recruits >= n).length;
+}
+
 /** What each badge is called and how it's earned, for the profile and the toast. */
 export const BADGE_INFO: Record<BadgeId, { name: string; how: string }> = {
   "first-ping": { name: "First Ping", how: "Saved the signal once" },
@@ -54,6 +66,9 @@ export const BADGE_INFO: Record<BadgeId, { name: string; how: string }> = {
   "clicks-1": { name: CLICK_BADGES[0].name, how: `${CLICK_BADGES[0].clicks.toLocaleString("en-GB")} clicks` },
   "clicks-2": { name: CLICK_BADGES[1].name, how: `${CLICK_BADGES[1].clicks.toLocaleString("en-GB")} clicks` },
   "clicks-3": { name: CLICK_BADGES[2].name, how: `${CLICK_BADGES[2].clicks.toLocaleString("en-GB")} clicks` },
+  "recruit-1": { name: "Crew Recruiter I", how: "Brought in 1 new player" },
+  "recruit-2": { name: "Crew Recruiter II", how: `Brought in ${RECRUITER_LEVELS[1]} new players` },
+  "recruit-3": { name: "Crew Recruiter III", how: `Brought in ${RECRUITER_LEVELS[2]} new players` },
 };
 
 /** The highest Signal Keeper level (1–4) a streak of this many days reaches, or 0. */

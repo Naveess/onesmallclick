@@ -55,6 +55,7 @@ import {
 } from "../shared/upgrades";
 import { MILESTONES, milestonesFor, type ReachedMilestone } from "../shared/milestones";
 import { CLICK_BADGES } from "../shared/clicks";
+import { RECRUIT_TAPS, RECRUITS_PER_DAY } from "../shared/share";
 import {
   CLICK_BADGE_IDS,
   HALFWAY_KM,
@@ -62,8 +63,10 @@ import {
   KEEPER_IDS,
   NIGHT_SHIFT_FROM_HOUR,
   NIGHT_SHIFT_TO_HOUR,
+  RECRUITER_IDS,
   VOTER_ROUNDS,
   longestStreak,
+  recruiterLevel,
   type BadgeId,
   type EarnedBadge,
 } from "../shared/badges";
@@ -165,6 +168,8 @@ interface DeviceEntry extends Omit<DeviceToday, "vote" | "badges"> {
   bestStreak: number;
   /** They pushed in this mission before the probe passed halfway (Halfway Crew). */
   pushedBeforeHalfway: boolean;
+  /** Their recruits (phase S2): new players who came through their crew link and played (Crew Recruiter). */
+  recruits: number;
   day: string;
   /** This device's vote: the round it was read for, and its option (null = not voted). */
   voteRound: string | null;
@@ -1285,6 +1290,7 @@ export class Probe extends DurableObject<Env> {
     dev.pingedToday = true;
     this.broadcast();
     await this.checkBadges(w, dev, null, at); // First Ping, Signal Keeper
+    await this.convertRecruit(w, at); // a Ping makes a newcomer a recruit
 
     if (woke) {
       const later = setback > 0 ? `Arrival moved about ${span(setback)} later.` : "The arrival date held.";
@@ -1389,6 +1395,7 @@ export class Probe extends DurableObject<Env> {
     if (dev.pushedBeforeHalfway) want.push("halfway");
     if (p && p.patches > 0) want.push("patch");
     CLICK_BADGES.forEach((b, i) => dev.tapsAll >= b.clicks && want.push(CLICK_BADGE_IDS[i]));
+    want.push(...RECRUITER_IDS.slice(0, recruiterLevel(dev.recruits)));
     const earned = [...new Set(want)].filter((id) => !dev.badges.has(id));
     if (earned.length === 0) return;
     for (const id of earned) dev.badges.set(id, now);
@@ -1404,6 +1411,67 @@ export class Probe extends DurableObject<Env> {
       return;
     }
     this.sendBadges(w.key, dev, earned);
+  }
+
+  /**
+   * Phase S2: this device just reached 50 credited taps or pinged. If it arrived through someone's crew
+   * link as a new player (worker/share.ts noteArrival), decide it now, once: a recruit for the link's
+   * owner (at most 10 a day count), or not, if it's signed in to their account or to an account older
+   * than its arrival. The recruiter's Crew Recruiter badges follow, on any tab they have open.
+   */
+  private async convertRecruit(w: Who, now: number) {
+    const db = this.env.DB;
+    try {
+      const row = await db
+        .prepare(`SELECT recruiter_key, arrived_at FROM recruits WHERE device_id = ? AND status = 'arrived'`)
+        .bind(w.deviceId)
+        .first<{ recruiter_key: string; arrived_at: number }>();
+      if (!row) return;
+      const recruiter = row.recruiter_key;
+      let status = "recruit";
+      if (recruiter === w.key || recruiter === w.deviceId) status = "own";
+      else if (w.accountId) {
+        const acct = await db.prepare(`SELECT created_at FROM accounts WHERE id = ?`).bind(w.accountId).first<{ created_at: number }>();
+        if (!acct || acct.created_at < row.arrived_at) status = "existing";
+      }
+      // Real time, not the probe's clock: the cycle time in /admin is arrival to conversion.
+      const real = Date.now();
+      if (status === "recruit") {
+        const since = Date.parse(`${utcDay(real)}T00:00:00Z`);
+        const today = await db
+          .prepare(`SELECT COUNT(*) AS n FROM recruits WHERE recruiter_key = ? AND status = 'recruit' AND converted_at >= ?`)
+          .bind(recruiter, since)
+          .first<{ n: number }>();
+        if ((today?.n ?? 0) >= RECRUITS_PER_DAY) status = "over-cap";
+      }
+      const res = await db
+        .prepare(`UPDATE recruits SET status = ?, converted_at = ? WHERE device_id = ? AND status = 'arrived'`)
+        .bind(status, real, w.deviceId)
+        .run();
+      if (status !== "recruit" || !res.meta.changes) return;
+      const n = await db
+        .prepare(`SELECT COUNT(*) AS n FROM recruits WHERE recruiter_key = ? AND status = 'recruit'`)
+        .bind(recruiter)
+        .first<{ n: number }>();
+      const total = n?.n ?? 0;
+      const rDev = this.devices.get(recruiter);
+      if (rDev) {
+        rDev.recruits = total;
+        const rw: Who = { deviceId: recruiter.startsWith("a:") ? "" : recruiter, accountId: null, key: recruiter };
+        await this.checkBadges(rw, rDev, null, now);
+      } else {
+        // Not here now: save the badges, so their profile has them (their next visit would award them too).
+        const ids = RECRUITER_IDS.slice(0, recruiterLevel(total));
+        if (ids.length)
+          await db.batch(
+            ids.map((id) =>
+              db.prepare(`INSERT OR IGNORE INTO badges (player_key, badge, earned_at) VALUES (?, ?, ?)`).bind(recruiter, id, now),
+            ),
+          );
+      }
+    } catch (err) {
+      console.error("recruit check failed", err);
+    }
   }
 
   /** Tells all of a player's tabs and devices about new badges. */
@@ -1778,6 +1846,7 @@ export class Probe extends DurableObject<Env> {
       const badges = new Map<BadgeId, number>();
       let votesTotal = 0;
       let pushedBeforeHalfway = false;
+      let recruits = 0;
       let pingDays: string[] = [];
       const round = this.vote.round;
       let voteOpt: number | null = null;
@@ -1787,7 +1856,7 @@ export class Probe extends DurableObject<Env> {
         const halfAt = this.halfwayAt();
         const halfFrom = utcDay(this.mission.startedAt);
         const halfTo = halfAt === null ? "" : utcDay(halfAt);
-        const [km, pings, votes, clicks, badgeRows, voteCount, half] = await db.batch<{
+        const [km, pings, votes, clicks, badgeRows, voteCount, half, recruitCount] = await db.batch<{
           km?: number | null;
           tap_km?: number | null;
           tap_moved_km?: number | null;
@@ -1822,6 +1891,7 @@ export class Probe extends DurableObject<Env> {
                 db
                   .prepare(`SELECT COUNT(*) AS n FROM daily_km WHERE account_id = ? AND km > 0 AND day >= ? AND day <= ?`)
                   .bind(w.accountId, halfFrom, halfTo),
+                db.prepare(`SELECT COUNT(*) AS n FROM recruits WHERE recruiter_key = ? AND status = 'recruit'`).bind(w.key),
               ]
             : [
                 db.prepare(`SELECT km, tap_km, tap_moved_km FROM daily_km WHERE day = ? AND device_id = ?`).bind(day, w.deviceId),
@@ -1840,6 +1910,7 @@ export class Probe extends DurableObject<Env> {
                 db
                   .prepare(`SELECT COUNT(*) AS n FROM daily_km WHERE device_id = ? AND km > 0 AND day >= ? AND day <= ?`)
                   .bind(w.deviceId, halfFrom, halfTo),
+                db.prepare(`SELECT COUNT(*) AS n FROM recruits WHERE recruiter_key = ? AND status = 'recruit'`).bind(w.key),
               ],
         );
         voteOpt = votes.results[0]?.option ?? null;
@@ -1851,6 +1922,7 @@ export class Probe extends DurableObject<Env> {
         for (const r of badgeRows.results) badges.set(r.badge as BadgeId, r.earned_at!);
         votesTotal = voteCount.results[0]?.n ?? 0;
         pushedBeforeHalfway = (half.results[0]?.n ?? 0) > 0;
+        recruits = recruitCount.results[0]?.n ?? 0;
         pingDays = pings.results.map((r) => r.day!);
       } catch (err) {
         console.error("device read failed", err);
@@ -1878,6 +1950,7 @@ export class Probe extends DurableObject<Env> {
         votesTotal,
         bestStreak: longestStreak(pingDays),
         pushedBeforeHalfway,
+        recruits,
         pingedToday: pingDays[0] === day,
         pingStreakDays: streak(pingDays, now),
         lastPingDay: pingDays[0] ?? null,
@@ -2244,8 +2317,11 @@ export class Probe extends DurableObject<Env> {
 
     // "You've clicked": only the taps credited here count (not those over the cap, or in safe mode).
     if (taps > 0) {
+      const before = dev.tapsAll;
       dev.tapsToday += taps;
       dev.tapsAll += taps;
+      // 50 credited taps make a newcomer who came through a crew link a recruit (checked once).
+      if (before < RECRUIT_TAPS && dev.tapsAll >= RECRUIT_TAPS) await this.convertRecruit(w, now);
       this.addPending(dev.day, w, 0, 0, 0, taps);
       this.scheduleD1Flush();
       // The click badges, and Night Shift for taps between 02:00 and 04:59 the player's local time.
@@ -2373,6 +2449,8 @@ export class Probe extends DurableObject<Env> {
            ON CONFLICT (player_key, badge) DO UPDATE SET earned_at = MIN(earned_at, excluded.earned_at)`,
         ).bind(acct.key, guest.key),
         this.env.DB.prepare(`DELETE FROM badges WHERE player_key = ?`).bind(guest.key),
+        // Recruits brought in as a guest now count for the account (phase S2).
+        this.env.DB.prepare(`UPDATE recruits SET recruiter_key = ? WHERE recruiter_key = ?`).bind(acct.key, guest.key),
       ]);
     } catch (err) {
       console.error("attaching history failed", err);

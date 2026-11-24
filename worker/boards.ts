@@ -135,6 +135,18 @@ export async function profile(request: Request, env: Env, day: string): Promise<
         db.prepare(`SELECT created_at AS t FROM devices WHERE id = ?`).bind(asking.deviceId),
       ]);
 
+  // Your recruits (phase S2) and the km they've pushed (on the device that came through your link).
+  const key = acct ? `a:${acct.id}` : asking.deviceId;
+  const [recruitCount, recruitKm] = await db.batch<{ n?: number; km?: number }>([
+    db.prepare(`SELECT COUNT(*) AS n FROM recruits WHERE recruiter_key = ? AND status = 'recruit'`).bind(key),
+    db
+      .prepare(
+        `SELECT COALESCE(SUM(km), 0) AS km FROM daily_km
+         WHERE device_id IN (SELECT device_id FROM recruits WHERE recruiter_key = ? AND status = 'recruit')`,
+      )
+      .bind(key),
+  ]);
+
   const firstSeen = joined.results[0]?.t ?? Date.now();
   const body: ProfileInfo = {
     name: acct?.name ?? device?.name ?? "",
@@ -144,6 +156,8 @@ export async function profile(request: Request, env: Env, day: string): Promise<
     pingDays: pings.results.map((r) => r.day!).filter((d) => d <= day),
     days,
     signedIn: acct !== null,
+    recruits: recruitCount.results[0]?.n ?? 0,
+    recruitKm: Math.round(recruitKm.results[0]?.km ?? 0),
   };
   return json(body);
 }
