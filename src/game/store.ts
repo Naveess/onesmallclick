@@ -19,7 +19,7 @@ import {
 import type { AccountInfo } from "../../shared/account";
 import { BADGE_INFO, type BadgeId, type EarnedBadge } from "../../shared/badges";
 import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
-import { stopName } from "../../shared/campaign";
+import { MOON_LEG_KM, probeFor, probeTag, stopName } from "../../shared/campaign";
 import { medalPace } from "../../shared/medals";
 import { factOfDay } from "./facts";
 import type { LiveVote, VoteResult } from "../../shared/votes";
@@ -751,10 +751,14 @@ function derive({ now, probe, player }: GameState) {
   const toGoKm = Math.max(0, probe.routeKm - probe.distanceKm);
   const signalLeftS = safe ? 0 : Math.max(0, (probe.signalDeadline - clock) / 1000);
   const next = milestonesFor(probe.stop).find((m) => m.km > probe.distanceKm) ?? null;
-  const upgrades = UPGRADES.map((def) => {
+  // The probe flying this leg (E2), and its names for the five upgrades (effects and prices never change).
+  const flying = probeFor(probe.stop, probe.fromStop);
+  const upgrades = UPGRADES.map((base) => {
+    const named = flying?.upgrades?.[base.key];
+    const def = named ? { ...base, name: named.name } : base;
     const level = player.levels[def.key];
     const cost = upgradeCost(def.key, level);
-    return { def, level, cost, affordable: player.credits >= cost };
+    return { def, level, cost, affordable: player.credits >= cost, line: named?.line ?? null };
   });
   // At today's pace, plus the setback; null (on hold) while the probe is paused.
   const arrivalAt = paused ? null : now + (toGoKm / pace) * 1000 + setback;
@@ -772,6 +776,12 @@ function derive({ now, probe, player }: GameState) {
     paused,
     /** In orbit at this leg's stop, waiting for the branch vote (phase 8c). */
     orbit: probe.arrivedAt !== null,
+    /** The probe flying this leg (E2): its id ("ceres-hopper"), full name and tag ("OSC-2"). */
+    probeId: flying?.id ?? "pathfinder",
+    probeName: flying?.name ?? "OSC-1 Pathfinder",
+    probeTag: probeTag(flying),
+    /** A leg under 10M km (the moons): the speed reads in km/h. */
+    moonLeg: probe.routeKm < MOON_LEG_KM,
     /** This leg's destination and start, by name. */
     destName: stopName(probe.stop),
     fromName: stopName(probe.fromStop),

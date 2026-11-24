@@ -3,13 +3,12 @@ import { isCountryCode, type ConfirmResult, type EmailLinkResult, type NameOffer
 import { PixelButton } from "../components/PixelButton";
 import { PixelIcon } from "../components/PixelIcon";
 import { Sky } from "../components/Sky";
-import { Sprite } from "../components/Sprite";
+import { ProbeArt } from "../components/ProbeArt";
 import { Window } from "../components/Window";
 import { int } from "../game/format";
 import { useGame } from "../game/store";
 import { turnstileToken } from "../game/turnstile";
 import { Link } from "../router";
-import { SPRITES } from "../sprites";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./SignInPage.css";
 
@@ -45,12 +44,13 @@ async function post<T>(path: string, body: object = {}): Promise<{ status: numbe
 
 /** The sky and a single column, like the design's 1i. */
 function Frame({ children, label }: { children: ReactNode; label: string }) {
+  const { view } = useGame();
   return (
     <>
       <Sky fixed />
       <main className="signin" aria-label={label}>
         <div className="signin__probe">
-          <Sprite sprite={SPRITES.thruster} scale={2} bob label="Probe OSC-1" />
+          <ProbeArt id={view.probeId} scale={2} label={`Probe ${view.probeName}`} />
         </div>
         {children}
       </main>

@@ -85,14 +85,19 @@ function shop(p, prof) {
   }
 }
 
-/** One mission from Earth to Mars. Returns the days it took and the players (to run a second mission). */
-function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), fasterVotes = false) {
+/** One mission from Earth to Mars. Returns the days it took and the players (to run a second mission).
+ * `leg` (E2) flies a Grand Tour leg instead: its length scales coasting and the crew's top speed, and
+ * `crewHalf` is that leg's recalibrated balance, as worker/probe.ts does. */
+function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), fasterVotes = false, leg = null) {
+  const scale = leg ? leg.km / B.ROUTE_KM : 1;
+  const crewHalf = leg ? leg.crewHalf : B.CREW_HALF_KM_S;
+  const dayKm = []; // the crew's raw km each day, for the next leg's recalibration
   const rand = rng(seed);
   const window = new Float64Array(B.CREW_WINDOW_MIN); // raw crew km per minute, the last hour
   let windowSum = 0;
   let distance = 0;
   let lastActive = 0; // the mission starts with the launch crowd
-  let route = B.ROUTE_KM;
+  let route = leg ? leg.km : B.ROUTE_KM;
   let dayStart = 0; // distance and moving minutes at the start of the day, for today's pace
   let movingMin = 0;
   let dayMoving = 0;
@@ -106,6 +111,7 @@ function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), 
     }
     dayStart = distance;
     dayMoving = movingMin;
+    dayKm.push(0);
     // Today's sessions, in time order.
     const sessions = [];
     for (let i = 0; i < n; i++) {
@@ -128,6 +134,7 @@ function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), 
         p.credits += km; // your own km count in full
         p.lastEnd = t + prof.minutes;
         raw += km;
+        dayKm[day] += km;
         lastActive = t;
         shop(p, prof);
       }
@@ -137,11 +144,12 @@ function mission(n, prof, seed, players = Array.from({ length: n }, newPlayer), 
       const rawKmS = windowSum / (window.length * MIN);
       const paused = t - lastActive > PAUSE_MIN;
       if (!paused) movingMin++;
-      distance += (paused ? 0 : B.COAST_KM_S * MIN) + raw * B.crewFactor(rawKmS);
-      if (distance >= route) return { days: day + m / DAY_MIN, players };
+      const factor = (B.CREW_TOP_KM_S * scale) / (Math.max(0, rawKmS) + crewHalf);
+      distance += (paused ? 0 : B.COAST_KM_S * scale * MIN) + raw * factor;
+      if (distance >= route) return { days: day + m / DAY_MIN, players, dayKm };
     }
   }
-  return { days: Infinity, players };
+  return { days: Infinity, players, dayKm };
 }
 
 const fmt = (d) => (d === Infinity ? `>${MAX_DAYS}` : d.toFixed(1));
@@ -178,4 +186,38 @@ console.log(`Coasting alone: ${fmt(mission(0, PROFILES.typical, 1).days)} days (
     days.push(fmt(r.days));
   }
   console.log(`The same ${n} typical players, five missions in a row: ${days.join(", ")} days.`);
+}
+
+// E2: the whole Grand Tour, one branch each way (the shorter-named first), with each leg scaled to its
+// length and the crew balance recalibrated at every launch, exactly as worker/probe.ts nextCrewHalf() does:
+// the Mars leg's average push is the yardstick, and each later leg's balance scales with the last 3 days'.
+{
+  const C = JSON.parse(readFileSync(new URL("../content/campaign.json", import.meta.url), "utf-8"));
+  const byId = Object.fromEntries(C.stops.map((s) => [s.id, s]));
+  const kmOf = (from, to) => {
+    const d = byId[to].distanceKm;
+    return typeof d === "number" ? d : d && typeof d === "object" ? d[from] : null;
+  };
+  const path = ["earth", "mars", "ceres", "jupiter", "europa", "saturn", "titan", "uranus", "miranda", "neptune", "pluto"];
+  const legs = path.slice(1).map((to, i) => ({ from: path[i], to, km: kmOf(path[i], to) }));
+  const tour = (n, seed) => {
+    let players;
+    let crewHalf = B.CREW_HALF_KM_S;
+    let base = null;
+    return legs.map((leg, i) => {
+      const r = mission(n, PROFILES.typical, seed + i, players, false, { km: leg.km, crewHalf });
+      players = r.players;
+      const whole = r.dayKm.reduce((a, b) => a + b, 0) / Math.max(1, r.days * 86_400);
+      const full = r.dayKm.slice(0, Math.floor(r.days)).slice(-3);
+      const recent = full.length ? full.reduce((a, b) => a + b, 0) / (full.length * 86_400) : whole;
+      if (i === 0 || !base) base = whole;
+      crewHalf = base > 0 && recent > 0 ? Math.min(B.CREW_HALF_KM_S * 50, Math.max(B.CREW_HALF_KM_S / 4, (B.CREW_HALF_KM_S * recent) / base)) : B.CREW_HALF_KM_S;
+      return r.days;
+    });
+  };
+  console.log(`\nThe Grand Tour, typical players, recalibrated each leg (days per leg; moon legs marked *):`);
+  console.log(pad("Players a day", 14) + legs.map((l) => pad(`${byId[l.to].name}${l.km < 10_000_000 ? "*" : ""}`, 10)).join(""));
+  for (const n of [10, 35, 200]) {
+    console.log(pad(n, 14) + tour(n, 5000 + n).map((d) => pad(fmt(d), 10)).join(""));
+  }
 }

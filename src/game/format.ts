@@ -22,6 +22,11 @@ export function minSec(totalSeconds: number): string {
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
 /** Epoch ms → "14 March 2027" (UTC, like every date in the game). */
+/** The probe's speed: km/s, or km/h on a moon leg, where it's a few hundredths of a km a second. */
+export function probeSpeed(kmS: number, moonLeg: boolean): string {
+  return moonLeg ? `${int(kmS * 3600)} km/h` : `${kmS.toFixed(2)} km/s`;
+}
+
 export function longDate(ms: number): string {
   return dateFmt.format(new Date(ms));
 }

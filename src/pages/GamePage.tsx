@@ -12,7 +12,7 @@ import { DestinationFile } from "../components/DestinationFile";
 import { InviteBanner } from "../components/InviteBanner";
 import { ShareNudge } from "../components/ShareNudge";
 import { milestonesFor } from "../../shared/milestones";
-import { int } from "../game/format";
+import { int, probeSpeed } from "../game/format";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
 
@@ -54,6 +54,9 @@ export function GamePage() {
           stop: probe.stop,
           fromStop: probe.fromStop,
           orbit: view.orbit,
+          probeId: view.probeId,
+          probeTag: view.probeTag,
+          moonLeg: view.moonLeg,
         };
         const track = <FlightView handle={flight} wide={wide} {...flightProps} />;
         const invite = <InviteBanner known={player.known} destName={view.destName} />;
@@ -166,7 +169,7 @@ export function GamePage() {
                 </div>
                 <div>
                   <dt>PROBE SPEED</dt>
-                  <dd className="num">{view.speedKmS.toFixed(2)} km/s</dd>
+                  <dd className="num">{probeSpeed(view.speedKmS, view.moonLeg)}</dd>
                 </div>
                 <div>
                   <dt>TO GO</dt>

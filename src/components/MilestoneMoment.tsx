@@ -3,6 +3,7 @@ import { MILESTONES, MILESTONE_COUNT } from "../../shared/milestones";
 import type { ReachedMilestone } from "../../shared/milestones";
 import { resultLine, sentence, shareMessage } from "../../shared/share";
 import { int } from "../game/format";
+import { useGame } from "../game/store";
 import { SPRITES } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
 import { PixelButton } from "./PixelButton";
@@ -105,6 +106,7 @@ function celebrate(host: HTMLElement) {
 
 /** The milestone moment (1e): postcard, a fact from the flight deck, fireworks, and a result to share. */
 export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: MilestoneMomentProps) {
+  const probeTag = useGame().view.probeTag;
   const fx = useRef<HTMLDivElement>(null);
   const reduceMotion = usePrefersReducedMotion();
   const m = MILESTONES.find((x) => x.n === reached.n)!;
@@ -141,7 +143,7 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
           </div>
         </div>
         <figcaption className="postcard__caption">
-          <span>Wish you were here. — OSC-1</span>
+          <span>Wish you were here. — {probeTag}</span>
           <span className="postcard__no num">POSTCARD {card}</span>
         </figcaption>
       </figure>

@@ -1,8 +1,8 @@
 import type { WelcomeBack as WelcomeData } from "../../shared/upgrades";
 import { int } from "../game/format";
-import { SPRITES } from "../sprites";
+import { useGame } from "../game/store";
 import { PixelButton } from "./PixelButton";
-import { Sprite } from "./Sprite";
+import { ProbeArt } from "./ProbeArt";
 import { Window } from "./Window";
 import "./WelcomeBack.css";
 
@@ -45,6 +45,8 @@ interface WelcomeBackProps {
 
 /** Welcome back (1d): what your thrusters pushed while you were away. The server has already paid it. */
 export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) {
+  const { view } = useGame();
+  const { probeId, probeName } = view;
   const { awayMs, countedMs, km, crewKm, arrivalSoonerMs, keptAliveBy } = welcome;
   const lostMs = Math.max(0, awayMs - countedMs);
   const countedPct = awayMs > 0 ? Math.min(100, (countedMs / awayMs) * 100) : 100;
@@ -53,7 +55,7 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
   return (
     <main className={wide ? "welcome welcome--wide" : "welcome"} aria-labelledby="welcome-title">
       <div className="welcome__probe">
-        <Sprite sprite={SPRITES.thruster} scale={2} bob label="Probe OSC-1" />
+        <ProbeArt id={probeId} scale={2} label={`Probe ${probeName}`} />
       </div>
       <Window as="section" className="welcome__card">
         <div>

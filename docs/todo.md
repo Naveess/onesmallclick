@@ -195,7 +195,7 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
   - the Sun, 20×20
   - small Vesta, 16×14
 - [ ] **Stamp icons for the branch moons, 16×16** (added in E0; the list above has the planets only): Vesta, Europa, Ganymede, Titan, Enceladus, Miranda, Titania, Pluto, Arrokoth.
-- [ ] **Thruster sheets for every new probe** (added in E0): 5 frames each, like `thruster-sheet.png`, for the flight view.
+- [ ] **Thruster sheets for every new probe** (added in E0): 5 frames each, like `thruster-sheet.png`, for the flight view. Until then (E2) the new probes fly as stills with the flight view's code-drawn exhaust.
 - [ ] **Gold postcard frame** for a successful landing burn (1o), and the postcard art for each stop (added in E0).
 - [ ] **The map share card**, 1080×1080 (added in E0).
 - [ ] **Cosmetic art for each stop** (added in E0; the list is in docs/expansion.md, section 9): skies as nebula tiles, THRUST trails as 32×8 particle strips, paints as 64×40 repaints of each probe.

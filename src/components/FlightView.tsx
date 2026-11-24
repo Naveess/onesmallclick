@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type Ref } from "react";
 import { CREW_TOP_KM_S } from "../../shared/balance";
-import { hms, int, longDate, millionsKm } from "../game/format";
+import { hms, int, longDate, millionsKm, probeSpeed } from "../game/format";
 import {
   EARTH_RADII,
   FLAME,
@@ -16,9 +16,8 @@ import {
 } from "../game/flightArt";
 import { nextStop, stop as campaignStop, stopName } from "../../shared/campaign";
 import type { Milestone } from "../game/rules";
-import { SPRITES, STILLS } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
-import { Sprite } from "./Sprite";
+import { ProbeArt, probeHeight } from "./ProbeArt";
 import "./FlightView.css";
 
 /** Milestones closer to Earth than this share of the route (the Moon's orbit, L2) would sit on Earth's
@@ -60,6 +59,11 @@ interface FlightViewProps {
   fromStop?: string;
   /** In orbit at `stop`, waiting for the branch vote. */
   orbit?: boolean;
+  /** The probe flying this leg (E2): its id and tag ("OSC-2"). */
+  probeId?: string;
+  probeTag?: string;
+  /** A moon leg: the speed reads in km/h. */
+  moonLeg?: boolean;
   handle?: Ref<FlightHandle>;
 }
 
@@ -105,6 +109,9 @@ export function FlightView({
   fromStop = "earth",
   orbit = false,
   handle,
+  probeId = "pathfinder",
+  probeTag = "OSC-1",
+  moonLeg = false,
 }: FlightViewProps) {
   const [ref, measured] = useWidth<HTMLDivElement>();
   const reduceMotion = usePrefersReducedMotion();
@@ -183,7 +190,7 @@ export function FlightView({
   const xf = Math.round(SW * (wide ? 0.9 : 0.875));
 
   const pct = `${(f * 100).toFixed(2)}%`;
-  const speed = speedKmS.toFixed(2);
+  const speed = probeSpeed(speedKmS, moonLeg);
   const fl = boosting ? 4 : 2; // the flame at 2×, or 4× while boosting
   const streaks = streaksArt();
 
@@ -292,12 +299,11 @@ export function FlightView({
           />
         ))}
 
-        <div className={safe ? "flight__probe flight__probe--off" : "flight__probe"} style={at(px - 32 + shift, cy - 20)}>
-          {safe || paused ? (
-            <img src={STILLS.probe.src} alt="" width={64} height={40} />
-          ) : (
-            <Sprite sprite={SPRITES.thruster} scale={1} bob />
-          )}
+        <div
+          className={safe ? "flight__probe flight__probe--off" : "flight__probe"}
+          style={at(px - 32 + shift, cy - probeHeight(probeId) / 2)}
+        >
+          <ProbeArt id={probeId} engine={!(safe || paused)} bob={!(safe || paused)} />
         </div>
         {boosting && !reduceMotion && (
           <span key={boost.n} className="flight__pop" style={at(px + 12, cy - 44)}>
@@ -307,14 +313,14 @@ export function FlightView({
 
         <div className="flight__head">
           <span className="flight__id">
-            {wide ? "FLIGHT VIEW · OSC-1" : "OSC-1"}
+            {wide ? `FLIGHT VIEW · ${probeTag}` : probeTag}
             <span className="flight__pct">{pct}</span>
           </span>
           <span className="flight__speed">
             <span className="flight__chev" style={{ opacity: boosting ? 1 : 0.35 }}>
               ›››
             </span>
-            {speed} km/s
+            {speed}
             {wide && (
               <>
                 <span className="flight__eta-label">ETA</span> {arrivalAt === null ? "On hold" : longDate(arrivalAt)}

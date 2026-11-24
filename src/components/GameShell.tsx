@@ -11,6 +11,7 @@ import { Sky } from "./Sky";
 import { Toast } from "./Toast";
 import { UpgradesSheet } from "./UpgradesSheet";
 import { MilestoneMoment } from "./MilestoneMoment";
+import { NewProbeReveal, useProbeReveal } from "./NewProbeReveal";
 import { WelcomeBack } from "./WelcomeBack";
 import "./GameShell.css";
 import "./PixelButton.css";
@@ -26,8 +27,9 @@ interface GameShellProps {
 export function GameShell({ tab, children }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
-  const { probe, player, view, toast, welcome, moment, arrival, connection, now } = useGame();
+  const { probe, player, view, toast, welcome, moment, arrival, connection, now, ready } = useGame();
   const safe = view.safe;
+  const reveal = useProbeReveal(ready, view.probeId, probe.stop);
   const openUpgrades = () => setUpgradesOpen(true);
 
   if (welcome) {
@@ -84,6 +86,19 @@ export function GameShell({ tab, children }: GameShellProps) {
     );
   }
 
+  if (reveal.show) {
+    return (
+      <>
+        <Sky fixed />
+        <div className={wide ? "game game--wide" : "game"}>
+          <div className="game__main">
+            <NewProbeReveal probeId={view.probeId} beforeId={reveal.beforeId} stopId={probe.stop} wide={wide} onClose={reveal.done} />
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Sky fixed safe={safe} />
@@ -94,7 +109,9 @@ export function GameShell({ tab, children }: GameShellProps) {
               <p className="game-head__title">
                 <Link href="/">OneSmallClick</Link>
               </p>
-              <p className="game-head__sub">Probe OSC-1 · Mission day {view.missionDay}</p>
+              <p className="game-head__sub">
+                Probe {view.probeTag} · Mission day {view.missionDay}
+              </p>
             </div>
             {wide ? (
               <nav className="game-nav" aria-label="Game">

@@ -10,6 +10,7 @@ import { BranchVote } from "./BranchVote";
 import { Flag } from "./Flag";
 import { PixelButton } from "./PixelButton";
 import { ShareNudge } from "./ShareNudge";
+import { ProbeArt } from "./ProbeArt";
 import { Sprite } from "./Sprite";
 import { Window } from "./Window";
 import "./ArrivalScreen.css";
@@ -83,7 +84,7 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
           <img className="arrival-screen__planet" src={destinationArt(arrival.stop, 31)} alt="" width={256} height={256} />
         )}
         <div className="arrival-screen__probe">
-          <Sprite sprite={SPRITES.thruster} scale={1} bob />
+          <ProbeArt id={view.probeId} />
         </div>
       </div>
 

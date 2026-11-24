@@ -42,6 +42,8 @@ export interface ProbeDef {
   name: string;
   mission: number;
   pitch: string;
+  /** Each upgrade's name and flavour line on this probe (E2). Effects and prices never change (shared/upgrades.ts). */
+  upgrades?: Record<string, { name: string; line: string }>;
 }
 
 export const STOPS = campaign.stops as Stop[];
@@ -78,6 +80,27 @@ export function probeFor(to: string, from: string): ProbeDef | undefined {
   const id = own ?? BY_ID.get(from)?.probe ?? "pathfinder";
   return PROBES.find((p) => p.id === id);
 }
+
+export function probeById(id: string): ProbeDef | undefined {
+  return PROBES.find((p) => p.id === id);
+}
+
+/** "OSC-2" from "OSC-2 Ceres Hopper". */
+export function probeTag(p: ProbeDef | undefined): string {
+  return p?.name.split(" ")[0] ?? "OSC-1";
+}
+
+/** The probe that flew the leg into `stopId` (the leg before the current one), for "Cold-gas jets are now Hop jets". */
+export function probeBefore(stopId: string): ProbeDef | undefined {
+  const s = BY_ID.get(stopId);
+  if (!s || s.kind === "start") return undefined;
+  const from = Array.isArray(s.from) ? s.from[0] : (s.from ?? START_STOP);
+  return probeFor(stopId, from);
+}
+
+/** Legs shorter than this are "moon legs" (E0 decision 2, option A): still about 30 days, but the probe's speed
+ * reads in km/h and the flight view leads with "% of the way". */
+export const MOON_LEG_KM = 10_000_000;
 
 /** Option ids in a branch vote are "branch:<stop id>". */
 export const BRANCH_PREFIX = "branch:";
