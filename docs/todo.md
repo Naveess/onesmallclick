@@ -37,7 +37,8 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [ ] **Countries board: signed-in only, later** (prompt 38). It counts everyone (guests by device country) for now.
 
 ### Make with PixelLab (once 10 generations are banked, or after the PixelLab upgrade)
-- [ ] **Profile badge sprites**, 32×32, matching the signal badge's round medal style:
+The free plan gives 5 generations a night, banked up to 20, and runs one job at a time. Prompt 67 (24 Nov) spent 20 on the badges and the probes. **Next 10 (in two nights):** the campaign-map moons and planets (one 64-item call at 32px or less; the bigger bodies need their own sizes), for E1. Then the 16×16 planet and stamp icons.
+- [x] **Profile badge sprites**, 32×32, matching the signal badge's round medal style. **Made 2026-11-24 (prompt 67)**: one 10-generation call, 64 tries, 15 picked into `design/sprites/stills/badges/`; masters in Drive (OneSmallClick › Sprites, `onesmallclick-pixellab-2026-11-24.zip`). Still to do: show them on the profile and the badge toast (a small code change, with Nav's OK). The list was:
   - First Ping
   - Night Shift
   - Voter ×30
@@ -128,12 +129,12 @@ Agreed rules (19 Nov):
 
 ### E2: PixelLab art for the expansion
 The design (E1) has settled the probes and map art, so the list below replaces the earlier draft. The current probe is the style reference. Made 19 Nov: Europa Lander, Ganymede Orbiter, Jupiter, Saturn and Europa.
-- [ ] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor), for the first branch vote about 30 days after launch. Make them, and the profile badges, once 10 generations are banked.
+- [x] **First needed:** the OSC-2 pair (Ceres Hopper and Vesta Surveyor). Made 2026-11-24 (prompt 67) with the rest of the probes, below.
 
 ### Art the design draws in code or leaves as placeholders (added 19 Nov)
 Cheapest route: `create_1_direction_object` with `item_descriptions` makes a whole set in one call for 10 generations (64 items at 42px or smaller, 16 items at 43–64px). Back up the masters to Drive (OneSmallClick › Sprites).
 
-- [ ] **Probes, 64×64 (placeholder boxes in the design), one 16-item call:**
+- [x] **Probes, 64×64 (placeholder boxes in the design), one 16-item call:** made 2026-11-24 (prompt 67), all nine below plus seven runners-up (`design/sprites/stills/probe-<id>.png`, runners-up in `design/sprites/alternates/`).
   - OSC-2 Ceres Hopper (also replaces the OSC-1 stand-in on the map's probe line)
   - OSC-2 Vesta Surveyor
   - OSC-4 Titan Glider

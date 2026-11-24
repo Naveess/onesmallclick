@@ -32,6 +32,9 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/jupiter.png` | 96×96 | Added 2026-11-19 (PixelLab). Jupiter with the Great Red Spot. The campaign map (1m) and the reveal's backdrop (shown at 2× and 4×). |
 | `stills/saturn.png` | 128×80 | Added 2026-11-19 (PixelLab). Saturn with its rings. The campaign map (1m). |
 | `stills/europa.png` | 64×64 | Added 2026-11-19 (PixelLab). Jupiter's moon Europa. The campaign map (1m) and the reveal (1n, at 2×). |
+| `stills/badges/badge-<id>.png` | 32×32 each | Added 2026-11-24 (PixelLab, prompt 67). The 15 profile badges, one file per badge id in shared/badges.ts: `first-ping`, `night-shift`, `voter-30`, `halfway`, `patch`, `keeper-1`…`keeper-4` (one dish that goes orange, silver, gold, gold with a crown), `clicks-1`…`clicks-3` (finger, iron thumb, gold thumb), `recruit-1`…`recruit-3` (one, two, three astronauts). Round medals in the signal badge's style (it was the style reference). Not wired in yet: the profile and the badge toast still use the 9×9 icons. |
+| `stills/probe-<id>.png` (nine) | 64×64 each | Added 2026-11-24 (PixelLab, prompt 67), with OSC-1 and the Europa Lander as the style reference. One per probe id in content/campaign.json: `ceres-hopper`, `vesta-surveyor` (OSC-2), `titan-glider`, `plume-diver` (OSC-4), `cliff-climber`, `titania-lander` (OSC-5), `heart-lander`, `snowman-flyby` (OSC-6), `long-voyager` (OSC-7). Three-quarter view, like the Europa Lander. |
+| `alternates/` | | Added 2026-11-24. The runner-up probes (`probe-<id>-b.png`) and both candidate sheets (all 64 badge tries, all 16 probe tries, numbered), in case Nav prefers another. |
 
 The four sprites added on 2026-11-18 use only colours from the design and the existing sprites:
 - The flag's cloth is the design's orange ramp (`#ffd27a`, `#ffb37a`, `#e8894a`), its star is `#eef3ff`, and its pole and rock use the Moon sprite's greys. The pole and rock started as a PixelLab Pixen generation. The cloth was redrawn by hand in the PixelLab workbench.
@@ -79,5 +82,5 @@ The Claude Design file (`../OneSmallClick.dc.html`) loads its sprites from `../a
 
 The milestone flag and signal badge were made on 2026-11-18 (see Stills). Still missing:
 
-- **Other profile badges.** First Ping, Night Shift, Voter ×30, Halfway Crew, Mission Patch and Signal Keeper I–IV still use the design's code-drawn 9×9 icons.
+- **Other profile badges:** made 2026-11-24 (`stills/badges/`), not wired into the profile and toast yet.
 - **Postcard photos.** The design leaves image slots for real space photos (e.g. `postcard-04`). They aren't sprites, but they're still to find and licence-check.
