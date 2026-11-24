@@ -1,8 +1,8 @@
 {
-  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. The Mars to Ceres leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Ceres (2.77 AU, JPL) from the Sun, 186.4 million km, so 2 AU (299.2 million km) is 71.2 million km in, Vesta's orbit (2.36 AU) 125.1 million km, and 'Ceres in sight' is 383,000 km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). The Mars to Ceres leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Ceres (2.77 AU, JPL) from the Sun, 186.4 million km, so 2 AU (299.2 million km) is 71.2 million km in, Vesta's orbit (2.36 AU) 125.1 million km, and 'Ceres in sight' is 383,000 km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
   "stop": "ceres",
   "checked": "2026-11-24",
-  "approved": null,
+  "approved": "2026-11-24",
   "milestones": [
     {
       "n": 1,

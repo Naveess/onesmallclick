@@ -1,8 +1,8 @@
 {
-  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. Vesta's 30 fun facts for the Destination file card and /destinations/vesta, one a day, in the same format as mars.json. Every fact was checked on 2026-11-24 against the NASA page in 'source'; 'quote' is the supporting text from that page (' … ' joins two parts of the same page). None repeats a milestone fact (content/milestones/vesta.json).",
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). Vesta's 30 fun facts for the Destination file card and /destinations/vesta, one a day, in the same format as mars.json. Every fact was checked on 2026-11-24 against the NASA page in 'source'; 'quote' is the supporting text from that page (' … ' joins two parts of the same page). None repeats a milestone fact (content/milestones/vesta.json).",
   "destination": "vesta",
   "checked": "2026-11-24",
-  "approved": null,
+  "approved": "2026-11-24",
   "facts": [
     {
       "n": 1,
