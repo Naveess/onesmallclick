@@ -28,7 +28,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **S1: share kit, crew links, previews, share moments, counts.** Built 2026-11-22 (prompt 62); approved by Nav and **deployed 2026-11-23** (prompt 63, version 0bf5a6ee). See "S1 status" below.
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
-- [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built and pushed 2026-11-24 (prompts 70–71), not deployed: see "E2 status" below.
+- [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
 - [ ] **E3: A content pipeline for each new leg**
 - [ ] **E4: Sharing, fun facts and destination pages**
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
@@ -835,7 +835,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 
 ### E2: Per-mission probes and upgrade names, and per-leg balance
 
-**E2 status (built 2026-11-24, prompts 70–71; pushed, not deployed):**
+**E2 status (built 2026-11-24, prompts 70–71; deployed 2026-11-24, prompt 72, version 659a6f51):**
 - **Already done in 8c:** each leg's length scales coasting and the crew's top speed, and the crew balance is recalibrated at every launch (worker/probe.ts `nextCrewHalf`). E2 needed no balance change and no migration.
 - **The current probe everywhere** OSC-1 was hard-coded: the header ("Probe OSC-2 · Mission day 4"), the flight view and its label, the arrival screen, welcome back, the postcard sign-off and the sign-in page (`src/components/ProbeArt.tsx`; the store's `view.probeId`, `probeName`, `probeTag`). The new probes are stills until PixelLab makes their engine strips; the flight view's code-drawn exhaust flame burns behind them.
 - **The new probe reveal (1n)** (`src/components/NewProbeReveal.tsx`): once per new probe, to everyone (prompt 71; the browser remembers it in `osc.probeSeen`). "NEW MISSION · ASTEROID BELT", the probe flying in beside its destination, its name and pitch, "Your upgrades have new names" with all five ("Cold-gas jets are now Hop jets"), "Take the controls". OSC-1 never gets one; a probe that flies two legs (Ceres then Jupiter) shows it once. No motion with reduced motion.
@@ -843,6 +843,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 - **Moon legs** (under 10M km, `MOON_LEG_KM` in shared/campaign.ts): the probe's speed reads in km/h in the flight view and the home's stats (e.g. 105 km/h on Jupiter → Europa).
 - **`npm run sim`** ends with the whole tour (Mars → Ceres → Jupiter → Europa → Saturn → Titan → Uranus → Miranda → Neptune → Pluto), recalibrated as the probe does it: 35 typical players fly every leg in 27–28 days, 10 players in 52–54, 200 players in about 18.
 - **Checked locally:** in /admin, Earth → Mars → (vote) Ceres: the reveal once, then OSC-2 in the header, flight view and upgrades, no reveal on reload; Ceres → Jupiter: no reveal (same probe); Jupiter → (vote) Europa: the Europa Lander's reveal and 105 km/h, phone and 1440 wide; no console errors; `check-arrival.mjs` ALL PASS; `npm run build` clean.
+- **Deployed (prompt 72):** live D1 backed up to `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-24-pre-E2.sql`, `npm run deploy` → 659a6f51 (no migration). Live checks: pages and sprites 200, the live bundle matches the build and carries the reveal. The live probe is on the Mars leg (OSC-1), so nothing changes for players until the first branch vote; the reveal first shows when OSC-2 launches.
 - **Still to come (PixelLab):** engine strips (5 frames) for each new probe, like OSC-1's thruster sheet.
 
 **Goal:** each mission flies its own probe with renamed upgrades; each leg takes about 30 days whatever its length.
