@@ -27,6 +27,8 @@ const byId = new Map(stops.map((s) => [s.id, s]));
 const probes = new Map(campaign.probes.map((p) => [p.id, p]));
 const sharedPool = json("content/vote-options.json");
 const registry = read("shared/content.ts");
+// The planet-tech kinds the game applies (shared/tech.ts WIRED_TECH, E4b part 2a).
+const WIRED_TECH = [...(/WIRED_TECH[^=]*=\s*\[([^\]]*)\]/.exec(read("shared/tech.ts"))?.[1] ?? "").matchAll(/"(\w+)"/g)].map((m) => m[1]);
 const UPGRADE_KEYS = ["cold", "ion", "sail", "hands", "chant"];
 const FACT_COUNT = 30;
 const MILESTONES_MIN = 4;
@@ -70,6 +72,12 @@ function check(stopId) {
   const tech = s.tech;
   if (tech && ["short", "name", "what", "gold", "silver", "bronze"].every((k) => text(tech[k]))) ok.push(`planet tech: ${tech.name}`);
   else errors.push("campaign.json: the planet tech needs short, name, what, gold, silver and bronze");
+  const fx = tech?.effect;
+  if (!fx || !["gold", "silver", "bronze"].every((m) => typeof fx[m] === "number" && fx[m] > 0)) {
+    errors.push("campaign.json: the planet tech needs an effect {kind, gold, silver, bronze} (E4b)");
+  } else if (!WIRED_TECH.includes(fx.kind)) {
+    errors.push(`the planet tech's kind "${fx.kind}" isn't applied by the game yet (add it to shared/tech.ts and the Probe)`);
+  } else ok.push(`planet tech effect: ${fx.kind} ${fx.gold} / ${fx.silver} / ${fx.bronze}`);
   // The map card shows the Destination file's first fact when there is one (MapPage), else campaign.json's.
   if (has(`content/facts/${stopId}.json`)) ok.push("map fact: the Destination file's fact 1");
   else if (s.fact && text(s.fact.text) && isHttps(s.fact.source) && text(s.fact.quote) && isDate(s.fact.checked)) ok.push("map fact, with source and quote");

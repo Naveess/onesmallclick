@@ -33,8 +33,8 @@ interface MilestoneMomentProps {
   reached: ReachedMilestone;
   /** The leg's destination (each leg has its own milestones from E3). */
   stopId: string;
-  /** The mission day it was reached. */
-  missionDay: number;
+  /** The mission day it was reached, or null if the probe has since set off on the next leg. */
+  missionDay: number | null;
   /** For the share text. */
   today: Today;
   wide: boolean;
@@ -116,11 +116,10 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
   const fx = useRef<HTMLDivElement>(null);
   const reduceMotion = usePrefersReducedMotion();
   const all = milestonesFor(stopId);
-  const m = all.find((x) => x.n === reached.n) ?? all[all.length - 1];
+  const m = all.find((x) => x.n === reached.n);
   const stamp = STAMPS[stopId];
   const text = shareText(today);
   const [sharing, setSharing] = useState(false);
-  const card = String(m.n).padStart(2, "0");
 
   useEffect(() => {
     if (reduceMotion || !fx.current) return;
@@ -128,6 +127,12 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
     const t = window.setTimeout(() => celebrate(host), 300);
     return () => window.clearTimeout(t);
   }, [reached.n, reduceMotion]);
+  // A milestone this leg's file doesn't have (it can't happen with matching content): skip the moment.
+  useEffect(() => {
+    if (!m) onClose();
+  }, [m, onClose]);
+  if (!m) return null;
+  const card = String(m.n).padStart(2, "0");
 
   return (
     <main className={wide ? "moment moment--wide" : "moment"} aria-labelledby="moment-title">
@@ -139,7 +144,7 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
           {m.title}
         </h1>
         <p className="moment__where num">
-          {int(m.km)} km · mission day {missionDay}
+          {int(m.km)} km{missionDay !== null ? ` · mission day ${missionDay}` : ""}
         </p>
       </div>
 

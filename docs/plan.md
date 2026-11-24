@@ -32,7 +32,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
-- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
+- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: built and pushed 2026-11-24 (prompts 77–78), not deployed (migration 0014)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
 - [ ] **E5: Later ideas from the brief**
 
 ## What changed from the order in prompt 06
@@ -1009,6 +1009,39 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 - Run the landing burn with two tabs tapping: the bar fills, and the probe lands on time either way.
 
 **Main risks:** the burn's timing (the arrival estimate moves while people tap: hence the fixed landing time). Perks must never change trip speed: they act on credits, prices and the offline cap only.
+
+**E4b part 2 split (prompt 76):** 2a medals, planet tech and passport stamps; 2b the landing burn; 2c cosmetics (waits for PixelLab art).
+
+**E4b part 2a status (built 2026-11-24, prompts 77–78; pushed, not deployed; needs migration 0014):**
+- **Medal at arrival:** the Probe saves the leg's medal (shared/medals.ts `medalFor`, days from the leg's launch) in its own mission table and in D1 `missions.medal` (migration 0014, which also fills in legs that arrived before it). The arrival's log entry carries it. `/api/credits` and `/api/tour` return it; the map reads the saved medal.
+- **Planet tech** (`shared/tech.ts`): every stop's `tech.effect` in content/campaign.json is `{kind, gold, silver, bronze}`. The Probe adds up every leg arrived at this tour (since the latest Earth → Mars start), sends it in the probe state (`tech`), and applies it:
+  - tap and auto-thrust credits (`earn`; km, the probe and leaderboards unchanged);
+  - "all credits" (multiplies);
+  - upgrade prices (`upgradeCost(key, level, priceCut)`; the browser shows the same prices);
+  - the offline cap (8 hours plus minutes). The extra minutes pay credits only and never move the probe, so perks never change trip speed.
+  - Wired kinds: tapCredits, autoCredits, allCredits, priceCut, offlineMin (`WIRED_TECH`). Ganymede's safeAuto, Enceladus's pingCredits, Arrokoth's postcardCredits and Titania's nightTapCredits wait for their legs: `npm run check-leg` fails a leg whose perk isn't wired.
+  - The launch reset clears the tech (a new tour).
+- **Passport stamps:** read from `mission_crew` (who made at least one credited tap on the leg, written at arrival), so no new table. On sign-in a guest's stamps move to the account (and it's named in those credits). Deleting an account removes its name from the mission credits (the count stays) and its stamps (this also fixes 8c's credits keeping a deleted account's name). The privacy page says so.
+- **Arrival screen** (1k): an "ARRIVAL REWARDS" box under the credits (`src/components/ArrivalRewards.tsx`):
+  - the medal ("THE CREW EARNED GOLD", "Arrived on day 24 · target was day 25", or "Gold needed day 25" / "Silver needed day 30", "N of you did this together.");
+  - the planet tech with its three strengths and EARNED;
+  - your stamp ("Stamped in gold because you pushed on this leg. It's on your profile now."), or "Push on the next leg to earn yours" ("You weren't on this leg, but the dust filters are yours too. Tap even once on the way to Ceres or Vesta and you'll get a stamp.").
+- **Profile:** a Passport section (`src/components/PassportStamp.tsx`): a stamp per leg you helped on (icon, stop, date, medal, probe), in the medal's colour, and a dashed slot for the stop the probe is flying to. Three a row on a phone (the design's four wrap at 12px text). Stamp icons: Mars's 32px sprite; the rest drawn in code (16×16 at 2×) until PixelLab's.
+- **/admin test control:** `POST /api/admin/leg-start {days}`: the current leg launched that many days ago.
+- **Fix (from E3):** a milestone moment remembers its own leg. Before, a moment still showing when the probe set off on the next leg looked its milestone up in the new leg's list: wrong content, or a crash where the next leg has no milestones yet (Ceres → Jupiter).
+- **Checked locally:**
+  - `node scripts/check-rewards.mjs` ALL PASS:
+    - Gold, Silver and Bronze from the arrival day;
+    - tap credits ×1.05 with tap power unchanged;
+    - prices 3% off (291 and 146);
+    - helped and not-helped stamps;
+    - the guest's stamp moving on sign-in;
+    - a deleted account leaving the credits with the count kept;
+    - the reset clearing the tech;
+    - the offline cap at 8 h 40 min.
+  - Browser flow (headless Edge, phone and wide, dark and light): the rewards box for Gold (helped) and Silver (missed), the upgrade sheet at 146, the passport with Mars Gold, Vesta Silver and the Jupiter slot, no sideways scroll, no console errors.
+  - check-arrival, check-badges, check-recruits and check-auth ALL PASS (check-auth's ping step needs 5 seconds after another ping, so don't run it twice back to back).
+  - tsc and build clean; `npm run sim` unchanged.
 
 ### E5: Later ideas from the brief
 

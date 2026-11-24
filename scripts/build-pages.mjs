@@ -522,7 +522,7 @@ const privacySections = [
     "Playing as a guest",
     [
       "The first time you open the game, your browser gets a random device id in a cookie (osc_device). It's signed so nobody can fake it, and it holds nothing about you. It lasts up to 400 days.",
-      "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km and THRUST clicks you push each day, your pings and votes, your credits, upgrades and patches, and the badges you earn. For the Night Shift badge, the game checks the time zone Cloudflare’s network gives for your connection while you tap; it isn’t stored.",
+      "With it we keep your generated name (like orbit_otter), the country Cloudflare's network says you're visiting from (the country only, worked out once when the id is made), when you first and last played, and your game: the km and THRUST clicks you push each day, your pings and votes, your credits, upgrades and patches, the badges you earn, and the legs you helped on (your passport stamps). For the Night Shift badge, the game checks the time zone Cloudflare’s network gives for your connection while you tap; it isn’t stored.",
       "When you Ping or vote, the game counts how many pings and votes came from your network that day, so one person can't cast dozens from lots of devices (the limit is 50 of each). Your network address isn't stored: it's mixed with a secret and the date, and only that scrambled result is kept, for two days.",
       "Your browser also keeps a few things for itself: your light or dark theme, a copy of the probe's position so the page opens fast, and which milestone moments you've already seen.",
     ],
@@ -564,7 +564,7 @@ const privacySections = [
     "Your choices",
     [
       "Sign out at any time: your progress stays with your account, and the device carries on as a new guest.",
-      "Delete your account from the sign-in page: your email, name and account progress are deleted straight away (the database's own backups roll off within 30 days). The km you pushed stay in the mission without your name.",
+      "Delete your account from the sign-in page: your email, name, account progress and passport stamps are deleted straight away, and your name comes off the mission credits (the database's own backups roll off within 30 days). The km you pushed stay in the mission without your name.",
       `For a copy of your data, or anything else about privacy, email ${mailto}.`,
     ],
   ],

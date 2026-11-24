@@ -1,0 +1,215 @@
+/* The arrival rewards (1k, E4b part 2a). The design's sizes, with text at 12px or more (prompt 60). */
+
+.rewards.window {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+}
+
+.rewards__kick {
+  font: 400 12px/1.2 var(--font-ui);
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.rewards__label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.rewards__medal {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.rewards__medal-art {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.rewards__medal-art--gold {
+  filter: drop-shadow(0 0 12px rgb(255 210 122 / 0.5));
+}
+
+.rewards__medal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rewards__medal-name {
+  font: 600 32px/1 var(--font-ui);
+  text-shadow: 3px 3px 0 var(--medal-gold-5);
+}
+
+.rewards__medal-name--gold {
+  color: var(--medal-gold-text);
+}
+
+.rewards__medal-name--silver {
+  color: var(--medal-silver-text);
+  text-shadow: 3px 3px 0 var(--medal-silver-5);
+}
+
+.rewards__medal-name--bronze {
+  color: var(--medal-bronze-text);
+  text-shadow: 3px 3px 0 var(--medal-bronze-5);
+}
+
+.rewards__day {
+  font-size: 20px;
+  line-height: 1.1;
+  color: var(--text-orange-soft);
+}
+
+.rewards__together {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.rewards__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--field);
+  border: 2px solid var(--line-dim);
+}
+
+.rewards__panel--tech {
+  border-color: var(--line-blue);
+}
+
+.rewards__panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-blue);
+}
+
+.rewards__tech-name {
+  font: 500 18px/1.2 var(--font-ui);
+}
+
+.rewards__body {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.rewards__tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rewards__tier {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 2px solid var(--line-dim);
+  opacity: 0.6;
+}
+
+.rewards__tier img {
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.rewards__tier-name {
+  flex: 1;
+  font-size: 13px;
+}
+
+.rewards__tier-fx {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.rewards__tier--on {
+  opacity: 1;
+}
+
+.rewards__tier--gold {
+  border-color: var(--medal-gold-2);
+  background: rgb(255 210 122 / 0.1);
+}
+
+.rewards__tier--silver {
+  border-color: var(--medal-silver-2);
+  background: rgb(201 212 238 / 0.1);
+}
+
+.rewards__tier--bronze {
+  border-color: var(--medal-bronze-2);
+  background: rgb(240 185 138 / 0.1);
+}
+
+.rewards__tier--gold .rewards__tier-fx,
+.rewards__tier--gold .rewards__tier-earned {
+  color: var(--medal-gold-text);
+}
+
+.rewards__tier--silver .rewards__tier-fx,
+.rewards__tier--silver .rewards__tier-earned {
+  color: var(--medal-silver-text);
+}
+
+.rewards__tier--bronze .rewards__tier-fx,
+.rewards__tier--bronze .rewards__tier-earned {
+  color: var(--medal-bronze-text);
+}
+
+.rewards__tier-earned {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.rewards__panel--stamp {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+}
+
+.rewards__stamp-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rewards__empty {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  border: 2px dashed var(--line-blue);
+}
+
+.rewards__empty img {
+  opacity: 0.35;
+  image-rendering: pixelated;
+}
+
+/* Light mode: the medal text is dark, so it drops the dark drop shadow. */
+[data-theme="light"] .rewards__medal-name {
+  text-shadow: none;
+}

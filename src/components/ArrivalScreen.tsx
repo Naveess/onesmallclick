@@ -6,6 +6,7 @@ import { int } from "../game/format";
 import { castVote, useGame } from "../game/store";
 import { SPRITES } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
+import { ArrivalRewards } from "./ArrivalRewards";
 import { BranchVote } from "./BranchVote";
 import { Flag } from "./Flag";
 import { PixelButton } from "./PixelButton";
@@ -33,7 +34,8 @@ function big(n: number): string {
 
 /**
  * The arrival screen (1k, phase 8c): "We made it", the rolling mission credits (every signed-in name with its
- * flag, guests counted), then the branch vote. The arrival rewards (medal, planet tech, stamp, unlock) come in E4b.
+ * flag, guests counted), the arrival rewards (E4b part 2a: medal, planet tech, your stamp; the unlock in 2c), then
+ * the branch vote.
  */
 export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
   const { probe, player, view, connection } = useGame();
@@ -131,6 +133,7 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
       {credits && credits.names.length > 0 && !player.account && (
         <p className="arrival-screen__note">Signed-in crew are named in the credits. Guests are counted.</p>
       )}
+      {credits && <ArrivalRewards credits={credits} current={{ stop: probe.stop, missionId: probe.missionId }} />}
 
       {voting && (
         <BranchVote

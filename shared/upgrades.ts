@@ -28,10 +28,10 @@ export const UPGRADES: UpgradeDef[] = [
 /** No upgrade goes past this level (a guard; the costs make it unreachable in practice). */
 export const MAX_LEVEL = 200;
 
-/** Each level costs ×1.55 more than the last. Whole credits. */
-export function upgradeCost(key: UpgradeKey, level: number): number {
+/** Each level costs ×1.55 more than the last, less the crew's planet-tech price cut (E4b; 0.05 = 5%). Whole credits. */
+export function upgradeCost(key: UpgradeKey, level: number, priceCut = 0): number {
   const def = UPGRADES.find((u) => u.key === key)!;
-  return Math.round(def.baseCost * Math.pow(1.55, level));
+  return Math.round(def.baseCost * Math.pow(1.55, level) * (1 - priceCut));
 }
 
 // ---------- Prestige: "Hand over the shift" (decision 10: the design's numbers) ----------

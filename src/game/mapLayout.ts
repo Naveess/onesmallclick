@@ -131,7 +131,7 @@ export function mapModel(legs: TourLeg[], live: LiveProbe): MapModel {
       stop: s,
       state,
       leg,
-      medal: days === null ? null : medalFor(days),
+      medal: leg ? (leg.medal ?? medalFor(days!)) : null, // saved at arrival (E4b part 2a)
       day: days === null ? null : Math.max(1, Math.ceil(days)),
     });
   }

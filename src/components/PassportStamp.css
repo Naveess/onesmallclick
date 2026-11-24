@@ -1,0 +1,91 @@
+/* Passport stamps (1j, 1k; E4b part 2a). The design's sizes, with text at 12px or more (prompt 60). */
+
+.stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 96px;
+  padding: 8px 2px 6px;
+  text-align: center;
+  border: 2px solid currentColor;
+}
+
+.stamp--gold {
+  color: var(--medal-gold-text);
+  background: rgb(255 210 122 / 0.06);
+}
+
+.stamp--silver {
+  color: var(--medal-silver-text);
+  background: rgb(201 212 238 / 0.06);
+}
+
+.stamp--bronze {
+  color: var(--medal-bronze-text);
+  background: rgb(240 185 138 / 0.06);
+}
+
+.stamp--empty {
+  color: var(--text-muted);
+  border-style: dashed;
+  border-color: var(--line-blue);
+}
+
+.stamp__icon {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+}
+
+.stamp--empty .stamp__icon {
+  opacity: 0.35;
+}
+
+.stamp__name {
+  font: 600 12px/1.2 var(--font-ui);
+  letter-spacing: 0.1em;
+}
+
+.stamp__date {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* The medal and the probe: one line on the big stamp, two on the passport's small ones. */
+.stamp__medal {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+}
+
+.stamp__sep {
+  display: none;
+}
+
+.stamp--big .stamp__medal {
+  flex-direction: row;
+}
+
+.stamp--big .stamp__sep {
+  display: inline;
+  white-space: pre;
+}
+
+/* The arrival screen's stamp: bigger, double-ruled and tilted, as the design draws it. */
+.stamp--big {
+  flex: none;
+  width: 124px;
+  padding: 10px 6px 8px;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  transform: rotate(-6deg);
+}
+
+.stamp--big .stamp__name {
+  font-size: 14px;
+  letter-spacing: 0.16em;
+}

@@ -5,6 +5,7 @@ import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
 import type { ReachedMilestone } from "./milestones";
 import type { BadgeId, EarnedBadge } from "./badges";
+import type { CrewTech } from "./tech";
 import { SETBACK_CAP_MS, SETBACK_HOURS_PER_QUIET_HOUR } from "./balance";
 
 // Every number that sets the trip's length lives in shared/balance.ts (the retune); these are re-exported.
@@ -81,6 +82,8 @@ export interface ProbeSnapshot {
   arrivedAt: number | null;
   /** The latest arrival this tour (this leg's in orbit, or the last one), so everyone sees its arrival screen once. */
   lastArrival: { missionId: number; stop: string; at: number } | null;
+  /** The crew's planet tech from the legs arrived at this tour (E4b part 2a; shared/tech.ts). */
+  tech?: CrewTech;
   missionStartedAt: number;
   routeKm: number;
   /** Distance at `at`. Between updates the browser adds coasting and auto-thrust (distanceAt). */

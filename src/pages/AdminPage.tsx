@@ -215,6 +215,7 @@ export function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [km, setKm] = useState("");
   const [hours, setHours] = useState("24");
+  const [legDays, setLegDays] = useState("24");
   const [seconds, setSeconds] = useState("70");
   const [give, setGive] = useState("100000");
 
@@ -425,6 +426,31 @@ export function AdminPage() {
               </label>
               <PixelButton type="submit" disabled={busy}>
                 Move forward
+              </PixelButton>
+            </Window>
+
+            <Window
+              as="form"
+              className="admin__card"
+              aria-labelledby="admin-leg-start"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                void run("leg-start", { days: Number(legDays) });
+              }}
+            >
+              <h2 id="admin-leg-start" className="admin__h2">
+                Set when this leg launched
+              </h2>
+              <p className="admin__note">
+                For testing medals (E4b): the leg launched this many days ago, so arriving now (set the distance to the
+                end) earns that day's medal. Gold up to 25 days, Silver up to 30, Bronze after. Try 23.5, 27.5 and 32.5.
+              </p>
+              <label className="admin__field">
+                <span className="label">Days ago</span>
+                <input inputMode="decimal" value={legDays} onChange={(e) => setLegDays(e.target.value)} required />
+              </label>
+              <PixelButton type="submit" disabled={busy}>
+                Set the launch
               </PixelButton>
             </Window>
 

@@ -21,6 +21,7 @@ import { BADGE_INFO, type BadgeId, type EarnedBadge } from "../../shared/badges"
 import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
 import { MOON_LEG_KM, probeFor, probeTag, stopName } from "../../shared/campaign";
 import { medalPace } from "../../shared/medals";
+import { NO_TECH, creditsFor, type CrewTech } from "../../shared/tech";
 import { factOfDay } from "./facts";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
@@ -52,6 +53,8 @@ export interface ProbeState {
   fromStop: string;
   /** When the probe reached `stop` (it's in orbit, waiting for the branch vote), or null on the way. */
   arrivedAt: number | null;
+  /** The crew's planet tech from this tour's arrivals (E4b part 2a): credits and prices only. */
+  tech: CrewTech;
   lastArrival: { missionId: number; stop: string; at: number } | null;
   /** The route, including setbacks already made permanent. */
   routeKm: number;
@@ -136,6 +139,12 @@ export interface Toast {
   badge?: BadgeId;
 }
 
+/** A milestone moment and the leg it belongs to. */
+export interface MomentState extends ReachedMilestone {
+  missionId: number;
+  stop: string;
+}
+
 export interface GameState {
   now: number;
   connection: Connection;
@@ -146,8 +155,11 @@ export interface GameState {
   toast: Toast | null;
   /** The welcome back summary (1d), until it's closed. */
   welcome: WelcomeBack | null;
-  /** A milestone moment (1e) to show: the newest milestone this browser hasn't seen yet. */
-  moment: ReachedMilestone | null;
+  /**
+   * A milestone moment (1e) to show: the newest milestone this browser hasn't seen yet, with the leg it was
+   * reached on (the probe may have set off on the next leg since: E4b part 2a fix).
+   */
+  moment: MomentState | null;
   /** The arrival screen (1k) to show: the latest arrival this browser hasn't seen yet, or one reopened from the home. */
   arrival: { missionId: number; stop: string; at: number } | null;
 }
@@ -244,6 +256,7 @@ function initialState(): GameState {
       stop: server?.stop ?? "mars",
       fromStop: server?.fromStop ?? "earth",
       arrivedAt: server?.arrivedAt ?? null,
+      tech: server?.tech ?? NO_TECH,
       lastArrival: server?.lastArrival ?? null,
       routeKm: server?.routeKm ?? ROUTE_KM,
       distanceKm: server ? distanceAt(server, now) : 0,
@@ -323,6 +336,7 @@ function compose(base: GameState, connection = base.connection): GameState {
         stop: p.stop ?? "mars",
         fromStop: p.fromStop ?? "earth",
         arrivedAt: p.arrivedAt ?? null,
+        tech: p.tech ?? NO_TECH,
         lastArrival: p.lastArrival ?? null,
         routeKm: p.routeKm,
         distanceKm: Math.min(p.routeKm, distanceAt(p, now) + optimisticKm * (p.crewFactor ?? 1)),
@@ -345,7 +359,8 @@ function compose(base: GameState, connection = base.connection): GameState {
     player: {
       ...base.player,
       ...(me && {
-        credits: me.credits + autoSince + optimisticKm,
+        // Credits tick with the crew's planet tech, as the server pays them.
+        credits: me.credits + creditsFor(autoSince, false, p?.tech ?? NO_TECH) + creditsFor(optimisticKm, true, p?.tech ?? NO_TECH),
         levels: me.levels,
         patches: me.patches,
         kmSinceShift: me.kmSinceShift + autoSince + optimisticKm,
@@ -445,7 +460,9 @@ function withMoment(s: GameState, p: ProbeSnapshot): GameState {
     writeSeen(p.missionId, top?.n ?? 0);
     return s;
   }
-  if (top && top.n > seen && (!s.moment || s.moment.n < top.n)) return { ...s, moment: top };
+  if (top && top.n > seen && (!s.moment || s.moment.missionId !== p.missionId || s.moment.n < top.n)) {
+    return { ...s, moment: { ...top, missionId: p.missionId, stop: p.stop ?? "mars" } };
+  }
   return s;
 }
 
@@ -493,7 +510,7 @@ export function openArrival() {
 export function dismissMoment() {
   const m = state.moment;
   if (!m) return;
-  writeSeen(state.probe.missionId, m.n);
+  writeSeen(m.missionId, m.n);
   set({ ...state, moment: null });
 }
 
@@ -716,7 +733,7 @@ function ask(what: UpgradeKey | "prestige") {
 
 /** Buys one level. The server checks the credits; a refused purchase just brings back the real balance. */
 export function buyUpgrade(key: UpgradeKey) {
-  if (state.player.credits < upgradeCost(key, state.player.levels[key])) return;
+  if (state.player.credits < upgradeCost(key, state.player.levels[key], state.probe.tech.priceCut)) return;
   ask(key);
 }
 
@@ -757,7 +774,7 @@ function derive({ now, probe, player }: GameState) {
     const named = flying?.upgrades?.[base.key];
     const def = named ? { ...base, name: named.name } : base;
     const level = player.levels[def.key];
-    const cost = upgradeCost(def.key, level);
+    const cost = upgradeCost(def.key, level, probe.tech.priceCut); // less Vesta's planet tech (E4b)
     return { def, level, cost, affordable: player.credits >= cost, line: named?.line ?? null };
   });
   // At today's pace, plus the setback; null (on hold) while the probe is paused.

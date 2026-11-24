@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { BADGE_INFO, KEEPER_IDS, RECRUITER_IDS, ROMAN, type BadgeId } from "../../shared/badges";
-import type { ProfileInfo } from "../../shared/boards";
+import type { ProfileInfo, TourInfo } from "../../shared/boards";
 import { CLICK_BADGES } from "../../shared/clicks";
 import { RECRUITER_LEVELS } from "../../shared/share";
 import { GameShell } from "../components/GameShell";
+import { PassportStamp } from "../components/PassportStamp";
 import { shareText } from "../components/MilestoneMoment";
 import { ShareSheet } from "../components/ShareSheet";
 import { PixelButton } from "../components/PixelButton";
@@ -17,12 +18,18 @@ import { badgeStill } from "../sprites";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./ProfilePage.css";
 
-// /profile: the profile (1j, phase 8b). Badges, distance and the 30-day ping grid.
-// The passport and cosmetics in the design wait for the arrival rewards (8c; decided in prompt 38).
+// /profile: the profile (1j, phase 8b). Badges, distance, the 30-day ping grid and, from E4b part 2a, the
+// passport (a stamp for each leg you pushed on). The cosmetics come in part 2c.
 
 async function fetchProfile(): Promise<ProfileInfo> {
   const res = await fetch("/api/profile", { cache: "no-store", credentials: "same-origin" });
   if (!res.ok) throw new Error(`profile ${res.status}`);
+  return res.json();
+}
+
+async function fetchTour(): Promise<TourInfo> {
+  const res = await fetch("/api/tour", { cache: "no-store", credentials: "same-origin" });
+  if (!res.ok) throw new Error(`tour ${res.status}`);
   return res.json();
 }
 
@@ -80,8 +87,9 @@ function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
 
 export function ProfilePage() {
   useDocumentTitle("Profile · OneSmallClick");
-  const { player, view } = useGame();
+  const { player, view, probe } = useGame();
   const [info, setInfo] = useState<ProfileInfo | null>(null);
+  const [tour, setTour] = useState<TourInfo | null>(null);
   const [error, setError] = useState(false);
   const [sharing, setSharing] = useState(false);
 
@@ -90,6 +98,9 @@ export function ProfilePage() {
     fetchProfile()
       .then((p) => alive && setInfo(p))
       .catch(() => alive && setError(true));
+    fetchTour()
+      .then((t) => alive && setTour(t))
+      .catch(() => alive && setTour({ legs: [] }));
     return () => {
       alive = false;
     };
@@ -102,6 +113,9 @@ export function ProfilePage() {
   const keeperLevel = KEEPER_IDS.filter((id) => have.has(id)).length;
   const streak = player.pingStreakDays;
   const today = info?.days[info.days.length - 1];
+  const stamps = tour?.legs.filter((l) => l.helped) ?? [];
+  // The stop the probe is flying to: an empty slot until it arrives.
+  const flyingTo = probe.arrivedAt === null ? probe.stop : null;
 
   return (
     <GameShell tab="other">
@@ -192,6 +206,26 @@ export function ProfilePage() {
                 Missed
               </span>
             </div>
+          </section>
+
+          <section className="profile__section" aria-labelledby="passport-label">
+            <h2 id="passport-label" className="profile__label profile__label--row">
+              <span>PASSPORT</span>
+              <span>{tour ? `${stamps.length} STAMP${stamps.length === 1 ? "" : "S"}` : ""}</span>
+            </h2>
+            <ul className="profile__passport">
+              {stamps.map((l) => (
+                <li key={l.missionId}>
+                  <PassportStamp stop={l.stop} leg={l} />
+                </li>
+              ))}
+              {flyingTo && (
+                <li>
+                  <PassportStamp stop={flyingTo} />
+                </li>
+              )}
+            </ul>
+            <p className="profile__note">Stamps come in the medal colour of each leg you pushed on.</p>
           </section>
 
           <div className="profile__actions">

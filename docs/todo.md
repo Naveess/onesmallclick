@@ -174,7 +174,7 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
   - Neptune 54×54
   - Pluto 38×38
   - Arrokoth 46×28
-- [ ] **Small planet icons, 16×16 (drawn in code), for passport stamps and the Destination file card:**
+- [ ] **Small planet icons, 16×16 (drawn in code), for passport stamps and the Destination file card:** (E4b part 2a draws the stamps from the map's planets at 16×16 for now, `src/game/rewardArt.ts` stampIcon; PixelLab's `public/sprites/stamps/<stop>.png` replace them)
   - Mars (or reuse `mars-32.png`, which is the design's 2× size)
   - Ceres
   - Jupiter
@@ -213,7 +213,7 @@ Run `npm run check-leg <stop>` for both branches (E3). Content must pass; the ar
 - [ ] **Load only the current leg's content in the app** (E3 note): every leg's files are bundled, about 6 kB gzipped a leg. Fine for a few legs; switch to loading the leg's files on demand before Jupiter's.
 - [ ] Both branches' probes, thruster sheets and map icons. File names `check-leg` looks for: `public/sprites/thruster-<probe id>-sheet.png` (5 frames), `public/sprites/<stop>.png`, `public/sprites/stamps/<stop>.png` (16×16).
 - [ ] Upgrade names and descriptions for both probes.
-- [ ] Planet tech, medal days and cosmetics for both branches.
+- [ ] Planet tech, medal days and cosmetics for both branches. (E4b part 2a: the planet tech is applied from each stop's `tech.effect`; `check-leg` fails a leg whose perk kind isn't wired yet: Ganymede, Enceladus, Titania and Arrokoth need theirs added to shared/tech.ts and the Probe before their legs.)
 - [ ] 4–6 milestones per branch, with checked facts.
 - [ ] 30 checked fun facts per branch.
 - [ ] A daily vote pool per branch.

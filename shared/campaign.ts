@@ -10,6 +10,8 @@ export interface PlanetTech {
   gold: string;
   silver: string;
   bronze: string;
+  /** What the game applies at each medal (E4b part 2a; shared/tech.ts). */
+  effect?: { kind: string; gold: number; silver: number; bronze: number };
 }
 
 /** A stop's one map fact (E1), checked against the NASA page in `source`. */

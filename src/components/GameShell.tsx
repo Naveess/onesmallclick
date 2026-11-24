@@ -67,9 +67,9 @@ export function GameShell({ tab, children }: GameShellProps) {
           <div className="game__main">
             <MilestoneMoment
               reached={moment}
-              stopId={probe.stop}
+              stopId={moment.stop}
               wide={wide}
-              missionDay={view.missionDayAt(moment.at)}
+              missionDay={moment.missionId === probe.missionId ? view.missionDayAt(moment.at) : null}
               today={{
                 missionDay: view.missionDay,
                 destName: view.destName,

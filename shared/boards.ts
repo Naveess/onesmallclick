@@ -1,5 +1,7 @@
 // The leaderboards (1g) and the profile (1j), phase 8b: what /api/leaderboard and /api/profile answer.
 
+import type { Medal } from "./medals";
+
 export type Board = "players" | "countries";
 
 export interface BoardRow {
@@ -55,8 +57,10 @@ export interface TourLeg {
   arrivedAt: number;
   /** The branch vote's winner at this stop, if it had one. */
   branch: string | null;
-  /** You pushed on this leg (at least one credited tap): your stamp. */
+  /** You pushed on this leg (at least one credited tap): your passport stamp, in the medal's colour. */
   helped: boolean;
+  /** The crew's medal for the leg (E4b part 2a), saved at arrival. */
+  medal: Medal;
 }
 
 export interface TourInfo {
@@ -76,4 +80,6 @@ export interface CreditsInfo {
   names: { name: string; cc: string | null; km: number }[];
   /** Guests who helped, counted but not named. */
   guests: number;
+  /** The crew's medal for the leg (E4b part 2a). */
+  medal: Medal;
 }

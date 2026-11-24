@@ -6,7 +6,7 @@
 // colours (docs/tokens.css, highlight → outline), and the ribbon is the design's two blues.
 
 import type { Medal } from "../../shared/medals";
-import { once, px } from "./flightArt";
+import { destinationArt, once, px } from "./flightArt";
 
 /** The medal is 10×15 (shown at 2×, 20×30, on the game home). */
 export const MEDAL_W = 10;
@@ -51,4 +51,14 @@ export function medalArt(medal: Medal): string {
         }
     });
   });
+}
+
+/**
+ * A stop's passport-stamp icon (E4b part 2a), shown 32×32: Mars's 32px sprite (the design's 2× size), the rest
+ * drawn in code at 16×16 (flightArt's planets) and shown at 2×. PixelLab's stamp icons replace these later
+ * (public/sprites/stamps/<stop>.png, which npm run check-leg looks for).
+ */
+export function stampIcon(stop: string): { src: string; scale: 1 | 2 } {
+  if (stop === "mars") return { src: "/sprites/mars-32.png", scale: 1 };
+  return { src: destinationArt(stop, 7), scale: 2 };
 }

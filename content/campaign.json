@@ -1,5 +1,5 @@
 {
-  "_about": "Approved by Nav on 2026-11-20 (E0, prompts 43–44). The Grand Tour: stops, branches, distances, probes and their upgrade names, planet tech and cosmetics. Nothing reads this file yet; 8c and the E phases will. Upgrade effects and prices stay as in shared/upgrades.ts: only names and flavour lines change per probe. The planet tech here is smaller than the design's and credits-only, so it never changes trip speed (docs/expansion.md, 'Planet tech'). Distances are the gap between average distances from the Sun (or a moon's distance from its planet), from distanceSources; TODO marks what isn't checked.",
+  "_about": "Approved by Nav on 2026-11-20 (E0, prompts 43–44). The Grand Tour: stops, branches, distances, probes and their upgrade names, planet tech and cosmetics. Nothing reads this file yet; 8c and the E phases will. Upgrade effects and prices stay as in shared/upgrades.ts: only names and flavour lines change per probe. The planet tech here is smaller than the design's and credits-only, so it never changes trip speed (docs/expansion.md, 'Planet tech'). Distances are the gap between average distances from the Sun (or a moon's distance from its planet), from distanceSources; TODO marks what isn't checked. E4b part 2a (prompt 78): each tech has an effect the game applies, {kind, gold, silver, bronze}: tapCredits, autoCredits, allCredits and priceCut are fractions (0.05 = 5%), offlineMin minutes; safeAuto, pingCredits, postcardCredits and nightTapCredits are written down but not wired yet (npm run check-leg flags them before their leg).",
   "legDays": 30,
   "medalDays": {
     "gold": 25,
@@ -143,7 +143,13 @@
         "what": "Credits from your taps, for the whole crew, forever",
         "gold": "Tap credits +5%",
         "silver": "Tap credits +3%",
-        "bronze": "Tap credits +2%"
+        "bronze": "Tap credits +2%",
+        "effect": {
+          "kind": "tapCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -177,7 +183,13 @@
         "what": "Offline cap for the whole crew, forever",
         "gold": "Offline cap +40 min",
         "silver": "Offline cap +30 min",
-        "bronze": "Offline cap +20 min"
+        "bronze": "Offline cap +20 min",
+        "effect": {
+          "kind": "offlineMin",
+          "gold": 40,
+          "silver": 30,
+          "bronze": 20
+        }
       },
       "cosmetics": [
         {
@@ -208,7 +220,13 @@
         "what": "Upgrade prices for the whole crew, forever",
         "gold": "Upgrades 5% cheaper",
         "silver": "Upgrades 3% cheaper",
-        "bronze": "Upgrades 2% cheaper"
+        "bronze": "Upgrades 2% cheaper",
+        "effect": {
+          "kind": "priceCut",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -244,7 +262,13 @@
         "what": "Credits from auto-thrust, for the whole crew, forever",
         "gold": "Auto credits +5%",
         "silver": "Auto credits +3%",
-        "bronze": "Auto credits +2%"
+        "bronze": "Auto credits +2%",
+        "effect": {
+          "kind": "autoCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -279,7 +303,13 @@
         "what": "Credits from your taps",
         "gold": "Tap credits +5%",
         "silver": "Tap credits +3%",
-        "bronze": "Tap credits +2%"
+        "bronze": "Tap credits +2%",
+        "effect": {
+          "kind": "tapCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -311,7 +341,13 @@
         "gold": "50% in safe mode",
         "silver": "35% in safe mode",
         "bronze": "20% in safe mode",
-        "note": "Replaces the design's 'safe-mode setback halved', which would change trip speed."
+        "note": "Replaces the design's 'safe-mode setback halved', which would change trip speed.",
+        "effect": {
+          "kind": "safeAuto",
+          "gold": 0.5,
+          "silver": 0.35,
+          "bronze": 0.2
+        }
       },
       "cosmetics": [
         {
@@ -345,7 +381,13 @@
         "what": "Credits from auto-thrust",
         "gold": "Auto credits +5%",
         "silver": "Auto credits +3%",
-        "bronze": "Auto credits +2%"
+        "bronze": "Auto credits +2%",
+        "effect": {
+          "kind": "autoCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -380,7 +422,13 @@
         "what": "Offline cap",
         "gold": "Offline cap +40 min",
         "silver": "Offline cap +30 min",
-        "bronze": "Offline cap +20 min"
+        "bronze": "Offline cap +20 min",
+        "effect": {
+          "kind": "offlineMin",
+          "gold": 40,
+          "silver": 30,
+          "bronze": 20
+        }
       },
       "cosmetics": [
         {
@@ -411,7 +459,13 @@
         "what": "Credits for each Ping",
         "gold": "+300 credits a Ping",
         "silver": "+200 credits a Ping",
-        "bronze": "+100 credits a Ping"
+        "bronze": "+100 credits a Ping",
+        "effect": {
+          "kind": "pingCredits",
+          "gold": 300,
+          "silver": 200,
+          "bronze": 100
+        }
       },
       "cosmetics": [
         {
@@ -444,7 +498,13 @@
         "what": "Upgrade prices",
         "gold": "Upgrades 4% cheaper",
         "silver": "Upgrades 3% cheaper",
-        "bronze": "Upgrades 2% cheaper"
+        "bronze": "Upgrades 2% cheaper",
+        "effect": {
+          "kind": "priceCut",
+          "gold": 0.04,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -479,7 +539,13 @@
         "what": "Credits from your taps",
         "gold": "Tap credits +5%",
         "silver": "Tap credits +3%",
-        "bronze": "Tap credits +2%"
+        "bronze": "Tap credits +2%",
+        "effect": {
+          "kind": "tapCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -511,7 +577,13 @@
         "gold": "Night tap credits +15%",
         "silver": "Night tap credits +10%",
         "bronze": "Night tap credits +5%",
-        "note": "The design says 00:00 to 06:00 UTC; local time matches the Night Shift badge."
+        "note": "The design says 00:00 to 06:00 UTC; local time matches the Night Shift badge.",
+        "effect": {
+          "kind": "nightTapCredits",
+          "gold": 0.15,
+          "silver": 0.1,
+          "bronze": 0.05
+        }
       },
       "cosmetics": [
         {
@@ -544,7 +616,13 @@
         "what": "Credits from auto-thrust",
         "gold": "Auto credits +5%",
         "silver": "Auto credits +3%",
-        "bronze": "Auto credits +2%"
+        "bronze": "Auto credits +2%",
+        "effect": {
+          "kind": "autoCredits",
+          "gold": 0.05,
+          "silver": 0.03,
+          "bronze": 0.02
+        }
       },
       "cosmetics": [
         {
@@ -579,7 +657,13 @@
         "what": "Offline cap",
         "gold": "Offline cap +40 min",
         "silver": "Offline cap +30 min",
-        "bronze": "Offline cap +20 min"
+        "bronze": "Offline cap +20 min",
+        "effect": {
+          "kind": "offlineMin",
+          "gold": 40,
+          "silver": 30,
+          "bronze": 20
+        }
       },
       "cosmetics": [
         {
@@ -610,7 +694,13 @@
         "what": "Credits for each milestone postcard",
         "gold": "+600 credits a postcard",
         "silver": "+400 credits a postcard",
-        "bronze": "+200 credits a postcard"
+        "bronze": "+200 credits a postcard",
+        "effect": {
+          "kind": "postcardCredits",
+          "gold": 600,
+          "silver": 400,
+          "bronze": 200
+        }
       },
       "cosmetics": [
         {
@@ -645,7 +735,13 @@
         "what": "All credits",
         "gold": "All credits +3%",
         "silver": "All credits +2%",
-        "bronze": "All credits +1%"
+        "bronze": "All credits +1%",
+        "effect": {
+          "kind": "allCredits",
+          "gold": 0.03,
+          "silver": 0.02,
+          "bronze": 0.01
+        }
       },
       "cosmetics": [
         {

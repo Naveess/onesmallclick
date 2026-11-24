@@ -10,6 +10,7 @@
 import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo, type TourInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
+import { medalFor, type Medal } from "../shared/medals";
 
 const DAY_MS = 86_400_000;
 const CACHE_MS = 60_000;
@@ -162,7 +163,10 @@ export async function profile(request: Request, env: Env, day: string): Promise<
   return json(body);
 }
 
-/** E1, the campaign map: every leg the crew has arrived at, oldest first, and which ones you helped on. */
+/**
+ * E1, the campaign map: every leg the crew has arrived at this tour (since the latest Earth → Mars start, which
+ * the launch reset makes), oldest first, with its medal and whether you helped on it (your passport stamp, E4b).
+ */
 export async function tour(request: Request, env: Env): Promise<Response> {
   const asking = await whoIsAsking(request, env);
   const key = asking ? (asking.account ? `a:${asking.account.id}` : asking.deviceId) : null;
@@ -174,9 +178,13 @@ export async function tour(request: Request, env: Env): Promise<Response> {
     started_at?: number;
     arrived_at?: number;
     branch?: string | null;
+    medal?: string | null;
     mission_id?: number;
   }>([
-    db.prepare(`SELECT id, stop, from_stop, started_at, arrived_at, branch FROM missions WHERE arrived_at IS NOT NULL ORDER BY id`),
+    db.prepare(
+      `SELECT id, stop, from_stop, started_at, arrived_at, branch, medal FROM missions
+       WHERE arrived_at IS NOT NULL AND id >= (SELECT MAX(id) FROM missions WHERE stop IS NULL OR stop = 'mars') ORDER BY id`,
+    ),
     db.prepare(`SELECT mission_id FROM mission_crew WHERE player_key = ?`).bind(key ?? ""),
   ]);
   const helped = new Set(mine.results.map((r) => r.mission_id));
@@ -189,6 +197,7 @@ export async function tour(request: Request, env: Env): Promise<Response> {
       arrivedAt: r.arrived_at!,
       branch: r.branch ?? null,
       helped: helped.has(r.id),
+      medal: (r.medal as Medal | null) ?? medalFor((r.arrived_at! - r.started_at!) / DAY_MS),
     })),
   };
   return Response.json(body, { headers: { "Cache-Control": "private, max-age=60" } });
@@ -199,10 +208,19 @@ export async function credits(env: Env, url: URL): Promise<Response> {
   const id = Number(url.searchParams.get("mission"));
   if (!Number.isInteger(id) || id < 1) return json({ error: "mission must be a mission id" }, 400);
   const m = await env.DB.prepare(
-    `SELECT id, stop, from_stop, started_at, arrived_at, crew_count, taps FROM missions WHERE id = ? AND arrived_at IS NOT NULL`,
+    `SELECT id, stop, from_stop, started_at, arrived_at, crew_count, taps, medal FROM missions WHERE id = ? AND arrived_at IS NOT NULL`,
   )
     .bind(id)
-    .first<{ id: number; stop: string | null; from_stop: string | null; started_at: number; arrived_at: number; crew_count: number | null; taps: number | null }>();
+    .first<{
+      id: number;
+      stop: string | null;
+      from_stop: string | null;
+      started_at: number;
+      arrived_at: number;
+      crew_count: number | null;
+      taps: number | null;
+      medal: string | null;
+    }>();
   if (!m) return json({ error: "No arrival for that mission yet" }, 404);
   const named = await env.DB.prepare(
     `SELECT name, country AS cc, km FROM mission_crew WHERE mission_id = ? AND account_id IS NOT NULL ORDER BY km DESC, name`,
@@ -221,6 +239,7 @@ export async function credits(env: Env, url: URL): Promise<Response> {
     taps: m.taps ?? 0,
     names,
     guests: Math.max(0, crew - names.length),
+    medal: (m.medal as Medal | null) ?? medalFor((m.arrived_at - m.started_at) / DAY_MS),
   };
   return Response.json(body, { headers: { "Cache-Control": "public, max-age=300" } });
 }

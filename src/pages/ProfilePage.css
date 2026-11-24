@@ -230,3 +230,16 @@
 .profile__note a {
   color: var(--text-blue);
 }
+
+/* The passport (1j, E4b part 2a): stamps in a framed page, three a row on a phone (the design's four, at 12px text, wrap). */
+.profile__passport {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px 8px;
+  margin: 0;
+  padding: 12px;
+  list-style: none;
+  background: var(--field);
+  border: 2px solid var(--line-blue);
+  outline: 2px solid var(--outline);
+}

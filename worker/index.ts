@@ -20,6 +20,7 @@
 //   GET  /api/admin/state       } /admin's test controls, behind
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
+//   POST /api/admin/leg-start   }   (E4b: the current leg launched { days } ago, for testing medals)
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
@@ -294,6 +295,11 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     const km = Number(body.km);
     if (!Number.isFinite(km) || km < 0) return json({ error: "km must be a number, 0 or more" }, 400);
     return json(await stub.adminSetDistance(km));
+  }
+  if (action === "leg-start") {
+    const days = Number((body as { days?: unknown }).days);
+    if (!Number.isFinite(days) || days < 0 || days > 400) return json({ error: "days must be between 0 and 400" }, 400);
+    return json(await stub.adminSetLegStart(days));
   }
   if (action === "clock") {
     const hours = Number(body.hours);

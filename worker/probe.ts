@@ -54,6 +54,8 @@ import {
   type WelcomeBack,
 } from "../shared/upgrades";
 import { milestonesFor, type ReachedMilestone } from "../shared/milestones";
+import { medalFor, type Medal } from "../shared/medals";
+import { NO_TECH, creditsFor, crewTech, offlineCapMs, type CrewTech } from "../shared/tech";
 import { CLICK_BADGES } from "../shared/clicks";
 import { RECRUIT_TAPS, RECRUITS_PER_DAY } from "../shared/share";
 import {
@@ -337,6 +339,8 @@ export class Probe extends DurableObject<Env> {
   private arriving = false;
   /** The latest arrival this tour (kept in meta; the launch reset clears it). */
   private lastArrival: { missionId: number; stop: string; at: number } | null = null;
+  /** The crew's planet tech from every leg arrived at this tour (E4b part 2a; shared/tech.ts). */
+  private tech: CrewTech = NO_TECH;
   private lastLogId = 0;
   /** Milestones the current mission has reached. */
   private reached: ReachedMilestone[] = [];
@@ -426,9 +430,19 @@ export class Probe extends DurableObject<Env> {
       ["leg_km", "REAL"],
       ["crew_half", "REAL"],
       ["arrived_at", "INTEGER"],
+      ["medal", "TEXT"],
     ]) {
       if (!cols.has(col)) this.sql.exec(`ALTER TABLE mission ADD COLUMN ${col} ${type}`);
     }
+    // Legs that arrived before E4b part 2a: their medal from the days they took (like migration 0014).
+    for (const r of this.sql
+      .exec<{ id: number; started_at: number; arrived_at: number }>(
+        `SELECT id, started_at, arrived_at FROM mission WHERE arrived_at IS NOT NULL AND medal IS NULL`,
+      )
+      .toArray()) {
+      this.sql.exec(`UPDATE mission SET medal = ? WHERE id = ?`, medalFor((r.arrived_at - r.started_at) / DAY_MS), r.id);
+    }
+    this.loadTech();
 
     const lastId = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'last_arrival_mission'`).toArray()[0]?.value;
     if (lastId !== undefined) {
@@ -859,6 +873,7 @@ export class Probe extends DurableObject<Env> {
       fromStop: m.fromStop,
       arrivedAt: m.arrivedAt,
       lastArrival: this.lastArrival,
+      tech: this.tech,
       missionStartedAt: m.startedAt,
       routeKm: m.routeKm,
       distanceKm: distanceAt(moving, now),
@@ -1079,7 +1094,7 @@ export class Probe extends DurableObject<Env> {
   /** Devices away within the last 8 hours with auto-thrust (cached; it's a count, not exact to the second). */
   private idlingCount(now: number): number {
     if (Date.now() - this.idling.at < IDLING_MS) return this.idling.n;
-    const cutoff = now - OFFLINE_CAP_MS;
+    const cutoff = now - offlineCapMs(OFFLINE_CAP_MS, this.tech);
     const row = this.sql
       .exec<{ n: number }>(`SELECT COUNT(*) AS n FROM progress WHERE auto_kms > 0 AND settled_at > ?`, cutoff)
       .toArray()[0];
@@ -1520,13 +1535,19 @@ export class Probe extends DurableObject<Env> {
     this.lastArrival = { missionId: m.id, stop: m.stop, at };
     this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('last_arrival_mission', ?)`, m.id);
     this.broadcast();
-    const crew = await this.creditCrew(at);
+    // The crew's medal for the leg (E4b part 2a), saved with it so a later rule change never alters it, and the
+    // stop's planet tech from now on, for everyone.
+    const medal = medalFor((at - m.startedAt) / DAY_MS);
+    this.sql.exec(`UPDATE mission SET medal = ? WHERE id = ?`, medal, m.id);
+    this.loadTech();
+    this.broadcast();
+    const crew = await this.creditCrew(at, medal);
     const day = Math.max(1, Math.ceil((at - m.startedAt) / DAY_MS));
     await this.log(
       "arrival",
       `Arrived at ${stopName(m.stop)}`,
       `Day ${day}. ${gb.format(crew.count)} crew pushed us here with ${gb.format(crew.taps)} taps.`,
-      { stop: m.stop, from: m.fromStop, days: (at - m.startedAt) / DAY_MS, crew: crew.count, taps: crew.taps },
+      { stop: m.stop, from: m.fromStop, days: (at - m.startedAt) / DAY_MS, crew: crew.count, taps: crew.taps, medal },
     );
     const here = campaignStop(m.stop);
     const now = this.now();
@@ -1540,8 +1561,23 @@ export class Probe extends DurableObject<Env> {
     this.broadcast();
   }
 
+  /**
+   * The crew's planet tech (E4b part 2a): every leg arrived at since the tour began (the latest Earth → Mars
+   * start, which the launch reset makes), each at its medal.
+   */
+  private loadTech() {
+    const rows = this.sql
+      .exec<{ stop: string | null; medal: string }>(
+        `SELECT stop, medal FROM mission WHERE arrived_at IS NOT NULL AND medal IS NOT NULL
+           AND id >= (SELECT MAX(id) FROM mission WHERE stop IS NULL OR stop = ?)`,
+        FIRST_STOP,
+      )
+      .toArray();
+    this.tech = crewTech(rows.map((r) => ({ stop: r.stop ?? FIRST_STOP, medal: r.medal as Medal })));
+  }
+
   /** Snapshots who helped on this leg (at least one credited tap) into D1's mission_crew: the credits, and E4b's stamps. */
-  private async creditCrew(at: number): Promise<{ count: number; taps: number }> {
+  private async creditCrew(at: number, medal: Medal): Promise<{ count: number; taps: number }> {
     await this.flushD1();
     const m = this.mission;
     const db = this.env.DB;
@@ -1563,7 +1599,10 @@ export class Probe extends DurableObject<Env> {
         .first<{ n: number; taps: number }>();
       const count = row?.n ?? 0;
       const taps = row?.taps ?? 0;
-      await db.prepare(`UPDATE missions SET arrived_at = ?, crew_count = ?, taps = ? WHERE id = ?`).bind(at, count, taps, m.id).run();
+      await db
+        .prepare(`UPDATE missions SET arrived_at = ?, crew_count = ?, taps = ?, medal = ? WHERE id = ?`)
+        .bind(at, count, taps, medal, m.id)
+        .run();
       return { count, taps };
     } catch (err) {
       console.error("crediting the crew failed", err);
@@ -2059,10 +2098,10 @@ export class Probe extends DurableObject<Env> {
     }
   }
 
-  /** Km this player pushed: 1 credit per km, prestige progress and today's km. All in full (no balancing). */
+  /** Km this player pushed: 1 credit per km plus the crew's planet tech, prestige progress and today's km. Km in full (no balancing). */
   private earn(w: Who, p: ProgressEntry, dev: DeviceEntry, km: number, fromTaps: boolean) {
     if (km <= 0) return;
-    p.creditsMilli += Math.round(km * 1000);
+    p.creditsMilli += Math.round(creditsFor(km, fromTaps, this.tech) * 1000);
     p.kmSinceShift += km;
     dev.kmToday += km;
     if (fromTaps) dev.tapKmToday += km;
@@ -2089,18 +2128,26 @@ export class Probe extends DurableObject<Env> {
     this.touch(w.key);
   }
 
-  /** A device comes back: pays up to 8 hours of auto-thrust and adds it to the probe. Returns what welcome back needs. */
+  /**
+   * A device comes back: pays up to 8 hours of auto-thrust and adds it to the probe. Returns what welcome back needs.
+   * Planet tech's extra offline minutes (E4b, Ceres) pay credits only: they never move the probe, so never trip speed.
+   */
   private settleAway(w: Who, p: ProgressEntry, dev: DeviceEntry, now: number): Away | null {
     const from = p.settledAt;
     const awayMs = Math.max(0, now - from);
     const auto = autoKmS(p.levels, p.patches);
-    const countedMs = Math.min(OFFLINE_CAP_MS, this.awakeMs(from, now));
-    const km = (auto * countedMs) / 1000;
-    if (km > 0) {
-      this.earn(w, p, dev, km, false);
+    const awake = this.awakeMs(from, now);
+    const baseMs = Math.min(OFFLINE_CAP_MS, awake);
+    const countedMs = Math.min(offlineCapMs(OFFLINE_CAP_MS, this.tech), awake);
+    const baseKm = (auto * baseMs) / 1000;
+    const extraKm = (auto * (countedMs - baseMs)) / 1000;
+    const km = baseKm + extraKm;
+    if (baseKm > 0) {
+      this.earn(w, p, dev, baseKm, false);
       // The probe gets it too (decision 9), unless its thrusters are asleep right now.
-      if (this.mission.safeSince === null) this.pushCrewKm(now, km, "catchup");
+      if (this.mission.safeSince === null) this.pushCrewKm(now, baseKm, "catchup");
     }
+    if (extraKm > 0) p.creditsMilli += Math.round(creditsFor(extraKm, false, this.tech) * 1000);
     p.settledAt = now;
     this.touch(w.key);
     if (awayMs < WELCOME_MIN_AWAY_MS || km <= 0) return null;
@@ -2172,7 +2219,7 @@ export class Probe extends DurableObject<Env> {
 
   private buy(w: Who, p: ProgressEntry, key: UpgradeKey, now: number): boolean {
     const level = p.levels[key];
-    const costMilli = upgradeCost(key, level) * 1000;
+    const costMilli = upgradeCost(key, level, this.tech.priceCut) * 1000;
     if (level >= MAX_LEVEL || p.creditsMilli < costMilli) return false;
     p.creditsMilli -= costMilli;
     p.levels[key] = level + 1;
@@ -2448,6 +2495,15 @@ export class Probe extends DurableObject<Env> {
            ON CONFLICT (player_key, badge) DO UPDATE SET earned_at = MIN(earned_at, excluded.earned_at)`,
         ).bind(acct.key, guest.key),
         this.env.DB.prepare(`DELETE FROM badges WHERE player_key = ?`).bind(guest.key),
+        // Passport stamps (E4b part 2a): the legs this device helped on as a guest are the account's now,
+        // named in their credits like any signed-in crew member.
+        this.env.DB.prepare(
+          `INSERT INTO mission_crew (mission_id, player_key, account_id, name, country, km, taps)
+           SELECT c.mission_id, ?, a.id, a.name, COALESCE(a.country, c.country), c.km, c.taps
+           FROM mission_crew c JOIN accounts a ON a.id = ? WHERE c.player_key = ?
+           ON CONFLICT (mission_id, player_key) DO UPDATE SET km = km + excluded.km, taps = taps + excluded.taps`,
+        ).bind(acct.key, accountId, guest.key),
+        this.env.DB.prepare(`DELETE FROM mission_crew WHERE player_key = ?`).bind(guest.key),
         // Recruits brought in as a guest now count for the account (phase S2).
         this.env.DB.prepare(`UPDATE recruits SET recruiter_key = ? WHERE recruiter_key = ?`).bind(acct.key, guest.key),
       ]);
@@ -2545,6 +2601,20 @@ export class Probe extends DurableObject<Env> {
     this.track = [];
     this.sql.exec(`DELETE FROM track`);
     this.sample(true);
+    return this.adminCommit();
+  }
+
+  /** E4b test control: the current leg launched `days` ago (so an arrival now earns that day's medal). */
+  async adminSetLegStart(days: number): Promise<AdminState> {
+    const now = this.now();
+    const m = this.mission;
+    m.startedAt = now - Math.round(days * DAY_MS);
+    this.sql.exec(`UPDATE mission SET started_at = ? WHERE id = ?`, m.startedAt, m.id);
+    try {
+      await this.env.DB.prepare(`UPDATE missions SET started_at = ? WHERE id = ?`).bind(m.startedAt, m.id).run();
+    } catch (err) {
+      console.error("leg start in D1 failed", err);
+    }
     return this.adminCommit();
   }
 
@@ -2658,6 +2728,7 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`DELETE FROM meta WHERE key IN ('crew_base_kms', 'last_arrival_mission')`); // the tour starts again from Earth
     this.lastArrival = null;
     await this.startMission(this.mission.id + 1);
+    this.loadTech(); // a new tour: no planet tech yet
     await this.abandonVote(now);
     await this.openVote(now);
     return this.adminCommit();
