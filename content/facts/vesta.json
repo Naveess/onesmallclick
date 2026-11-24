@@ -1,0 +1,278 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. Vesta's 30 fun facts for the Destination file card and /destinations/vesta, one a day, in the same format as mars.json. Every fact was checked on 2026-11-24 against the NASA page in 'source'; 'quote' is the supporting text from that page (' … ' joins two parts of the same page). None repeats a milestone fact (content/milestones/vesta.json).",
+  "destination": "vesta",
+  "checked": "2026-11-24",
+  "approved": null,
+  "facts": [
+    {
+      "n": 1,
+      "fact": "Vesta is the second most massive body in the main asteroid belt, after the dwarf planet Ceres.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta is the second most massive body in the main asteroid belt … Only dwarf planet Ceres is more massive in that region of rocky debris between Mars and Jupiter."
+    },
+    {
+      "n": 2,
+      "fact": "Vesta alone holds almost 9% of the total mass of the main asteroid belt.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta is the second most massive body in the main asteroid belt, accounting for almost 9% of the total mass"
+    },
+    {
+      "n": 3,
+      "fact": "Heinrich Wilhelm Olbers discovered Vesta at Bremen, in Germany, on 29 March 1807.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta was discovered at Bremen, Germany, on Mar. 29, 1807 by Heinrich Wilhelm Olbers"
+    },
+    {
+      "n": 4,
+      "fact": "Vesta was the fourth asteroid ever discovered.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta was the fourth asteroid ever to be discovered."
+    },
+    {
+      "n": 5,
+      "fact": "Olbers let the mathematician Carl Friedrich Gauss, who had worked out its orbit, name the new asteroid.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "gave the honor of naming the new asteroid to German mathematician Carl Friedrich Gauss, who had computed its orbit"
+    },
+    {
+      "n": 6,
+      "fact": "Gauss named Vesta after the Roman goddess of the hearth and household.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Gauss named it Vesta after the goddess of the hearth and household in Roman mythology."
+    },
+    {
+      "n": 7,
+      "fact": "Olbers thought, wrongly, that Ceres and Pallas were pieces of a destroyed planet.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "He proposed—incorrectly as it turned out—that Ceres and Pallas were fragments of a destroyed planet"
+    },
+    {
+      "n": 8,
+      "fact": "Vesta is the largest asteroid, about 530 km across. (Ceres is bigger, but it counts as a dwarf planet.)",
+      "source": {
+        "label": "NASA: Asteroid facts",
+        "url": "https://science.nasa.gov/solar-system/asteroids/facts/"
+      },
+      "quote": "Vesta – the largest asteroid at about 329 miles (530 kilometers) in diameter"
+    },
+    {
+      "n": 9,
+      "fact": "Vesta is almost round, so it is very nearly classed as a dwarf planet.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "The giant asteroid is almost spherical, and so is nearly classified a dwarf planet."
+    },
+    {
+      "n": 10,
+      "fact": "Vesta's surface covers about twice the area of California.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "About twice the area of California, Vesta is the second largest object in the asteroid belt after the dwarf planet Ceres."
+    },
+    {
+      "n": 11,
+      "fact": "Unlike most asteroids, Vesta has separated into a crust, a mantle and a core.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Unlike most known asteroids, Vesta has separated into crust, mantle and core"
+    },
+    {
+      "n": 12,
+      "fact": "Dawn found that Vesta's gravity fits an iron core about 225 km (140 miles) across.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "Dawn also found that Vesta's gravity field is consistent with the presence of an iron core around 140 miles in diameter"
+    },
+    {
+      "n": 13,
+      "fact": "Vesta has one of the widest ranges of brightness seen on any rocky body in the Solar System.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta has one of the largest brightness ranges observed on any rocky body in our solar system."
+    },
+    {
+      "n": 14,
+      "fact": "About 300 dark asteroids, 1 to 10 km wide, are thought to have hit Vesta in the last 3.5 billion years.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "about 300 dark asteroids with diameters ranging from one to 10 km (0.6 to six miles) hit Vesta during the last 3.5 billion years"
+    },
+    {
+      "n": 15,
+      "fact": "Vesta's Rheasilvia crater is about 500 km wide: some 95% of the asteroid's mean diameter.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "the Rheasilvia crater, which is about 310 miles (500 kilometers) wide—some 95 percent of the asteroid's mean diameter."
+    },
+    {
+      "n": 16,
+      "fact": "Rheasilvia is about 19 km (12 miles) deep.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "Rheasilvia’s width is 95% of the mean diameter of Vesta and it is about 12 miles deep"
+    },
+    {
+      "n": 17,
+      "fact": "The peak in the middle of Rheasilvia rises 19 to 26 km (12 to 16 miles), and it's more than 160 km wide.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "Its central peak rises 12-16 miles and is more than 100 miles wide"
+    },
+    {
+      "n": 18,
+      "fact": "Rheasilvia's central peak could rival Olympus Mons on Mars as the biggest mountain in the Solar System.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "making it compete with Mars' Olympus Mons as the largest mountain the in solar system"
+    },
+    {
+      "n": 19,
+      "fact": "Another huge crater on Vesta, Veneneia, is about 400 km wide.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Another huge crater is Veneneia, which is about 250 miles (400 km) in diameter."
+    },
+    {
+      "n": 20,
+      "fact": "A system of troughs runs right round Vesta's equator.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "An extensive system of troughs encircles Vesta's equatorial region."
+    },
+    {
+      "n": 21,
+      "fact": "The biggest of Vesta's troughs, Divalia Fossa, is bigger than the Grand Canyon.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "The largest, named Divalia Fossa, is bigger than the Grand Canyon."
+    },
+    {
+      "n": 22,
+      "fact": "The two giant impacts in Vesta's southern hemisphere also made the troughs that circle it.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "the two giant impacts caused planet-encircling trough systems to form"
+    },
+    {
+      "n": 23,
+      "fact": "Vesta is thought to have lost about 1% of its mass in a giant collision less than a billion years ago.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "Vesta is believed to have lost about one percent of its mass less than a billion years ago"
+    },
+    {
+      "n": 24,
+      "fact": "The Vesta family of asteroids is probably debris from that collision.",
+      "source": {
+        "label": "NASA: Vesta",
+        "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+      },
+      "quote": "The Vesta family of asteroids is probably debris from this collision."
+    },
+    {
+      "n": 25,
+      "fact": "Scientists think about 6% of all the meteorites found on Earth came from that ancient impact on Vesta.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "Scientist believe that about 6 percent of all meteorites we find on Earth are a result of this ancient impact in deep space."
+    },
+    {
+      "n": 26,
+      "fact": "Dawn confirmed that Vesta is where the HED meteorites (howardites, eucrites and diogenites) found on Earth come from.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "The Dawn mission confirmed that Vesta is the parent body of the howardite-eucrite-diogenite (HED) meteorites"
+    },
+    {
+      "n": 27,
+      "fact": "Dawn found gullies in some young craters on Vesta, which scientists read as signs that water flowed there for a short time.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "pitted terrains and gullies were found in several young craters … interpreted as evidence of volatile releases and transient water flow"
+    },
+    {
+      "n": 28,
+      "fact": "Thanks to its ion engines, Dawn was the first spacecraft to orbit two different bodies in the Solar System: Vesta, then Ceres.",
+      "source": {
+        "label": "NASA: Dawn's ion propulsion",
+        "url": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/"
+      },
+      "quote": "allows Dawn to go into orbit around two different solar system bodies, a first for any spacecraft"
+    },
+    {
+      "n": 29,
+      "fact": "Even the Hubble Space Telescope could see the scar of Vesta's giant impacts, with a peak in its centre.",
+      "source": {
+        "label": "NASA: Dawn at Vesta",
+        "url": "https://science.nasa.gov/mission/dawn/science/vesta/"
+      },
+      "quote": "was apparent even in Hubble Space Telescope images, which also discerned a peak in the center"
+    },
+    {
+      "n": 30,
+      "fact": "NASA calls Dawn, which visited Vesta, its first truly interplanetary spaceship.",
+      "source": {
+        "label": "NASA: Dawn",
+        "url": "https://science.nasa.gov/mission/dawn/"
+      },
+      "quote": "Dawn was NASA’s first truly interplanetary spaceship."
+    }
+  ]
+}

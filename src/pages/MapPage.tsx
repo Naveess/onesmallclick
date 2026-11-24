@@ -7,7 +7,7 @@ import { PixelButton } from "../components/PixelButton";
 import { PixelIcon } from "../components/PixelIcon";
 import { ShareNudge } from "../components/ShareNudge";
 import { Sprite } from "../components/Sprite";
-import { firstFact } from "../game/facts";
+import { factCount, firstFact } from "../game/facts";
 import { int } from "../game/format";
 import { beltArt, kuiperArt, probeRingArt, stopArt } from "../game/mapArt";
 import { layout, mapModel, phoneGeometry, rowOf, wideGeometry, type StopState, type StopView } from "../game/mapLayout";
@@ -403,8 +403,10 @@ function StopCard({ wide, v, legDay, fact, vote, onClose }: CardProps) {
   const medal: Medal | null = v.state === "visited" ? v.medal : null;
   const techLabel = v.state === "visited" ? "PLANET TECH UNLOCKED" : v.state === "skip" ? "PLANET TECH · MISSED" : "PLANET TECH · TEASER";
   const techFx = s.tech ? (medal ? `${s.tech[medal]} (${MEDAL_NAMES[medal]})` : `${s.tech.gold} with Gold`) : "";
-  const text = fact ?? (s.id === "mars" ? firstFact("mars") : (s.fact?.text ?? null));
-  const hasPage = s.id === "mars";
+  // A stop with its Destination file (E3: Mars, Ceres, Vesta) shows its first fact and links all of them.
+  const facts = factCount(s.id);
+  const text = fact ?? (facts > 0 ? firstFact(s.id) : (s.fact?.text ?? null));
+  const hasPage = facts > 0;
   const voteName = vote && vote.mine !== null && vote.mine !== vote.index ? "You voted for the other branch" : null;
 
   return (
@@ -465,8 +467,8 @@ function StopCard({ wide, v, legDay, fact, vote, onClose }: CardProps) {
             {text}
           </p>
           {hasPage && (
-            <Link href="/destinations/mars" className="map__card-more">
-              All 30 Mars facts, with sources
+            <Link href={`/destinations/${s.id}`} className="map__card-more">
+              All {facts} {s.name} facts, with sources
             </Link>
           )}
         </div>

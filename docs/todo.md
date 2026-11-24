@@ -203,7 +203,10 @@ Cheapest route: `create_1_direction_object` with `item_descriptions` makes a who
 - [ ] **Whole-number scaling:** the campaign map and the desktop arrival (1k) show `mars.png` at half size. Use the 64px Mars instead.
 
 ### Before each new leg (monthly, about a week before arrival)
-- [ ] Both branches' probes, thruster sheets and map icons.
+Run `npm run check-leg <stop>` for both branches (E3). Content must pass; the art list is the PixelLab to-do. New content goes in `content/milestones/<stop>.json`, `content/facts/<stop>.json` and `content/detours/<stop>.json` (copy Ceres's), with one import line each in `shared/content.ts`, and Nav's approval date in each file's `approved`.
+- [ ] **Approve the Ceres and Vesta content** (E3, prompt 74): `content/milestones/ceres.json` and `vesta.json` (5 and 4 milestones), `content/facts/ceres.json` and `vesta.json` (30 each), `content/detours/ceres.json` and `vesta.json` (10 each). Read them at `/destinations/ceres`, `/destinations/vesta` and `/milestones/ceres-…` / `vesta-…` (local, or live after the E3 deploy, marked DRAFT). When approved, Claude sets `approved` and the pages lose DRAFT and noindex.
+- [ ] **Load only the current leg's content in the app** (E3 note): every leg's files are bundled, about 6 kB gzipped a leg. Fine for a few legs; switch to loading the leg's files on demand before Jupiter's.
+- [ ] Both branches' probes, thruster sheets and map icons. File names `check-leg` looks for: `public/sprites/thruster-<probe id>-sheet.png` (5 frames), `public/sprites/<stop>.png`, `public/sprites/stamps/<stop>.png` (16×16).
 - [ ] Upgrade names and descriptions for both probes.
 - [ ] Planet tech, medal days and cosmetics for both branches.
 - [ ] 4–6 milestones per branch, with checked facts.

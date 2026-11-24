@@ -2,6 +2,7 @@
   "_about": "Approved by Nav on 2026-11-20 (E0, prompts 43–44). Mars's 30 fun facts for the Destination file card and /destinations/mars, one a day. Every fact was checked on 2026-11-20 against the NASA page in 'source'; 'quote' is the supporting text from that page. None repeats a milestone fact (content/milestones.json). This file is the template for the other destinations: same fields, 30 facts, a source and quote for each.",
   "destination": "mars",
   "checked": "2026-11-20",
+  "approved": "2026-11-20",
   "facts": [
     {
       "n": 1,

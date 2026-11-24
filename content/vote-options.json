@@ -1,38 +1,146 @@
 {
-  "_about": "Olympus Mons fact reworded to its NASA source on 2026-11-20 (prompt 44). Approved by Nav on 2026-11-19 (phase 7a). The daily crew vote's pool. Each day the server picks one 'faster', one 'steady' and one 'detour' option, avoiding the last 3 days' picks. hours: the effect on the arrival date (negative = sooner), applied to the route as hours of travel at today's pace (retuned 2026-11-19, prompt 28: the old 6-24 hours divided by 6, for a trip of about 30 days). Detours carry a true fact for the mission log; every fact must be checked against its source before launch (Product principle 5). A tie goes to the steady option.",
+  "_about": "Olympus Mons fact reworded to its NASA source on 2026-11-20 (prompt 44). Approved by Nav on 2026-11-19 (phase 7a). The daily crew vote's pool. Each day the server picks one 'faster', one 'steady' and one 'detour' option, avoiding the last 3 days' picks. hours: the effect on the arrival date (negative = sooner), applied to the route as hours of travel at today's pace (retuned 2026-11-19, prompt 28: the old 6-24 hours divided by 6, for a trip of about 30 days). Detours carry a true fact for the mission log; every fact must be checked against its source before launch (Product principle 5). A tie goes to the steady option. E3 (prompt 74): the detours moved to content/detours/<stop>.json, one file per leg, and this file keeps the faster and steady options every leg shares; 'Hold steady and save fuel for Mars' became '... for the arrival' so it fits any leg.",
   "question": "Which way today?",
   "options": [
-    { "id": "burn-hard", "kind": "faster", "hours": -4, "label": "Burn hard: arrive about 4 hours sooner", "result": "Arrival pulled in by about 4 hours." },
-    { "id": "extra-hour-burn", "kind": "faster", "hours": -2, "label": "Fire the main engine for an extra hour: about 2 hours sooner", "result": "Arrival pulled in by about 2 hours." },
-    { "id": "ion-push", "kind": "faster", "hours": -1, "label": "Push the ion drive to full power: about 1 hour sooner", "result": "Arrival pulled in by about 1 hour." },
-    { "id": "skip-check", "kind": "faster", "hours": -3, "label": "Skip the weekly systems check: about 3 hours sooner", "result": "Arrival pulled in by about 3 hours." },
-    { "id": "run-hot", "kind": "faster", "hours": -4, "label": "Run the thrusters hot overnight: about 4 hours sooner", "result": "Arrival pulled in by about 4 hours." },
-    { "id": "trim-orbit", "kind": "faster", "hours": -2, "label": "Shave the corner off our transfer orbit: about 2 hours sooner", "result": "Arrival pulled in by about 2 hours." },
-    { "id": "vent-coolant", "kind": "faster", "hours": -1, "label": "Lighten the load and vent spare coolant: about 1 hour sooner", "result": "Arrival pulled in by about 1 hour." },
-    { "id": "panels-to-sun", "kind": "faster", "hours": -2, "label": "Turn the solar panels full-on to the Sun: about 2 hours sooner", "result": "Arrival pulled in by about 2 hours." },
-    { "id": "backup-thrusters", "kind": "faster", "hours": -3, "label": "Fire the backup thrusters too: about 3 hours sooner", "result": "Arrival pulled in by about 3 hours." },
-    { "id": "straight-line", "kind": "faster", "hours": -3, "label": "Fly straight through the dust stream: about 3 hours sooner", "result": "Arrival pulled in by about 3 hours." },
-
-    { "id": "hold-steady", "kind": "steady", "hours": 0, "label": "Hold steady and save fuel for Mars", "result": "Fuel saved for Mars orbit. The date stays put." },
-    { "id": "systems-check", "kind": "steady", "hours": 0, "label": "Run a full systems check", "result": "Every system checked and green. The date stays put." },
-    { "id": "star-tracker", "kind": "steady", "hours": 0, "label": "Recalibrate the star tracker", "result": "The star tracker is sharp again. The date stays put." },
-    { "id": "coast-quietly", "kind": "steady", "hours": 0, "label": "Cool the electronics and coast quietly", "result": "A quiet, cool day of coasting. The date stays put." },
-    { "id": "backup-radio", "kind": "steady", "hours": 0, "label": "Test the backup radio", "result": "The backup radio answered first time. The date stays put." },
-    { "id": "even-heat", "kind": "steady", "hours": 0, "label": "Turn the probe slowly to even out the heat", "result": "The heat is spread evenly. The date stays put." },
-    { "id": "software-update", "kind": "steady", "hours": 0, "label": "Install the new flight software", "result": "Flight software updated. The date stays put." },
-    { "id": "save-power", "kind": "steady", "hours": 0, "label": "Save power: rest the science instruments for a day", "result": "Batteries topped up. The date stays put." },
-    { "id": "fuel-lines", "kind": "steady", "hours": 0, "label": "Check the fuel lines for leaks", "result": "No leaks found. The date stays put." },
-    { "id": "focus-camera", "kind": "steady", "hours": 0, "label": "Focus the camera on a few bright stars", "result": "The camera is in focus. The date stays put." },
-
-    { "id": "earth-moon-photo", "kind": "detour", "hours": 4, "label": "Detour for a photo of Earth and the Moon together: about 4 hours later", "result": "Arrival about 4 hours later.", "fact": "The Moon is a little over a quarter of Earth's width: about 3,475 km across, against Earth's 12,742 km.", "source": "https://science.nasa.gov/moon/facts/" },
-    { "id": "venus-look", "kind": "detour", "hours": 2, "label": "Turn the camera on Venus: about 2 hours later", "result": "Arrival about 2 hours later.", "fact": "Venus is the hottest planet in the Solar System, hotter even than Mercury: its surface is about 465 °C.", "source": "https://science.nasa.gov/venus/facts/" },
-    { "id": "asteroid-closeup", "kind": "detour", "hours": 3, "label": "Swing by a passing asteroid for a close-up: about 3 hours later", "result": "Arrival about 3 hours later.", "fact": "Most known asteroids orbit the Sun in the main belt, between Mars and Jupiter.", "source": "https://science.nasa.gov/solar-system/asteroids/facts/" },
-    { "id": "jupiter-far", "kind": "detour", "hours": 1, "label": "Photograph Jupiter from afar: about 1 hour later", "result": "Arrival about 1 hour later.", "fact": "Jupiter is more than twice as massive as all the other planets put together.", "source": "https://science.nasa.gov/jupiter/facts/" },
-    { "id": "solar-wind", "kind": "detour", "hours": 1, "label": "Stop to measure the solar wind: about 1 hour later", "result": "Arrival about 1 hour later.", "fact": "The solar wind streams out from the Sun at around 400 km a second, about 20 times faster than our probe coasts.", "source": "https://science.nasa.gov/sun/" },
-    { "id": "mars-moons", "kind": "detour", "hours": 2, "label": "Point the telescope at the moons of Mars: about 2 hours later", "result": "Arrival about 2 hours later.", "fact": "Mars has two small moons, Phobos and Deimos. Phobos, the bigger one, is only about 22 km across.", "source": "https://science.nasa.gov/mars/moons/" },
-    { "id": "olympus-mons", "kind": "detour", "hours": 2, "label": "Zoom in on Olympus Mons: about 2 hours later", "result": "Arrival about 2 hours later.", "fact": "Olympus Mons on Mars is the biggest volcano in the Solar System: more than 40 km tall from base to summit.", "source": "https://science.nasa.gov/mars/facts/" },
-    { "id": "comet-dust", "kind": "detour", "hours": 1, "label": "Fly along the dust trail of an old comet: about 1 hour later", "result": "Arrival about 1 hour later.", "fact": "Meteor showers happen when Earth passes through the trail of dust a comet leaves behind.", "source": "https://science.nasa.gov/solar-system/meteors-meteorites/facts/" },
-    { "id": "milky-way", "kind": "detour", "hours": 1, "label": "Photograph the Milky Way with no air in the way: about 1 hour later", "result": "Arrival about 1 hour later.", "fact": "Our galaxy, the Milky Way, holds an estimated 100 to 400 billion stars.", "source": "https://science.nasa.gov/resource/the-milky-way-galaxy/" },
-    { "id": "look-back-earth", "kind": "detour", "hours": 2, "label": "Take a long look back at Earth: about 2 hours later", "result": "Arrival about 2 hours later.", "fact": "Earth and Mars come closest about every 26 months, which is why Mars missions launch in windows that far apart.", "source": "https://science.nasa.gov/mars/facts/" }
+    {
+      "id": "burn-hard",
+      "kind": "faster",
+      "hours": -4,
+      "label": "Burn hard: arrive about 4 hours sooner",
+      "result": "Arrival pulled in by about 4 hours."
+    },
+    {
+      "id": "extra-hour-burn",
+      "kind": "faster",
+      "hours": -2,
+      "label": "Fire the main engine for an extra hour: about 2 hours sooner",
+      "result": "Arrival pulled in by about 2 hours."
+    },
+    {
+      "id": "ion-push",
+      "kind": "faster",
+      "hours": -1,
+      "label": "Push the ion drive to full power: about 1 hour sooner",
+      "result": "Arrival pulled in by about 1 hour."
+    },
+    {
+      "id": "skip-check",
+      "kind": "faster",
+      "hours": -3,
+      "label": "Skip the weekly systems check: about 3 hours sooner",
+      "result": "Arrival pulled in by about 3 hours."
+    },
+    {
+      "id": "run-hot",
+      "kind": "faster",
+      "hours": -4,
+      "label": "Run the thrusters hot overnight: about 4 hours sooner",
+      "result": "Arrival pulled in by about 4 hours."
+    },
+    {
+      "id": "trim-orbit",
+      "kind": "faster",
+      "hours": -2,
+      "label": "Shave the corner off our transfer orbit: about 2 hours sooner",
+      "result": "Arrival pulled in by about 2 hours."
+    },
+    {
+      "id": "vent-coolant",
+      "kind": "faster",
+      "hours": -1,
+      "label": "Lighten the load and vent spare coolant: about 1 hour sooner",
+      "result": "Arrival pulled in by about 1 hour."
+    },
+    {
+      "id": "panels-to-sun",
+      "kind": "faster",
+      "hours": -2,
+      "label": "Turn the solar panels full-on to the Sun: about 2 hours sooner",
+      "result": "Arrival pulled in by about 2 hours."
+    },
+    {
+      "id": "backup-thrusters",
+      "kind": "faster",
+      "hours": -3,
+      "label": "Fire the backup thrusters too: about 3 hours sooner",
+      "result": "Arrival pulled in by about 3 hours."
+    },
+    {
+      "id": "straight-line",
+      "kind": "faster",
+      "hours": -3,
+      "label": "Fly straight through the dust stream: about 3 hours sooner",
+      "result": "Arrival pulled in by about 3 hours."
+    },
+    {
+      "id": "hold-steady",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Hold steady and save fuel for the arrival",
+      "result": "Fuel saved for the arrival. The date stays put."
+    },
+    {
+      "id": "systems-check",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Run a full systems check",
+      "result": "Every system checked and green. The date stays put."
+    },
+    {
+      "id": "star-tracker",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Recalibrate the star tracker",
+      "result": "The star tracker is sharp again. The date stays put."
+    },
+    {
+      "id": "coast-quietly",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Cool the electronics and coast quietly",
+      "result": "A quiet, cool day of coasting. The date stays put."
+    },
+    {
+      "id": "backup-radio",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Test the backup radio",
+      "result": "The backup radio answered first time. The date stays put."
+    },
+    {
+      "id": "even-heat",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Turn the probe slowly to even out the heat",
+      "result": "The heat is spread evenly. The date stays put."
+    },
+    {
+      "id": "software-update",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Install the new flight software",
+      "result": "Flight software updated. The date stays put."
+    },
+    {
+      "id": "save-power",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Save power: rest the science instruments for a day",
+      "result": "Batteries topped up. The date stays put."
+    },
+    {
+      "id": "fuel-lines",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Check the fuel lines for leaks",
+      "result": "No leaks found. The date stays put."
+    },
+    {
+      "id": "focus-camera",
+      "kind": "steady",
+      "hours": 0,
+      "label": "Focus the camera on a few bright stars",
+      "result": "The camera is in focus. The date stays put."
+    }
   ]
 }

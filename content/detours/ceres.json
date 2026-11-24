@@ -1,0 +1,98 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. The Mars to Ceres leg's detours for the daily vote (the faster and steady options are shared, in content/vote-options.json). hours: how much later the arrival. Every fact checked against 'source' on 2026-11-24; 'quote' is the supporting text.",
+  "stop": "ceres",
+  "checked": "2026-11-24",
+  "approved": null,
+  "detours": [
+    {
+      "id": "asteroid-moons",
+      "hours": 2,
+      "label": "Look for an asteroid with its own little moon: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "More than 150 asteroids are known to have small moons of their own.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/facts/",
+      "quote": "More than 150 asteroids are known to have small companion moons."
+    },
+    {
+      "id": "belt-count",
+      "hours": 1,
+      "label": "Count the asteroids around us: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "The main belt is thought to hold between 1.1 and 1.9 million asteroids more than 1 km across.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/facts/",
+      "quote": "The belt is estimated to contain between 1.1 and 1.9 million asteroids larger than 1 kilometer (0.6 miles) in diameter"
+    },
+    {
+      "id": "belt-weigh",
+      "hours": 1,
+      "label": "Weigh up the whole asteroid belt: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "All the asteroids put together have less mass than Earth's Moon.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/facts/",
+      "quote": "The total mass of all the asteroids combined is less than that of Earth's Moon."
+    },
+    {
+      "id": "dawn-ion-trail",
+      "hours": 2,
+      "label": "Study how Dawn's ion engines flew this way: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Dawn's ion engines pushed xenon out 7 to 10 times faster than chemical rockets do.",
+      "source": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/",
+      "quote": "accelerate ions from xenon fuel to a speed 7-10 times that of chemical engines"
+    },
+    {
+      "id": "ceres-polar-ice",
+      "hours": 3,
+      "label": "Scan Ceres's high latitudes for ice: about 3 hours later",
+      "result": "Arrival about 3 hours later.",
+      "fact": "Dawn's measurements point to plenty of ice at Ceres's high latitudes, towards its poles.",
+      "source": "https://science.nasa.gov/mission/dawn/science/ceres/",
+      "quote": "indicate abundant ice at high latitudes"
+    },
+    {
+      "id": "ceres-gravity",
+      "hours": 2,
+      "label": "Map Ceres's gravity as we close in: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Ceres gets denser the deeper you go: its rock settled into a mantle under a water-rich crust.",
+      "source": "https://science.nasa.gov/mission/dawn/science/ceres/",
+      "quote": "internal density increases with depth … The rock settled to form an internal mantle overlain by the water-rich crust."
+    },
+    {
+      "id": "look-to-jupiter",
+      "hours": 1,
+      "label": "Look out towards Jupiter: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Young Jupiter's gravity put an end to new planets forming in the asteroid belt.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/facts/",
+      "quote": "the gravity of newly formed Jupiter brought an end to the formation of planetary bodies in this region"
+    },
+    {
+      "id": "ancient-asteroid",
+      "hours": 2,
+      "label": "Photograph an ancient asteroid: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Asteroids are rocky, airless leftovers from when the Solar System formed, about 4.6 billion years ago.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/",
+      "quote": "rocky, airless remnants left over from the early formation of our solar system about 4.6 billion years ago"
+    },
+    {
+      "id": "ceres-magnetism",
+      "hours": 1,
+      "label": "Test Ceres for a magnetic field: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Scientists don't think Ceres has a magnetosphere.",
+      "source": "https://science.nasa.gov/dwarf-planets/ceres/facts/",
+      "quote": "Scientists don't think Ceres has a magnetosphere."
+    },
+    {
+      "id": "water-vapour",
+      "hours": 3,
+      "label": "Sniff for water vapour around Ceres: about 3 hours later",
+      "result": "Arrival about 3 hours later.",
+      "fact": "In 2012 and 2013, the Herschel space observatory found evidence of water vapour on Ceres.",
+      "source": "https://science.nasa.gov/mission/dawn/science/ceres/",
+      "quote": "scientists using the Herschel Space Observatory in 2012 and 2013 found evidence for water vapor on Ceres."
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. The Mars to Vesta leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Vesta (2.36 AU, JPL) from the Sun, 125.1 million km, so 2 AU (299.2 million km) is 71.2 million km in, and 'Vesta in sight' is 1.21 million km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
+  "stop": "vesta",
+  "checked": "2026-11-24",
+  "approved": null,
+  "milestones": [
+    {
+      "n": 1,
+      "slug": "vesta-a-million-km",
+      "name": "A million km from Mars",
+      "km": 1000000,
+      "title": "A million km from Mars!",
+      "fact": "Deimos, the smaller of Mars's two moons, is only about 15 km long, and it goes round Mars every 30 hours.",
+      "sub": "The red planet is shrinking behind us.",
+      "description": "Milestone 1 of the Mars to Vesta leg of OneSmallClick: one million km out from Mars, past its little moon Deimos.",
+      "page": [
+        "One million km out, Mars and its two little moons are behind us. Deimos is the smaller one, about 15 by 12 by 11 km, and it orbits Mars every 30 hours.",
+        "Asaph Hall discovered Deimos on 11 August 1877. Its surface is made of material like the C-type asteroids found in the outer asteroid belt."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Deimos",
+          "url": "https://science.nasa.gov/mars/moons/deimos/"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "slug": "vesta-halfway",
+      "name": "Halfway to Vesta",
+      "km": 62550000,
+      "halfway": true,
+      "title": "Halfway to Vesta!",
+      "fact": "Vesta formed early, within 1 to 2 million years of the birth of the Solar System.",
+      "sub": "Halfway there. Keep pushing.",
+      "description": "Milestone 2 of the Mars to Vesta leg of OneSmallClick: halfway between the orbits of Mars and Vesta, 62.5 million km out.",
+      "page": [
+        "The probe is about 62.5 million km past Mars's orbit, halfway to Vesta's. Vesta is one of the oldest things out here. It formed within 1 to 2 million years of the birth of the Solar System, and short-lived radioactive material heated it until it melted.",
+        "Everyone who pushed on this leg before now earns the Halfway Crew badge, if they don't have it already."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Vesta",
+          "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "slug": "vesta-two-au",
+      "name": "Twice Earth's distance",
+      "km": 71200000,
+      "title": "2 AU from the Sun",
+      "fact": "We're now twice as far from the Sun as Earth is: about 300 million km, or 2 astronomical units (AU).",
+      "sub": "The Sun looks a little smaller every day.",
+      "description": "Milestone 3 of the Mars to Vesta leg of OneSmallClick: 2 astronomical units from the Sun, twice Earth's distance.",
+      "page": [
+        "Astronomers measure the Solar System in astronomical units. One AU is based on the mean distance from the Sun to Earth, roughly 150 million km. Mars orbits at about 1.5 AU, so this milestone sits about 71 million km beyond Mars's average distance from the Sun.",
+        "Vesta orbits at about 2.36 AU, so the probe still has about 54 million km to go."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Basics of Space Flight, the Solar System",
+          "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-1/"
+        },
+        {
+          "label": "NASA: Mars facts",
+          "url": "https://science.nasa.gov/mars/facts/"
+        },
+        {
+          "label": "NASA JPL Small-Body Database: Vesta (a = 2.36 au)",
+          "url": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=Vesta"
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "slug": "vesta-in-sight",
+      "name": "Vesta in sight",
+      "km": 123890000,
+      "title": "Vesta in sight!",
+      "fact": "On 3 May 2011, NASA's Dawn took its first picture of Vesta, from about 1.21 million km away.",
+      "sub": "Get ready for orbit.",
+      "description": "Milestone 4 of the Mars to Vesta leg of OneSmallClick: 1.21 million km from Vesta, where NASA's Dawn took its first picture of it.",
+      "page": [
+        "With about 1.2 million km to go, Vesta is a bright dot ahead. NASA's Dawn was the same distance away on 3 May 2011, when its framing cameras took the first picture of its approach.",
+        "Dawn reached orbit on 16 July 2011 and stayed until 5 September 2012, mapping Vesta's giant craters before it left for Ceres."
+      ],
+      "sources": [
+        {
+          "label": "NASA JPL: Dawn captures first image of nearing asteroid (11 May 2011)",
+          "url": "https://www.jpl.nasa.gov/news/nasas-dawn-captures-first-image-of-nearing-asteroid/"
+        },
+        {
+          "label": "NASA: Vesta",
+          "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+        }
+      ]
+    }
+  ]
+}

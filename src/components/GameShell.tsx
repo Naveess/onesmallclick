@@ -67,6 +67,7 @@ export function GameShell({ tab, children }: GameShellProps) {
           <div className="game__main">
             <MilestoneMoment
               reached={moment}
+              stopId={probe.stop}
               wide={wide}
               missionDay={view.missionDayAt(moment.at)}
               today={{

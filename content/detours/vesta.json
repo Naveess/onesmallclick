@@ -1,0 +1,98 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. The Mars to Vesta leg's detours for the daily vote (the faster and steady options are shared, in content/vote-options.json). hours: how much later the arrival. Every fact checked against 'source' on 2026-11-24; 'quote' is the supporting text.",
+  "stop": "vesta",
+  "checked": "2026-11-24",
+  "approved": null,
+  "detours": [
+    {
+      "id": "vestoid-chase",
+      "hours": 2,
+      "label": "Chase a Vestoid, a chip off Vesta: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Debris blasted off Vesta, from sand and gravel to boulders and small asteroids, is known as Vestoids.",
+      "source": "https://science.nasa.gov/mission/dawn/science/vesta/",
+      "quote": "ranging in size from sand and gravel to boulder and smaller asteroids (known as Vestoids)"
+    },
+    {
+      "id": "dark-patches",
+      "hours": 3,
+      "label": "Study Vesta's dark patches: about 3 hours later",
+      "result": "Arrival about 3 hours later.",
+      "fact": "Vesta's dark material is thought to have been left there by other asteroids crashing into it.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/4-vesta/",
+      "quote": "the dark material is believed to have been deposited by other asteroids crashing into Vesta"
+    },
+    {
+      "id": "dust-blanket",
+      "hours": 1,
+      "label": "Measure Vesta's dusty blanket: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Those crashes may have wrapped Vesta in a layer of material 1 to 2 metres thick.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/4-vesta/",
+      "quote": "wrap the Vesta in a blanket of material about three to seven feet (one to two meters) thick"
+    },
+    {
+      "id": "water-rocks",
+      "hours": 2,
+      "label": "Scan Vesta for water-bearing rocks: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Vesta has little water of its own, so its water-bearing minerals probably came from somewhere else.",
+      "source": "https://science.nasa.gov/mission/dawn/science/vesta/",
+      "quote": "Vesta's composition is volatile-depleted, so these hydrated materials are likely exogenic."
+    },
+    {
+      "id": "meteorite-count",
+      "hours": 1,
+      "label": "Look back at Earth's meteorite hunters: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "More than 50,000 meteorites have been found on Earth, and 99.8% of them come from asteroids.",
+      "source": "https://science.nasa.gov/solar-system/meteors-meteorites/facts/",
+      "quote": "More than 50,000 meteorites have been found on Earth. Of these, 99.8% come from asteroids."
+    },
+    {
+      "id": "ion-pioneer",
+      "hours": 1,
+      "label": "Look up the first ion-drive explorer: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Ion engines like Dawn's were first proved on NASA's Deep Space 1 mission.",
+      "source": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/",
+      "quote": "Ion propulsion was proved on NASA's Deep Space 1 mission"
+    },
+    {
+      "id": "xenon-tanks",
+      "hours": 1,
+      "label": "Weigh our fuel against Dawn's: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Dawn carried 425 kg of xenon fuel when it launched.",
+      "source": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/",
+      "quote": "The Dawn spacecraft carried 425 kilograms (937 pounds) of xenon propellant at launch."
+    },
+    {
+      "id": "spare-engine",
+      "hours": 2,
+      "label": "Test the spare ion engine: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Dawn had three ion engines: two to last the whole mission, and a spare.",
+      "source": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/",
+      "quote": "Two ion propulsion engines are required to provide enough thruster lifetime to complete the mission … the third engine serves as a spare"
+    },
+    {
+      "id": "crater-map",
+      "hours": 3,
+      "label": "Map the craters on Vesta: about 3 hours later",
+      "result": "Arrival about 3 hours later.",
+      "fact": "Dawn found Vesta heavily cratered, with rough ground somewhere between a planet's and an asteroid's.",
+      "source": "https://science.nasa.gov/mission/dawn/science/vesta/",
+      "quote": "Dawn found a heavily cratered surface on Vesta, with a rough topography that is transitional between planets and asteroids."
+    },
+    {
+      "id": "dawn-path",
+      "hours": 1,
+      "label": "Wave at Dawn's old path: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "NASA's Dawn launched on 27 September 2007 and went on to orbit both Vesta and Ceres.",
+      "source": "https://science.nasa.gov/mission/dawn/",
+      "quote": "Sept. 27, 2007 … giant asteroid Vesta and dwarf planet Ceres"
+    }
+  ]
+}

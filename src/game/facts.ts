@@ -1,16 +1,10 @@
 // The Destination file (E4b part 1, prompts 49–50): one checked fact a day about the leg's destination,
-// from content/facts/<stop>.json. Only Mars has its 30 facts so far; the other stops get theirs in E3,
-// and the card stays hidden on a leg without them. The full list, with sources, is /destinations/<stop>
-// (scripts/build-pages.mjs).
+// from content/facts/<stop>.json (listed in shared/content.ts; E3 added Ceres and Vesta). The card stays hidden
+// on a leg without facts. The full list, with sources, is /destinations/<stop> (scripts/build-pages.mjs).
 
-import mars from "../../content/facts/mars.json";
+import { LEG_FACTS } from "../../shared/content";
 
-interface Fact {
-  n: number;
-  fact: string;
-}
-
-const FACTS: Record<string, Fact[]> = { mars: mars.facts };
+const FACTS = LEG_FACTS;
 
 const DAY_MS = 86_400_000;
 
@@ -34,6 +28,11 @@ export function factOfDay(stop: string, legStartedAt: number, now: number): Fact
 /** A stop's first fact (the campaign map's card when it isn't the leg's destination), or null. */
 export function firstFact(stop: string): string | null {
   return FACTS[stop]?.[0]?.fact ?? null;
+}
+
+/** How many facts a stop has (0 when none yet): the map card links "All 30 Ceres facts" when it has some. */
+export function factCount(stop: string): number {
+  return FACTS[stop]?.length ?? 0;
 }
 
 /** Where a fact lives on the site, e.g. /destinations/mars#fact-12. */

@@ -11,7 +11,7 @@
 
 import { BADGE_INFO, type BadgeId } from "../shared/badges";
 import { stop as campaignStop, stopName } from "../shared/campaign";
-import { MILESTONES } from "../shared/milestones";
+import { milestoneOf, parseMilestoneDetail } from "../shared/milestones";
 import { utcDay } from "../shared/mission";
 import {
   CODE_ALPHABET,
@@ -27,11 +27,11 @@ import {
   sentence,
   type Moment,
 } from "../shared/share";
-import mars from "../content/facts/mars.json";
+import { LEG_FACTS } from "../shared/content";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
 
-const FACTS: Record<string, { n: number; fact: string }[]> = { mars: mars.facts };
+const FACTS = LEG_FACTS;
 const NO_STORE = { "Cache-Control": "no-store" };
 
 function json(body: unknown, status = 200) {
@@ -182,8 +182,10 @@ function detailFill(moment: Moment, detail: string | null, stopNow: string): Rec
   const d = detail && DETAIL_PATTERN.test(detail) ? detail : "";
   const fill: Record<string, string> = { stop: stopNow, dest: stopName(stopNow) };
   if (moment === "milestone") {
-    const m = MILESTONES.find((x) => String(x.n) === d);
-    if (m) Object.assign(fill, { milestone: sentence(m.title), slug: m.slug });
+    // "3" on the Mars leg, "ceres-3" on the others (E3).
+    const at = parseMilestoneDetail(d);
+    const m = at ? milestoneOf(at[0], at[1]) : undefined;
+    if (m && at) Object.assign(fill, { milestone: sentence(m.title), slug: m.slug, stop: at[0], dest: stopName(at[0]) });
   } else if (moment === "arrival" || moment === "branch") {
     const s = campaignStop(d);
     if (s) {

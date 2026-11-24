@@ -11,6 +11,7 @@
     "deploy": "npm run build && wrangler deploy",
     "typecheck": "tsc -b",
     "sim": "node scripts/sim.mjs",
+    "check-leg": "node scripts/check-leg.mjs",
     "cf-typegen": "wrangler types worker/worker-configuration.d.ts"
   },
   "dependencies": {

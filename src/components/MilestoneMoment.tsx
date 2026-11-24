@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MILESTONES, MILESTONE_COUNT } from "../../shared/milestones";
+import { milestoneDetail, milestonesFor } from "../../shared/milestones";
 import type { ReachedMilestone } from "../../shared/milestones";
 import { resultLine, sentence, shareMessage } from "../../shared/share";
 import { int } from "../game/format";
@@ -11,6 +11,10 @@ import { ShareSheet } from "./ShareSheet";
 import { Window } from "./Window";
 import "./MilestoneMoment.css";
 import "./Postcard.css";
+
+/** Each leg's postcard stamp (32px). Only Mars has one so far; the 16x16 stamp icons come from PixelLab
+ * (docs/todo.md), and a leg without one shows no stamp. */
+const STAMPS: Record<string, string> = { mars: "/sprites/mars-32.png" };
 
 const shortDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
@@ -27,6 +31,8 @@ interface Today {
 
 interface MilestoneMomentProps {
   reached: ReachedMilestone;
+  /** The leg's destination (each leg has its own milestones from E3). */
+  stopId: string;
   /** The mission day it was reached. */
   missionDay: number;
   /** For the share text. */
@@ -105,11 +111,13 @@ function celebrate(host: HTMLElement) {
 }
 
 /** The milestone moment (1e): postcard, a fact from the flight deck, fireworks, and a result to share. */
-export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: MilestoneMomentProps) {
+export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onClose }: MilestoneMomentProps) {
   const probeTag = useGame().view.probeTag;
   const fx = useRef<HTMLDivElement>(null);
   const reduceMotion = usePrefersReducedMotion();
-  const m = MILESTONES.find((x) => x.n === reached.n)!;
+  const all = milestonesFor(stopId);
+  const m = all.find((x) => x.n === reached.n) ?? all[all.length - 1];
+  const stamp = STAMPS[stopId];
   const text = shareText(today);
   const [sharing, setSharing] = useState(false);
   const card = String(m.n).padStart(2, "0");
@@ -125,7 +133,7 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
     <main className={wide ? "moment moment--wide" : "moment"} aria-labelledby="moment-title">
       <div className="moment__head">
         <p className="moment__label">
-          MILESTONE {m.n} OF {MILESTONE_COUNT} REACHED
+          MILESTONE {m.n} OF {all.length} REACHED
         </p>
         <h1 id="moment-title" className="moment__title">
           {m.title}
@@ -138,9 +146,11 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
       <figure className="postcard">
         <div className="postcard__photo">
           <p className="postcard__soon">Postcard photo coming soon</p>
-          <div className="postcard__stamp" aria-hidden="true">
-            <img src="/sprites/mars-32.png" alt="" width={32} height={32} />
-          </div>
+          {stamp && (
+            <div className="postcard__stamp" aria-hidden="true">
+              <img src={stamp} alt="" width={32} height={32} />
+            </div>
+          )}
         </div>
         <figcaption className="postcard__caption">
           <span>Wish you were here. — {probeTag}</span>
@@ -178,8 +188,8 @@ export function MilestoneMoment({ reached, missionDay, today, wide, onClose }: M
       {sharing && (
         <ShareSheet
           moment="milestone"
-          detail={String(m.n)}
-          text={`${shareMessage("milestone", { milestone: sentence(m.title), dest: today.destName ?? "Mars" })}
+          detail={milestoneDetail(stopId, m.n)}
+          text={`${shareMessage("milestone", { milestone: sentence(m.title), probe: probeTag, dest: today.destName ?? "Mars" })}
 
 ${text}`}
           title="Share this milestone"

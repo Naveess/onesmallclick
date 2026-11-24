@@ -22,7 +22,8 @@ const EDGE = process.env.EDGE ?? "C:/Program Files (x86)/Microsoft/Edge/Applicat
 const W = 1200;
 const H = 630;
 
-const { milestones } = JSON.parse(read("content/milestones.json"));
+// The Mars leg's milestones (E3 moved them to content/milestones/mars.json; the other legs' images wait for their art).
+const { milestones } = JSON.parse(read("content/milestones/mars.json"));
 const flagIndex = JSON.parse(read("src/game/flagIndex.json"));
 
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);

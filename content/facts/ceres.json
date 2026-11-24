@@ -1,0 +1,278 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. Ceres's 30 fun facts for the Destination file card and /destinations/ceres, one a day, in the same format as mars.json. Every fact was checked on 2026-11-24 against the NASA page in 'source'; 'quote' is the supporting text from that page (' … ' joins two parts of the same page). None repeats a milestone fact (content/milestones/ceres.json).",
+  "destination": "ceres",
+  "checked": "2026-11-24",
+  "approved": null,
+  "facts": [
+    {
+      "n": 1,
+      "fact": "Ceres is the largest object in the asteroid belt between Mars and Jupiter.",
+      "source": {
+        "label": "NASA: Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/"
+      },
+      "quote": "Dwarf planet Ceres is the largest object in the asteroid belt between Mars and Jupiter."
+    },
+    {
+      "n": 2,
+      "fact": "Ceres is the only dwarf planet in the inner Solar System.",
+      "source": {
+        "label": "NASA: Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/"
+      },
+      "quote": "Ceres is the only dwarf planet in the inner solar system."
+    },
+    {
+      "n": 3,
+      "fact": "Giuseppe Piazzi spotted Ceres in 1801. It was the first member of the asteroid belt ever found.",
+      "source": {
+        "label": "NASA: Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/"
+      },
+      "quote": "Ceres was the first member of the asteroid belt to be discovered when Giuseppe Piazzi spotted it in 1801."
+    },
+    {
+      "n": 4,
+      "fact": "Piazzi was searching for a star when he found Ceres, and he called it a planet.",
+      "source": {
+        "label": "NASA: Exploring Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/exploration/"
+      },
+      "quote": "Giuseppe Piazzi discovers Ceres while searching for a star and calls it a planet."
+    },
+    {
+      "n": 5,
+      "fact": "Ceres was first called a planet, then an asteroid. In 2006 it became a dwarf planet, along with Pluto and Eris.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "Ceres was initially classified as a planet and later classified as an asteroid … Ceres was designated a dwarf planet in 2006 along with Pluto and Eris."
+    },
+    {
+      "n": 6,
+      "fact": "Ceres is named after the Roman goddess of corn and harvests.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres is named for the Roman goddess of corn and harvests."
+    },
+    {
+      "n": 7,
+      "fact": "The word \"cereal\" comes from the same name as Ceres.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "The word cereal comes from the same name."
+    },
+    {
+      "n": 8,
+      "fact": "Ceres is about 940 km across.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "Ceres is approximately 585 miles (940 kilometers) across."
+    },
+    {
+      "n": 9,
+      "fact": "If Earth were the size of a US nickel coin, Ceres would be about as big as a poppy seed.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "If Earth were the size of a nickel, Ceres would be about as big as a poppy seed."
+    },
+    {
+      "n": 10,
+      "fact": "A day on Ceres lasts about 9 hours, one of the shortest days in the Solar System.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "it completes one rotation every 9 hours, making its day length one of the shortest in the solar system."
+    },
+    {
+      "n": 11,
+      "fact": "Ceres's axis is tilted just 4 degrees, so it doesn't have seasons like more tilted planets do.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres' axis of rotation is tilted just 4 degrees with respect to the plane of its orbit around the Sun. … doesn't experience seasons like other more tilted planets do."
+    },
+    {
+      "n": 12,
+      "fact": "Ceres has no moons.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres does not have any moons."
+    },
+    {
+      "n": 13,
+      "fact": "Ceres has no rings.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres does not have any rings."
+    },
+    {
+      "n": 14,
+      "fact": "Ceres could be as much as a quarter water. If so, it holds more water than Earth does.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres could be composed of as much as 25 percent water. … If that is correct, Ceres has more water than Earth does."
+    },
+    {
+      "n": 15,
+      "fact": "Ceres probably has a solid core and a mantle made of water ice.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres probably has a solid core and a mantle made of water ice."
+    },
+    {
+      "n": 16,
+      "fact": "Ceres has a very thin atmosphere, and there is evidence that it contains water vapour.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres has a very thin atmosphere, and there is evidence it contains water vapor."
+    },
+    {
+      "n": 17,
+      "fact": "The water vapour may come from ice volcanoes, or from ice near the surface turning straight into gas.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "The vapor may be produced by ice volcanoes or by ice near the surface sublimating"
+    },
+    {
+      "n": 18,
+      "fact": "The salts on Ceres aren't table salt. They are other minerals, such as magnesium sulfate.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "The salts on Ceres aren’t like table salt (sodium chloride) … are made of different minerals like magnesium sulfate."
+    },
+    {
+      "n": 19,
+      "fact": "Occator Crater is home to the brightest area on Ceres.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "Occator Crater, home to the brightest area on Ceres"
+    },
+    {
+      "n": 20,
+      "fact": "Ceres is covered in countless small, young craters, and none of them is more than 280 km across.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres is covered in countless small, young craters … none are larger than 175 miles (280 kilometers) in diameter"
+    },
+    {
+      "n": 21,
+      "fact": "Shaded spots inside some of Ceres's craters could hold water ice for long periods of time.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "could have water ice in them for long periods of time"
+    },
+    {
+      "n": 22,
+      "fact": "NASA's Dawn found signs of recent, and maybe still ongoing, activity in several places on Ceres.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "Dawn also returned evidence for recent and potentially ongoing activity in several places on Ceres."
+    },
+    {
+      "n": 23,
+      "fact": "Ceres is one of the few places in the Solar System where scientists would like to search for signs of life.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres is one of the few places in our solar system where scientists would like to search for possible signs of life."
+    },
+    {
+      "n": 24,
+      "fact": "Scientists call Ceres an \"embryonic planet\": Jupiter's strong gravity stopped it becoming a fully formed planet.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Scientists describe Ceres as an \"embryonic planet,\" … Nearby Jupiter's strong gravity prevented it from becoming a fully formed planet."
+    },
+    {
+      "n": 25,
+      "fact": "Ceres formed along with the rest of the Solar System, about 4.5 billion years ago.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "Ceres formed along with the rest of the solar system about 4.5 billion years ago"
+    },
+    {
+      "n": 26,
+      "fact": "Ammonia found on Ceres hints that its materials, or even Ceres itself, came from the outer Solar System.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "the discovery of ammonia on Ceres suggests its materials, or even Ceres itself, came from the outer solar system"
+    },
+    {
+      "n": 27,
+      "fact": "Before Dawn arrived, models said Ceres's water was an icy layer wrapped round a rocky mantle, and Hubble backed that up.",
+      "source": {
+        "label": "NASA: Dawn at Ceres",
+        "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+      },
+      "quote": "Pre-Dawn models suggested Ceres' water would be in the form of an icy layer wrapped around a rocky mantle. … Observations by NASA's Hubble Space Telescope confirmed that model."
+    },
+    {
+      "n": 28,
+      "fact": "Dawn went into orbit around Ceres on 6 March 2015, about four months before New Horizons flew past Pluto.",
+      "source": {
+        "label": "NASA: Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/"
+      },
+      "quote": "NASA's Dawn mission went into orbit around Ceres on March 6, 2015, … about four months before New Horizons flew past Pluto on July 14, 2015."
+    },
+    {
+      "n": 29,
+      "fact": "Ceres was the first dwarf planet ever to be orbited by a spacecraft.",
+      "source": {
+        "label": "NASA: Exploring Ceres",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/exploration/"
+      },
+      "quote": "Ceres was the first dwarf planet to be orbited by a spacecraft."
+    },
+    {
+      "n": 30,
+      "fact": "In the TV series The Expanse, people live on Ceres.",
+      "source": {
+        "label": "NASA: Ceres facts",
+        "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+      },
+      "quote": "In the TV series \"The Expanse,\" Ceres is inhabited by humans"
+    }
+  ]
+}

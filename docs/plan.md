@@ -29,7 +29,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
-- [ ] **E3: A content pipeline for each new leg**
+- [ ] **E3: A content pipeline for each new leg**. Built and pushed 2026-11-24 (prompts 73–74), not deployed; the Ceres and Vesta content waits for Nav's approval. See "E3 status" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch)
 - [ ] **E5: Later ideas from the brief**
@@ -489,7 +489,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - The flight view draws the leg's destination and start in the design's code-drawn style (`destinationArt` in `src/game/flightArt.ts`).
   - The fork or the next stop come from the campaign, with "CREW VOTE AT MARS" or "ON TO VESTA".
   - In orbit: "IN MARS ORBIT · The crew is voting on where next", and the arrival card reads "Mars orbit reached · We arrived on…" with "Watch the credits again".
-  - Only the Earth → Mars leg has milestones until E3.
+  - Only the Earth → Mars leg had milestones until E3 (now each leg's own, content/milestones/<stop>.json).
 - **The mission log** covers the whole tour since the launch reset, with each entry's day counted from its own leg. New entries: ARRIVAL, ROUTE VOTE and NEW LEG.
 - **Migration 0010:** the new `missions` columns (stop, from_stop, leg_km, crew_half, crew_count, taps, branch) and `mission_crew`.
 - **Checked locally:**
@@ -862,6 +862,49 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 **Main risks:** a balance change to a live game. Ship it at a leg boundary, and keep the sim as the check.
 
 ### E3: A content pipeline for each new leg
+
+**E3 status (built 2026-11-24, prompts 73–74; pushed, not deployed):**
+- **One file per stop and kind:** `content/milestones/<stop>.json` (Mars's six moved here unchanged, plus a `halfway` flag), `content/facts/<stop>.json` (as before), and `content/detours/<stop>.json` (each leg's detours; Mars's ten moved here). `content/vote-options.json` keeps the faster and steady options every leg shares. "Hold steady and save fuel for Mars" now reads "…for the arrival". Each file has `approved` (a date, or null while it waits for Nav). `shared/content.ts` lists them, one import per file.
+- **The game reads the current leg's files:** its milestones (the flight view's ticks and beacon, the moment "MILESTONE 3 OF 5", the log), the Halfway Crew badge on the leg's `halfway` milestone (no longer the fixed 240M km), its detours in the daily vote (a leg without detours gets a second steady option), the Destination file card, and the map card's first fact and "All 30 Ceres facts" link for any stop with facts. The milestone share's detail is `ceres-3` (Mars keeps `3`), and its text names the flying probe (`{probe}` in content/share.json). The postcard stamp shows only where a stamp exists (Mars).
+- **Pages:** `scripts/build-pages.mjs` builds every leg's milestone pages ("MARS → CERES · MILESTONE 3 OF 5 · 93,200,000 KM FROM MARS", the leg's probe on the postcard) and every destination page. Files waiting for approval get a DRAFT line and `noindex`.
+- **`npm run check-leg [stop] [--strict]`** (`scripts/check-leg.mjs`):
+  - **Content must pass:**
+    - Nav's approval on each file, and its line in shared/content.ts.
+    - The leg length.
+    - Planet tech, the map fact, and the probe with all five upgrade names and a pitch.
+    - The next stop or branch vote.
+    - 4–6 milestones in order, inside the leg, each with page text and sources, a unique slug, and one `halfway` within 2% of half the leg.
+    - 30 facts with sources and quotes, none repeating a milestone fact.
+    - At least 8 detours with unique ids, hours 1–4, matching label and result, and a source.
+  - **Art is listed separately** and doesn't fail the leg unless `--strict`. That covers the probe still and its engine strip (`thruster-<probe>-sheet.png`), the stop's map art, the 16×16 stamp (`stamps/<stop>.png`), and the link previews.
+  - **Postcard photos only warn** until E4b part 2.
+  - With no stop given, it prints one line per leg.
+- **Ceres and Vesta content, drafted for Nav's approval:** 30 facts each, 5 Ceres and 4 Vesta milestones, and 10 detours each. Every one was checked on 24 Nov against a NASA or JPL page, with the quote saved. Milestone distances use the same method as the leg lengths (gaps between average distances from the Sun):
+  - 1 million km from Mars
+  - 2 AU (71.2M km)
+  - halfway
+  - Vesta's orbit (125.1M km, Ceres leg only)
+  - "in sight" at the distance of Dawn's approach pictures (Ceres 383,000 km, Vesta 1.21M km)
+- **Checked locally** (headless Edge, phone width):
+  - The Mars vote still draws Mars detours.
+  - Mars → Ceres:
+    - Ceres detours in the vote.
+    - The Destination file card shows Ceres fact 1.
+    - The flight view's ticks, with milestone 2 marked next once milestone 1 has passed.
+    - Moment 1 shows "1 OF 5", the OSC-2 postcard, its fact-page link, and share text naming OSC-2 with detail `ceres-1`.
+    - Moment 3 (halfway) awards Halfway Crew.
+    - The log links `/milestones/ceres-halfway`.
+    - The map cards for Ceres and Vesta show "All 30 … facts".
+  - Content pages:
+    - The Ceres and Vesta pages are 200, DRAFT and noindex.
+    - The Mars pages are unchanged.
+    - No sideways scroll.
+  - Mars → Vesta: Vesta detours, and the halfway moment shows "2 OF 4".
+  - No console errors.
+  - `check-badges`, `check-arrival` and `check-recruits` ALL PASS.
+  - `npm run build` is clean, and `npm run sim` is unchanged.
+  - `check-leg` passes Mars. Ceres and Vesta fail only on approval. Broken files fail as they should: a missing source, an empty quote, a reused slug, a milestone past the end.
+- **Size:** the app bundles every leg's content files. Ceres and Vesta add about 12 kB gzipped, about 6 kB per leg. Before many more legs, load only the current leg's (docs/todo.md).
 
 **Goal:** adding a leg is filling in content files, checked by a script, not writing code.
 

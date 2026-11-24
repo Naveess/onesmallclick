@@ -1,0 +1,141 @@
+{
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74) for Nav's approval; 'approved' stays null until Nav approves, and npm run check-leg refuses the leg until then. The Mars to Ceres leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Ceres (2.77 AU, JPL) from the Sun, 186.4 million km, so 2 AU (299.2 million km) is 71.2 million km in, Vesta's orbit (2.36 AU) 125.1 million km, and 'Ceres in sight' is 383,000 km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
+  "stop": "ceres",
+  "checked": "2026-11-24",
+  "approved": null,
+  "milestones": [
+    {
+      "n": 1,
+      "slug": "ceres-a-million-km",
+      "name": "A million km from Mars",
+      "km": 1000000,
+      "title": "A million km from Mars!",
+      "fact": "Mars is 1.5 times as far from the Sun as Earth. Ceres, where we're heading, is 2.8 times as far.",
+      "sub": "The red planet is shrinking behind us.",
+      "description": "Milestone 1 of the Mars to Ceres leg of OneSmallClick: one million km out from Mars, and how far Mars and Ceres are from the Sun.",
+      "page": [
+        "One million km out, Mars is already a small red disc behind the probe. NASA puts Mars at an average of 228 million km from the Sun: 1.5 astronomical units (AU). One AU is Earth's average distance from the Sun, about 150 million km.",
+        "Ceres orbits much further out, at 2.8 AU, an average of 413 million km from the Sun. The game's Mars to Ceres leg is the gap between the two orbits, about 186 million km of open space."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Mars facts",
+          "url": "https://science.nasa.gov/mars/facts/"
+        },
+        {
+          "label": "NASA: Ceres facts",
+          "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+        },
+        {
+          "label": "NASA: Basics of Space Flight, the Solar System",
+          "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-1/"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "slug": "ceres-two-au",
+      "name": "Twice Earth's distance",
+      "km": 71200000,
+      "title": "2 AU from the Sun",
+      "fact": "We're now twice as far from the Sun as Earth is: about 300 million km, or 2 astronomical units (AU).",
+      "sub": "The Sun looks a little smaller every day.",
+      "description": "Milestone 2 of the Mars to Ceres leg of OneSmallClick: 2 astronomical units from the Sun, twice Earth's distance.",
+      "page": [
+        "Astronomers measure the Solar System in astronomical units. One AU is based on the mean distance from the Sun to Earth, roughly 150 million km. Mars orbits at about 1.5 AU, so this milestone sits about 71 million km beyond Mars's average distance from the Sun.",
+        "Light makes a handy ruler too. Sunlight takes about 8.3 minutes to cross 1 AU and reach Earth, and 13 minutes to reach Mars. Out at Ceres it takes 22 minutes."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Basics of Space Flight, the Solar System",
+          "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-1/"
+        },
+        {
+          "label": "NASA: Mars facts",
+          "url": "https://science.nasa.gov/mars/facts/"
+        },
+        {
+          "label": "NASA: Ceres facts",
+          "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "slug": "ceres-halfway",
+      "name": "Halfway to Ceres",
+      "km": 93200000,
+      "halfway": true,
+      "title": "Halfway to Ceres!",
+      "fact": "Ceres takes 1,682 Earth days, about 4.6 years, to go once round the Sun.",
+      "sub": "Halfway there. Keep pushing.",
+      "description": "Milestone 3 of the Mars to Ceres leg of OneSmallClick: halfway between the orbits of Mars and Ceres, 93 million km out.",
+      "page": [
+        "Halfway between the orbits of Mars and Ceres, the probe is about 93 million km from where this leg began. Ceres, ahead of us, is in no hurry: it takes 1,682 Earth days, or 4.6 Earth years, to make one trip round the Sun.",
+        "Everyone who pushed on this leg before now earns the Halfway Crew badge, if they don't have it already."
+      ],
+      "sources": [
+        {
+          "label": "NASA: Ceres facts",
+          "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "slug": "ceres-vesta-orbit",
+      "name": "Crossing Vesta's orbit",
+      "km": 125100000,
+      "title": "Crossing Vesta's orbit",
+      "fact": "NASA's Dawn circled the giant asteroid Vesta from July 2011 to September 2012, then flew on to Ceres, just like us.",
+      "sub": "The other choice at the vote would have stopped here.",
+      "description": "Milestone 4 of the Mars to Ceres leg of OneSmallClick: crossing the orbit of Vesta, where NASA's Dawn stopped before flying on to Ceres.",
+      "page": [
+        "This is where Vesta orbits, about 2.36 AU from the Sun and roughly 125 million km beyond Mars. If the crew had voted for Vesta at Mars, the leg would have ended here.",
+        "NASA's Dawn spacecraft visited both. It circled Vesta from 16 July 2011 until 5 September 2012, then left for Ceres. Its ion engines made it the first spacecraft ever to orbit two different bodies in the Solar System."
+      ],
+      "sources": [
+        {
+          "label": "NASA JPL Small-Body Database: Vesta (a = 2.36 au)",
+          "url": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=Vesta"
+        },
+        {
+          "label": "NASA: Vesta",
+          "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
+        },
+        {
+          "label": "NASA: Dawn's ion propulsion",
+          "url": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/"
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "slug": "ceres-in-sight",
+      "name": "Ceres in sight",
+      "km": 186017000,
+      "title": "Ceres in sight!",
+      "fact": "On 13 January 2015, NASA's Dawn photographed Ceres from 383,000 km away, about as far as the Moon is from Earth.",
+      "sub": "Get ready for orbit.",
+      "description": "Milestone 5 of the Mars to Ceres leg of OneSmallClick: 383,000 km from Ceres, the distance from which NASA's Dawn watched it on 13 January 2015.",
+      "page": [
+        "With 383,000 km to go, Ceres fills more of the view every hour. That's how far away NASA's Dawn was on 13 January 2015, when it watched Ceres for an hour on its way in. The Moon is on average 384,400 km from Earth, so Dawn was about a Moon's distance away.",
+        "Ceres is about 940 km across. Dawn went on to find signs of recent, and maybe ongoing, activity in several places on its surface."
+      ],
+      "sources": [
+        {
+          "label": "NASA JPL: Dawn delivers new image of Ceres (19 January 2015)",
+          "url": "https://www.jpl.nasa.gov/news/dawn-delivers-new-image-of-ceres/"
+        },
+        {
+          "label": "NASA: Moon facts",
+          "url": "https://science.nasa.gov/moon/facts/"
+        },
+        {
+          "label": "NASA: Dawn at Ceres",
+          "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
+        }
+      ]
+    }
+  ]
+}

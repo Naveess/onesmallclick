@@ -53,12 +53,11 @@ import {
   type UpgradeLevels,
   type WelcomeBack,
 } from "../shared/upgrades";
-import { MILESTONES, milestonesFor, type ReachedMilestone } from "../shared/milestones";
+import { milestonesFor, type ReachedMilestone } from "../shared/milestones";
 import { CLICK_BADGES } from "../shared/clicks";
 import { RECRUIT_TAPS, RECRUITS_PER_DAY } from "../shared/share";
 import {
   CLICK_BADGE_IDS,
-  HALFWAY_KM,
   KEEPER_DAYS,
   KEEPER_IDS,
   NIGHT_SHIFT_FROM_HOUR,
@@ -1317,7 +1316,7 @@ export class Probe extends DurableObject<Env> {
     await this.checkArrival();
   }
 
-  /** Milestones on this leg the probe has passed (only Earth → Mars has them so far). */
+  /** Milestones on this leg the probe has passed (each leg's own from E3: content/milestones/<stop>.json). */
   private async checkReached() {
     const now = this.now();
     const d = distanceAt(this.moving(), now);
@@ -1345,14 +1344,14 @@ export class Probe extends DurableObject<Env> {
         postcard: ms.n,
       });
     }
-    if (fresh.some((ms) => ms.km === HALFWAY_KM)) await this.awardHalfway(now);
+    if (fresh.some((ms) => ms.halfway)) await this.awardHalfway(now);
   }
 
   // ---------- Badges (phase 8b) ----------
 
   /** When the probe passed halfway in this mission, or null if it hasn't yet. */
   private halfwayAt(): number | null {
-    const half = MILESTONES.find((ms) => ms.km === HALFWAY_KM);
+    const half = milestonesFor(this.mission.stop).find((ms) => ms.halfway);
     return this.reached.find((r) => r.n === half?.n)?.at ?? null;
   }
 
@@ -1683,7 +1682,7 @@ export class Probe extends DurableObject<Env> {
       .exec<{ options: string }>(`SELECT options FROM vote_round ORDER BY rowid DESC LIMIT ?`, VOTE_RECENT_ROUNDS)
       .toArray()
       .flatMap((r) => JSON.parse(r.options) as string[]);
-    const ids = pickOptions(round, recent);
+    const ids = pickOptions(round, recent, this.mission.stop);
     const closesAt = Math.floor(now / DAY_MS) * DAY_MS + DAY_MS;
     await this.startRound(now, round, ids, closesAt);
   }

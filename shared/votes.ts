@@ -1,7 +1,9 @@
 // The daily crew vote (phase 7a), shared by the Worker and the app.
-// The pool is content/vote-options.json. Each round the server picks one option of each kind.
+// The pool: content/vote-options.json (the faster and steady options every leg shares) and, from E3, each
+// leg's own detours (content/detours/<stop>.json, via shared/content.ts). Each round picks one of each kind.
 
 import pool from "../content/vote-options.json";
+import { LEG_DETOURS } from "./content";
 
 export type VoteKind = "faster" | "steady" | "detour";
 
@@ -19,7 +21,12 @@ export interface VoteOptionDef {
 }
 
 export const VOTE_QUESTION: string = pool.question;
-export const VOTE_OPTIONS = pool.options as VoteOptionDef[];
+const SHARED = pool.options as VoteOptionDef[];
+const DETOURS: Record<string, VoteOptionDef[]> = Object.fromEntries(
+  Object.entries(LEG_DETOURS).map(([stop, list]) => [stop, list.map((d) => ({ ...d, kind: "detour" as const }))]),
+);
+/** Every option on every leg (a round's ids are looked up here, whatever leg it opened on). */
+export const VOTE_OPTIONS: VoteOptionDef[] = [...SHARED, ...Object.values(DETOURS).flat()];
 const BY_ID = new Map(VOTE_OPTIONS.map((o) => [o.id, o]));
 
 /** Options picked in the last this-many rounds aren't picked again. */
@@ -39,15 +46,23 @@ function hash(text: string): number {
   return h;
 }
 
-/** One faster, one steady and one detour option, in a shuffled order, avoiding `recent` ids. */
-export function pickOptions(round: string, recent: string[]): string[] {
+/** The options a leg's vote picks from: the shared faster and steady ones, and that leg's detours. */
+export function optionsFor(stop: string, kind: VoteKind): VoteOptionDef[] {
+  return kind === "detour" ? (DETOURS[stop] ?? []) : SHARED.filter((o) => o.kind === kind);
+}
+
+/** One faster, one steady and one detour option for the leg to `stop`, in a shuffled order, avoiding `recent`
+ * ids. A leg with no detours written yet gets a second steady option instead. */
+export function pickOptions(round: string, recent: string[], stop = "mars"): string[] {
   const kinds: VoteKind[] = ["faster", "steady", "detour"];
-  const picked = kinds.map((kind) => {
-    const all = VOTE_OPTIONS.filter((o) => o.kind === kind);
+  const picked: string[] = [];
+  for (const want of kinds) {
+    const kind = want === "detour" && optionsFor(stop, "detour").length === 0 ? "steady" : want;
+    const all = optionsFor(stop, kind).filter((o) => !picked.includes(o.id));
     const fresh = all.filter((o) => !recent.includes(o.id));
     const from = fresh.length > 0 ? fresh : all;
-    return from[hash(`${round}|${kind}`) % from.length].id;
-  });
+    picked.push(from[hash(`${round}|${want}`) % from.length].id);
+  }
   // Shuffle the three so the fast one isn't always first.
   const order = [...picked].sort((a, b) => hash(`${round}|${a}`) - hash(`${round}|${b}`));
   return order;

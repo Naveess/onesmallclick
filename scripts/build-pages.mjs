@@ -1,12 +1,13 @@
 // Builds the plain HTML content pages (phase 7b) into public/, before Vite runs:
 //   public/how-to-play.html            → /how-to-play        (the design's 1l)
-//   public/milestones/<slug>.html      → /milestones/<slug>  (one fact page per milestone)
+//   public/milestones/<slug>.html      → /milestones/<slug>  (one fact page per milestone, every leg's from E3)
 //   public/destinations/<stop>.html    → /destinations/<stop> (E4b part 1: a destination's 30 facts, one anchor each)
 //   public/privacy.html, terms.html, contact.html → /privacy, /terms, /contact (8a; terms and contact from phase 9a)
 //   public/content.css                 → their stylesheet (the game's fonts, theme and kit, plus src/content/pages.css)
 // The text is in the HTML itself, so search engines (and AdSense) can read it without running scripts.
-// Content: content/milestones.json, content/facts/<stop>.json and content/campaign.json. These outputs are
-// generated, so they're git-ignored.
+// Content: content/milestones/<stop>.json, content/facts/<stop>.json and content/campaign.json. These outputs
+// are generated, so they're git-ignored. A file Nav hasn't approved yet ("approved": null) still gets its pages,
+// for checking, but they're marked noindex and say DRAFT (E3).
 // Runs on `npm run dev` and `npm run build`. No dependencies: plain Node.
 
 import { createHash } from "node:crypto";
@@ -22,12 +23,33 @@ const out = (p, text) => {
   writeFileSync(file, text);
 };
 
-const { milestones } = JSON.parse(read("content/milestones.json"));
-const { stops } = JSON.parse(read("content/campaign.json"));
-// Every destination with its facts written (only Mars so far; the rest come in E3).
-const destinations = readdirSync(join(root, "content/facts"))
-  .filter((f) => f.endsWith(".json"))
-  .map((f) => JSON.parse(read(`content/facts/${f}`)));
+const jsonDir = (dir) =>
+  readdirSync(join(root, dir))
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => JSON.parse(read(`${dir}/${f}`)));
+const { stops, probes } = JSON.parse(read("content/campaign.json"));
+// Every leg's milestones (E3), Mars first. `milestones` is the Mars leg's, for How to play.
+const legs = jsonDir("content/milestones").sort((a, b) => (a.stop === "mars" ? -1 : b.stop === "mars" ? 1 : 0));
+const milestones = legs.find((l) => l.stop === "mars").milestones;
+// Every destination with its facts written.
+const destinations = jsonDir("content/facts");
+const stopOf = (id) => stops.find((s) => s.id === id);
+const nameOf = (id) => stopOf(id)?.name ?? id;
+/** The probe flying the leg to `id` ("OSC-2"), as shared/campaign.ts probeFor() picks it. */
+const probeTagOf = (id) => {
+  const s = stopOf(id);
+  const from = Array.isArray(s?.from) ? s.from[0] : s?.from;
+  const pid = s?.probe ?? stopOf(from)?.probe ?? "pathfinder";
+  return (probes.find((p) => p.id === pid)?.name ?? "OSC-1").split(" ")[0];
+};
+const fromNameOf = (id) => {
+  const f = stopOf(id)?.from;
+  return Array.isArray(f) ? f.map(nameOf).join(" or ") : nameOf(f ?? "earth");
+};
+const COUNT_WORDS = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight"];
+const DRAFT_NOTE = `<p class="page__note">DRAFT · waiting for approval. This page isn't indexed yet.</p>`;
+/** Each leg's postcard stamp (only Mars has one so far; the stamp icons come from PixelLab). */
+const STAMP = { mars: "/sprites/mars-32.png" };
 const gb = new Intl.NumberFormat("en-GB");
 const longDate = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -118,7 +140,7 @@ ${apps.map(([v, label]) => `          <a class="pbtn pbtn--outline" data-share="
       </script>`;
 }
 
-function page({ path, title, description, body, current, image = "default", share = null }) {
+function page({ path, title, description, body, current, image = "default", share = null, noindex = false }) {
   const nav = [
     ["/", "Play"],
     ["/how-to-play", "How to play"],
@@ -132,7 +154,7 @@ function page({ path, title, description, body, current, image = "default", shar
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>${esc(title)}</title>
-    <meta name="description" content="${esc(description)}" />
+    <meta name="description" content="${esc(description)}" />${noindex ? '\n    <meta name="robots" content="noindex" />' : ""}
     <meta name="theme-color" content="#0e1a40" />
     <!-- Link previews (phase S1). The Worker makes these links absolute for the pages people share (worker/share.ts). -->
     <meta property="og:type" content="article" />
@@ -221,9 +243,9 @@ ${share ? shareRow(share) : ""}
 `;
 }
 
-function milestoneList() {
+function milestoneList(list = milestones) {
   return `<ol class="milestones">
-${milestones
+${list
   .map(
     (m) => `          <li><a href="/milestones/${m.slug}"><span class="milestones__n">${m.n}</span><span class="milestones__name">${esc(m.name)}</span><span class="milestones__km">${gb.format(m.km)} km</span></a></li>`,
   )
@@ -274,18 +296,24 @@ ${steps
 
 // ---------- One fact page per milestone ----------
 
-function factPage(m, i) {
-  const prev = milestones[i - 1];
-  const next = milestones[i + 1];
+function factPage(leg, m, i) {
+  const list = leg.milestones;
+  const prev = list[i - 1];
+  const next = list[i + 1];
   const card = String(m.n).padStart(2, "0");
+  const dest = nameOf(leg.stop);
+  const from = fromNameOf(leg.stop);
+  const stamp = STAMP[leg.stop];
+  const count = COUNT_WORDS[list.length] ?? String(list.length);
   return page({
     path: `/milestones/${m.slug}`,
-    image: `milestone-${m.slug}`,
-    share: `${/[.!?]$/.test(m.title) ? m.title : `${m.title}.`} The crew flying one probe to Mars got this far. Help push it on:`,
-    title: `${m.name}: milestone ${m.n} of ${milestones.length} · OneSmallClick`,
+    image: existsSync(join(root, "public", "share", `milestone-${m.slug}.png`)) ? `milestone-${m.slug}` : "default",
+    share: `${/[.!?]$/.test(m.title) ? m.title : `${m.title}.`} The crew flying one probe to ${dest} got this far. Help push it on:`,
+    title: `${m.name}: milestone ${m.n} of ${list.length} · OneSmallClick`,
     description: m.description,
-    body: `      <div>
-        <p class="page__label page__label--orange">MILESTONE ${m.n} OF ${milestones.length} · ${gb.format(m.km)} KM FROM EARTH</p>
+    noindex: !leg.approved,
+    body: `      <div>${leg.approved ? "" : `\n        ${DRAFT_NOTE}`}
+        <p class="page__label page__label--orange">${leg.stop === "mars" ? "" : `${esc(from.toUpperCase())} → ${esc(dest.toUpperCase())} · `}MILESTONE ${m.n} OF ${list.length} · ${gb.format(m.km)} KM FROM ${esc(from.toUpperCase())}</p>
         <h1 id="page-title" class="page__title">${esc(m.name)}</h1>
       </div>
       <section class="window window--orange fact" aria-labelledby="fact-label">
@@ -296,9 +324,9 @@ function factPage(m, i) {
       <figure class="postcard">
         <div class="postcard__photo">
           <p class="postcard__soon">Postcard photo coming soon</p>
-          <div class="postcard__stamp" aria-hidden="true"><img src="/sprites/mars-32.png" alt="" width="32" height="32" /></div>
+          ${stamp ? `<div class="postcard__stamp" aria-hidden="true"><img src="${stamp}" alt="" width="32" height="32" /></div>` : ""}
         </div>
-        <figcaption class="postcard__caption"><span>Wish you were here. — OSC-1</span><span class="postcard__no num">POSTCARD ${card}</span></figcaption>
+        <figcaption class="postcard__caption"><span>Wish you were here. — ${probeTagOf(leg.stop)}</span><span class="postcard__no num">POSTCARD ${card}</span></figcaption>
       </figure>
       <section class="window prose" aria-label="About this milestone">
 ${m.page.map((p) => `        <p>${esc(p)}</p>`).join("\n")}
@@ -315,8 +343,8 @@ ${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${e
       </nav>
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Help push the probe</a>
       <section aria-labelledby="milestones-title">
-        <h2 id="milestones-title" class="page__h2">All six milestones</h2>
-        ${milestoneList()}
+        <h2 id="milestones-title" class="page__h2">All ${count} milestones${leg.stop === "mars" ? "" : ` to ${esc(dest)}`}</h2>
+        ${milestoneList(list)}
       </section>`,
   });
 }
@@ -327,7 +355,7 @@ ${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${e
 const DEST_ICON = { mars: "/sprites/mars-32.png" };
 
 function destinationPage(d) {
-  const name = stops.find((s) => s.id === d.destination)?.name ?? d.destination;
+  const name = nameOf(d.destination);
   const total = d.facts.length;
   const iconSrc = DEST_ICON[d.destination];
   return page({
@@ -336,11 +364,12 @@ function destinationPage(d) {
     share: `${total} facts about ${name}, from the crew flying one probe there:`,
     title: `${total} facts about ${name} · Destination file · OneSmallClick`,
     description: `${total} fun facts about ${name}, each checked against NASA, from OneSmallClick's Destination file: one a day while the crew flies there.`,
-    body: `      <div>
+    noindex: !d.approved,
+    body: `      <div>${d.approved ? "" : `\n        ${DRAFT_NOTE}`}
         <p class="page__label page__label--orange dest-page__label">${iconSrc ? `<img src="${iconSrc}" alt="" width="32" height="32" />` : ""}DESTINATION FILE · ${esc(name.toUpperCase())}</p>
         <h1 id="page-title" class="page__title">${total} facts about ${esc(name)}</h1>
       </div>
-      <p class="page__note">While the crew flies OSC-1 to ${esc(name)}, the game home shows one of these each day, with a new one at 00:00 UTC. Every fact was checked against the NASA page linked under it on ${longDate.format(new Date(d.checked))}.</p>
+      <p class="page__note">While the crew flies ${probeTagOf(d.destination)} to ${esc(name)}, the game home shows one of these each day, with a new one at 00:00 UTC. Every fact was checked against the NASA page linked under it on ${longDate.format(new Date(d.checked))}.</p>
       <ol class="dest-facts">
 ${d.facts
   .map(
@@ -564,8 +593,9 @@ out("how-to-play.html", howToPlay);
 out("privacy.html", privacy);
 out("terms.html", terms);
 out("contact.html", contact);
-milestones.forEach((m, i) => out(`milestones/${m.slug}.html`, factPage(m, i)));
+legs.forEach((leg) => leg.milestones.forEach((m, i) => out(`milestones/${m.slug}.html`, factPage(leg, m, i))));
 destinations.forEach((d) => out(`destinations/${d.destination}.html`, destinationPage(d)));
+const pageCount = legs.reduce((n, l) => n + l.milestones.length, 0);
 console.log(
-  `build-pages: how-to-play, privacy, terms, contact + ${milestones.length} milestone pages + ${destinations.length} destination pages, content.css ${cssVersion}`,
+  `build-pages: how-to-play, privacy, terms, contact + ${pageCount} milestone pages (${legs.length} legs) + ${destinations.length} destination pages, content.css ${cssVersion}`,
 );

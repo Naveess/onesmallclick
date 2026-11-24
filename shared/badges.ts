@@ -39,8 +39,8 @@ export const NIGHT_SHIFT_TO_HOUR = 5; // exclusive
 
 export const VOTER_ROUNDS = 30;
 
-/** Halfway Crew: pushed at any point in a mission before the probe passed halfway. */
-export const HALFWAY_KM = 240_000_000;
+/* Halfway Crew: pushed at any point in a mission before the probe passed halfway (the leg's milestone marked
+ * `halfway` in content/milestones/<stop>.json, from E3; on the Mars leg, 240 million km). */
 
 export const CLICK_BADGE_IDS: BadgeId[] = ["clicks-1", "clicks-2", "clicks-3"];
 

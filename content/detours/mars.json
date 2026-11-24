@@ -1,0 +1,87 @@
+{
+  "_about": "Approved by Nav on 2026-11-19 (phase 7a; Olympus Mons reworded 2026-11-20). The Earth → Mars leg's detours for the daily vote (moved here from content/vote-options.json in E3). One detour a day, avoiding the last 3 days' picks. hours: how much later the arrival (applied at today's pace). Every fact checked against its source.",
+  "stop": "mars",
+  "approved": "2026-11-19",
+  "detours": [
+    {
+      "id": "earth-moon-photo",
+      "hours": 4,
+      "label": "Detour for a photo of Earth and the Moon together: about 4 hours later",
+      "result": "Arrival about 4 hours later.",
+      "fact": "The Moon is a little over a quarter of Earth's width: about 3,475 km across, against Earth's 12,742 km.",
+      "source": "https://science.nasa.gov/moon/facts/"
+    },
+    {
+      "id": "venus-look",
+      "hours": 2,
+      "label": "Turn the camera on Venus: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Venus is the hottest planet in the Solar System, hotter even than Mercury: its surface is about 465 °C.",
+      "source": "https://science.nasa.gov/venus/facts/"
+    },
+    {
+      "id": "asteroid-closeup",
+      "hours": 3,
+      "label": "Swing by a passing asteroid for a close-up: about 3 hours later",
+      "result": "Arrival about 3 hours later.",
+      "fact": "Most known asteroids orbit the Sun in the main belt, between Mars and Jupiter.",
+      "source": "https://science.nasa.gov/solar-system/asteroids/facts/"
+    },
+    {
+      "id": "jupiter-far",
+      "hours": 1,
+      "label": "Photograph Jupiter from afar: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Jupiter is more than twice as massive as all the other planets put together.",
+      "source": "https://science.nasa.gov/jupiter/facts/"
+    },
+    {
+      "id": "solar-wind",
+      "hours": 1,
+      "label": "Stop to measure the solar wind: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "The solar wind streams out from the Sun at around 400 km a second, about 20 times faster than our probe coasts.",
+      "source": "https://science.nasa.gov/sun/"
+    },
+    {
+      "id": "mars-moons",
+      "hours": 2,
+      "label": "Point the telescope at the moons of Mars: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Mars has two small moons, Phobos and Deimos. Phobos, the bigger one, is only about 22 km across.",
+      "source": "https://science.nasa.gov/mars/moons/"
+    },
+    {
+      "id": "olympus-mons",
+      "hours": 2,
+      "label": "Zoom in on Olympus Mons: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Olympus Mons on Mars is the biggest volcano in the Solar System: more than 40 km tall from base to summit.",
+      "source": "https://science.nasa.gov/mars/facts/"
+    },
+    {
+      "id": "comet-dust",
+      "hours": 1,
+      "label": "Fly along the dust trail of an old comet: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Meteor showers happen when Earth passes through the trail of dust a comet leaves behind.",
+      "source": "https://science.nasa.gov/solar-system/meteors-meteorites/facts/"
+    },
+    {
+      "id": "milky-way",
+      "hours": 1,
+      "label": "Photograph the Milky Way with no air in the way: about 1 hour later",
+      "result": "Arrival about 1 hour later.",
+      "fact": "Our galaxy, the Milky Way, holds an estimated 100 to 400 billion stars.",
+      "source": "https://science.nasa.gov/resource/the-milky-way-galaxy/"
+    },
+    {
+      "id": "look-back-earth",
+      "hours": 2,
+      "label": "Take a long look back at Earth: about 2 hours later",
+      "result": "Arrival about 2 hours later.",
+      "fact": "Earth and Mars come closest about every 26 months, which is why Mars missions launch in windows that far apart.",
+      "source": "https://science.nasa.gov/mars/facts/"
+    }
+  ]
+}

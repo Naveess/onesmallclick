@@ -1,5 +1,7 @@
 {
-  "_about": "Approved by Nav on 2026-11-19 (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances.",
+  "_about": "Approved by Nav on 2026-11-19 (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances. E3 (prompt 74): moved from content/milestones.json; 'km' is from the start of the leg, and 'halfway' marks the Halfway Crew badge's milestone.",
+  "stop": "mars",
+  "approved": "2026-11-19",
   "milestones": [
     {
       "n": 1,
@@ -15,8 +17,14 @@
         "The Apollo astronauts took about three days to cross this gap. OSC-1 coasts at 21 km a second even before anyone taps, so the crew passes the Moon's orbit within about five hours of launch: the first sign that everything is working."
       ],
       "sources": [
-        { "label": "NASA: Moon facts", "url": "https://science.nasa.gov/moon/facts/" },
-        { "label": "NASA Scientific Visualization Studio: Earth-Moon distance", "url": "https://svs.gsfc.nasa.gov/11326" }
+        {
+          "label": "NASA: Moon facts",
+          "url": "https://science.nasa.gov/moon/facts/"
+        },
+        {
+          "label": "NASA Scientific Visualization Studio: Earth-Moon distance",
+          "url": "https://svs.gsfc.nasa.gov/11326"
+        }
       ]
     },
     {
@@ -32,7 +40,12 @@
         "About 1.5 million km from Earth, on the side facing away from the Sun, lies the second Lagrange point, L2. A spacecraft near L2 stays in line with Earth as both go round the Sun, so its sunshield can block the Sun, Earth and Moon at once, and its radio link to Earth stays steady.",
         "The James Webb Space Telescope doesn't sit at L2 itself. It loops round the point on a wide halo orbit, once every 168 days. It took Webb about a month to travel out there after launch."
       ],
-      "sources": [{ "label": "NASA: Webb's orbit", "url": "https://science.nasa.gov/mission/webb/orbit/" }]
+      "sources": [
+        {
+          "label": "NASA: Webb's orbit",
+          "url": "https://science.nasa.gov/mission/webb/orbit/"
+        }
+      ]
     },
     {
       "n": 3,
@@ -48,8 +61,14 @@
         "Distance starts to show in the radio link, too. Signals travel at about 300,000 km a second, so a message across 120 million km takes about 6 minutes 40 seconds each way."
       ],
       "sources": [
-        { "label": "NASA JPL: Mars 2020 Perseverance landing press kit, mission", "url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/" },
-        { "label": "NASA: Voyager 1, what is a light-day?", "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/" }
+        {
+          "label": "NASA JPL: Mars 2020 Perseverance landing press kit, mission",
+          "url": "https://www.jpl.nasa.gov/news/press_kits/mars_2020/landing/mission/"
+        },
+        {
+          "label": "NASA: Voyager 1, what is a light-day?",
+          "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/"
+        }
       ]
     },
     {
@@ -57,6 +76,7 @@
       "slug": "halfway",
       "name": "Halfway",
       "km": 240000000,
+      "halfway": true,
       "title": "Halfway to Mars!",
       "fact": "Sunlight takes about 8 minutes 20 seconds to cross the 150 million km to Earth. We've now flown farther than that.",
       "sub": "From here on, Mars is closer than home.",
@@ -66,8 +86,14 @@
         "The average distance from the Sun to Earth, about 150 million km, is called an astronomical unit. Sunlight takes about 8 minutes 20 seconds to cross it, so the Sun you see is always a little in the past. OSC-1 has now travelled farther than that."
       ],
       "sources": [
-        { "label": "NASA: Earth facts", "url": "https://science.nasa.gov/earth/facts/" },
-        { "label": "NASA: Voyager 1, what is a light-day?", "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/" }
+        {
+          "label": "NASA: Earth facts",
+          "url": "https://science.nasa.gov/earth/facts/"
+        },
+        {
+          "label": "NASA: Voyager 1, what is a light-day?",
+          "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/"
+        }
       ]
     },
     {
@@ -84,8 +110,14 @@
         "Those extra 40 minutes add up. When NASA's rovers land, their teams on Earth often work on Mars time for the first months, starting each working day about 40 minutes later than the one before."
       ],
       "sources": [
-        { "label": "NASA GISS: Mars24, technical notes on Mars solar time", "url": "https://www.giss.nasa.gov/tools/mars24/help/notes.html" },
-        { "label": "NASA Astrobiology: Living on Mars time", "url": "https://astrobiology.nasa.gov/news/check-type-living-on-mars-time/" }
+        {
+          "label": "NASA GISS: Mars24, technical notes on Mars solar time",
+          "url": "https://www.giss.nasa.gov/tools/mars24/help/notes.html"
+        },
+        {
+          "label": "NASA Astrobiology: Living on Mars time",
+          "url": "https://astrobiology.nasa.gov/news/check-type-living-on-mars-time/"
+        }
       ]
     },
     {
@@ -102,8 +134,14 @@
         "Phobos is slowly spiralling inwards. Scientists expect it to break apart in 30 to 50 million years. For now it's the first sign that we're nearly there."
       ],
       "sources": [
-        { "label": "NASA: Mars moons facts", "url": "https://science.nasa.gov/mars/moons/facts/" },
-        { "label": "NASA: Mars' moon Phobos is slowly falling apart", "url": "https://www.nasa.gov/solar-system/mars-moon-phobos-is-slowly-falling-apart/" }
+        {
+          "label": "NASA: Mars moons facts",
+          "url": "https://science.nasa.gov/mars/moons/facts/"
+        },
+        {
+          "label": "NASA: Mars' moon Phobos is slowly falling apart",
+          "url": "https://www.nasa.gov/solar-system/mars-moon-phobos-is-slowly-falling-apart/"
+        }
       ]
     }
   ]
