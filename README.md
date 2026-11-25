@@ -61,4 +61,4 @@ New migrations go to production with `npx wrangler d1 migrations apply onesmallc
   - `npm run backup -- <label>` before every deploy that changes data, and at least weekly: exports to `Documents\onesmallclick-backups\` (plain, kept 30 days), encrypts it with AES-256 into `encrypted\` (kept 90 days), checks it decrypts, and prunes old files. The passphrase is `BACKUP_PASSPHRASE` in `.dev.vars`, with a copy in Nav's password manager.
   - The encrypted file goes to Google Drive, OneSmallClick › Backups (encrypted); copies over 90 days are deleted there too.
   - To open one: `openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in <file>.sql.enc -out <file>.sql -pass env:BACKUP_PASSPHRASE` (set the variable first). Never on GitHub: it holds players' emails.
-- **Releases:** each live version is tagged in git (`s1-live` … `m-live`).
+- **Releases:** each live version is tagged in git (`s1-live` … `q1a-live`).
