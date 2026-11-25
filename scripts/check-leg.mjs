@@ -4,7 +4,8 @@
 // source, Nav's approval on each file, its listing in shared/content.ts, and the campaign's leg length, probe,
 // upgrade names, planet tech, map fact and next stop.
 // ART is listed separately and doesn't fail the leg (Nav, prompt 74), so the list doubles as the PixelLab to-do;
-// `--strict` makes it fail too. POSTCARD photos only warn until E4b part 2 brings them.
+// `--strict` makes it fail too. POSTCARD photos (prompts 95-97) are content: every milestone and the stop's landing
+// need one, with its credit, licence, NASA source and image file (scripts/make-postcards.py).
 // Plain Node, no dependencies. Reads content/, content/campaign.json, shared/content.ts and public/.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
@@ -220,10 +221,15 @@ function check(stopId) {
   artItem(`${s.name}: Destination file link preview, 1200×630`, `public/share/destination-${stopId}.png`);
   for (const m of msData?.milestones ?? []) artItem(`milestone ${m.n} link preview, 1200×630`, `public/share/milestone-${m.slug}.png`);
 
-  // ---------- Postcards (warn only until E4b part 2) ----------
-  const postcards = (msData?.milestones ?? []).filter((m) => m.postcard?.image && m.postcard?.licence);
-  if (postcards.length < (msData?.milestones?.length ?? 0))
-    warnings.push(`postcards: ${postcards.length} of ${msData?.milestones?.length ?? 0} milestones have a photo with its licence (warning only until E4b part 2)`);
+  // ---------- Postcards: real NASA photos (prompts 95-97) ----------
+  const cards = msData ? [...(msData.milestones ?? []).map((m) => [`milestone ${m.n}`, m.postcard]), ["the landing postcard", msData.landingPostcard]] : [];
+  for (const [what, c] of cards) {
+    if (!c) errors.push(`${what}: no postcard photo (content/milestones/${stopId}.json; docs/postcard-photos.md)`);
+    else if (!(c.nasaId && c.alt && c.credit && c.licence && /^https:\/\//.test(c.source ?? "")))
+      errors.push(`${what}: the postcard needs nasaId, alt, credit, licence and an https source`);
+    else if (c.image !== `/postcards/${c.nasaId.toLowerCase()}.jpg` || !has(`public${c.image}`))
+      errors.push(`${what}: no image at public/postcards/${c.nasaId.toLowerCase()}.jpg (run python -I scripts/make-postcards.py)`);
+  }
 
   return { stopId, title, errors, warnings, ok, art };
 }

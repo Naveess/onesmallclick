@@ -1,5 +1,5 @@
 {
-  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). The Mars to Ceres leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Ceres (2.77 AU, JPL) from the Sun, 186.4 million km, so 2 AU (299.2 million km) is 71.2 million km in, Vesta's orbit (2.36 AU) 125.1 million km, and 'Ceres in sight' is 383,000 km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). The Mars to Ceres leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Ceres (2.77 AU, JPL) from the Sun, 186.4 million km, so 2 AU (299.2 million km) is 71.2 million km in, Vesta's orbit (2.36 AU) 125.1 million km, and 'Ceres in sight' is 383,000 km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24. Postcards (prompts 95-97): real NASA photos picked by Nav from contact sheets; each 'postcard' (and the stop's 'landingPostcard') has its NASA id, credit, licence note and source; the images are public/postcards/, made by scripts/make-postcards.py; docs/postcard-photos.md.",
   "stop": "ceres",
   "checked": "2026-11-24",
   "approved": "2026-11-24",
@@ -30,7 +30,16 @@
           "label": "NASA: Basics of Space Flight, the Solar System",
           "url": "https://science.nasa.gov/learn/basics-of-space-flight/chapter1-1/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA00407",
+        "image": "/postcards/pia00407.jpg",
+        "alt": "Mars as a whole red globe, with the long Valles Marineris canyon across it",
+        "credit": "NASA/JPL/USGS",
+        "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+        "source": "https://images.nasa.gov/details/PIA00407",
+        "fit": "contain"
+      }
     },
     {
       "n": 2,
@@ -58,7 +67,15 @@
           "label": "NASA: Ceres facts",
           "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA18922",
+        "image": "/postcards/pia18922.jpg",
+        "alt": "Illustration of NASA's Dawn spacecraft, its ion engine glowing blue",
+        "credit": "NASA/JPL-Caltech",
+        "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+        "source": "https://images.nasa.gov/details/PIA18922"
+      }
     },
     {
       "n": 3,
@@ -79,7 +96,15 @@
           "label": "NASA: Ceres facts",
           "url": "https://science.nasa.gov/dwarf-planets/ceres/facts/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA20919",
+        "image": "/postcards/pia20919.jpg",
+        "alt": "Illustration of Dawn flying above Ceres on its ion engine, with the distant Sun",
+        "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+        "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+        "source": "https://images.nasa.gov/details/PIA20919"
+      }
     },
     {
       "n": 4,
@@ -107,7 +132,15 @@
           "label": "NASA: Dawn's ion propulsion",
           "url": "https://science.nasa.gov/mission/dawn/technology/ion-propulsion/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA14778",
+        "image": "/postcards/pia14778.jpg",
+        "alt": "The cratered face of the giant asteroid Vesta, photographed by Dawn",
+        "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+        "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+        "source": "https://images.nasa.gov/details/PIA14778"
+      }
     },
     {
       "n": 5,
@@ -135,7 +168,25 @@
           "label": "NASA: Dawn at Ceres",
           "url": "https://science.nasa.gov/mission/dawn/science/ceres/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA19172",
+        "image": "/postcards/pia19172.jpg",
+        "alt": "Ceres from 237,000 km away on 25 January 2015, Dawn's sharpest view of it at the time",
+        "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+        "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+        "source": "https://images.nasa.gov/details/PIA19172",
+        "fit": "contain"
+      }
     }
-  ]
+  ],
+  "landingPostcard": {
+    "nasaId": "PIA21079",
+    "image": "/postcards/pia21079.jpg",
+    "alt": "Ceres in colour: a grey, cratered dwarf planet with bright spots",
+    "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+    "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+    "source": "https://images.nasa.gov/details/PIA21079",
+    "fit": "contain"
+  }
 }

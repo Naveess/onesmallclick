@@ -1,3 +1,5 @@
+import { landingPostcardOf, postcardBySlug } from "../../shared/postcards";
+import { PostcardPhoto } from "../components/PostcardPhoto";
 import { useEffect, useRef, useState } from "react";
 import { GameShell } from "../components/GameShell";
 import { PixelButton } from "../components/PixelButton";
@@ -18,7 +20,7 @@ interface Entry {
   kind: string;
   title: string;
   body: string;
-  data: { fact?: string; source?: string; slug?: string; postcard?: number; burn?: { ok: boolean } | null } | null;
+  data: { fact?: string; source?: string; slug?: string; postcard?: number; stop?: string; burn?: { ok: boolean } | null } | null;
 }
 
 interface Look {
@@ -151,13 +153,22 @@ export function LogPage() {
                   <p className="log__body">{e.body}</p>
                   {e.kind === "milestone" && e.data?.postcard && (
                     <div className="log__postcard" aria-hidden="true">
-                      <div className="log__postcard-photo">POSTCARD {String(e.data.postcard).padStart(2, "0")}</div>
+                      <div className="log__postcard-photo">
+                        {e.data.slug && postcardBySlug(e.data.slug) ? (
+                          <PostcardPhoto photo={postcardBySlug(e.data.slug)!} lazy credit={false} />
+                        ) : (
+                          `POSTCARD ${String(e.data.postcard).padStart(2, "0")}`
+                        )}
+                      </div>
                     </div>
                   )}
                   {e.kind === "arrival" && e.data?.burn && (
                     // The landing burn's postcard (E4b part 2b): a gold frame when the crew stuck the landing.
                     <div className={e.data.burn.ok ? "log__postcard log__postcard--gold" : "log__postcard"} aria-hidden="true">
-                      <div className="log__postcard-photo">{e.data.burn.ok ? "GOLD EDITION" : "TOUCHDOWN"}</div>
+                      <div className="log__postcard-photo">
+                        {e.data.stop && landingPostcardOf(e.data.stop) && <PostcardPhoto photo={landingPostcardOf(e.data.stop)!} lazy credit={false} />}
+                        <span className="log__postcard-label">{e.data.burn.ok ? "GOLD EDITION" : "TOUCHDOWN"}</span>
+                      </div>
                     </div>
                   )}
                   {e.kind === "milestone" && e.data?.slug && (

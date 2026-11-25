@@ -253,7 +253,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - **The mission log page (1h).**
 - **Six milestones** with flags on the track. When one is reached, everyone connected gets the milestone moment (1e) with the burst sheet and confetti. Anyone offline sees it on their next visit.
 - **One fact page per milestone**, plus How to play (1l). These are plain HTML pages built at deploy time, so Google can read them.
-- **Postcards** use placeholder slots until the photos are chosen (todo, "At the end").
+- **Postcards** show real NASA photos from prompt 97 (each milestone's `postcard` in content/milestones/<stop>.json; docs/postcard-photos.md).
 
 **Data changes**
 - **D1:**
@@ -1261,7 +1261,7 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 ### Before phase 7 (11 and 12 decided 2026-11-19)
 11. ~~**Vote**~~ **Decided:** 3 options closing at 00:00 UTC, from a pool of about 30 drafted for approval (`content/vote-options.json`), each between a day sooner and a day later.
 12. ~~**Milestones**~~ **Decided:** I draft all six, with distances and checked facts, for approval in 7b. Fact pages are built from the kit in the style of How to play (1l), at `/milestones/<name>`.
-13. ~~**Postcards** *(brief)*: real photos or pixel art?~~ **Decided 2026-11-25 (prompt 91): real NASA photos**, each with its credit line and licence checked. The list is in docs/todo.md ("Postcard photos").
+13. ~~**Postcards** *(brief)*: real photos or pixel art?~~ **Decided 2026-11-25 (prompt 91): real NASA photos**, each with its credit line and licence checked. Picked and wired in, prompts 95-97: docs/postcard-photos.md.
 
 ### Before phase 8 (14, 16, 17 and 18 decided 2026-11-19)
 14. ~~**Email service**~~ **Decided: Cloudflare Email Service**, with the sending code in one file so switching to Resend is a one-file change. Nav switches on Workers Paid when the domain is connected. See the next section.

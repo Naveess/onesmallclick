@@ -138,6 +138,7 @@
 }
 
 .log__postcard-photo {
+  position: relative;
   height: 100%;
   display: grid;
   place-items: center;
@@ -162,4 +163,15 @@
 
 .log > .pbtn {
   align-self: flex-start;
+}
+
+/* The landing postcard's label on its photo (prompts 95-97). */
+.log__postcard-label {
+  position: relative;
+  padding: 0 6px;
+  color: var(--paper);
+  background: rgb(var(--scrim) / 0.72);
+}
+.log__postcard--gold .log__postcard-label {
+  color: var(--medal-gold-2);
 }

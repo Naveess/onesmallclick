@@ -1,3 +1,5 @@
+import { postcardOf } from "../../shared/postcards";
+import { PostcardPhoto } from "./PostcardPhoto";
 import { useEffect, useRef, useState } from "react";
 import { milestoneDetail, milestonesFor } from "../../shared/milestones";
 import type { ReachedMilestone } from "../../shared/milestones";
@@ -133,6 +135,7 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
   }, [m, onClose]);
   if (!m) return null;
   const card = String(m.n).padStart(2, "0");
+  const photo = postcardOf(stopId, m.n);
 
   return (
     <main className={wide ? "moment moment--wide" : "moment"} aria-labelledby="moment-title">
@@ -150,7 +153,7 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
 
       <figure className="postcard">
         <div className="postcard__photo">
-          <p className="postcard__soon">Postcard photo coming soon</p>
+          {photo ? <PostcardPhoto photo={photo} /> : <p className="postcard__soon">Postcard photo coming soon</p>}
           {stamp && (
             <div className="postcard__stamp" aria-hidden="true">
               <img src={stamp} alt="" width={32} height={32} />

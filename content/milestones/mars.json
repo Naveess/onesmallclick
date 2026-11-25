@@ -1,5 +1,5 @@
 {
-  "_about": "Approved by Nav on 2026-11-19 (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances. E3 (prompt 74): moved from content/milestones.json; 'km' is from the start of the leg, and 'halfway' marks the Halfway Crew badge's milestone.",
+  "_about": "Approved by Nav on 2026-11-19 (phase 7b). The six milestones on the route, in km travelled from Earth. Each fact was checked against the NASA/JPL pages in 'sources' on 2026-11-19 (Product principle 5). 'fact' and 'sub' show in the milestone moment (1e) and the log; 'page' is the fact page at /milestones/<slug>. Milestones 3 and 4 keep the design's names and distances. E3 (prompt 74): moved from content/milestones.json; 'km' is from the start of the leg, and 'halfway' marks the Halfway Crew badge's milestone. Postcards (prompts 95-97): real NASA photos picked by Nav from contact sheets; each 'postcard' (and the stop's 'landingPostcard') has its NASA id, credit, licence note and source; the images are public/postcards/, made by scripts/make-postcards.py; docs/postcard-photos.md.",
   "stop": "mars",
   "approved": "2026-11-19",
   "milestones": [
@@ -25,7 +25,15 @@
           "label": "NASA Scientific Visualization Studio: Earth-Moon distance",
           "url": "https://svs.gsfc.nasa.gov/11326"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "as08-14-2383",
+        "image": "/postcards/as08-14-2383.jpg",
+        "alt": "Earth rising over the Moon's horizon, photographed by the Apollo 8 crew in December 1968",
+        "credit": "NASA",
+        "licence": "NASA photo: not copyrighted; free to use with credit, no endorsement implied (NASA images and media guidelines)",
+        "source": "https://images.nasa.gov/details/as08-14-2383"
+      }
     },
     {
       "n": 2,
@@ -45,7 +53,15 @@
           "label": "NASA: Webb's orbit",
           "url": "https://science.nasa.gov/mission/webb/orbit/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "GSFC_20171208_Archive_e000422",
+        "image": "/postcards/gsfc_20171208_archive_e000422.jpg",
+        "alt": "The James Webb Space Telescope's gold primary mirror, fully assembled in a clean room at NASA Goddard",
+        "credit": "NASA/Chris Gunn",
+        "licence": "NASA photo: not copyrighted; free to use with credit, no endorsement implied (NASA images and media guidelines)",
+        "source": "https://images.nasa.gov/details/GSFC_20171208_Archive_e000422"
+      }
     },
     {
       "n": 3,
@@ -69,7 +85,15 @@
           "label": "NASA: Voyager 1, what is a light-day?",
           "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA23214",
+        "image": "/postcards/pia23214.jpg",
+        "alt": "The big radio dishes of NASA's Deep Space Network at Goldstone, California, under a bright Sun",
+        "credit": "NASA/JPL-Caltech",
+        "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+        "source": "https://images.nasa.gov/details/PIA23214"
+      }
     },
     {
       "n": 4,
@@ -94,7 +118,15 @@
           "label": "NASA: Voyager 1, what is a light-day?",
           "url": "https://science.nasa.gov/mission/voyager/voyager-1/voyager-1-what-is-a-light-day/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "GSFC_20171208_Archive_e002035",
+        "image": "/postcards/gsfc_20171208_archive_e002035.jpg",
+        "alt": "The whole Sun in ultraviolet light, seen by NASA's Solar Dynamics Observatory",
+        "credit": "NASA/SDO",
+        "licence": "NASA photo: not copyrighted; free to use with credit, no endorsement implied (NASA images and media guidelines)",
+        "source": "https://images.nasa.gov/details/GSFC_20171208_Archive_e002035"
+      }
     },
     {
       "n": 5,
@@ -118,7 +150,15 @@
           "label": "NASA Astrobiology: Living on Mars time",
           "url": "https://astrobiology.nasa.gov/news/check-type-living-on-mars-time/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA23202",
+        "image": "/postcards/pia23202.jpg",
+        "alt": "The Sun setting over the Martian horizon, seen by NASA's InSight lander on its 145th sol",
+        "credit": "NASA/JPL-Caltech",
+        "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+        "source": "https://images.nasa.gov/details/PIA23202"
+      }
     },
     {
       "n": 6,
@@ -142,7 +182,23 @@
           "label": "NASA: Mars' moon Phobos is slowly falling apart",
           "url": "https://www.nasa.gov/solar-system/mars-moon-phobos-is-slowly-falling-apart/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA10368",
+        "image": "/postcards/pia10368.jpg",
+        "alt": "Phobos, Mars's lumpy inner moon, in colour from 6,800 km away",
+        "credit": "NASA/JPL-Caltech/University of Arizona",
+        "licence": "HiRISE (University of Arizona): no copyright restriction; credit asked for (uahirise.org/media/usage.php)",
+        "source": "https://images.nasa.gov/details/PIA10368"
+      }
     }
-  ]
+  ],
+  "landingPostcard": {
+    "nasaId": "PIA24430",
+    "image": "/postcards/pia24430.jpg",
+    "alt": "Perseverance's first colour look at Mars: the rocky floor of Jezero Crater, with the rover's shadow in front",
+    "credit": "NASA/JPL-Caltech",
+    "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+    "source": "https://images.nasa.gov/details/PIA24430"
+  }
 }

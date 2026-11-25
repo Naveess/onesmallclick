@@ -1,5 +1,5 @@
 {
-  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). The Mars to Vesta leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Vesta (2.36 AU, JPL) from the Sun, 125.1 million km, so 2 AU (299.2 million km) is 71.2 million km in, and 'Vesta in sight' is 1.21 million km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24.",
+  "_about": "Drafted by Claude on 2026-11-24 (E3, prompt 74); approved by Nav on 2026-11-24 (prompt 75). The Mars to Vesta leg's milestones. 'km' is from the start of the leg. The leg is the gap between the average distances of Mars (228.0 million km, NASA) and Vesta (2.36 AU, JPL) from the Sun, 125.1 million km, so 2 AU (299.2 million km) is 71.2 million km in, and 'Vesta in sight' is 1.21 million km before arrival. 'halfway' marks the Halfway Crew badge's milestone. Facts checked against 'sources' on 2026-11-24. Postcards (prompts 95-97): real NASA photos picked by Nav from contact sheets; each 'postcard' (and the stop's 'landingPostcard') has its NASA id, credit, licence note and source; the images are public/postcards/, made by scripts/make-postcards.py; docs/postcard-photos.md.",
   "stop": "vesta",
   "checked": "2026-11-24",
   "approved": "2026-11-24",
@@ -22,7 +22,15 @@
           "label": "NASA: Deimos",
           "url": "https://science.nasa.gov/mars/moons/deimos/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA11826",
+        "image": "/postcards/pia11826.jpg",
+        "alt": "Two views of Deimos, the smaller of Mars's two moons, photographed by HiRISE",
+        "credit": "NASA/JPL-Caltech/University of Arizona",
+        "licence": "HiRISE (University of Arizona): no copyright restriction; credit asked for (uahirise.org/media/usage.php)",
+        "source": "https://images.nasa.gov/details/PIA11826"
+      }
     },
     {
       "n": 2,
@@ -43,7 +51,15 @@
           "label": "NASA: Vesta",
           "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA15605",
+        "image": "/postcards/pia15605.jpg",
+        "alt": "Thin slices of three meteorites that fell to Earth from Vesta, in bright colours under a microscope",
+        "credit": "NASA/University of Tennessee",
+        "licence": "No copyright marked; used with the full credit (Nav, prompt 97)",
+        "source": "https://images.nasa.gov/details/PIA15605"
+      }
     },
     {
       "n": 3,
@@ -71,7 +87,15 @@
           "label": "NASA JPL Small-Body Database: Vesta (a = 2.36 au)",
           "url": "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=Vesta"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA18922",
+        "image": "/postcards/pia18922.jpg",
+        "alt": "Illustration of NASA's Dawn spacecraft, its ion engine glowing blue",
+        "credit": "NASA/JPL-Caltech",
+        "licence": "JPL image use policy: any purpose with credit, no endorsement implied",
+        "source": "https://images.nasa.gov/details/PIA18922"
+      }
     },
     {
       "n": 4,
@@ -95,7 +119,23 @@
           "label": "NASA: Vesta",
           "url": "https://science.nasa.gov/solar-system/asteroids/4-vesta/"
         }
-      ]
+      ],
+      "postcard": {
+        "nasaId": "PIA14117",
+        "image": "/postcards/pia14117.jpg",
+        "alt": "Vesta as a bright dot among the stars: Dawn's first picture of it, on 3 May 2011",
+        "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+        "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+        "source": "https://images.nasa.gov/details/PIA14117"
+      }
     }
-  ]
+  ],
+  "landingPostcard": {
+    "nasaId": "PIA14894",
+    "image": "/postcards/pia14894.jpg",
+    "alt": "The grooved, cratered surface of the giant asteroid Vesta, photographed by Dawn",
+    "credit": "NASA/JPL-Caltech/UCLA/MPS/DLR/IDA",
+    "licence": "Dawn Framing Camera: no copyright marked; used with the full credit (Nav, prompt 97); permission asked of the camera team (MPS/DLR)",
+    "source": "https://images.nasa.gov/details/PIA14894"
+  }
 }

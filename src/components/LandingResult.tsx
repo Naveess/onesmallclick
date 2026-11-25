@@ -1,3 +1,5 @@
+import { landingPostcardOf } from "../../shared/postcards";
+import { PostcardPhoto } from "./PostcardPhoto";
 import { spareText, type BurnResult } from "../../shared/burn";
 import { probeFor, probeTag, stopName } from "../../shared/campaign";
 import { destinationArt } from "../game/flightArt";
@@ -20,15 +22,22 @@ interface LandingResultProps {
 /**
  * How the landing burn went (E4b part 2b, design 1o): "Landing stuck!" with a gold-framed postcard, or "Rough
  * landing, but we made it" with the plain one (never a punishment). Then the arrival screen. The postcard's
- * photo is the destination until the PixelLab postcard art exists (2c).
+ * photo is the stop's real NASA landing photo (prompts 95-97), or the destination's art if it has none.
  */
 export function LandingResult({ stop, fromStop, burn, wide, onContinue }: LandingResultProps) {
   const reduceMotion = usePrefersReducedMotion();
   const tag = probeTag(probeFor(stop, fromStop ?? "earth"));
   const dest = stopName(stop);
+  const landing = landingPostcardOf(stop);
   const photo = (
-    <div className="postcard__photo landing__photo" aria-hidden="true">
-      {stop === "mars" ? <Sprite sprite={SPRITES.mars} scale={1} /> : <img src={destinationArt(stop, 31)} alt="" width={128} height={128} />}
+    <div className="postcard__photo landing__photo" aria-hidden={landing ? undefined : true}>
+      {landing ? (
+        <PostcardPhoto photo={landing} />
+      ) : stop === "mars" ? (
+        <Sprite sprite={SPRITES.mars} scale={1} />
+      ) : (
+        <img src={destinationArt(stop, 31)} alt="" width={128} height={128} />
+      )}
     </div>
   );
   return (

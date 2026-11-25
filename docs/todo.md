@@ -51,7 +51,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
-- [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: the NASA postcard photos (Mars first, then Ceres and Vesta), M (miles), **Q1 (the first five, added 25 Nov)**, then G2.
+- [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: ~~the NASA postcard photos~~ (wired in, prompt 97, not deployed), M (miles), **Q1 (the first five, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [ ] **Q1: the first five** (docs/plan.md "Q"; Nav: do these first of the 25 Nov ideas):
   - install as an app, with opt-in notifications (signal final hour, landing burn, vote closing);
@@ -94,7 +94,7 @@ Back up every master to Drive (OneSmallClick › Sprites). File names are the on
 - [ ] **Link previews for Ceres and Vesta:** two Destination file images and nine milestone images (`npm run check-leg ceres` / `vesta` lists them), by adding lines to scripts/make-previews.mjs.
 - [ ] **The map share card**, 1080×1080 (in code, like the fact card).
 - [ ] **UI icons, 9×9:** map, flag, share, close, exported to SVG like the other ten in `design/icons/`.
-- [ ] **Postcard photos: real NASA photos** (prompt 91). Claude finds candidates in NASA's image library, Nav approves a contact sheet, each with its credit line and licence checked (NASA's are free to use with credit; partner images such as ESA's or the Dawn camera's need checking). Needed first: Mars 6 (Past the Moon, Waving at Webb, Mid-course burn, Halfway, Three quarters, Phobos in view) and a Mars landing postcard, by mid-January; then Ceres 5 and Vesta 4 and their landing postcards. Until then the postcards say "Postcard photo coming soon" and the landing postcard shows the destination.
+- [x] **Postcard photos: real NASA photos** (prompts 91, 95-97). Picked by Nav from contact sheets and wired in (prompt 97, not deployed): every Mars, Ceres and Vesta milestone and each landing postcard, with its credit (docs/postcard-photos.md). Still open: **Nav sends the MSSS request** (the msss.com Request Info form, "Image/Data Use Rights"; Mars 5 swaps to Curiosity's sunset, PIA19400, if they say yes) and **the Dawn request** (MPS press office); both drafts are in docs/postcard-photos.md. Each new leg needs its photos before `npm run check-leg` passes.
 
 ## Clean-ups (Claude, small)
 - [ ] **Delete `src/components/JourneyTrack.tsx` and `JourneyTrack.css`.** The flight view replaced them and was approved (prompt 33).

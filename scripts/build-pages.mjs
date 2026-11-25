@@ -335,7 +335,11 @@ function factPage(leg, m, i) {
       </section>
       <figure class="postcard">
         <div class="postcard__photo">
-          <p class="postcard__soon">Postcard photo coming soon</p>
+          ${
+            m.postcard
+              ? `<img class="postcard__img" src="${esc(m.postcard.image)}" alt="${esc(m.postcard.alt)}" width="596" height="368" decoding="async" /><span class="postcard__credit">${esc(m.postcard.credit)}</span>`
+              : `<p class="postcard__soon">Postcard photo coming soon</p>`
+          }
           ${stamp ? `<div class="postcard__stamp" aria-hidden="true"><img src="${stamp}" alt="" width="32" height="32" /></div>` : ""}
         </div>
         <figcaption class="postcard__caption"><span>Wish you were here. — ${probeTagOf(leg.stop)}</span><span class="postcard__no num">POSTCARD ${card}</span></figcaption>
@@ -346,7 +350,9 @@ ${m.page.map((p) => `        <p>${esc(p)}</p>`).join("\n")}
       <section class="sources" aria-labelledby="sources-title">
         <h2 id="sources-title">Sources</h2>
         <ul>
-${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${esc(s.label)}</a></li>`).join("\n")}
+${m.sources.map((s) => `          <li><a href="${esc(s.url)}" rel="noopener">${esc(s.label)}</a></li>`).join("\n")}${
+  m.postcard ? `\n          <li><a href="${esc(m.postcard.source)}" rel="noopener">The postcard photo: ${esc(m.postcard.credit)}, NASA Image and Video Library</a></li>` : ""
+}
         </ul>
       </section>
       <nav class="page__links" aria-label="Milestones">

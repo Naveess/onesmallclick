@@ -65,3 +65,26 @@
   border: 2px solid var(--stamp);
   padding: 0 5px;
 }
+
+/* The real NASA photo (prompts 95-97). Smooth, not pixelated: a photo shown at half its size, not pixel art. */
+.postcard__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+}
+
+/* Its credit line, on the photo's bottom-left corner (the photos are always dark there or busy, so on a scrim). */
+.postcard__credit {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-width: 100%;
+  padding: 1px 5px 2px;
+  font: 14px/1 var(--font-num);
+  color: var(--paper);
+  background: rgb(var(--scrim) / 0.72);
+  overflow-wrap: anywhere;
+}
