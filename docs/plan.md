@@ -35,7 +35,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
-  - [ ] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); pushed, not deployed (migration 0015). See "B1 status" below.
+  - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
   - [ ] **B2: the launch wipe** (before 15 Dec): a /admin action that backs up first, restarts the probe from Earth and removes every reward except Early Beta. See "B2 plan" below.
 
 ## What changed from the order in prompt 06
@@ -803,7 +803,7 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 
 **Why:** the game is public on workers.dev before launch, and Nav moves it to onesmallclick.io on 30 Nov. Launch day is 15 December (it may move): the probe starts again and every reward resets, for hopefully the last time. People who sign up before then get an Early Beta badge they keep.
 
-**B1 status (built 2026-11-25, prompts 82–83; pushed, not deployed; needs migration 0015):**
+**B1 status (built 2026-11-25, prompts 82–83; deployed 2026-11-25, prompt 84: D1 backed up pre-B1, migration 0015 `--remote` (all 5 live accounts got the badge), version 451823e2, tag `b1-live`; Nav OK'd the wording and the medal):**
 - **The copy and the date** live in `content/beta.json` (`endsAt` 2026-12-15 00:00 UTC; change it and `launchLabel`/`launchShort` if launch day moves). `shared/beta.ts` reads it (`BETA`, `BETA_ENDS_MS`, `betaOpen`). Real time, not the probe's clock, so /admin's clock never ends the beta.
 - **The banner** (`src/components/BetaBanner.tsx`): a slim orange window under the header on every game page. One line ("EARLY ACCESS Progress resets at launch on 15 Dec.") with More (the full text: the reset, the date may move, the badge, the one-person thank-you) and ×. Guests get "Sign in for the badge"; accounts with it get a thank-you line. Closing it is remembered on the device (`osc.betaClosed`). Hidden in safe mode and after `endsAt`.
 - **How to play** gets the same text in an orange box with the sign-in button, until `endsAt` (the pages are rebuilt on every deploy).
@@ -815,7 +815,7 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 **B2 plan (the launch wipe, before 15 Dec; explain first):**
 - Replaces decision 6 for this launch. Nav (prompt 83): "just starting the probe again and removing any rewards".
 - A /admin action, "Launch wipe", with a typed confirmation, live D1 backed up first: the existing mission reset (a new tour from Earth: 0 km, milestones, the vote round and the log cleared, the planet tech cleared), plus every badge except `early-beta`, and the medals and passport stamps (mission credits).
-- **To confirm with Nav before building:** do credits, upgrades, patches, km totals, ping streaks and the leaderboards count as rewards (wiped), or stay? Accounts, names, countries and crew links stay.
+- **Decided (Nav, prompt 84): everything else is wiped too**: credits, upgrades, patches, km totals (daily_km), ping streaks and pings, votes, the leaderboards, recruits and Crew Recruiter counts. The game starts fresh on 15 Dec (subject to change). **Kept:** accounts (sign-in, name, country), their sessions, crew links, and the Early Beta badge.
 - After launch day `endsAt` has passed: the banner goes and no new Early Beta badges are given.
 
 

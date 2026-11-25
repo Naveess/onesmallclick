@@ -15,13 +15,12 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Phase 7b (milestones, fact pages, How to play) built and pushed (`31172c3`).
 - [x] Backup: everything on GitHub; the five sprites made since 18 Nov (`mars-32`, `mars-rotating-64-sheet`, `earth-small`, `stars-far`, `stars-near`) added to Drive (OneSmallClick › Sprites).
 
-## Start here (25 Nov, prompt 83)
+## Start here (25 Nov, prompt 84)
 - **E4b part 2a is LIVE** (2026-11-25, prompt 81, version `92aabd39`, tag `e4b2a-live`). Nav: check it after an arrival (the live probe is on a fresh Earth → Mars leg).
-- **B1 (early-access banner + Early Beta badge) is built and pushed, not deployed.** Waiting for Nav to OK the banner wording (content/beta.json) and the badge art, and say deploy.
-- **To deploy B1 (only when Nav asks):** back up D1 (`npx wrangler d1 export onesmallclick --remote --output ../onesmallclick-backups/d1-onesmallclick-<date>-pre-B1.sql`), apply migration **0015** `--remote` (gives every existing account the badge), `npm run deploy`, check live, tag `b1-live`.
-- **Before 15 Dec: B2, the launch wipe** (docs/plan.md "B2 plan"). Nav to confirm whether credits, upgrades, patches, km, streaks and leaderboards are wiped too.
+- **B1 is LIVE** (2026-11-25, prompt 84, version `451823e2`, migration 0015, tag `b1-live`). Nav: look at the banner and your profile's Early Beta badge on a phone.
+- **Before 15 Dec: B2, the launch wipe** (docs/plan.md "B2 plan"): everything wiped except accounts, crew links and Early Beta (Nav, prompt 84).
 - **Domain move (30 Nov):** accounts keep the badge (they sign in again on the new domain).
-- **Then:** 2b (the landing burn; explain first), 2c (cosmetics), phase G. Next prompt 84, next migration 0016.
+- **Then:** 2b (the landing burn; explain first), 2c (cosmetics), phase G. Next prompt 85, next migration 0016.
 
 ## Next
 - [x] **Deploy 7b** (Nav, 19 Nov; the live bundle matches 31172c3 and migration 0005 is applied): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
