@@ -2979,6 +2979,82 @@ export class Probe extends DurableObject<Env> {
     return this.adminCommit();
   }
 
+  /**
+   * The launch wipe (phase B2, prompts 83-85): the game starts fresh. Everyone's progress, km, pings and streaks,
+   * votes, the log, milestones, missions, stamps and medals, the planet tech, every badge but Early Beta, recruits
+   * and share counts go; accounts, their sessions, devices (names and countries), crew links and Early Beta badges
+   * stay. The probe sets off from Earth for Mars on real time, with the next mission number (so every browser
+   * still sees the next arrival). Open games are closed without saving and reconnect to the fresh game.
+   * Back up D1 first (docs/todo.md): this can't be undone.
+   */
+  async adminLaunchWipe(): Promise<AdminState> {
+    const nextId = this.mission.id + 1;
+    // 1. Close every open game without settling it (its progress is about to go); browsers reconnect.
+    for (const ws of this.ctx.getWebSockets()) {
+      this.dead.add(ws);
+      try {
+        ws.close(4002, "launch");
+      } catch {
+        // already closing
+      }
+    }
+    this.online = null;
+    // 2. Nothing waiting to be saved may come back afterwards.
+    for (const t of [this.saveTimer, this.progressTimer, this.d1Timer, this.broadcastTimer]) if (t !== undefined) clearTimeout(t);
+    this.saveTimer = this.progressTimer = this.d1Timer = this.broadcastTimer = undefined;
+    this.d1Pending.clear();
+    this.dirtyQueue.clear();
+    this.dirtyProgress.clear();
+    this.d1Progress.clear();
+    this.progress.clear();
+    this.devices.clear();
+    this.loadingDevices.clear();
+    this.pace.clear();
+    this.catchup.clear();
+    this.dirtyMinutes.clear();
+    this.track = [];
+    this.reached = [];
+    this.burn = null;
+    this.lastArrival = null;
+    this.lastPingAt = 0;
+    this.idling = { n: 0, at: 0 };
+    this.clockOffsetMs = 0;
+    this.dirty = false;
+    // 3. This object's own storage.
+    for (const table of ["progress", "d1_queue", "pace", "track", "milestone_reached", "vote_round", "mission"]) this.sql.exec(`DELETE FROM ${table}`);
+    this.sql.exec(`DELETE FROM meta WHERE key IN ('crew_base_kms', 'last_arrival_mission', 'clock_offset_ms')`);
+    this.savedOffset = null;
+    // 4. D1: everything but accounts, sessions, sign-in tokens, devices, crew links and Early Beta badges.
+    const db = this.env.DB;
+    await db.batch([
+      db.prepare(`DELETE FROM daily_km`),
+      db.prepare(`DELETE FROM pings`),
+      db.prepare(`DELETE FROM votes`),
+      db.prepare(`DELETE FROM vote_days`),
+      db.prepare(`DELETE FROM log_entries`),
+      db.prepare(`DELETE FROM milestones`),
+      db.prepare(`DELETE FROM mission_crew`),
+      db.prepare(`DELETE FROM missions`),
+      db.prepare(`DELETE FROM progress`),
+      db.prepare(`DELETE FROM badges WHERE badge <> 'early-beta'`),
+      db.prepare(`DELETE FROM recruits`),
+      db.prepare(`DELETE FROM share_counts`),
+      db.prepare(`DELETE FROM network_caps`),
+    ]);
+    this.lastLogId = 0;
+    // 5. A fresh tour from Earth, a fresh vote, and the first log entry.
+    await this.startMission(nextId);
+    this.loadTech();
+    await this.openVote(this.now());
+    await this.log(
+      "launch",
+      "Launch day",
+      "Everyone starts fresh: OSC-1 sets off from Earth for Mars. Thank you to every Early Beta crew member who flew with us before launch.",
+      {},
+    );
+    return this.adminCommit();
+  }
+
   /** Ends the open round with no result and no effect (its mission is gone). */
   private async abandonVote(now: number) {
     const v = this.vote;

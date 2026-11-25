@@ -36,7 +36,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
-  - [ ] **B2: the launch wipe** (before 15 Dec): a /admin action that backs up first, restarts the probe from Earth and removes every reward except Early Beta. See "B2 plan" below.
+  - [ ] **B2: the launch wipe.** Built 2026-11-25 (prompt 85); pushed, not deployed (no migration). Run on launch day by Nav (or Claude when asked), after a D1 backup. See "B2 status" below.
 
 ## What changed from the order in prompt 06
 
@@ -814,7 +814,13 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Art:** `badge-early-beta.png`, 32×32, drawn in code on the First Ping medal's orange ring (a white β and an orange sparkle; `scripts/make-beta-badge.py`), no PixelLab generations.
 - **Checked locally:** `node scripts/check-beta.mjs` ALL PASS (a guest gets none; signing in gives it; kept on the next visit; /admin lists it; needs the key; a deleted account leaves the list). check-badges, check-rewards, check-auth, check-recruits and check-arrival ALL PASS. Browser flow (headless Edge, phone and wide, dark and light): the banner closed and open, closing remembered, the profile tile for a guest, the How to play box, no sideways scroll, no console errors. tsc clean.
 
-**B2 plan (the launch wipe, before 15 Dec; explain first):**
+**B2 status (built 2026-11-25, prompt 85; pushed, not deployed; no migration):**
+- **/admin "Launch wipe (phase B2)"** (`POST /api/admin/launch-wipe {confirm: "WIPE EVERYTHING"}`, `Probe.adminLaunchWipe`): the phrase typed out (`LAUNCH_WIPE_PHRASE` in shared/beta.ts), plus a "have you backed up D1?" confirm.
+- **What it does:** closes every open game without saving (code 4002; browsers reconnect in about a second), clears the Probe's own storage (progress, the D1 queue, pace, track, milestones, the vote round, the missions, the clock offset), and deletes from D1: daily_km, pings, votes, vote_days, log_entries, milestones, mission_crew, missions, progress, every badge but `early-beta`, recruits, share_counts and network_caps. It then starts mission (old id + 1), Earth → Mars on real time (ids keep counting, so every browser still sees the next arrival screen), opens a fresh vote and logs "Launch day".
+- **Kept:** accounts, sessions and sign-in tokens, devices (names and countries), crew links (share_links), Early Beta badges.
+- **Checked locally:** `node scripts/check-wipe.mjs` ALL PASS (23; it refuses to run against anything but localhost). tsc clean.
+
+**B2 plan (as agreed):**
 - Replaces decision 6 for this launch. Nav (prompt 83): "just starting the probe again and removing any rewards".
 - A /admin action, "Launch wipe", with a typed confirmation, live D1 backed up first: the existing mission reset (a new tour from Earth: 0 km, milestones, the vote round and the log cleared, the planet tech cleared), plus every badge except `early-beta`, and the medals and passport stamps (mission credits).
 - **Decided (Nav, prompt 84): everything else is wiped too**: credits, upgrades, patches, km totals (daily_km), ping streaks and pings, votes, the leaderboards, recruits and Crew Recruiter counts. The game starts fresh on 15 Dec (subject to change). **Kept:** accounts (sign-in, name, country), their sessions, crew links, and the Early Beta badge.

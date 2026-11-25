@@ -39,6 +39,7 @@ const LOOKS: Record<string, Look> = {
   branch_result: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
   leg_start: { label: "NEW LEG", icon: "up", tone: "blue" },
   burn_start: { label: "LANDING BURN", icon: "bolt", tone: "orange" },
+  launch: { label: "LAUNCH", icon: "up", tone: "orange" },
 };
 const FALLBACK: Look = { label: "LOG", icon: "log", tone: "blue" };
 

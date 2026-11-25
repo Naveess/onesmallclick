@@ -13,3 +13,6 @@ export const BETA_ENDS_MS = Date.parse(beta.endsAt);
 export function betaOpen(realNowMs: number): boolean {
   return realNowMs < BETA_ENDS_MS;
 }
+
+/** The launch wipe (phase B2): /admin needs this typed out to run it. */
+export const LAUNCH_WIPE_PHRASE = "WIPE EVERYTHING";

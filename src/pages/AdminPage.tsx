@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { BETA, BETA_ENDS_MS } from "../../shared/beta";
+import { BETA, BETA_ENDS_MS, LAUNCH_WIPE_PHRASE } from "../../shared/beta";
 import { IDLE_PAUSE_MS, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
 import { PixelButton } from "../components/PixelButton";
 import { Sky } from "../components/Sky";
@@ -269,6 +269,7 @@ export function AdminPage() {
   const [hours, setHours] = useState("24");
   const [legDays, setLegDays] = useState("24");
   const [burnMinutes, setBurnMinutes] = useState("60");
+  const [wipeText, setWipeText] = useState("");
   const [burnTarget, setBurnTarget] = useState("2000000");
   const [seconds, setSeconds] = useState("70");
   const [give, setGive] = useState("100000");
@@ -640,6 +641,32 @@ export function AdminPage() {
                 }}
               >
                 Reset mission (keep players)
+              </PixelButton>
+            </Window>
+
+            <Window as="form" tone="orange" className="admin__card" aria-labelledby="admin-wipe" onSubmit={(e: FormEvent) => {
+              e.preventDefault();
+              if (wipeText !== LAUNCH_WIPE_PHRASE) return;
+              if (!window.confirm("The launch wipe can't be undone. Have you backed up D1?")) return;
+              void run("launch-wipe", { confirm: wipeText }).then((ok) => ok && setWipeText(""));
+            }}>
+              <h2 id="admin-wipe" className="admin__h2">
+                Launch wipe (phase B2)
+              </h2>
+              <p className="admin__note">
+                Launch day ({BETA.launchLabel}): the game starts fresh. <strong>Back up D1 first</strong> (docs/todo.md);
+                this can't be undone. Everyone's open game reconnects to mission {p!.missionId + 1}, Earth to Mars, on real time.
+              </p>
+              <ul className="admin__note">
+                <li>Wiped: credits, upgrades, patches, km and the leaderboards, pings and streaks, votes, the mission log, milestones, missions, stamps, medals and planet tech, every badge except Early Beta, recruits, share counts.</li>
+                <li>Kept: accounts and their sign-ins, devices (names and countries), crew links, Early Beta badges.</li>
+              </ul>
+              <label className="admin__field">
+                <span className="label">Type {LAUNCH_WIPE_PHRASE} to confirm</span>
+                <input value={wipeText} onChange={(e) => setWipeText(e.target.value)} autoComplete="off" spellCheck={false} />
+              </label>
+              <PixelButton type="submit" variant="orange" disabled={busy || wipeText !== LAUNCH_WIPE_PHRASE}>
+                Wipe and launch
               </PixelButton>
             </Window>
 

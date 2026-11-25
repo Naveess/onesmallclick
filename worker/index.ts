@@ -28,6 +28,7 @@
 //   POST /api/admin/close-vote  }   (closes today's vote now; its effect applies)
 //   POST /api/admin/clear-vote  }   (lets the admin's own device vote again)
 //   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
+//   POST /api/admin/launch-wipe }   (phase B2: the launch wipe, { confirm: "WIPE EVERYTHING" }; back up D1 first)
 //   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
 //   GET  /api/admin/shares      }   (phase S1: shares and crew-link visits, last 7 days)
 //   GET  /api/admin/beta        }   (prompts 82-83: the accounts with the Early Beta badge)
@@ -36,6 +37,7 @@ import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
+import { LAUNCH_WIPE_PHRASE } from "../shared/beta";
 import { BURN_TARGET_KM } from "../shared/burn";
 import { betaReport, credits, leaderboard, profile, tour } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
@@ -353,5 +355,12 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     return json(await stub.adminClearVote(me.id, me.accountId));
   }
   if (action === "reset") return json(await stub.adminResetMission());
+  // Phase B2: the launch wipe. It can't be undone, so it needs the phrase typed out as well as the key.
+  if (action === "launch-wipe") {
+    if ((body as { confirm?: unknown }).confirm !== LAUNCH_WIPE_PHRASE) {
+      return json({ error: `Type ${LAUNCH_WIPE_PHRASE} to confirm` }, 400);
+    }
+    return json(await stub.adminLaunchWipe());
+  }
   return json({ error: "Not found" }, 404);
 }
