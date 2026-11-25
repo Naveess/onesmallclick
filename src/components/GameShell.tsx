@@ -6,6 +6,7 @@ import { int } from "../game/format";
 import { ArrivalScreen } from "./ArrivalScreen";
 import { BetaBanner } from "./BetaBanner";
 import { Link } from "../router";
+import { DISCORD_INVITE } from "../../shared/community";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
 import { WIDE_QUERY, useMediaQuery } from "../useMediaQuery";
@@ -198,6 +199,9 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
               <Link href="/sign-in">{player.account ? "Account" : "Sign in"}</Link>
               <ThemeLink />
               <FeedbackButton signedIn={player.account !== null} autoOpen />
+              <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">
+                Discord
+              </a>
               {/* Phase 9a: the legal pages, linked from every page. */}
               <span className="game-foot__legal">
                 <Link href="/privacy">Privacy</Link>
@@ -208,6 +212,9 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
           ) : (
             <footer className="game-foot game-foot--wide">
               <FeedbackButton signedIn={player.account !== null} autoOpen />
+              <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">
+                Discord
+              </a>
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms">Terms</Link>
               <Link href="/contact">Contact</Link>

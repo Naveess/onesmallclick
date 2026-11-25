@@ -1,5 +1,6 @@
 import { withMiles } from "../../shared/units";
 import { useUnits } from "../game/units";
+import { DISCORD_INVITE, DISCORD_NAME } from "../../shared/community";
 import { LAUNCH, NUDGES, betaLine, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { Window } from "../components/Window";
 import { useEffect, useState } from "react";
@@ -267,6 +268,18 @@ export function ProfilePage() {
               onClose={() => setSharing(false)}
             />
           )}
+          <section className="profile__section" aria-labelledby="community-label">
+            <h2 id="community-label" className="profile__label">
+              COMMUNITY
+            </h2>
+            <p className="profile__note">
+              Chat with the crew and follow the big moments on{" "}
+              <a href={DISCORD_INVITE} target="_blank" rel="noopener noreferrer">
+                {DISCORD_NAME}
+              </a>
+              .
+            </p>
+          </section>
           {player.known && !player.account && (
             // Phase G1: what signing in gives a guest.
             <Window as="section" tone="orange" className="profile__signin" aria-labelledby="profile-signin">

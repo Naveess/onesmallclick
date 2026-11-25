@@ -320,6 +320,41 @@ const perHour = (rows: number, state: AdminState) => {
   return Math.round(rows / hours).toLocaleString("en-GB");
 };
 
+/** Phase Q1b-1: the Discord bot. A test post, and the latest posts with what happened to each. */
+function Discord({ state, busy, onTest }: { state: AdminState; busy: boolean; onTest: () => void }) {
+  const d = state.discord;
+  if (!d) return null;
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-discord">
+      <h2 id="admin-discord" className="admin__h2">
+        Discord bot · {d.webhook ? "webhook set" : "no webhook (posts are only listed here)"}
+      </h2>
+      <p className="admin__note">
+        Posts the big moments to the mission-log channel: milestones, arrivals, the daily vote and its result, the landing
+        burn, the signal's final hour, safe mode and saves, and the crew goal. At most one post a minute; several moments
+        go together. {d.pending} waiting. A test post goes to the real channel when the webhook is set.
+      </p>
+      {d.recent.length > 0 && (
+        <ul className="admin__feedback">
+          {d.recent.map((p) => (
+            <li key={p.id} className="admin__fb">
+              <p className="admin__fb-head">
+                <strong>{p.title}</strong> · {when(p.at)} · {p.sentAt ? (p.note ?? "sent") : "waiting"}
+              </p>
+              <p className="admin__fb-msg">{p.text}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={onTest} disabled={busy}>
+          Send a test post
+        </PixelButton>
+      </div>
+    </Window>
+  );
+}
+
 /** Phase Q1a: "Report a bug or idea" items, newest first, each marked done by hand (deleted 90 days after). */
 function Feedback({ adminKey }: { adminKey: string }) {
   const [report, setReport] = useState<{ open: number; items: FeedbackItem[] } | null>(null);
@@ -759,6 +794,7 @@ export function AdminPage() {
             <Shares adminKey={key} />
             <Players adminKey={key} />
             <Feedback adminKey={key} />
+            <Discord state={state} busy={busy} onTest={() => void run("discord-test")} />
             <EarlyBeta adminKey={key} />
 
             <Window

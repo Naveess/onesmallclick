@@ -30,6 +30,7 @@ const jsonDir = (dir) =>
     // Phase M: every sentence a reader sees gets its miles (shared/units.ts); source quotes stay as written.
     .map((f) => milesInContent(JSON.parse(read(`${dir}/${f}`))));
 const { stops, probes } = milesInContent(JSON.parse(read("content/campaign.json")));
+const community = JSON.parse(read("content/community.json")); // the Discord invite (phase Q1b-1)
 // Every leg's milestones (E3), Mars first. `milestones` is the Mars leg's, for How to play.
 const legs = jsonDir("content/milestones").sort((a, b) => (a.stop === "mars" ? -1 : b.stop === "mars" ? 1 : 0));
 const milestones = legs.find((l) => l.stop === "mars").milestones;
@@ -214,6 +215,7 @@ ${share ? shareRow(share) : ""}
         <a href="/">Play OneSmallClick</a>
         <a href="/how-to-play">How to play</a>
         <a href="/log">Mission log</a>
+        <a href="${community.discordInvite}" rel="noopener noreferrer">Discord</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
         <a href="/contact">Contact</a>
@@ -301,6 +303,7 @@ ${steps
 ${betaNote()}
       <p class="page__note">The big date on the home screen moves with all of us. More play, sooner arrival.</p>
       <p class="page__note">Every day the crew has a goal, set at 00:00 UTC from the last week's pace. Reach it together and everyone who pushed that day gets 10% of their km as credits.</p>
+      <p class="page__note">Chat with the rest of the crew, and follow the big moments (milestones, arrivals, the vote), on <a href="${community.discordInvite}" rel="noopener noreferrer">${community.discordName}</a>.</p>
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Start pushing</a>
       <section aria-labelledby="milestones-title">
         <h2 id="milestones-title" class="page__h2">Six milestones on the way</h2>
@@ -574,6 +577,13 @@ const privacySections = [
       "When you use “Report a bug or idea”, we keep what you write, which kind it is (bug, idea or other), the page you sent it from, your screen size and your browser (its user agent), so we can fix the problem. Nothing else about you comes with it.",
       "If you're signed in and tick “contact me”, we keep a link to your account so we can reply to its email address. Deleting your account removes that link.",
       "Each report is kept until we've dealt with it, then deleted 90 days later. It uses Turnstile and the same per-network daily count as Ping and the vote (20 reports a day).",
+    ],
+  ],
+  [
+    "Discord",
+    [
+      "We run a Discord server for the crew. A bot posts the big moments there: milestones, arrivals, the daily vote and its result, the landing burn, the signal's final hour, and the crew goal. A post can name the player who saved the signal, by their crew name, never an email.",
+      "The invite link takes you to Discord, which has its own privacy policy. Nothing you do in the game is sent to Discord, and we don't know who you are on it.",
     ],
   ],
   [

@@ -24,6 +24,7 @@
 //   POST /api/admin/leg-start   }   (E4b: the current leg launched { days } ago, for testing medals)
 //   POST /api/admin/burn        }   (E4b part 2b: start the landing burn now { minutes, target })
 //   POST /api/admin/goal        }   (phase Q1a: today's crew goal target { km })
+//   POST /api/admin/discord-test }  (phase Q1b-1: queue a test post for the Discord channel)
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
@@ -326,6 +327,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     if (!Number.isInteger(b.id)) return json({ error: "id must be a whole number" }, 400);
     return json(await markFeedback(env, b.id as number, b.done !== false));
   }
+  if (action === "discord-test") return json(await stub.adminDiscordTest());
   if (action === "goal") {
     const km = Number((body as { km?: unknown }).km);
     if (!Number.isFinite(km) || km < 1 || km > 1e12) return json({ error: "km must be between 1 and 1,000,000,000,000" }, 400);

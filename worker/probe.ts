@@ -1,4 +1,14 @@
 import { withMiles } from "../shared/units";
+import {
+  DISCORD_KEEP,
+  DISCORD_MAX_TRIES,
+  DISCORD_STALE_MS,
+  nextBatch,
+  postForLog,
+  sendToDiscord,
+  type DiscordPost,
+  type DiscordRow,
+} from "./discord";
 import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
 import {
@@ -13,6 +23,7 @@ import {
   MAX_TAPS_PER_S,
   PACE_WINDOW_MIN,
   ROUTE_KM,
+  SIGNAL_FINAL_HOUR_MS,
   SIGNAL_URGENT_S,
   SIGNAL_WINDOW_MS,
   arrivalAt,
@@ -357,6 +368,8 @@ export class Probe extends DurableObject<Env> {
   private rollingGoal: Promise<void> | null = null;
   /** The alarm time last set (real ms), so it's only rewritten when it changes. */
   private alarmAt = 0;
+  /** Real ms before which Discord asked us to wait (a 429), kept in memory only (phase Q1b-1). */
+  private discordRetryAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
   private dead = new WeakSet<WebSocket>();
   /** onlineDevices() and its auto-thrust total, kept for ONLINE_CACHE_MS; null when a socket opened, closed or changed. */
@@ -428,6 +441,10 @@ export class Probe extends DurableObject<Env> {
     // The daily crew goal (phase Q1a): one row a day; the crew's km today is counted live from D1 and the queue.
     this.sql.exec(`CREATE TABLE IF NOT EXISTS crew_goal (
       day TEXT PRIMARY KEY, target_km REAL NOT NULL, reached_at INTEGER, paid_at INTEGER)`);
+    // The Discord bot's queue (phase Q1b-1): posts wait here until they can be sent (worker/discord.ts).
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS discord_out (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, title TEXT NOT NULL, text TEXT NOT NULL,
+      tone TEXT NOT NULL, tries INTEGER NOT NULL DEFAULT 0, sent_at INTEGER, note TEXT)`);
     // Columns added after phase 4 (older tables don't have them).
     const cols = new Set(this.sql.exec<{ name: string }>(`PRAGMA table_info(mission)`).toArray().map((c) => c.name));
     for (const [col, type] of [
@@ -883,9 +900,84 @@ export class Probe extends DurableObject<Env> {
         .run();
       this.lastLogId = Math.max(this.lastLogId, res.meta.last_row_id ?? 0);
       this.scheduleBroadcast(); // the log page reloads when logId changes
+      // The big moments also go to Discord (phase Q1b-1).
+      const post = postForLog(kind, withMiles(title), withMiles(body), data as Record<string, unknown>);
+      if (post) this.queueDiscord(post);
     } catch (err) {
       console.error("log entry failed", err);
     }
+  }
+
+  // ---------- The Discord bot (phase Q1b-1) ----------
+
+  /** Real ms of the last post that reached Discord (the one-a-minute limit counts from it). */
+  private lastDiscordAt(): number {
+    return this.sql.exec<{ t: number | null }>(`SELECT MAX(sent_at) AS t FROM discord_out WHERE note IS NULL`).toArray()[0]?.t ?? 0;
+  }
+
+  private discordPending(): DiscordRow[] {
+    return this.sql
+      .exec<Record<string, SqlStorageValue>>(`SELECT id, at, title, text, tone, tries FROM discord_out WHERE sent_at IS NULL ORDER BY id`)
+      .toArray() as unknown as DiscordRow[];
+  }
+
+  /** Queues a post; the alarm sends it (with any others that arrive in the meantime). */
+  private queueDiscord(post: DiscordPost) {
+    this.sql.exec(`INSERT INTO discord_out (at, title, text, tone) VALUES (?, ?, ?, ?)`, Date.now(), post.title, post.text, post.tone);
+    void this.scheduleAlarm();
+  }
+
+  /** Real ms when the next post can go, or null when nothing waits. */
+  private discordDueAt(): number | null {
+    if (this.discordPending().length === 0) return null;
+    if (!this.env.DISCORD_WEBHOOK_URL) return Date.now(); // no webhook (local): nothing to wait for
+    return Math.max(Date.now(), this.lastDiscordAt() + 60_000, this.discordRetryAt);
+  }
+
+  /** From the alarm: send what's due. */
+  private async flushDiscord() {
+    const now = Date.now();
+    const url = this.env.DISCORD_WEBHOOK_URL;
+    // Late news is dropped, so a webhook that was down for a day doesn't flood the channel when it's back.
+    this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'dropped: too late' WHERE sent_at IS NULL AND at < ?`, now, now - DISCORD_STALE_MS);
+    const rows = this.discordPending();
+    if (rows.length === 0) return;
+    let batch = rows;
+    if (url) {
+      const b = nextBatch(rows, now, this.lastDiscordAt(), this.discordRetryAt);
+      if (b.send.length === 0) return;
+      batch = b.send;
+    }
+    const out = await sendToDiscord(url || undefined, batch, this.env.SITE_URL);
+    const ids = batch.map((r) => r.id).join(",");
+    if (out.status === "sent") {
+      this.sql.exec(`UPDATE discord_out SET sent_at = ? WHERE id IN (${ids})`, Date.now());
+      this.discordRetryAt = 0;
+    } else if (out.status === "off") {
+      this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'not sent: no webhook set' WHERE id IN (${ids})`, Date.now());
+    } else if (out.status === "retry") {
+      this.discordRetryAt = Date.now() + out.retryAfterMs;
+      this.sql.exec(`UPDATE discord_out SET tries = tries + 1 WHERE id IN (${ids})`);
+      this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'dropped: Discord kept refusing it' WHERE sent_at IS NULL AND tries >= ?`, Date.now(), DISCORD_MAX_TRIES);
+    } else {
+      console.error("discord refused the post", out.code);
+      this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = ? WHERE id IN (${ids})`, Date.now(), `refused: HTTP ${out.code}`);
+    }
+    this.sql.exec(`DELETE FROM discord_out WHERE sent_at IS NOT NULL AND id <= (SELECT MAX(id) FROM discord_out) - ?`, DISCORD_KEEP);
+  }
+
+  /** The signal's final hour: a post, once per outage (the next deadline is a new outage). Phase Q1b-2 adds the notification. */
+  private signalFinalHour() {
+    const m = this.mission;
+    const done = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'final_hour_deadline'`).toArray()[0]?.value;
+    if (done === m.signalDeadline) return;
+    this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('final_hour_deadline', ?)`, m.signalDeadline);
+    const at = new Date(m.signalDeadline).toISOString().slice(11, 16);
+    this.queueDiscord({
+      tone: "orange",
+      title: "The signal is in its final hour",
+      text: `Nobody has pinged for a while. At ${at} UTC the probe drops into safe mode, unless someone pings first. One Ping saves it.`,
+    });
   }
 
   // ---------- The probe ----------
@@ -1364,7 +1456,13 @@ export class Probe extends DurableObject<Env> {
     // 00:00 UTC: the crew goal's new day (and yesterday's bonus), even while the probe is paused (phase Q1a).
     at = Math.min(at, (Math.floor(this.now() / DAY_MS) + 1) * DAY_MS);
     if (m.pausedSince === null) {
-      if (m.safeSince === null && !this.burn) at = Math.min(at, m.signalDeadline);
+      if (m.safeSince === null && !this.burn) {
+        at = Math.min(at, m.signalDeadline);
+        // An hour before it runs out: the final-hour post (once per outage).
+        const finalHour = m.signalDeadline - SIGNAL_FINAL_HOUR_MS;
+        const done = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'final_hour_deadline'`).toArray()[0]?.value;
+        if (finalHour > this.now() && done !== m.signalDeadline) at = Math.min(at, finalHour);
+      }
       // When the arrival will be an hour away at today's pace: the landing burn starts (E4b part 2b).
       const burnAt = this.burnStartsAt(this.now());
       if (burnAt !== null) at = Math.min(at, Math.max(this.now() + 5_000, Math.ceil(burnAt / 1000) * 1000));
@@ -1386,7 +1484,9 @@ export class Probe extends DurableObject<Env> {
         at = Math.min(at, Math.ceil(reach / MINUTE_MS) * MINUTE_MS);
       }
     }
-    const real = Math.max(Date.now(), at - this.clockOffsetMs);
+    // The Discord bot's next post (real time, so no clock offset).
+    const discordAt = this.discordDueAt();
+    const real = Math.max(Date.now(), Math.min(at - this.clockOffsetMs, discordAt ?? Infinity));
     if (real === this.alarmAt) return;
     this.alarmAt = real;
     await this.ctx.storage.setAlarm(real);
@@ -1399,6 +1499,7 @@ export class Probe extends DurableObject<Env> {
     await this.checkVote();
     await this.checkGoal();
     await this.checkMilestones();
+    await this.flushDiscord();
     await this.scheduleAlarm();
   }
 
@@ -1414,6 +1515,10 @@ export class Probe extends DurableObject<Env> {
     const until = m.pausedSince ?? Math.min(now, pauseAt ?? Infinity);
     if (m.safeSince === null && m.signalDeadline <= until && !this.burn) await this.enterSafe(until);
     if (pauseAt !== null && pauseAt <= now) await this.enterIdle(pauseAt);
+    // The final hour (phase Q1b): the signal is running, and runs out within the hour.
+    if (m.safeSince === null && m.pausedSince === null && !this.burn && m.signalDeadline > now && m.signalDeadline - now <= SIGNAL_FINAL_HOUR_MS) {
+      this.signalFinalHour();
+    }
     await this.scheduleAlarm();
   }
 
@@ -2124,6 +2229,12 @@ export class Probe extends DurableObject<Env> {
     const ids = pickOptions(round, recent, this.mission.stop);
     const closesAt = Math.floor(now / DAY_MS) * DAY_MS + DAY_MS;
     await this.startRound(now, round, ids, closesAt);
+    // Discord: today's options (the branch vote has its own log entry).
+    this.queueDiscord({
+      tone: "blue",
+      title: "Today's crew vote is open",
+      text: `${ids.map((id) => `• ${voteOption(id)?.label ?? id}`).join("\n")}\nIt closes at 00:00 UTC. Cast yours in the game.`,
+    });
   }
 
   /** Opens a round with these options (a daily vote, or a branch vote on arrival). */
@@ -3000,7 +3111,22 @@ export class Probe extends DurableObject<Env> {
       lastActiveAt: this.mission.lastActiveAt,
       pausesAt: this.pausesAt(),
       players,
+      discord: {
+        webhook: !!this.env.DISCORD_WEBHOOK_URL,
+        pending: this.discordPending().length,
+        recent: this.sql
+          .exec<{ id: number; at: number; title: string; text: string; sentAt: number | null; note: string | null }>(
+            `SELECT id, at, title, text, sent_at AS sentAt, note FROM discord_out ORDER BY id DESC LIMIT 12`,
+          )
+          .toArray(),
+      },
     };
+  }
+
+  /** Queues a test post for the Discord channel (phase Q1b-1): it goes out with the next batch. */
+  async adminDiscordTest(): Promise<AdminState> {
+    this.queueDiscord({ tone: "blue", title: "Test post from /admin", text: "If you can read this, the OSC-1 mission log bot is working." });
+    return this.adminState();
   }
 
   async adminSetDistance(km: number): Promise<AdminState> {

@@ -48,6 +48,8 @@ export const PACE_WINDOW_MIN = 5;
 
 /** The final stretch: the countdown pulses and a ping earns the red badge. */
 export const SIGNAL_URGENT_S = 60;
+/** The signal's "final hour" (phase Q1b: the Discord post and the notification). */
+export const SIGNAL_FINAL_HOUR_MS = 3_600_000;
 /** Under this much time left, a ping earns the orange badge. */
 export const SIGNAL_ORANGE_S = 6 * 3600;
 export type BadgeTier = "blue" | "orange" | "red";
@@ -203,6 +205,8 @@ export interface AdminState {
   pausesAt: number | null;
   /** Devices with saved progress. */
   players: number;
+  /** The Discord bot (phase Q1b-1): is a webhook set, how many posts wait, and the latest posts. */
+  discord: { webhook: boolean; pending: number; recent: { id: number; at: number; title: string; text: string; sentAt: number | null; note: string | null }[] };
 }
 
 /** Where a probe is at a given server time: the last known distance plus coasting and auto-thrust since. */

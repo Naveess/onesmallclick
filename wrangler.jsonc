@@ -30,10 +30,13 @@
       "database_id": "a772545d-83b9-4468-8b63-7691b9359dd4",
       "migrations_dir": "migrations"
     }
-  ]
+  ],
 
-  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET, TURNSTILE_SECRET, GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
+  // Where the game lives, for the links in the Discord posts (and later the notifications). Change it when the domain moves.
+  "vars": { "SITE_URL": "https://onesmallclick.naveessharma.workers.dev" }
+
+  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET, TURNSTILE_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and (phase Q1b) DISCORD_WEBHOOK_URL.
   // Email sign-in (worker/email.ts) also needs, once onesmallclick.io is in Email Service and on Workers Paid:
-  //   "send_email": [{ "name": "EMAIL" }]  and  "vars": { "EMAIL_FROM": "signin@onesmallclick.io" }
+  //   "send_email": [{ "name": "EMAIL" }]  and  "EMAIL_FROM": "signin@onesmallclick.io" in "vars"
   // Production: npx wrangler secret put <NAME>. Local: .dev.vars (git-ignored).
 }
