@@ -15,10 +15,10 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **Before launch, if possible:** the phase G sign-in nudges (more Early Beta accounts) and 8d's opt-in box (so launch-day sign-ups can opt in to crew emails).
 
 ## Checks for Nav (live now)
-- [ ] **B1:** the early-access banner on a phone (closed, More, ×), and the Early Beta badge across the top of your profile.
-- [ ] **2a and 2b only show at an arrival.** To see them before the first real one, use /admin's "Start the landing burn now" (it lands the live probe for everyone, so only when you're happy to), or wait for the Mars arrival after launch.
+- [x] **B1:** the early-access banner on a phone (prompt 87: looks fine).
+- [ ] **2a, 2b and E2 only show at an arrival.** Claude sent screenshots from a local copy (prompt 87): the burn, the landing, the arrival rewards, the branch vote, the probe reveal, the passport. Nav to say if they look right; the live check waits for the Mars arrival after launch.
 - [ ] **E2:** the new probe reveal (it shows when the probe sets off on a new leg, so after the first arrival).
-- [ ] **Google sign-in for friends:** if the OAuth consent screen's publishing status is "Testing", only listed test users can sign in. Add them, or publish the app.
+- [ ] **Publish the Google sign-in app (Nav, now).** It's in "Testing" (prompt 87), so only listed test users can sign in, and email sign-in is off until payday: new players can't make an account or get the Early Beta badge. Google Cloud console → Google Auth Platform → Audience → Publish app (In production). The app only asks for "openid email", so Google needs no verification. Then sign in from an account that isn't a test user to check.
 - [ ] **Older unticked checks (19–20 Nov):** the flight view follow-up live (1f safe mode with the flight view, "Back to the mission" on the account page), and that the counts survive a reload.
 
 ## Payday (from Monday 30 Nov): domain, Email Service and Workers Paid
