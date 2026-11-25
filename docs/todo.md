@@ -15,6 +15,11 @@ Loose ends that aren't a phase yet. Tick them off or move them into docs/plan.md
 - [x] Phase 7b (milestones, fact pages, How to play) built and pushed (`31172c3`).
 - [x] Backup: everything on GitHub; the five sprites made since 18 Nov (`mars-32`, `mars-rotating-64-sheet`, `earth-small`, `stars-far`, `stars-near`) added to Drive (OneSmallClick › Sprites).
 
+## Start here (new chat, 25 Nov, prompt 79)
+- **E4b part 2a** (medals, planet tech, passport stamps) is built and pushed (`6248ddf`), **not deployed**. Nav has the end-of-phase summary and check steps. Waiting for Nav to OK the three small wording changes (the Silver/Bronze day line, the crew-of-1 and crew-of-0 lines, passport stamps three a row on phones) and to say deploy.
+- **To deploy (only when Nav asks):** back up D1 (`npx wrangler d1 export onesmallclick --remote --output ../onesmallclick-backups/d1-onesmallclick-<date>-pre-E4b2a.sql`), apply migration **0014** `--remote`, `npm run deploy`, check live, tag `e4b2a-live`.
+- **Then:** 2b (the landing burn; explain first), 2c (cosmetics, after PixelLab art), then phase G. Next prompt 80, next migration 0015.
+
 ## Next
 - [x] **Deploy 7b** (Nav, 19 Nov; the live bundle matches 31172c3 and migration 0005 is applied): `npx wrangler d1 migrations apply onesmallclick --remote` (migration 0005), then `npm run deploy`, then the four checks in the 7b handover.
 
