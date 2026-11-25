@@ -55,13 +55,8 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [x] **D: desktop layouts are live** (prompts 99–102, version `3c1bb51c`, tag `d-live`; docs/plan.md "D: Desktop layouts"): 1o, 1k and 1n desktop match the design, and the landing burn has its dusk sky.
 - [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: ~~the NASA postcard photos~~ (live, prompt 98), M (miles), **Q1 (the first five, added 25 Nov)**, **A1 and A2 (the admin panel, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
-- [ ] **Q1: the first five** (docs/plan.md "Q"; Nav: do these first of the 25 Nov ideas):
-  - install as an app, with opt-in notifications (signal final hour, landing burn, vote closing);
-  - times in each player's own timezone;
-  - a daily crew goal;
-  - a Discord server and bot (Nav makes the server and webhook);
-  - a "Report a bug or idea" button.
-  Decisions 29–32 first.
+- [x] **Q1a is live** (prompt 105; docs/plan.md "Q1a status"): times in each player's own timezone, the daily crew goal, and "Report a bug or idea" (migration 0018). Decisions 29–32 approved.
+- [ ] **Q1b: install as an app with opt-in notifications (signal final hour, landing burn, vote closing), and the Discord bot.** Waiting for Nav: make the Discord server and a webhook, set `DISCORD_WEBHOOK_URL` (`npx wrangler secret put DISCORD_WEBHOOK_URL`), and send the server's invite link. Claude makes the VAPID keys at deploy time.
 - [ ] **A1 and A2: the admin panel, before launch** (docs/plan.md "A"; Nav, 25 Nov), after Q1 and before G2:
   - A1: admin sign-in (your Google account plus `ADMIN_KEY`), find any player, the player page, fixes (reset, set values, add or remove rewards, name, country, merge, export, delete), save states for every player and the probe (R2), restore with a before-and-after view, the emergency rollback, maintenance mode and docs/runbook.md;
   - A2: warn, time out, hide from boards, ban, the Flags queue, "Report name", the name blocklist, messages (inbox, banner, push, Discord, templates, gifts), and the crew rules on the terms page.

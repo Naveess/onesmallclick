@@ -90,3 +90,40 @@
   color: var(--text-orange);
   font-weight: 600;
 }
+
+/* Phase Q1a: the Feedback card. */
+.admin__feedback {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin__fb {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px;
+  background: var(--well);
+  border: 2px solid var(--line-dim);
+}
+.admin__fb--done {
+  opacity: 0.6;
+}
+.admin__fb-head {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.admin__fb-msg {
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.admin__fb-info {
+  font-size: 11px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}

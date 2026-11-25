@@ -2,7 +2,7 @@ import { kmMi, kmMiFine, speedKmMi } from "../../shared/units";
 import { useRef, useState } from "react";
 import { ClickCounter } from "../components/ClickCounter";
 import { FlightView, type FlightHandle } from "../components/FlightView";
-import { AdSlot, ArrivalEstimate, SignalCard, VoteCard } from "../components/GameCards";
+import { AdSlot, ArrivalEstimate, GoalCard, SignalCard, VoteCard } from "../components/GameCards";
 import { GameShell } from "../components/GameShell";
 import { SafeMode } from "../components/SafeMode";
 import { PixelIcon } from "../components/PixelIcon";
@@ -124,6 +124,7 @@ export function GamePage() {
               total={view.voteTotal}
               mine={player.voteChoice}
               leftS={view.voteLeftS}
+              closesAt={probe.vote.closesAt}
               onVote={(i) => void castVote(i)}
               busy={player.voting || connection !== "live"}
             />
@@ -135,11 +136,14 @@ export function GamePage() {
             total={view.voteTotal}
             mine={player.voteChoice}
             leftS={view.voteLeftS}
+            closesAt={probe.vote.closesAt}
             onVote={(i) => void castVote(i)}
             busy={player.voting || connection !== "live"}
           />
         );
         const orbit = view.orbit ? { at: probe.arrivedAt!, destName: view.destName, onCredits: openArrival } : null;
+        // Phase Q1a: the daily crew goal.
+        const goal = probe.goal && <GoalCard goal={probe.goal} destName={view.destName} wide={wide} />;
         // Today's fact about where we're going (E4b part 1), on legs whose stop has its facts.
         const destFile = view.fact && (
           <DestinationFile wide={wide} stop={probe.stop} destName={view.destName} fact={view.fact} leftS={view.factLeftS} />
@@ -172,6 +176,7 @@ export function GamePage() {
               </section>
               <div className="home__spacer" aria-hidden="true" />
               {vote}
+              {goal}
               {destFile}
               {switches.ads && <AdSlot width={320} height={50} />}
             </main>
@@ -222,6 +227,7 @@ export function GamePage() {
               <div className="home__side">
                 {askPing}
                 {vote}
+                {goal}
                 {destFile}
               </div>
             </div>

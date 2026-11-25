@@ -1,3 +1,4 @@
+import { FEEDBACK_KIND_NAMES, type FeedbackItem } from "../../shared/feedback";
 import { useEffect, useState, type FormEvent } from "react";
 import { BETA, BETA_ENDS_MS, LAUNCH_WIPE_PHRASE } from "../../shared/beta";
 import type { PlayersReport } from "../../shared/nudges";
@@ -319,6 +320,74 @@ const perHour = (rows: number, state: AdminState) => {
   return Math.round(rows / hours).toLocaleString("en-GB");
 };
 
+/** Phase Q1a: "Report a bug or idea" items, newest first, each marked done by hand (deleted 90 days after). */
+function Feedback({ adminKey }: { adminKey: string }) {
+  const [report, setReport] = useState<{ open: number; items: FeedbackItem[] } | null>(null);
+  const [error, setError] = useState("");
+  const load = async () => {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/feedback", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setReport((await res.json()) as { open: number; items: FeedbackItem[] });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  const mark = async (id: number, done: boolean) => {
+    try {
+      await call(adminKey, "feedback-done", { id, done });
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, [adminKey]);
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-feedback">
+      <h2 id="admin-feedback" className="admin__h2">
+        Feedback{report ? ` · ${report.open} new` : ""}
+      </h2>
+      <p className="admin__note">
+        Bug reports and ideas from "Report a bug or idea". Done items are deleted 90 days later. An email shows only when
+        a signed-in player ticked "contact me".
+      </p>
+      {report && report.items.length === 0 && <p className="admin__note">Nothing yet.</p>}
+      {report && report.items.length > 0 && (
+        <ul className="admin__feedback">
+          {report.items.map((f) => (
+            <li key={f.id} className={f.doneAt ? "admin__fb admin__fb--done" : "admin__fb"}>
+              <p className="admin__fb-head">
+                <strong>{FEEDBACK_KIND_NAMES[f.kind]}</strong> · {when(f.at)}
+                {f.page ? ` · ${f.page}` : ""}
+              </p>
+              <p className="admin__fb-msg">{f.message}</p>
+              {f.contact && (
+                <p className="admin__note">
+                  Contact: {f.contact.name}
+                  {f.contact.email ? ` · ${f.contact.email}` : " · signed in with Google (no email stored)"}
+                </p>
+              )}
+              {f.info && <p className="admin__fb-info">{f.info}</p>}
+              <PixelButton variant="outline" onClick={() => void mark(f.id, !f.doneAt)}>
+                {f.doneAt ? `Done ${when(f.doneAt)} · reopen` : "Mark done"}
+              </PixelButton>
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && <p className="admin__note">Couldn't load: {error}</p>}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={() => void load()}>
+          Refresh
+        </PixelButton>
+      </div>
+    </Window>
+  );
+}
+
 export function AdminPage() {
   useDocumentTitle("Admin · OneSmallClick");
   useNoIndex();
@@ -335,6 +404,7 @@ export function AdminPage() {
   const [burnTarget, setBurnTarget] = useState("2000000");
   const [seconds, setSeconds] = useState("70");
   const [give, setGive] = useState("100000");
+  const [goalKm, setGoalKm] = useState("20000");
 
   const run = async (action: string, body?: object, k = key) => {
     setBusy(true);
@@ -579,6 +649,35 @@ export function AdminPage() {
             <Window
               as="form"
               className="admin__card"
+              aria-labelledby="admin-goal"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                void run("goal", { km: Number(goalKm.replace(/[,\s_]/g, "")) });
+              }}
+            >
+              <h2 id="admin-goal" className="admin__h2">
+                Crew goal today
+              </h2>
+              <p className="admin__note">
+                {state.probe.goal
+                  ? `${state.probe.goal.day}: ${int(state.probe.goal.km)} of ${int(state.probe.goal.targetKm)} km${state.probe.goal.reachedAt ? `, reached ${when(state.probe.goal.reachedAt)}` : ""}.`
+                  : "Not set yet."}{" "}
+                Phase Q1a. Set at 00:00 UTC to 1.2× the median of the last 7 days, at least 20,000 km. Setting a target
+                un-reaches it, so a target under today's km shows the moment again. The bonus is paid at 00:00 UTC (to test
+                it locally, move the clock forward 24 hours). On live, everyone sees the change.
+              </p>
+              <label className="admin__field">
+                <span className="label">Today's target, km</span>
+                <input inputMode="numeric" value={goalKm} onChange={(e) => setGoalKm(e.target.value)} required />
+              </label>
+              <PixelButton type="submit" disabled={busy}>
+                Set the target
+              </PixelButton>
+            </Window>
+
+            <Window
+              as="form"
+              className="admin__card"
               aria-labelledby="admin-leg-start"
               onSubmit={(e: FormEvent) => {
                 e.preventDefault();
@@ -659,6 +758,7 @@ export function AdminPage() {
             <NetworkCap adminKey={key} />
             <Shares adminKey={key} />
             <Players adminKey={key} />
+            <Feedback adminKey={key} />
             <EarlyBeta adminKey={key} />
 
             <Window

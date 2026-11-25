@@ -1,3 +1,4 @@
+import { LocalTime } from "./LocalTime";
 import { compactKmMi } from "../../shared/units";
 import { branchStopId, legKm, probeFor, stop as campaignStop, stopName } from "../../shared/campaign";
 import { hms, int } from "../game/format";
@@ -14,6 +15,8 @@ interface BranchVoteProps {
   total: number;
   mine: number | null;
   leftS: number;
+  /** When the vote closes (phase Q1a: shown in the player's own time). */
+  closesAt?: number;
   onVote: (index: number) => void;
   busy?: boolean;
 }
@@ -27,7 +30,7 @@ function distance(km: number | null): string {
  * "Where next? The route splits" (1k, phase 8c): the two-way branch vote on arrival, from content/campaign.json.
  * Each branch shows its new probe, its distance and the planet tech it would unlock. The probe art comes in E2.
  */
-export function BranchVote({ at, options, total, mine, leftS, onVote, busy = false }: BranchVoteProps) {
+export function BranchVote({ at, options, total, mine, leftS, closesAt, onVote, busy = false }: BranchVoteProps) {
   const names = options.map((o) => stopName(branchStopId(o.id) ?? ""));
   return (
     <section className="branch" aria-labelledby="branch-label">
@@ -39,6 +42,11 @@ export function BranchVote({ at, options, total, mine, leftS, onVote, busy = fal
           closes {hms(leftS)}
         </span>
       </div>
+      {closesAt !== undefined && (
+        <p className="branch__closes">
+          Closes <LocalTime at={closesAt} />
+        </p>
+      )}
       <div className="branch__fork" aria-hidden="true">
         <span className="branch__here" />
         <span className="branch__here-label">{stopName(at)}</span>

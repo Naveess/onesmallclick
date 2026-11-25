@@ -1,6 +1,7 @@
 // Shared by the browser (src/) and the Worker (worker/): the mission's fixed numbers
 // and the messages that go over the probe's WebSocket. No DOM or Worker APIs here.
 
+import type { CrewGoal } from "./goal";
 import type { BurnResult, BurnState } from "./burn";
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
@@ -128,6 +129,8 @@ export interface ProbeSnapshot {
   logId: number;
   /** Milestones this mission has reached (phase 7b). */
   milestones: ReachedMilestone[];
+  /** Today's crew goal (phase Q1a, shared/goal.ts), or null before it's set. */
+  goal?: CrewGoal | null;
 }
 
 /** This device's own numbers for today (UTC). */
@@ -176,7 +179,9 @@ export type ServerMessage =
   | { t: "badges"; now: number; earned: BadgeId[]; badges: EarnedBadge[] }
   | ({ t: "credited"; seq: number; taps: number; km: number; now: number; probe: ProbeSnapshot; me: Progress } & DeviceToday)
   /** The answer to a buy or a handover: refused when it isn't affordable (or unlocked). */
-  | { t: "me"; seq: number; ok: boolean; now: number; me: Progress };
+  | { t: "me"; seq: number; ok: boolean; now: number; me: Progress }
+  /** The crew goal's bonus for a day it was reached (phase Q1a), paid at the next 00:00 UTC. */
+  | { t: "bonus"; now: number; day: string; credits: number };
 
 /** The /admin page's view of the probe. */
 export interface AdminState {

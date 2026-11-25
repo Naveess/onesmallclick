@@ -1,3 +1,4 @@
+import { yourTime } from "../game/format";
 import { withMiles } from "../../shared/units";
 import { landingPostcardOf, postcardBySlug } from "../../shared/postcards";
 import { PostcardPhoto } from "../components/PostcardPhoto";
@@ -37,6 +38,7 @@ const LOOKS: Record<string, Look> = {
   signal_restored: { label: "SIGNAL", icon: "signal", tone: "orange" },
   close_save: { label: "SIGNAL", icon: "signal", tone: "orange" },
   milestone: { label: "MILESTONE", icon: "star", tone: "orange" },
+  goal: { label: "CREW GOAL", icon: "trophy", tone: "orange" },
   arrival: { label: "ARRIVAL", icon: "star", tone: "orange" },
   branch_open: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
   branch_result: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
@@ -118,7 +120,7 @@ export function LogPage() {
           at: now, // it's open today
           kind: "vote_open",
           title: vote.question,
-          body: `${optionsLine(vote.options.map((o) => o.label))}. Closes 00:00 UTC.`,
+          body: `${optionsLine(vote.options.map((o) => o.label))}. Closes ${yourTime(vote.closesAt)}.`,
           data: null,
         }
       : null;
@@ -189,7 +191,7 @@ export function LogPage() {
 
           {entries === null && !error && <p className="log__note">Loading the log…</p>}
           {entries !== null && entries.length === 0 && (
-            <p className="log__note">Nothing else in the log yet. Today's vote result lands here at 00:00 UTC.</p>
+            <p className="log__note">Nothing else in the log yet. Today's vote result lands here at {yourTime(vote.closesAt)}.</p>
           )}
           {error && (
             <p className="log__note" role="alert">

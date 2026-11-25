@@ -1,0 +1,6 @@
+/* Phase Q1a: the UTC beside a local time is quieter, but still readable. */
+.local-time__utc {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}

@@ -1,3 +1,4 @@
+import type { CrewGoal } from "../../shared/goal";
 import { burnKmAt, type BurnState } from "../../shared/burn";
 import { useSyncExternalStore } from "react";
 import {
@@ -89,6 +90,8 @@ export interface ProbeState {
   missionId: number;
   /** Milestones this mission has reached. */
   milestones: ReachedMilestone[];
+  /** Today's crew goal (phase Q1a), or null before the server has sent it. */
+  goal: CrewGoal | null;
 }
 
 /** This player's own state. */
@@ -285,6 +288,7 @@ function initialState(): GameState {
       logId: server?.logId ?? 0,
       missionId: server?.missionId ?? 0,
       milestones: server?.milestones ?? [],
+      goal: server?.goal ?? null,
     },
     player: {
       name: "",
@@ -368,6 +372,7 @@ function compose(base: GameState, connection = base.connection): GameState {
         logId: p.logId,
         missionId: p.missionId,
         milestones: p.milestones ?? [],
+        goal: p.goal ?? null,
       }),
     },
     player: {
@@ -403,6 +408,15 @@ function doneBuying(s: GameState): GameState {
 
 function onMessage(msg: ServerMessage) {
   offsetMs = msg.now - Date.now();
+  // Phase Q1a: the crew goal's bonus for a day the crew reached it, paid at 00:00 UTC (the credits come in a "me").
+  if (msg.t === "bonus") {
+    showToast({
+      tier: null,
+      title: `Crew goal bonus: +${Math.round(msg.credits).toLocaleString("en-GB")} cr`,
+      body: "The crew reached the goal, so here's 10% of your km that day as credits.",
+    });
+    return;
+  }
   if (msg.t === "badges") {
     serverToday = { ...serverToday, badges: msg.badges };
     set(compose(state));
@@ -434,12 +448,27 @@ function onMessage(msg: ServerMessage) {
   if (msg.t === "me" && msg.seq !== 0 && msg.seq === buyingSeq) next = doneBuying(next);
   if (msg.t === "credited") inFlight.delete(msg.seq);
   if (msg.t !== "me") {
+    // Phase Q1a: the crew just reached today's goal while you were here (the toast shows after this update).
+    const was = server?.goal;
+    const goal = msg.probe.goal;
+    goalJustReached = msg.t !== "hello" && !!goal?.reachedAt && !!was && was.day === goal.day && !was.reachedAt;
     server = msg.probe;
     next = withArrival(withMoment(next, msg.probe), msg.probe);
   }
   if (msg.t === "hello" || msg.t === "state") writeCache(msg.probe);
   set(compose(next));
+  if (goalJustReached) {
+    goalJustReached = false;
+    showToast({
+      tier: null,
+      title: "Crew goal reached!",
+      body: "Everyone who pushed today gets 10% of their km today as credits at 00:00 UTC. Keep pushing: more km, more bonus.",
+    });
+  }
 }
+
+/** Phase Q1a: set by onMessage when a snapshot shows today's goal newly reached. */
+let goalJustReached = false;
 
 // --- Milestone moments: each browser sees each milestone once ---
 

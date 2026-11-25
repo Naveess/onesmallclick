@@ -1,3 +1,4 @@
+import { FeedbackButton } from "./Feedback";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { PixelButton } from "./PixelButton";
 import { PixelIcon } from "./PixelIcon";
@@ -71,7 +72,7 @@ export class CrashScreen extends Component<{ children: ReactNode }, State> {
               <p className="launch__lede">The game hit a problem it couldn't recover from. Reloading usually fixes it, and the probe kept flying.</p>
               <PixelButton onClick={() => window.location.reload()}>Reload</PixelButton>
               <p className="launch__legal">
-                Still stuck? <a href="/contact">Tell us</a>
+                Still stuck? <FeedbackButton signedIn={false} className="launch__report" />
               </p>
             </Window>
           </main>

@@ -1,3 +1,4 @@
+import { FeedbackButton } from "./Feedback";
 import { useEffect, useState, type ReactNode } from "react";
 import { buyUpgrade, dismissArrival, dismissMoment, dismissWelcome, handOver, nudgeToast, useGame } from "../game/store";
 import { LAUNCH, NUDGES, betaLine, ctaLabel, dismissedToday, fillNudge, signInHref, toastNudgeUsed, spendToastNudge } from "../game/nudges";
@@ -196,6 +197,7 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
               <Link href="/profile">Profile</Link>
               <Link href="/sign-in">{player.account ? "Account" : "Sign in"}</Link>
               <ThemeLink />
+              <FeedbackButton signedIn={player.account !== null} autoOpen />
               {/* Phase 9a: the legal pages, linked from every page. */}
               <span className="game-foot__legal">
                 <Link href="/privacy">Privacy</Link>
@@ -205,6 +207,7 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
             </footer>
           ) : (
             <footer className="game-foot game-foot--wide">
+              <FeedbackButton signedIn={player.account !== null} autoOpen />
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms">Terms</Link>
               <Link href="/contact">Contact</Link>

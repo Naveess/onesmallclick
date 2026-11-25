@@ -1,3 +1,4 @@
+import { yourTime } from "../game/format";
 import { miOnly } from "../../shared/units";
 import { NUDGES, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { useEffect, useState } from "react";
@@ -100,7 +101,7 @@ export function RanksPage() {
               <h1 id="ranks-title" className="ranks__title">
                 Leaderboards
               </h1>
-              <p className="ranks__sub">Distance pushed today · resets 00:00 UTC</p>
+              <p className="ranks__sub">Distance pushed today · resets {yourTime((Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000)}</p>
             </div>
           </header>
 

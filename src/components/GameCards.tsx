@@ -1,3 +1,7 @@
+import { ShareNudge } from "./ShareNudge";
+import { miles } from "../../shared/units";
+import { GOAL_BONUS_CAP, type CrewGoal } from "../../shared/goal";
+import { LocalTime } from "./LocalTime";
 import { KEEPER_DAYS, ROMAN, keeperLevel } from "../../shared/badges";
 import { MEDAL_NAMES, type MedalPace } from "../../shared/medals";
 import { medalArt } from "../game/rewardArt";
@@ -141,6 +145,11 @@ export function SignalCard({ leftS, urgent, pinged, pinging = false, streakDays,
       aria-label={`Signal time left ${hms(leftS)}`}
     >
       {hms(leftS)}
+      {leftS > 86_400 && (
+        <span className="signal__when">
+          runs out <LocalTime at={Math.round((Date.now() + leftS * 1000) / 60_000) * 60_000} utc={false} />
+        </span>
+      )}
     </div>
   );
   const pingIcon = <PixelIcon name={pinged ? "check" : "signal"} size={18} tone={urgent && !wide ? "orange" : "blue"} />;
@@ -201,13 +210,15 @@ interface VoteCardProps {
   total: number;
   mine: number | null;
   leftS: number;
+  /** When the round closes (phase Q1a: shown in the player's own time). */
+  closesAt?: number;
   onVote: (index: number) => void;
   /** A vote is on its way, or there's no line to the probe. */
   busy?: boolean;
   wide?: boolean;
 }
 
-export function VoteCard({ question, options, total, mine, leftS, onVote, busy = false, wide = false }: VoteCardProps) {
+export function VoteCard({ question, options, total, mine, leftS, closesAt, onVote, busy = false, wide = false }: VoteCardProps) {
   return (
     <Window as="section" className={wide ? "vote vote--wide" : "vote"} aria-labelledby="vote-label">
       <div className="vote__head">
@@ -249,7 +260,67 @@ export function VoteCard({ question, options, total, mine, leftS, onVote, busy =
       </ul>
       <p className="vote__foot">
         {int(total)} vote{total === 1 ? "" : "s"} · result goes in the mission log
+        {closesAt !== undefined && (
+          <>
+            <br />
+            Closes <LocalTime at={closesAt} />
+          </>
+        )}
       </p>
+    </Window>
+  );
+}
+
+/* ---------- The daily crew goal (phase Q1a) ---------- */
+
+/** "Crew goal today: 12,800 of 20,000 km, 64%": the crew's km today against the target set at 00:00 UTC. */
+export function GoalCard({ goal, destName, wide = false }: { goal: CrewGoal; destName: string; wide?: boolean }) {
+  const pct = Math.min(100, Math.floor((goal.km / Math.max(1, goal.targetKm)) * 100));
+  const reached = goal.reachedAt !== null;
+  return (
+    <Window as="section" tone={reached ? "orange" : "blue"} className={wide ? "goal goal--wide" : "goal"} aria-labelledby="goal-label">
+      <div className="goal__head">
+        <h2 id="goal-label" className="goal__label">
+          {wide && <PixelIcon name="trophy" size={18} tone="orange" />}
+          {reached ? "CREW GOAL REACHED" : "CREW GOAL TODAY"}
+        </h2>
+        <span className="goal__pct num">{pct}%</span>
+      </div>
+      <div
+        className="goal__bar"
+        role="progressbar"
+        aria-label="Crew goal today"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+      >
+        <div className={reached ? "goal__fill goal__fill--reached" : "goal__fill"} style={{ width: `${pct}%` }} />
+      </div>
+      <p className="goal__nums num">
+        {int(goal.km)} of {int(goal.targetKm)} km
+        <span className="mi">
+          {int(miles(goal.km))} of {int(miles(goal.targetKm))} mi
+        </span>
+      </p>
+      <p className="goal__note">
+        {reached ? (
+          <>
+            Reached at <LocalTime at={goal.reachedAt!} utc={false} />. Everyone who pushed today gets 10% of their km
+            today as credits (up to {int(GOAL_BONUS_CAP)}), paid at 00:00 UTC.
+          </>
+        ) : (
+          <>Reach it together and everyone who pushed today gets 10% of their km today as credits (up to {int(GOAL_BONUS_CAP)}).</>
+        )}
+      </p>
+      {reached && (
+        <ShareNudge
+          moment="goal"
+          variant="orange"
+          fill={{ target: goal.targetKm, dest: destName }}
+          label="Share the goal"
+          title="Share today's crew goal"
+        />
+      )}
     </Window>
   );
 }

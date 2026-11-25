@@ -1,3 +1,4 @@
+import { LocalTime } from "./LocalTime";
 import { miles, withMiles } from "../../shared/units";
 import { stopName } from "../../shared/campaign";
 import { destinationArt } from "../game/flightArt";
@@ -111,6 +112,9 @@ export function BurnScreen({ burn, wide, online, stop, probeId, probeTag, onThru
           <p className="burn__kick">{burn.filled ? "LANDING STUCK · KEEP BURNING" : "FINAL HOUR · LANDING BURN"}</p>
           <p className="burn__left num" aria-label={`${Math.ceil(burn.leftS / 60)} minutes to landing on ${dest}`}>
             {hms(burn.leftS)}
+          </p>
+          <p className="burn__lands">
+            Lands at <LocalTime at={burn.landAt} />
           </p>
           <h1 id="burn-title" className="burn__title">
             Landing burn: {withMiles(`${int(burn.target)} km`)} to stick the landing

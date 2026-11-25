@@ -14,6 +14,7 @@
 //   GET  /api/tour            the legs flown so far and which you helped on (E1, the campaign map)
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
+//   POST /api/feedback        { token, kind, message, contact, page, info } (Turnstile) → "Report a bug or idea" (phase Q1a, worker/feedback.ts)
 //   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
 //   GET  /c/<code>            the game with that crew link's link preview (phase S1; run_worker_first in wrangler.jsonc)
 //   GET  /milestones/*, /destinations/*, /how-to-play   content pages with absolute preview links (phase S1)
@@ -22,6 +23,7 @@
 //   POST /api/admin/clock       }
 //   POST /api/admin/leg-start   }   (E4b: the current leg launched { days } ago, for testing medals)
 //   POST /api/admin/burn        }   (E4b part 2b: start the landing burn now { minutes, target })
+//   POST /api/admin/goal        }   (phase Q1a: today's crew goal target { km })
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
@@ -33,7 +35,10 @@
 //   GET  /api/admin/shares      }   (phase S1: shares and crew-link visits, last 7 days)
 //   GET  /api/admin/beta        }   (prompts 82-83: the accounts with the Early Beta badge)
 //   GET  /api/admin/players     }   (phase G1: the Players card, counts only)
+//   GET  /api/admin/feedback    }   (phase Q1a: bug reports and ideas)
+//   POST /api/admin/feedback-done } (phase Q1a: { id, done } marks one done)
 
+import { feedbackReport, markFeedback, sendFeedback } from "./feedback";
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
@@ -80,6 +85,7 @@ export default {
     if (path === "/api/tour" && request.method === "GET") return tour(request, env);
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
+    if (path === "/api/feedback" && request.method === "POST") return sendFeedback(request, env, turnstileOk);
     if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);
     if (path === "/api/share" && request.method === "POST") return countShare(request, env);
     if (path.startsWith("/api/crew/") && request.method === "GET") return crewInfo(request, env, path.slice("/api/crew/".length), url);
@@ -158,7 +164,7 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
 }
 
 /** Checks the invisible Turnstile token with Cloudflare. */
-async function turnstileOk(token: string, request: Request, env: Env, action: "ping" | "vote"): Promise<boolean> {
+async function turnstileOk(token: string, request: Request, env: Env, action: "ping" | "vote" | "feedback"): Promise<boolean> {
   const form = new FormData();
   form.append("secret", env.TURNSTILE_SECRET);
   form.append("response", token);
@@ -298,6 +304,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
   if (action === "shares" && request.method === "GET") return json(await shareReport(env));
   if (action === "beta" && request.method === "GET") return json(await betaReport(env));
   if (action === "players" && request.method === "GET") return json(await playersReport(env));
+  if (action === "feedback" && request.method === "GET") return json(await feedbackReport(env));
   if (request.method !== "POST") return json({ error: "Not found" }, 404);
 
   const body = (await request.json().catch(() => ({}))) as { km?: unknown; hours?: unknown };
@@ -313,6 +320,16 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     if (!Number.isFinite(minutes) || minutes < 1 || minutes > 60) return json({ error: "minutes must be between 1 and 60" }, 400);
     if (!Number.isFinite(target) || target < 1 || target > 1e9) return json({ error: "target must be between 1 and 1,000,000,000 km" }, 400);
     return json(await stub.adminStartBurn(minutes, target));
+  }
+  if (action === "feedback-done") {
+    const b = body as { id?: unknown; done?: unknown };
+    if (!Number.isInteger(b.id)) return json({ error: "id must be a whole number" }, 400);
+    return json(await markFeedback(env, b.id as number, b.done !== false));
+  }
+  if (action === "goal") {
+    const km = Number((body as { km?: unknown }).km);
+    if (!Number.isFinite(km) || km < 1 || km > 1e12) return json({ error: "km must be between 1 and 1,000,000,000,000" }, 400);
+    return json(await stub.adminSetGoal(Math.round(km)));
   }
   if (action === "leg-start") {
     const days = Number((body as { days?: unknown }).days);

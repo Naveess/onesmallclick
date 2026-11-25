@@ -1,4 +1,5 @@
 import { withMiles } from "../shared/units";
+import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
 import {
   BATCH_MS,
@@ -350,6 +351,10 @@ export class Probe extends DurableObject<Env> {
   private lastLogId = 0;
   /** Milestones the current mission has reached. */
   private reached: ReachedMilestone[] = [];
+  /** Today's crew goal (phase Q1a), or null until it's set for the day. */
+  private goal: CrewGoal | null = null;
+  /** A goal roll in progress (the day changed): everyone waits for the same one. */
+  private rollingGoal: Promise<void> | null = null;
   /** The alarm time last set (real ms), so it's only rewritten when it changes. */
   private alarmAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
@@ -420,6 +425,9 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS vote_round (
       round TEXT PRIMARY KEY, opened_at INTEGER NOT NULL, closes_at INTEGER NOT NULL,
       options TEXT NOT NULL, tallies TEXT NOT NULL, winner INTEGER, closed_at INTEGER)`);
+    // The daily crew goal (phase Q1a): one row a day; the crew's km today is counted live from D1 and the queue.
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS crew_goal (
+      day TEXT PRIMARY KEY, target_km REAL NOT NULL, reached_at INTEGER, paid_at INTEGER)`);
     // Columns added after phase 4 (older tables don't have them).
     const cols = new Set(this.sql.exec<{ name: string }>(`PRAGMA table_info(mission)`).toArray().map((c) => c.name));
     for (const [col, type] of [
@@ -574,6 +582,7 @@ export class Probe extends DurableObject<Env> {
     } catch (err) {
       console.error("log id read failed", err);
     }
+    await this.checkGoal();
     await this.scheduleAlarm();
   }
 
@@ -940,6 +949,7 @@ export class Probe extends DurableObject<Env> {
       logId: this.lastLogId,
       milestones: this.reached,
       burn: this.burnView(now),
+      goal: this.goal && { ...this.goal, km: Math.round(this.goal.km) },
     };
   }
 
@@ -1168,6 +1178,178 @@ export class Probe extends DurableObject<Env> {
     return this.idling.n;
   }
 
+  // ---------- The daily crew goal (phase Q1a, decision 30) ----------
+
+  /** Rolls the goal on to today when the day has changed (from the alarm at 00:00 UTC, or any message). */
+  private async checkGoal() {
+    const today = utcDay(this.now());
+    if (this.goal?.day === today) return;
+    this.rollingGoal ??= this.rollGoal(today).finally(() => (this.rollingGoal = null));
+    await this.rollingGoal;
+  }
+
+  private async rollGoal(today: string) {
+    // Days before today that reached their goal and haven't paid the bonus yet (normally just yesterday).
+    const unpaid = this.sql
+      .exec<{ day: string }>(`SELECT day FROM crew_goal WHERE reached_at IS NOT NULL AND paid_at IS NULL AND day < ? ORDER BY day`, today)
+      .toArray();
+    for (const r of unpaid) await this.payGoal(r.day);
+    const done = this.goal && this.goal.day < today ? this.goal : null;
+    if (done) await this.copyGoal(done, await this.crewKmOn(done.day));
+
+    let row = this.sql
+      .exec<{ day: string; target_km: number; reached_at: number | null }>(`SELECT day, target_km, reached_at FROM crew_goal WHERE day = ?`, today)
+      .toArray()[0];
+    if (!row) {
+      const target = await this.goalTargetFor(today);
+      row = this.sql
+        .exec<{ day: string; target_km: number; reached_at: number | null }>(
+          `INSERT INTO crew_goal (day, target_km) VALUES (?, ?) ON CONFLICT (day) DO UPDATE SET day = day
+           RETURNING day, target_km, reached_at`,
+          today,
+          target,
+        )
+        .toArray()[0];
+      this.sql.exec(`DELETE FROM crew_goal WHERE day < ?`, utcDay(this.now() - 30 * DAY_MS));
+    }
+    const km = await this.crewKmOn(today);
+    if (utcDay(this.now()) !== today) return; // the clock moved on while reading (/admin): the next message rolls again
+    this.goal = { day: today, targetKm: row.target_km, km, reachedAt: row.reached_at };
+    if (this.goal.reachedAt === null && km >= this.goal.targetKm) this.goalReached(this.now());
+    else void this.copyGoal(this.goal, km);
+    this.scheduleBroadcast();
+  }
+
+  /** Every player's km on a UTC day: D1's daily_km plus what's still waiting to be flushed. */
+  private async crewKmOn(day: string): Promise<number> {
+    while (this.flushing) await this.flushing; // mid-flush the same km would be in both
+    let km = 0;
+    try {
+      const r = await this.env.DB.prepare(`SELECT SUM(km) AS km FROM daily_km WHERE day = ?`).bind(day).first<{ km: number | null }>();
+      km = r?.km ?? 0;
+    } catch (err) {
+      console.error("goal km read failed", err);
+    }
+    for (const p of this.d1Pending.values()) if (p.day === day) km += p.km;
+    return km;
+  }
+
+  /** 1.2× the median of the last 7 days' crew km, 2 significant figures, at least 20,000 km (shared/goal.ts). */
+  private async goalTargetFor(today: string): Promise<number> {
+    const t = Date.parse(`${today}T00:00:00Z`);
+    const days = Array.from({ length: GOAL_DAYS }, (_, i) => utcDay(t - (GOAL_DAYS - i) * DAY_MS));
+    const byDay = new Map(days.map((d) => [d, 0]));
+    while (this.flushing) await this.flushing;
+    try {
+      const rows = await this.env.DB.prepare(`SELECT day, SUM(km) AS km FROM daily_km WHERE day >= ? AND day < ? GROUP BY day`)
+        .bind(days[0], today)
+        .all<{ day: string; km: number }>();
+      for (const r of rows.results) byDay.set(r.day, r.km);
+    } catch (err) {
+      console.error("goal target read failed", err);
+    }
+    for (const p of this.d1Pending.values()) if (byDay.has(p.day)) byDay.set(p.day, (byDay.get(p.day) ?? 0) + p.km);
+    return goalTarget(days.map((d) => byDay.get(d) ?? 0));
+  }
+
+  /** The crew just reached today's goal: saved at once, then the log entry and everyone's screens. */
+  private goalReached(at: number) {
+    const g = this.goal;
+    if (!g || g.reachedAt !== null) return;
+    g.reachedAt = at;
+    this.sql.exec(`UPDATE crew_goal SET reached_at = ? WHERE day = ?`, at, g.day);
+    this.scheduleBroadcast();
+    void (async () => {
+      await this.log(
+        "goal",
+        "Crew goal reached",
+        `The crew pushed ${gb.format(g.targetKm)} km today and reached the goal. Everyone who pushed today gets 10% of their km today as credits (up to ${gb.format(GOAL_BONUS_CAP)}), paid at 00:00 UTC.`,
+        { day: g.day, targetKm: g.targetKm },
+      );
+      await this.copyGoal(g, g.km);
+    })();
+  }
+
+  /**
+   * Pays a reached day's bonus, once: everyone who pushed that day gets 10% of their km as credits, capped (decision 30).
+   * Never trip speed. The credits and the "paid" mark are written together, so a restart can't pay twice.
+   */
+  private async payGoal(day: string) {
+    while (this.flushing) await this.flushing;
+    const kmBy = new Map<string, number>();
+    try {
+      const rows = await this.env.DB.prepare(
+        `SELECT CASE WHEN account_id IS NOT NULL THEN 'a:' || account_id ELSE device_id END AS k, SUM(km) AS km
+         FROM daily_km WHERE day = ? AND km > 0 GROUP BY k`,
+      )
+        .bind(day)
+        .all<{ k: string; km: number }>();
+      for (const r of rows.results) kmBy.set(r.k, r.km);
+    } catch (err) {
+      console.error("goal bonus read failed", err);
+      return; // tried again at the next roll or message
+    }
+    for (const p of this.d1Pending.values()) {
+      if (p.day !== day || p.km <= 0) continue;
+      const k = p.accountId ? `a:${p.accountId}` : p.deviceId;
+      kmBy.set(k, (kmBy.get(k) ?? 0) + p.km);
+    }
+    const now = this.now();
+    const paid: [string, number][] = [];
+    this.ctx.storage.transactionSync(() => {
+      const still = this.sql.exec<{ n: number }>(`SELECT COUNT(*) AS n FROM crew_goal WHERE day = ? AND paid_at IS NULL`, day).toArray()[0];
+      if (!still?.n) return;
+      for (const [key, km] of kmBy) {
+        const bonus = goalBonus(km);
+        if (bonus <= 0) continue;
+        const p = this.prog(key, now);
+        p.creditsMilli += bonus * 1000;
+        this.writeProgress(key);
+        this.dirtyProgress.delete(key);
+        paid.push([key, bonus]);
+      }
+      this.sql.exec(`UPDATE crew_goal SET paid_at = ? WHERE day = ?`, now, day);
+    });
+    const total = paid.reduce((a, [, b]) => a + b, 0);
+    for (const [key, bonus] of paid) {
+      this.d1Progress.add(key);
+      const p = this.progress.get(key);
+      if (p) this.sendMe(key, p);
+      this.sendTo(key, { t: "bonus", now, day, credits: bonus });
+    }
+    if (paid.length) this.scheduleD1Flush();
+    try {
+      await this.env.DB.prepare(`UPDATE daily_goals SET paid_at = ?, bonus_players = ?, bonus_credits = ? WHERE day = ?`)
+        .bind(now, paid.length, total, day)
+        .run();
+    } catch (err) {
+      console.error("goal paid copy failed", err);
+    }
+  }
+
+  /** The goal's copy in D1 (daily_goals), for /admin and history. A failure is logged, never fatal. */
+  private async copyGoal(g: CrewGoal, km: number) {
+    try {
+      await this.env.DB.prepare(
+        `INSERT INTO daily_goals (day, target_km, km, reached_at) VALUES (?, ?, ?, ?)
+         ON CONFLICT (day) DO UPDATE SET target_km = excluded.target_km, km = excluded.km, reached_at = excluded.reached_at`,
+      )
+        .bind(g.day, g.targetKm, Math.round(km), g.reachedAt)
+        .run();
+    } catch (err) {
+      console.error("goal copy failed", err);
+    }
+  }
+
+  /** A message to every socket of one player. */
+  private sendTo(key: string, msg: ServerMessage) {
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (a && whoOf(a).key === key) this.send(ws, msg);
+    }
+  }
+
   // ---------- The signal ----------
 
   /**
@@ -1179,6 +1361,8 @@ export class Probe extends DurableObject<Env> {
   private async scheduleAlarm() {
     const m = this.mission;
     let at = this.vote.closesAt;
+    // 00:00 UTC: the crew goal's new day (and yesterday's bonus), even while the probe is paused (phase Q1a).
+    at = Math.min(at, (Math.floor(this.now() / DAY_MS) + 1) * DAY_MS);
     if (m.pausedSince === null) {
       if (m.safeSince === null && !this.burn) at = Math.min(at, m.signalDeadline);
       // When the arrival will be an hour away at today's pace: the landing burn starts (E4b part 2b).
@@ -1213,6 +1397,7 @@ export class Probe extends DurableObject<Env> {
     await this.checkSignal();
     await this.maybeStartBurn();
     await this.checkVote();
+    await this.checkGoal();
     await this.checkMilestones();
     await this.scheduleAlarm();
   }
@@ -2324,6 +2509,12 @@ export class Probe extends DurableObject<Env> {
     if (fromTaps) dev.tapKmToday += km;
     this.addPending(dev.day, w, km, fromTaps ? km : 0);
     this.scheduleD1Flush();
+    // The crew goal (phase Q1a) counts every player's km in full, as the leaderboard does.
+    const g = this.goal;
+    if (g && g.day === dev.day) {
+      g.km += km;
+      if (g.reachedAt === null && g.km >= g.targetKm) this.goalReached(this.now());
+    }
   }
 
   /** Of the time from `from` to `to`, how much the thrusters were awake (outages don't pay). */
@@ -2546,6 +2737,7 @@ export class Probe extends DurableObject<Env> {
 
     await this.checkSignal();
     await this.checkVote();
+    await this.checkGoal();
     const att = ws.deserializeAttachment() as Attachment;
     const { deviceId } = att;
     const w = whoOf(att);
@@ -2869,6 +3061,20 @@ export class Probe extends DurableObject<Env> {
    * Moves the mission clock forward: the probe coasts through those hours, and the signal may run out.
    * With no tap and no connected auto-thrust for 8 hours, the probe pauses part-way.
    */
+  /** Sets today's crew goal (testing, phase Q1a). A new target un-reaches it, so the moment can be seen again. */
+  async adminSetGoal(targetKm: number): Promise<AdminState> {
+    await this.checkGoal();
+    const g = this.goal;
+    if (g) {
+      g.targetKm = targetKm;
+      g.reachedAt = null;
+      this.sql.exec(`UPDATE crew_goal SET target_km = ?, reached_at = NULL WHERE day = ?`, targetKm, g.day);
+      if (g.km >= targetKm) this.goalReached(this.now());
+      else await this.copyGoal(g, g.km);
+    }
+    return this.adminCommit();
+  }
+
   async adminMoveClock(hours: number): Promise<AdminState> {
     this.rebase(this.now());
     this.clockOffsetMs += Math.round(hours * 3_600_000);
@@ -3023,7 +3229,8 @@ export class Probe extends DurableObject<Env> {
     this.clockOffsetMs = 0;
     this.dirty = false;
     // 3. This object's own storage.
-    for (const table of ["progress", "d1_queue", "pace", "track", "milestone_reached", "vote_round", "mission"]) this.sql.exec(`DELETE FROM ${table}`);
+    for (const table of ["progress", "d1_queue", "pace", "track", "milestone_reached", "vote_round", "mission", "crew_goal"]) this.sql.exec(`DELETE FROM ${table}`);
+    this.goal = null;
     this.sql.exec(`DELETE FROM meta WHERE key IN ('crew_base_kms', 'last_arrival_mission', 'clock_offset_ms')`);
     this.savedOffset = null;
     // 4. D1: everything but accounts, sessions, sign-in tokens, devices, crew links and Early Beta badges.
@@ -3042,6 +3249,7 @@ export class Probe extends DurableObject<Env> {
       db.prepare(`DELETE FROM recruits`),
       db.prepare(`DELETE FROM share_counts`),
       db.prepare(`DELETE FROM network_caps`),
+      db.prepare(`DELETE FROM daily_goals`),
     ]);
     this.lastLogId = 0;
     // 5. A fresh tour from Earth, a fresh vote, and the first log entry.
@@ -3054,6 +3262,7 @@ export class Probe extends DurableObject<Env> {
       "Everyone starts fresh: OSC-1 sets off from Earth for Mars. Thank you to every Early Beta crew member who flew with us before launch.",
       {},
     );
+    await this.checkGoal();
     return this.adminCommit();
   }
 
@@ -3080,6 +3289,7 @@ export class Probe extends DurableObject<Env> {
     this.saveProgress();
     this.saveSignal();
     await this.checkVote(); // the clock may have passed midnight
+    await this.checkGoal(); // ... and rolled the crew goal on (paying yesterday's bonus)
     await this.checkMilestones(); // the distance may have passed a milestone
     this.broadcast();
     return this.adminState();

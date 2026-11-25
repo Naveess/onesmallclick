@@ -37,3 +37,50 @@ export function longDate(ms: number): string {
 export function millionsKm(km: number): string {
   return `${(Math.max(0, km) / 1e6).toFixed(2)}M km`;
 }
+
+// ---------- Phase Q1a: times in each player's own timezone (with UTC beside them, so the crew shares one clock) ----------
+
+const localClock = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+const localWeekday = new Intl.DateTimeFormat(undefined, { weekday: "short" });
+const localDayMonth = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
+const utcClock = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hourCycle: "h23", timeZone: "UTC" });
+const utcWeekday = new Intl.DateTimeFormat("en-GB", { weekday: "short", timeZone: "UTC" });
+const utcDayMonth = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });
+
+/** Whole days from `now`'s calendar day to `ms`'s, in the browser's timezone (or UTC). */
+function dayGap(ms: number, now: number, utc: boolean): number {
+  const day = (t: number) => {
+    const d = new Date(t);
+    return utc ? Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) : Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  };
+  return Math.round((day(ms) - day(now)) / 86_400_000);
+}
+
+/** "7:00 pm" today, "Thu 7:00 pm" this week, "Thu 17 Dec, 7:00 pm" further off: the player's own clock and style. */
+export function localTime(ms: number, now = Date.now()): string {
+  const gap = dayGap(ms, now, false);
+  const clock = localClock.format(ms);
+  if (gap === 0) return clock;
+  if (gap > 0 && gap < 7) return `${localWeekday.format(ms)} ${clock}`;
+  return `${localDayMonth.format(ms)}, ${clock}`;
+}
+
+/** The same moment in UTC: "00:00 UTC", "Thu 00:00 UTC" or "Thu 17 Dec 00:00 UTC" (the day relative to UTC's today). */
+export function utcTime(ms: number, now = Date.now()): string {
+  const gap = dayGap(ms, now, true);
+  const clock = utcClock.format(ms);
+  // Tonight's midnight (the daily reset) reads as the end of today: "00:00 UTC", not "Thu 00:00 UTC".
+  if (gap === 0 || (gap === 1 && clock === "00:00")) return `${clock} UTC`;
+  if (gap > 0 && gap < 7) return `${utcWeekday.format(ms)} ${clock} UTC`;
+  return `${utcDayMonth.format(ms)} ${clock} UTC`;
+}
+
+/** The player's clock is on UTC at that moment (the UK in winter, Iceland…): then UTC alone says it. */
+export function onUtc(ms: number): boolean {
+  return new Date(ms).getTimezoneOffset() === 0;
+}
+
+/** "7:00 pm your time (00:00 UTC)", for sentences; just "00:00 UTC" for a player on UTC. */
+export function yourTime(ms: number, now = Date.now()): string {
+  return onUtc(ms) ? utcTime(ms, now) : `${localTime(ms, now)} your time (${utcTime(ms, now)})`;
+}

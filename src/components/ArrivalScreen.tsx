@@ -1,3 +1,4 @@
+import { LocalTime } from "./LocalTime";
 import { NUDGES, signInHref } from "../game/nudges";
 import { Link } from "../router";
 import { useEffect, useState } from "react";
@@ -27,7 +28,6 @@ interface ArrivalScreenProps {
 }
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
-const timeFmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
 
 /** 31,400,000,000 → "31.4 billion"; 2,412,446 stays whole. */
 function big(n: number): string {
@@ -110,7 +110,7 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
             We made it.
           </h1>
           <p className="arrival-screen__when num">
-            {dateFmt.format(arrival.at)} · {timeFmt.format(arrival.at)} UTC
+            {dateFmt.format(arrival.at)} · <LocalTime at={arrival.at} />
           </p>
           {credits && (
             <p className="arrival-screen__stats">

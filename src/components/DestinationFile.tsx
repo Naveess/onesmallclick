@@ -1,3 +1,4 @@
+import { LocalTime } from "./LocalTime";
 import { useState } from "react";
 import { shareMessage } from "../../shared/share";
 import { type FactOfDay } from "../game/facts";
@@ -41,7 +42,8 @@ export function DestinationFile({ stop, destName, fact, leftS, wide = false }: D
       <p className="dest__fact">{fact.fact}</p>
       <div className="dest__foot">
         <span className="dest__next">
-          Next fact at 00:00 UTC · <span className="num">{hms(leftS)}</span>
+          Next fact at <LocalTime at={Math.round((Date.now() + leftS * 1000) / 60_000) * 60_000} /> ·{" "}
+          <span className="num">{hms(leftS)}</span>
         </span>
         <PixelButton
           className="dest__share"

@@ -439,3 +439,10 @@
 .landing__go {
   margin-top: 8px;
 }
+
+/* Phase Q1a: when it lands, in the player's own time. */
+.burn__lands {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

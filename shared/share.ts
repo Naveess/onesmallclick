@@ -21,6 +21,7 @@ export const MOMENTS = [
   "page",
   "map",
   "burn",
+  "goal",
 ] as const;
 export type Moment = (typeof MOMENTS)[number];
 
@@ -154,6 +155,7 @@ export const PREVIEW_IMAGES = [
   "countries",
   "destination-mars",
   "burn",
+  "goal",
 ] as const;
 
 /** The Wordle-style result line (the design's 1e share card, one line per row), easy to paste anywhere. */

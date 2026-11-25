@@ -70,6 +70,11 @@
       "messageAlt": "We're in orbit at {dest}. See the whole route the crew is flying:",
       "preview": "See the whole route the crew is flying, from Earth to the edge of the Solar System.",
       "image": "default"
+    },
+    "goal": {
+      "message": "Our crew just hit today's goal on OneSmallClick: {target} km pushed together on the way to {dest}. Come and push with us:",
+      "preview": "The crew reached today's goal on the way to {dest}. Join in and push one probe across the Solar System together.",
+      "image": "goal"
     }
   }
 }

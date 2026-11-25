@@ -300,6 +300,7 @@ ${steps
       </ol>
 ${betaNote()}
       <p class="page__note">The big date on the home screen moves with all of us. More play, sooner arrival.</p>
+      <p class="page__note">Every day the crew has a goal, set at 00:00 UTC from the last week's pace. Reach it together and everyone who pushed that day gets 10% of their km as credits.</p>
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Start pushing</a>
       <section aria-labelledby="milestones-title">
         <h2 id="milestones-title" class="page__h2">Six milestones on the way</h2>
@@ -525,6 +526,7 @@ const contact = page({
         <p>A fact that looks wrong: which one, and a source if you have it. Every fact links to the page we checked it against.</p>
         <p>Your data: a copy of it, or a question about it. To delete your account straight away, use the <a href="/sign-in">sign-in page</a>. More on the <a href="/privacy">privacy page</a>.</p>
         <p>Cheating you've spotted, ideas for the route, or anything else.</p>
+        <p>Quicker for a bug or an idea: <a href="/?feedback">Report a bug or idea</a> in the game, from the link at the bottom of every game page.</p>
       </section>
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Back to the mission</a>`,
 });
@@ -567,6 +569,14 @@ const privacySections = [
     ],
   ],
   [
+    "Feedback",
+    [
+      "When you use “Report a bug or idea”, we keep what you write, which kind it is (bug, idea or other), the page you sent it from, your screen size and your browser (its user agent), so we can fix the problem. Nothing else about you comes with it.",
+      "If you're signed in and tick “contact me”, we keep a link to your account so we can reply to its email address. Deleting your account removes that link.",
+      "Each report is kept until we've dealt with it, then deleted 90 days later. It uses Turnstile and the same per-network daily count as Ping and the vote (20 reports a day).",
+    ],
+  ],
+  [
     "What other players see",
     [
       "Your crew name, never your email. It can appear in the mission log (for example “Signal restored by orbit_otter”), and on the leaderboards (signed-in players only; the countries board counts everyone’s km by country, without names), and in the mission credits when they arrive.",
@@ -576,7 +586,7 @@ const privacySections = [
     "Who else handles it",
     [
       "Cloudflare runs the whole site: the pages, the game server and the database. Its network handles your IP address to deliver the site, and the game server keeps short-lived logs for fixing problems.",
-      "Ping, the daily vote and the email sign-in use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
+      "Ping, the daily vote, the email sign-in and the feedback form use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
       "Sign-in emails are sent with Cloudflare's Email Service. Google sees that you signed in to OneSmallClick if you use “Continue with Google”.",
       "The database is backed up by Cloudflare, and as encrypted copies in our private Google Drive, in case something goes wrong with either. The copies are locked with a key only we hold, so Google can't read them, and each is deleted after 90 days.",
       "There are no ads, no analytics trackers and no Google scripts on our pages. We never sell your data and never post anything for you.",

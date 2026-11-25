@@ -1,5 +1,6 @@
+import { yourTime } from "../game/format";
 import { useState } from "react";
-import { BETA, betaOpen } from "../../shared/beta";
+import { BETA, BETA_ENDS_MS, betaOpen } from "../../shared/beta";
 import { Link } from "../router";
 import { Window } from "./Window";
 import "./BetaBanner.css";
@@ -53,6 +54,7 @@ export function BetaBanner({ signedIn, hasBadge, safe }: { signedIn: boolean; ha
           {BETA.body.map((p) => (
             <p key={p}>{p}</p>
           ))}
+          <p className="beta__ends">Early Beta sign-ups close {yourTime(BETA_ENDS_MS)}.</p>
           {signedIn ? (
             hasBadge && <p className="beta__have">{BETA.haveBadge}</p>
           ) : (

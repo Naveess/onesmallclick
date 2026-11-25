@@ -98,6 +98,13 @@ const IMAGES = {
     sub: "Every tap counts double for the next hour.",
     art: [at(300, 60, img("/sprites/firework.png", 64, 64, 3)), at(120, 380, probe(4))],
   },
+  goal: {
+    tone: "orange",
+    label: "CREW GOAL · REACHED",
+    title: "We hit today's crew goal",
+    sub: "Everyone who pushed today earns a bonus.",
+    art: [at(300, 60, img("/sprites/firework.png", 64, 64, 3)), at(40, 200, img("/sprites/firework.png", 64, 64, 2)), at(120, 380, probe(4))],
+  },
   safe: {
     tone: "muted",
     label: "SAFE MODE",
