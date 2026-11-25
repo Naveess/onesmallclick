@@ -1207,7 +1207,7 @@ Anything red also posts to Discord (Q5's error alerts).
 34. ~~**Admin sign-in**~~ **Decided (prompt 120): Nav's Google account (the one he plays with) on the `ADMIN_EMAILS` allowlist, plus `ADMIN_KEY`; 12-hour admin sessions; owner and moderator roles, only owner used for now.**
 35. ~~**Save states**~~ **Decided (prompt 120): a new R2 bucket, `onesmallclick-snapshots`, on the free tier. Players' daily save states, and one before every change, kept 90 days to match the backups. The game's hourly states kept 7 days and daily ones 90.**
 
-**A1a status (built 2026-11-25, prompt 120; migration 0020; not deployed yet)**
+**A1a status (built 2026-11-25, prompt 120; migration 0020; LIVE prompt 121, version ace47a54, tag a1a-live)**
 - **Sign-in** (`worker/admin.ts`): `/admin` first checks for an admin session. Without one it shows who is signed in to the game and asks for the admin key; `POST /api/admin/session` needs the game session of an account on `ADMIN_EMAILS` (a secret, comma-separated) that signed in with Google, plus `ADMIN_KEY`. It sets `osc_admin`: HttpOnly, SameSite=Strict, `Path=/api/admin`, 12 hours; only a hash is stored (D1 `admin_sessions`). Taking an email off the allowlist ends its sessions at once. Admin POSTs from another site are refused. Failed sign-ins are logged and capped at 10 a day per network. Locally (`DEV_SIGN_IN_LINKS=1`) the check scripts can still send the key as a Bearer header; in production they can't.
 - **The admin log** (D1 `admin_log`, kept 1 year): sign-ins, failed sign-ins (with why), notes, and every test-control POST with what it sent.
 - **Tabs:** Players, Game (the old test controls) and Reports (feedback, the Discord bot, the players report, shares, networks, Early Beta).
