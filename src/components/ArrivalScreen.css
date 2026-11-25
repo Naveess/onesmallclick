@@ -7,10 +7,100 @@
   padding-bottom: 20px;
 }
 
-/* The design only shows the phone layout for the credits and vote: wide screens get a centred column. */
+/* Phones: the two columns are just part of the one. */
+.arrival-screen__col {
+  display: contents;
+}
+
+/* Wide (1k desktop, phase D): 440px on the left (the destination, the date, the credits), the rest on the right. */
 .arrival-screen--wide {
-  width: min(100%, 560px);
+  display: grid;
+  grid-template-columns: 440px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+  width: min(100%, 1328px);
   margin: 0 auto;
+  padding: 20px 0 40px;
+}
+
+.arrival-screen--wide .arrival-screen__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.arrival-screen--wide .arrival-screen__art {
+  height: 280px;
+}
+
+.arrival-screen--wide .arrival-screen__probe {
+  right: 30px;
+  top: 24px;
+}
+
+.arrival-screen--wide .arrival-screen__title {
+  font-size: 46px;
+}
+
+.arrival-screen--wide .arrival-screen__when {
+  font-size: 28px;
+}
+
+.arrival-screen--wide .arrival-screen__stats {
+  font-size: 14px;
+}
+
+.arrival-screen--wide .arrival-screen__credits {
+  height: 300px;
+}
+
+.arrival-screen--wide .arrival-screen__names li {
+  font-size: 16px;
+}
+
+/* The rewards side by side: the medal and the planet tech, then your stamp. */
+.arrival-screen--wide .rewards.window {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 18px;
+  align-items: start;
+  padding: 18px;
+}
+
+.arrival-screen--wide .rewards__kick {
+  grid-column: 1 / -1;
+}
+
+.arrival-screen--wide .rewards__medal,
+.arrival-screen--wide .rewards__panel--tech {
+  grid-column: 1;
+}
+
+.arrival-screen--wide .rewards__panel--stamp {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+}
+
+.arrival-screen--wide .rewards__medal-art {
+  width: 60px;
+  height: 90px;
+}
+
+.arrival-screen--wide .rewards__medal-name {
+  font-size: 40px;
+}
+
+/* The two branches side by side. */
+.arrival-screen--wide .branch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 24px;
+  align-items: start;
+}
+
+.arrival-screen--wide .branch > :not(.branch__option) {
+  grid-column: 1 / -1;
 }
 
 .arrival-screen__art {

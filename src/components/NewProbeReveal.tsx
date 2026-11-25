@@ -61,7 +61,10 @@ interface NewProbeRevealProps {
   onClose: () => void;
 }
 
-/** "NEW MISSION · ASTEROID BELT … OSC-2 Ceres Hopper … Your upgrades have new names" (1n). */
+/**
+ * "NEW MISSION · ASTEROID BELT … OSC-2 Ceres Hopper … Your upgrades have new names" (1n). Phones: one column.
+ * Wide (1n desktop, phase D): the probe flying in toward its destination on the left, the names on the right.
+ */
 export function NewProbeReveal({ probeId, beforeId, stopId, wide, onClose }: NewProbeRevealProps) {
   const probe = probeById(probeId);
   const before = probeById(beforeId);
@@ -86,42 +89,44 @@ export function NewProbeReveal({ probeId, beforeId, stopId, wide, onClose }: New
 
   return (
     <main className={wide ? "reveal reveal--wide" : "reveal"} aria-labelledby="reveal-title">
-      <p className="reveal__kick reveal__in">NEW MISSION · {(dest?.region ?? "").toUpperCase()}</p>
       <div className="reveal__scene" aria-hidden="true">
         <span className="reveal__dest">{destArt}</span>
         <span className="reveal__fly">
           <ProbeArt id={probe.id} scale={2} />
         </span>
       </div>
-      <div className="reveal__in reveal__in--2">
-        <h1 id="reveal-title" className="reveal__name">
-          {probe.name}
-        </h1>
-        <p className="reveal__pitch">{probe.pitch}</p>
-        <p className="reveal__to">Heading for {dest?.name ?? stopId}.</p>
+      <div className="reveal__panel">
+        <p className="reveal__kick reveal__in">NEW MISSION · {(dest?.region ?? "").toUpperCase()}</p>
+        <div className="reveal__in reveal__in--2">
+          <h1 id="reveal-title" className="reveal__name">
+            {probe.name}
+          </h1>
+          <p className="reveal__pitch">{probe.pitch}</p>
+          <p className="reveal__to">Heading for {dest?.name ?? stopId}.</p>
+        </div>
+        {renamed.length > 0 && (
+          <section className="reveal__names reveal__in reveal__in--3" aria-labelledby="reveal-names">
+            <h2 id="reveal-names" className="reveal__label">
+              YOUR UPGRADES HAVE NEW NAMES
+            </h2>
+            <ul>
+              {renamed.map((r) => (
+                <li key={r.key} className="reveal__row">
+                  <PixelIcon name="bolt" size={9} tone="blue" />
+                  <span>
+                    <span className="reveal__old">{r.from}</span> {r.from.endsWith("s") && !r.from.endsWith("ss") ? "are" : "is"} now{" "}
+                    <span className="reveal__new">{r.to}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="reveal__note">Same levels, same power. Only the names change.</p>
+          </section>
+        )}
+        <PixelButton autoFocus variant="blue" block className="reveal__go reveal__in reveal__in--4" onClick={onClose}>
+          Take the controls
+        </PixelButton>
       </div>
-      {renamed.length > 0 && (
-        <section className="reveal__names reveal__in reveal__in--3" aria-labelledby="reveal-names">
-          <h2 id="reveal-names" className="reveal__label">
-            YOUR UPGRADES HAVE NEW NAMES
-          </h2>
-          <ul>
-            {renamed.map((r) => (
-              <li key={r.key} className="reveal__row">
-                <PixelIcon name="bolt" size={9} tone="blue" />
-                <span>
-                  <span className="reveal__old">{r.from}</span> {r.from.endsWith("s") && !r.from.endsWith("ss") ? "are" : "is"} now{" "}
-                  <span className="reveal__new">{r.to}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="reveal__note">Same levels, same power. Only the names change.</p>
-        </section>
-      )}
-      <PixelButton autoFocus variant="blue" block className="reveal__go reveal__in reveal__in--4" onClick={onClose}>
-        Take the controls
-      </PixelButton>
     </main>
   );
 }

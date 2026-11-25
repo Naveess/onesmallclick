@@ -110,9 +110,64 @@
   padding-bottom: 20px;
 }
 
+/* Phones: the panel and the THRUST row are just part of the one column. */
+.burn__panel,
+.burn__go {
+  display: contents;
+}
+
+/* Wide (1o desktop, phase D): the whole destination on the left, the countdown, bar and THRUST on the right. */
 .burn--wide {
-  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 600px);
+  column-gap: 64px;
+  align-items: center;
+  width: min(100%, 1320px);
   margin: 0 auto;
+}
+
+.burn--wide .burn__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.burn--wide .burn__head {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.burn--wide .burn__nums {
+  font-size: 22px;
+}
+
+.burn--wide .burn__here {
+  justify-content: flex-start;
+}
+
+.burn--wide .burn__go {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.burn--wide .burn__thrust {
+  flex: none;
+}
+
+.burn--wide .burn__note {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+  text-align: left;
+}
+
+.burn--wide .burn__actions {
+  flex-direction: row;
+}
+
+.burn--wide .burn__actions > * {
+  flex: 1;
 }
 
 .burn__art {
@@ -124,7 +179,18 @@
 }
 
 .burn--wide .burn__art {
-  height: 180px;
+  height: 620px;
+  overflow: visible;
+}
+
+.burn--wide .burn__planet {
+  top: 76px;
+  filter: drop-shadow(0 0 40px rgb(var(--glow-mars) / 0.4));
+}
+
+.burn--wide .burn__probe {
+  top: 22px;
+  bottom: auto;
 }
 
 /* The destination close up, its top half off the screen, as in 1o. */

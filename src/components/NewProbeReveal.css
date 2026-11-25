@@ -10,9 +10,77 @@
   text-align: center;
 }
 
+/* Phones: the panel is just part of the one column, with the kicker above the scene. */
+.reveal__panel {
+  display: contents;
+}
+
+.reveal__kick {
+  order: -1;
+}
+
+/* Wide (1n desktop, phase D): the scene on the left, the kicker, name, new names and button on the right. */
 .reveal--wide {
-  width: min(100%, 560px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  column-gap: 64px;
+  align-items: center;
+  width: min(100%, 1200px);
   margin: 0 auto;
+  padding: 40px 0;
+  text-align: left;
+}
+
+.reveal--wide .reveal__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.reveal--wide .reveal__kick {
+  order: 0;
+}
+
+.reveal--wide .reveal__scene {
+  height: 560px;
+}
+
+.reveal--wide .reveal__dest {
+  position: absolute;
+  left: 50%;
+  top: 380px;
+  transform: translateX(-50%);
+}
+
+.reveal--wide .reveal__fly {
+  left: calc(50% - 64px);
+  top: 150px;
+  bottom: auto;
+}
+
+.reveal--wide .reveal__name {
+  font-size: 52px;
+  line-height: 1;
+  text-shadow: 4px 4px 0 var(--blue-text-shadow);
+}
+
+.reveal--wide .reveal__pitch {
+  margin-top: 10px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.reveal--wide .reveal__names {
+  padding: 14px 16px;
+}
+
+.reveal--wide .reveal__row {
+  font-size: 15px;
+}
+
+.reveal--wide .reveal__go.pbtn {
+  min-height: 56px;
+  font-size: 19px;
 }
 
 .reveal img {

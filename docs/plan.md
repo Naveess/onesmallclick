@@ -35,6 +35,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **Q2–Q6: The rest of the 25 Nov ideas** (after Q1, roughly in this order; each gets its approach OK'd first): Q2 settings, first-visit guide, haptics and sound; Q3 random space events, the daily quiz, the postcard album and a seasonal cosmetic; Q4 the live crew ticker and emoji cheers; Q5 retention numbers and error alerts; Q6 after launch: science objectives, Season 2 and a supporter tip jar.
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
+- [ ] **D: Desktop layouts** (added 2026-11-25, prompts 99–100): the desktop designs for 1o (the landing burn), 1k (the arrival and credits) and 1n (the new probe reveal) had been built as a centred phone column. **Built and pushed 2026-11-25, not deployed.** See "D: Desktop layouts" below.
 - [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
@@ -903,6 +904,21 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 **Main risks**
 - **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.
 - **Clutter on the home.** Keep the card compact on phones, and keep the 150px ad gap from THRUST.
+
+## D: Desktop layouts (added 2026-11-25, prompts 99–100)
+
+**Why:** Nav spotted that the landing burn on a computer wasn't the design's "1o · desktop 1440". E4b part 2b had built the wide screen as a bigger centred column, and the 2b check only looked for sideways scroll, not at the design. 1k and 1n desktop had the same gap; 1b (the game home) and 1m (the map) already matched.
+
+**What changed (no game logic or data):**
+- **1o, the landing burn:** wide screens now show the whole destination at 512px on the left (Mars's sprite at 4×) with the probe above it. On the right: the countdown (112px), the bar (34px blocks), who's here, then THRUST with "Click or press space. Stick it for…" beside it. "Call the crew in" and "Back to the mission", which the desktop frame doesn't draw, sit side by side under them.
+- **The dusk sky:** 1o's and 1k's warm sky (`--sky-arrival-*`, `Sky arrival`, `.sky--arrival`) now shows behind the burn screen (phones too) and the arrival screen (which had the milestone sky).
+- **1k, the arrival:** 440px on the left (the destination, "We made it." at 46px, the date, the credits roll 300px tall), the rest on the right: the rewards in two columns (the medal and planet tech, then your stamp), the two branches side by side, then the share and back buttons.
+- **1n, the reveal:** the probe flying in toward its destination on the left (a 560px scene); the kicker, the name at 52px, the new upgrade names and "Take the controls" on the right.
+- **Phones are unchanged:** each screen's right-hand panel is `display: contents` on phones, so the one column is as before (the reveal's kicker keeps its place above the scene with `order`).
+
+**Checked locally:** headless Edge at 1440 × 900 (and 1280 × 800), screenshotted next to the design file's own 1o, 1k and 1n desktop frames: two columns on each, Mars at 512px on the burn, the dusk sky, no sideways scroll, no console errors. Phones (390): the burn in one column, the reveal's kicker above the scene, no sideways scroll. Light theme checked on the burn. tsc and the build are clean.
+
+**Not in the design frames, left as they are:** the game header stays on the burn screen (the frame shows the screen alone); 1n's dimmed Jupiter in the corner and 1k's "Your unlock · Sky" panel wait for 2c (cosmetics).
 
 ## Q: Quality of life, retention and community (added 2026-11-25)
 

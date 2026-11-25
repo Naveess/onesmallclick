@@ -35,7 +35,7 @@ export function GamePage() {
   };
 
   return (
-    <GameShell tab="mission">
+    <GameShell tab="mission" sky={view.burn && burnOpen ? "arrival" : undefined}>
       {({ wide, openUpgrades }) => {
         // The flight view replaces JourneyTrack (prompt 32); JourneyTrack.tsx stays until the flight view is approved.
         const flightProps = {

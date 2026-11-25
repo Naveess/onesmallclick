@@ -24,10 +24,12 @@ export type GameTab = "mission" | "map" | "log" | "ranks" | "other";
 interface GameShellProps {
   tab: GameTab;
   children: (ctx: { wide: boolean; openUpgrades: () => void }) => ReactNode;
+  /** The page's sky: "arrival" is the landing burn's dusk (1o, phase D). */
+  sky?: "arrival";
 }
 
 /** The frame around every game page: sky, header, content, and on phones the tab bar. */
-export function GameShell({ tab, children }: GameShellProps) {
+export function GameShell({ tab, children, sky }: GameShellProps) {
   const wide = useMediaQuery(WIDE_QUERY);
   const [upgradesOpen, setUpgradesOpen] = useState(false);
   const { probe, player, view, toast, welcome, moment, arrival, connection, now, ready } = useGame();
@@ -74,7 +76,7 @@ export function GameShell({ tab, children }: GameShellProps) {
   if (arrival) {
     return (
       <>
-        <Sky fixed milestone />
+        <Sky fixed arrival />
         <div className={wide ? "game game--wide" : "game"}>
           <div className="game__main">
             <ArrivalScreen arrival={arrival} wide={wide} onClose={dismissArrival} />
@@ -128,7 +130,7 @@ export function GameShell({ tab, children }: GameShellProps) {
 
   return (
     <>
-      <Sky fixed safe={safe} />
+      <Sky fixed safe={safe} arrival={sky === "arrival" && !safe} />
       <div className={wide ? "game game--wide" : "game"}>
         <div className="game__main">
           <header className={["game-head", wide && "game-head--wide", safe && "game-head--safe"].filter(Boolean).join(" ")}>

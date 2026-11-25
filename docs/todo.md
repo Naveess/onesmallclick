@@ -51,6 +51,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
+- [ ] **D: desktop layouts built and pushed, not deployed** (prompts 99–100; docs/plan.md "D: Desktop layouts"): 1o, 1k and 1n desktop now match the design, and the landing burn has its dusk sky. No data change. Deploy when Nav asks, **not during a live landing burn** (a deploy reconnects everyone).
 - [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: ~~the NASA postcard photos~~ (live, prompt 98), M (miles), **Q1 (the first five, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [ ] **Q1: the first five** (docs/plan.md "Q"; Nav: do these first of the 25 Nov ideas):

@@ -39,7 +39,8 @@ function big(n: number): string {
 /**
  * The arrival screen (1k, phase 8c): "We made it", the rolling mission credits (every signed-in name with its
  * flag, guests counted), the arrival rewards (E4b part 2a: medal, planet tech, your stamp; the unlock in 2c), then
- * the branch vote.
+ * the branch vote. Phones: one column. Wide (1k desktop, phase D): the destination, the date and the credits on the
+ * left; the rewards and the vote on the right.
  */
 export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
   const { probe, player, view, connection } = useGame();
@@ -89,97 +90,102 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
 
   return (
     <main className={wide ? "arrival-screen arrival-screen--wide" : "arrival-screen"} aria-labelledby="arrival-title">
-      <div className="arrival-screen__art" aria-hidden="true">
-        {arrival.stop === "mars" ? (
-          <Sprite sprite={SPRITES.mars} scale={2} />
-        ) : (
-          <img className="arrival-screen__planet" src={destinationArt(arrival.stop, 31)} alt="" width={256} height={256} />
-        )}
-        <div className="arrival-screen__probe">
-          <ProbeArt id={view.probeId} />
+      <div className="arrival-screen__col">
+        <div className="arrival-screen__art" aria-hidden="true">
+          {arrival.stop === "mars" ? (
+            <Sprite sprite={SPRITES.mars} scale={2} />
+          ) : (
+            <img className="arrival-screen__planet" src={destinationArt(arrival.stop, 31)} alt="" width={256} height={256} />
+          )}
+          <div className="arrival-screen__probe">
+            <ProbeArt id={view.probeId} />
+          </div>
         </div>
+
+        <header className="arrival-screen__head">
+          <p className="arrival-screen__kick">
+            {name.toUpperCase()} {orbitWord}
+          </p>
+          <h1 id="arrival-title" className="arrival-screen__title">
+            We made it.
+          </h1>
+          <p className="arrival-screen__when num">
+            {dateFmt.format(arrival.at)} · {timeFmt.format(arrival.at)} UTC
+          </p>
+          {credits && (
+            <p className="arrival-screen__stats">
+              {days} day{days === 1 ? "" : "s"} · {int(credits.crew)} crew · {big(credits.taps)} taps
+            </p>
+          )}
+        </header>
+
+        <section className="arrival-screen__credits" aria-label="Mission credits">
+          {!credits && !failed && <p className="arrival-screen__note">Rolling the credits…</p>}
+          {failed && <p className="arrival-screen__note">The credits are on their way. Have a look again in a minute.</p>}
+          {credits && lines.length === 0 && <p className="arrival-screen__note">The probe got here by coasting. Every tap counts next time.</p>}
+          {credits && lines.length > 0 && (
+            <div
+              className={reduceMotion ? "arrival-screen__roll arrival-screen__roll--still" : "arrival-screen__roll"}
+              // Pixel steps, not a smooth glide: about 2px a step.
+              style={{ animationDuration: `${rollSeconds}s`, animationTimingFunction: `steps(${Math.max(40, lines.length * 13)})` }}
+            >
+              {(reduceMotion ? [lines] : [lines, lines]).map((set, k) => (
+                <ul key={k} className="arrival-screen__names" aria-hidden={k === 1 ? true : undefined}>
+                  {set.map((l) => (
+                    <li key={l.key}>
+                      <span>{l.name}</span>
+                      {l.cc && <Flag cc={l.cc} />}
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
+          )}
+        </section>
+        {credits && credits.names.length > 0 && !player.account && (
+          <p className="arrival-screen__note">
+            Signed-in crew are named in the credits. Guests are counted.{" "}
+            <Link href={signInHref("credits")}>{NUDGES.credits}</Link>
+          </p>
+        )}
       </div>
 
-      <header className="arrival-screen__head">
-        <p className="arrival-screen__kick">
-          {name.toUpperCase()} {orbitWord}
-        </p>
-        <h1 id="arrival-title" className="arrival-screen__title">
-          We made it.
-        </h1>
-        <p className="arrival-screen__when num">
-          {dateFmt.format(arrival.at)} · {timeFmt.format(arrival.at)} UTC
-        </p>
-        {credits && (
-          <p className="arrival-screen__stats">
-            {days} day{days === 1 ? "" : "s"} · {int(credits.crew)} crew · {big(credits.taps)} taps
-          </p>
-        )}
-      </header>
+      <div className="arrival-screen__col">
+        {credits && <ArrivalRewards credits={credits} current={{ stop: probe.stop, missionId: probe.missionId }} />}
 
-      <section className="arrival-screen__credits" aria-label="Mission credits">
-        {!credits && !failed && <p className="arrival-screen__note">Rolling the credits…</p>}
-        {failed && <p className="arrival-screen__note">The credits are on their way. Have a look again in a minute.</p>}
-        {credits && lines.length === 0 && <p className="arrival-screen__note">The probe got here by coasting. Every tap counts next time.</p>}
-        {credits && lines.length > 0 && (
-          <div
-            className={reduceMotion ? "arrival-screen__roll arrival-screen__roll--still" : "arrival-screen__roll"}
-            // Pixel steps, not a smooth glide: about 2px a step.
-            style={{ animationDuration: `${rollSeconds}s`, animationTimingFunction: `steps(${Math.max(40, lines.length * 13)})` }}
-          >
-            {(reduceMotion ? [lines] : [lines, lines]).map((set, k) => (
-              <ul key={k} className="arrival-screen__names" aria-hidden={k === 1 ? true : undefined}>
-                {set.map((l) => (
-                  <li key={l.key}>
-                    <span>{l.name}</span>
-                    {l.cc && <Flag cc={l.cc} />}
-                  </li>
-                ))}
-              </ul>
-            ))}
-          </div>
+        {voting && (
+          <BranchVote
+            at={arrival.stop}
+            options={probe.vote.options}
+            total={view.voteTotal}
+            mine={player.voteChoice}
+            leftS={view.voteLeftS}
+            onVote={(i) => void castVote(i)}
+            busy={player.voting || connection !== "live"}
+          />
         )}
-      </section>
-      {credits && credits.names.length > 0 && !player.account && (
-        <p className="arrival-screen__note">
-          Signed-in crew are named in the credits. Guests are counted.{" "}
-          <Link href={signInHref("credits")}>{NUDGES.credits}</Link>
-        </p>
-      )}
-      {credits && <ArrivalRewards credits={credits} current={{ stop: probe.stop, missionId: probe.missionId }} />}
+        {movedOn && (
+          <Window className="arrival-screen__next">
+            <p className="arrival-screen__kick">ON TO {view.destName.toUpperCase()}</p>
+            <p>
+              {nextProbe?.name ?? "The probe"} is already on its way{s?.branchVote ? "" : ` from ${name}`}.
+            </p>
+          </Window>
+        )}
 
-      {voting && (
-        <BranchVote
-          at={arrival.stop}
-          options={probe.vote.options}
-          total={view.voteTotal}
-          mine={player.voteChoice}
-          leftS={view.voteLeftS}
-          onVote={(i) => void castVote(i)}
-          busy={player.voting || connection !== "live"}
+        <ShareNudge
+          moment="arrival"
+          detail={arrival.stop}
+          fill={{ dest: name, days }}
+          alt={days === null}
+          variant="orange"
+          label={`Share: we made it to ${name}`}
+          title={`Share the arrival at ${name}`}
         />
-      )}
-      {movedOn && (
-        <Window className="arrival-screen__next">
-          <p className="arrival-screen__kick">ON TO {view.destName.toUpperCase()}</p>
-          <p>
-            {nextProbe?.name ?? "The probe"} is already on its way{s?.branchVote ? "" : ` from ${name}`}.
-          </p>
-        </Window>
-      )}
-
-      <ShareNudge
-        moment="arrival"
-        detail={arrival.stop}
-        fill={{ dest: name, days }}
-        alt={days === null}
-        variant="orange"
-        label={`Share: we made it to ${name}`}
-        title={`Share the arrival at ${name}`}
-      />
-      <PixelButton variant="outline" block onClick={onClose}>
-        Back to the mission
-      </PixelButton>
+        <PixelButton variant="outline" block onClick={onClose}>
+          Back to the mission
+        </PixelButton>
+      </div>
     </main>
   );
 }

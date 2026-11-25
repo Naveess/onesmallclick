@@ -123,3 +123,16 @@
     var(--sky-6) 72% 100%
   );
 }
+
+/* The dusk sky of the arrival (1k) and the landing burn (1o), phase D. */
+.sky--arrival {
+  background: linear-gradient(
+    180deg,
+    var(--sky-arrival-1) 0 10%,
+    var(--sky-arrival-2) 10% 22%,
+    var(--sky-arrival-3) 22% 36%,
+    var(--sky-arrival-4) 36% 54%,
+    var(--sky-milestone-5) 54% 72%,
+    var(--sky-6) 72% 100%
+  );
+}
