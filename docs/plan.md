@@ -34,6 +34,9 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **E4: Sharing, fun facts and destination pages**
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
 - [ ] **E5: Later ideas from the brief**
+- [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
+  - [ ] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); pushed, not deployed (migration 0015). See "B1 status" below.
+  - [ ] **B2: the launch wipe** (before 15 Dec): a /admin action that backs up first, restarts the probe from Earth and removes every reward except Early Beta. See "B2 plan" below.
 
 ## What changed from the order in prompt 06
 
@@ -796,6 +799,26 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Privacy.** The crew code isn't the email or name. The privacy page gets a line on crew links and recruit counts.
 - **No rewards linked to ads**, ever (AdSense).
 
+## B: Early beta and the launch wipe (added 2026-11-25, prompts 82–83)
+
+**Why:** the game is public on workers.dev before launch, and Nav moves it to onesmallclick.io on 30 Nov. Launch day is 15 December (it may move): the probe starts again and every reward resets, for hopefully the last time. People who sign up before then get an Early Beta badge they keep.
+
+**B1 status (built 2026-11-25, prompts 82–83; pushed, not deployed; needs migration 0015):**
+- **The copy and the date** live in `content/beta.json` (`endsAt` 2026-12-15 00:00 UTC; change it and `launchLabel`/`launchShort` if launch day moves). `shared/beta.ts` reads it (`BETA`, `BETA_ENDS_MS`, `betaOpen`). Real time, not the probe's clock, so /admin's clock never ends the beta.
+- **The banner** (`src/components/BetaBanner.tsx`): a slim orange window under the header on every game page. One line ("EARLY ACCESS Progress resets at launch on 15 Dec.") with More (the full text: the reset, the date may move, the badge, the one-person thank-you) and ×. Guests get "Sign in for the badge"; accounts with it get a thank-you line. Closing it is remembered on the device (`osc.betaClosed`). Hidden in safe mode and after `endsAt`.
+- **How to play** gets the same text in an orange box with the sign-in button, until `endsAt` (the pages are rebuilt on every deploy).
+- **The Early Beta badge** (`early-beta`): signed-in accounts only, given by the Probe when an account connects before `endsAt` (so signing in gives it at once, with the badge toast). Migration 0015 gives it to every account that already exists, dated when they signed up. A deleted account loses it. Guests see the tile on their profile with "Sign in before 15 Dec to get it"; it shows across the top of the badges while the beta is on or once you have it.
+- **The record of who took part:** the badges table. /admin's "Early Beta" card (`GET /api/admin/beta`) lists every account with it (name, country, date) and the count of all accounts.
+- **Art:** `badge-early-beta.png`, 32×32, drawn in code on the First Ping medal's orange ring (a white β and an orange sparkle; `scripts/make-beta-badge.py`), no PixelLab generations.
+- **Checked locally:** `node scripts/check-beta.mjs` ALL PASS (a guest gets none; signing in gives it; kept on the next visit; /admin lists it; needs the key; a deleted account leaves the list). check-badges, check-rewards, check-auth, check-recruits and check-arrival ALL PASS. Browser flow (headless Edge, phone and wide, dark and light): the banner closed and open, closing remembered, the profile tile for a guest, the How to play box, no sideways scroll, no console errors. tsc clean.
+
+**B2 plan (the launch wipe, before 15 Dec; explain first):**
+- Replaces decision 6 for this launch. Nav (prompt 83): "just starting the probe again and removing any rewards".
+- A /admin action, "Launch wipe", with a typed confirmation, live D1 backed up first: the existing mission reset (a new tour from Earth: 0 km, milestones, the vote round and the log cleared, the planet tech cleared), plus every badge except `early-beta`, and the medals and passport stamps (mission credits).
+- **To confirm with Nav before building:** do credits, upgrades, patches, km totals, ping streaks and the leaderboards count as rewards (wiped), or stay? Accounts, names, countries and crew links stay.
+- After launch day `endsAt` has passed: the banner goes and no new Early Beta badges are given.
+
+
 ## G: Grow: sharing on the home, the Players card, and sign-in nudges (added 2026-11-24)
 
 **Why (Nav, 2026-11-24).** Nav posted the game on Reddit. On 24 Nov 39 new devices arrived and 20 players pushed the probe, against 1–6 a day before, mostly from the US and UK. But:
@@ -1072,7 +1095,7 @@ My recommendation is in brackets. Items marked *(brief)* come from the open ques
 ### Before phase 4 (all decided 2026-11-18)
 4. ~~**First mission length**~~ **Decided (changed by Nav, 18–19 Nov; replaces "about 6 months, never under 4½ months"): about 30 days to Mars at launch traffic, with self-balancing thrust.** A small crew's push is boosted and a big crowd's is squeezed: more players always means sooner, but each extra player helps a bit less, and no crowd gets there in under about 14 days. Your own km, credits and prestige progress always count in full. The formula and its numbers are in `shared/balance.ts` (approved by Nav, prompt 28: fastest trip 15.5 days with no votes, so about 14 even if "faster" wins every vote); `npm run sim` prints the days for different crowds.
 5. ~~**Does the probe always coast?**~~ **Decided (changed by Nav, 18–19 Nov): it coasts on its own, but pauses after 8 hours with no player activity** (any tap batch, or auto-thrust from a connected player). The next tap wakes it. While paused the screen says "Probe idle: tap to wake it" and the arrival date shows as on hold. So coasting alone never finishes a mission.
-6. ~~**Wipe all workers.dev test data at launch?**~~ **Decided (changed by Nav, 18–19 Nov): reset only the mission** (distance, route, milestones reached, the current vote round and the mission log) and set the real start date. **Keep devices, pings, streaks, progress, credits, upgrades and patches.** `/admin` gets a "Reset mission (keep players)" action so this can be tested before launch.
+6. ~~**Wipe all workers.dev test data at launch?**~~ **Changed again 2026-11-25 (prompt 83): the 15 Dec launch restarts the probe and removes every reward except Early Beta; see "B: Early beta and the launch wipe".** Before that: **Decided (changed by Nav, 18–19 Nov): reset only the mission** (distance, route, milestones reached, the current vote round and the mission log) and set the real start date. **Keep devices, pings, streaks, progress, credits, upgrades and patches.** `/admin` gets a "Reset mission (keep players)" action so this can be tested before launch.
 
 Also decided with phase 4 (2026-11-18): **people here counts devices**, so five tabs on one phone count once. **THRUST below the fold on 375×667 is fine.** **No half-scaled sprites:** the track's Mars is a 64px sheet made from the 128px one, and the Moon shows at its full 32px.
 

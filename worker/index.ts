@@ -29,12 +29,13 @@
 //   POST /api/admin/reset       }   (Reset mission (keep players): decision 6, the launch reset)
 //   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
 //   GET  /api/admin/shares      }   (phase S1: shares and crew-link visits, last 7 days)
+//   GET  /api/admin/beta        }   (prompts 82-83: the accounts with the Early Beta badge)
 
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
-import { credits, leaderboard, profile, tour } from "./boards";
+import { betaReport, credits, leaderboard, profile, tour } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
@@ -288,6 +289,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
   if (action === "state" && request.method === "GET") return json(await stub.adminState());
   if (action === "networks" && request.method === "GET") return json(await capReport(env));
   if (action === "shares" && request.method === "GET") return json(await shareReport(env));
+  if (action === "beta" && request.method === "GET") return json(await betaReport(env));
   if (request.method !== "POST") return json({ error: "Not found" }, 404);
 
   const body = (await request.json().catch(() => ({}))) as { km?: unknown; hours?: unknown };

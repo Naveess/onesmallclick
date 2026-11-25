@@ -243,3 +243,19 @@ export async function credits(env: Env, url: URL): Promise<Response> {
   };
   return Response.json(body, { headers: { "Cache-Control": "public, max-age=300" } });
 }
+
+/** /admin (prompts 82-83): every account with the Early Beta badge, oldest first, and how many accounts there are. */
+export async function betaReport(env: Env) {
+  const db = env.DB;
+  const [rows, all] = await db.batch<{ name?: string; country?: string | null; at?: number; n?: number }>([
+    db.prepare(
+      `SELECT a.name, a.country, b.earned_at AS at FROM badges b JOIN accounts a ON b.player_key = 'a:' || a.id
+       WHERE b.badge = 'early-beta' ORDER BY b.earned_at`,
+    ),
+    db.prepare(`SELECT COUNT(*) AS n FROM accounts`),
+  ]);
+  return {
+    accounts: all.results[0]?.n ?? 0,
+    players: rows.results.map((r) => ({ name: r.name!, country: r.country ?? null, at: r.at! })),
+  };
+}

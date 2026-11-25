@@ -262,6 +262,17 @@ const steps = [
   ["bolt", false, "Upgrade your thrusters", "They keep pushing while you're away, for up to 8 hours."],
 ];
 
+// The early-access note (prompts 82-83, content/beta.json), until launch. The pages are rebuilt on every deploy.
+const beta = JSON.parse(read("content/beta.json"));
+function betaNote() {
+  if (Date.now() >= Date.parse(beta.endsAt)) return "";
+  return `      <aside class="window beta-note" aria-labelledby="beta-title">
+        <h2 id="beta-title" class="beta-note__title">${esc(beta.title)}</h2>
+${beta.body.map((p) => `        <p class="page__note">${esc(p)}</p>`).join("\n")}
+        <a class="pbtn pbtn--orange beta-note__cta" href="/sign-in">${esc(beta.signIn)}</a>
+      </aside>`;
+}
+
 const howToPlay = page({
   path: "/how-to-play",
   current: "/how-to-play",
@@ -285,6 +296,7 @@ ${steps
   )
   .join("\n")}
       </ol>
+${betaNote()}
       <p class="page__note">The big date on the home screen moves with all of us. More play, sooner arrival.</p>
       <a class="pbtn pbtn--blue pbtn--lg page__cta" href="/">Start pushing</a>
       <section aria-labelledby="milestones-title">

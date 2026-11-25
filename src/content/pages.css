@@ -391,3 +391,25 @@
   color: var(--text-muted);
   overflow-wrap: anywhere;
 }
+
+/* --- The early-access note on How to play (prompts 82-83) --- */
+.beta-note.window {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: linear-gradient(180deg, var(--window-orange-top), var(--window-orange-bottom));
+  border-color: var(--orange);
+  box-shadow: none;
+}
+
+.beta-note__title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-orange);
+}
+
+.beta-note__cta {
+  align-self: flex-start;
+  margin-top: 4px;
+}

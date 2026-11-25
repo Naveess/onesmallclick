@@ -1,0 +1,19 @@
+{
+  "_note": "The early-access banner and the Early Beta badge (prompts 82-83). endsAt is when the badge stops being given and the banner goes: change it (and launchLabel) if launch day moves. Wording waiting for Nav's OK.",
+  "endsAt": "2026-12-15T00:00:00Z",
+  "launchLabel": "15 December",
+  "launchShort": "15 Dec",
+  "title": "Early access",
+  "short": "Progress resets at launch on 15 Dec.",
+  "body": [
+    "OneSmallClick is still being built, so progress may be reset along the way while I work on it.",
+    "Launch is planned for 15 December, though the date may move. On launch day the probe starts again from Earth and every reward earned so far is reset.",
+    "Sign in before then and you'll get the Early Beta badge, which you keep for good.",
+    "OneSmallClick is a side project made by one person, so thank you for taking part this early."
+  ],
+  "signIn": "Sign in for the badge",
+  "haveBadge": "You have the Early Beta badge. Thank you for being here early.",
+  "badgeName": "Early Beta",
+  "badgeHow": "Signed up before launch",
+  "badgeHowGuest": "Sign in before 15 Dec to get it"
+}

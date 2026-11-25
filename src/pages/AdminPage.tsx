@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { BETA, BETA_ENDS_MS } from "../../shared/beta";
 import { IDLE_PAUSE_MS, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
 import { PixelButton } from "../components/PixelButton";
 import { Sky } from "../components/Sky";
@@ -146,6 +147,57 @@ function KFactor({ k }: { k: ShareReport["k"] }) {
         <li className="num">Cycle time (median, link opened to 50 taps or a Ping): {cycle(k.medianCycleMs)}</li>
       </ul>
     </div>
+  );
+}
+
+interface BetaReport {
+  accounts: number;
+  players: { name: string; country: string | null; at: number }[];
+}
+
+/** Prompts 82-83: who has the Early Beta badge (accounts signed in before launch), oldest first. */
+function EarlyBeta({ adminKey }: { adminKey: string }) {
+  const [report, setReport] = useState<BetaReport | null>(null);
+  const [error, setError] = useState("");
+  const load = async () => {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/beta", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setReport((await res.json()) as BetaReport);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, [adminKey]);
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-beta">
+      <h2 id="admin-beta" className="admin__h2">
+        Early Beta · until {BETA.launchLabel}
+      </h2>
+      <p className="admin__note">
+        {report ? `${int(report.players.length)} of ${int(report.accounts)} accounts have the Early Beta badge.` : "…"} Every
+        account signed in before {new Date(BETA_ENDS_MS).toISOString().slice(0, 16).replace("T", " ")} UTC gets it (content/beta.json).
+        Guests don't, until they sign in.
+      </p>
+      {report && report.players.length > 0 && (
+        <ol className="admin__note">
+          {report.players.map((p) => (
+            <li key={p.name} className="num">
+              {p.name} · {p.country ?? "–"} · {new Date(p.at).toISOString().slice(0, 10)}
+            </li>
+          ))}
+        </ol>
+      )}
+      {error && <p className="admin__note">Couldn't load: {error}</p>}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={() => void load()}>
+          Refresh
+        </PixelButton>
+      </div>
+    </Window>
   );
 }
 
@@ -511,6 +563,7 @@ export function AdminPage() {
 
             <NetworkCap adminKey={key} />
             <Shares adminKey={key} />
+            <EarlyBeta adminKey={key} />
 
             <Window
               as="form"

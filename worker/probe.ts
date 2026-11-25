@@ -71,6 +71,7 @@ import {
   type BadgeId,
   type EarnedBadge,
 } from "../shared/badges";
+import { betaOpen } from "../shared/beta";
 import {
   VOTE_QUESTION,
   VOTE_RECENT_ROUNDS,
@@ -1410,6 +1411,8 @@ export class Probe extends DurableObject<Env> {
     if (p && p.patches > 0) want.push("patch");
     CLICK_BADGES.forEach((b, i) => dev.tapsAll >= b.clicks && want.push(CLICK_BADGE_IDS[i]));
     want.push(...RECRUITER_IDS.slice(0, recruiterLevel(dev.recruits)));
+    // Early Beta (prompts 82-83): any account signed in before launch. Real time, not the probe's clock.
+    if (w.key.startsWith("a:") && betaOpen(Date.now())) want.push("early-beta");
     const earned = [...new Set(want)].filter((id) => !dev.badges.has(id));
     if (earned.length === 0) return;
     for (const id of earned) dev.badges.set(id, now);

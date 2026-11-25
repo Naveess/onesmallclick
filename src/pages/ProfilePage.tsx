@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BADGE_INFO, KEEPER_IDS, RECRUITER_IDS, ROMAN, type BadgeId } from "../../shared/badges";
+import { BETA, betaOpen } from "../../shared/beta";
 import type { ProfileInfo, TourInfo } from "../../shared/boards";
 import { CLICK_BADGES } from "../../shared/clicks";
 import { RECRUITER_LEVELS } from "../../shared/share";
@@ -71,7 +72,13 @@ function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
     tone,
     on: have.has(id),
   });
+  // Early Beta (prompts 82-83): across the top, while the beta is on or once you have it. Guests are told to sign in.
+  const beta: Tile[] =
+    have.has("early-beta") || betaOpen(Date.now())
+      ? [{ ...t("early-beta", "star", "orange"), wide: true, how: have.has("early-beta") ? BADGE_INFO["early-beta"].how : BETA.badgeHowGuest }]
+      : [];
   return [
+    ...beta,
     { ...t(keeperShown, "signal", "orange"), key: "keeper", on: keeper !== undefined },
     t("first-ping", "star", "orange"),
     t("night-shift", "clock", "blue"),

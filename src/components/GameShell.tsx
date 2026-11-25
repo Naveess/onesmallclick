@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { buyUpgrade, dismissArrival, dismissMoment, dismissWelcome, handOver, useGame } from "../game/store";
 import { ArrivalScreen } from "./ArrivalScreen";
+import { BetaBanner } from "./BetaBanner";
 import { Link } from "../router";
 import { STILLS } from "../sprites";
 import { useTheme } from "../theme";
@@ -151,6 +152,8 @@ export function GameShell({ tab, children }: GameShellProps) {
               </div>
             )}
           </header>
+
+          <BetaBanner signedIn={!!player.account} hasBadge={player.badges.some((b) => b.id === "early-beta")} safe={safe} />
 
           {children({ wide, openUpgrades })}
 

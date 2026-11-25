@@ -3,6 +3,7 @@
 // The server awards them (worker/probe.ts); the profile (1j) and the signal card show them.
 
 import { CLICK_BADGES } from "./clicks";
+import { BETA } from "./beta";
 import { RECRUITER_LEVELS } from "./share";
 
 export type BadgeId =
@@ -20,7 +21,8 @@ export type BadgeId =
   | "clicks-3"
   | "recruit-1"
   | "recruit-2"
-  | "recruit-3";
+  | "recruit-3"
+  | "early-beta";
 
 /** A badge a player has, and when they earned it (epoch ms, the probe's clock). */
 export interface EarnedBadge {
@@ -69,6 +71,7 @@ export const BADGE_INFO: Record<BadgeId, { name: string; how: string }> = {
   "recruit-1": { name: "Crew Recruiter I", how: "Brought in 1 new player" },
   "recruit-2": { name: "Crew Recruiter II", how: `Brought in ${RECRUITER_LEVELS[1]} new players` },
   "recruit-3": { name: "Crew Recruiter III", how: `Brought in ${RECRUITER_LEVELS[2]} new players` },
+  "early-beta": { name: BETA.badgeName, how: BETA.badgeHow },
 };
 
 /** The highest Signal Keeper level (1–4) a streak of this many days reaches, or 0. */

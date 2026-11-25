@@ -1,0 +1,77 @@
+/* The early-access notice (prompts 82-83): a slim orange window under the header. */
+
+.beta {
+  padding: 4px 4px 4px 12px;
+  margin: 2px 2px 12px;
+}
+
+.beta__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.beta__line {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text-orange-soft);
+}
+
+.beta__label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-orange);
+  margin-right: 4px;
+}
+
+.beta__more,
+.beta__close {
+  flex: none;
+  min-width: 44px;
+  height: 44px;
+  color: var(--text-orange);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.beta__more {
+  padding: 0 6px;
+  font: 400 14px/1 var(--font-ui);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.beta__close {
+  font: 400 26px/1 var(--font-num);
+  color: var(--text-muted);
+}
+
+.beta__more:focus-visible,
+.beta__close:focus-visible,
+.beta__signin:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
+.beta__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 8px 12px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.beta__have {
+  color: var(--text-orange-soft);
+}
+
+.beta__signin {
+  align-self: flex-start;
+  margin-top: 4px;
+}
