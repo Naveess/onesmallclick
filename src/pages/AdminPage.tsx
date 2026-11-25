@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { BETA, BETA_ENDS_MS, LAUNCH_WIPE_PHRASE } from "../../shared/beta";
+import type { PlayersReport } from "../../shared/nudges";
 import { IDLE_PAUSE_MS, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
 import { PixelButton } from "../components/PixelButton";
 import { Sky } from "../components/Sky";
@@ -147,6 +148,67 @@ function KFactor({ k }: { k: ShareReport["k"] }) {
         <li className="num">Cycle time (median, link opened to 50 taps or a Ping): {cycle(k.medianCycleMs)}</li>
       </ul>
     </div>
+  );
+}
+
+/** Phase G1: the Players card. Counts only, never emails or device ids. */
+function Players({ adminKey }: { adminKey: string }) {
+  const [report, setReport] = useState<PlayersReport | null>(null);
+  const [error, setError] = useState("");
+  const load = async () => {
+    setError("");
+    try {
+      const res = await fetch("/api/admin/players", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      if (!res.ok) throw new Error(`Error ${res.status}`);
+      setReport((await res.json()) as PlayersReport);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  useEffect(() => {
+    void load();
+  }, [adminKey]);
+  const r = report;
+  const pct = (a: number, b: number) => (b > 0 ? `${Math.round((a / b) * 100)}%` : "–");
+  return (
+    <Window as="section" className="admin__card" aria-labelledby="admin-players">
+      <h2 id="admin-players" className="admin__h2">
+        Players
+      </h2>
+      {!r && !error && <p className="admin__note">…</p>}
+      {r && (
+        <ul className="admin__note">
+          <li className="num">
+            Accounts: {int(r.accounts.total)} · new {int(r.accounts.day)} in 24 h · {int(r.accounts.week)} in 7 days
+          </li>
+          <li className="num">
+            Devices: {int(r.devices.total)} · new {int(r.devices.newDay)} in 24 h · active {int(r.devices.activeDay)} in 24 h
+          </li>
+          <li className="num">
+            Guests to accounts (new players, last 7 days): {int(r.conversion.signedIn)} of {int(r.conversion.newPlayers)} signed in (
+            {pct(r.conversion.signedIn, r.conversion.newPlayers)})
+          </li>
+          <li className="num">
+            Today: {int(r.today.shares)} shares · {int(r.today.recruits)} recruits
+          </li>
+          <li className="num">
+            Sign-ups by nudge: {r.signups.map((x) => `${x.source ?? "direct or older"} ${int(x.n)}`).join(" · ") || "none yet"}
+          </li>
+          <li className="num">
+            New players by country (24 h): {r.newByCountry.map((x) => `${x.cc ?? "?"} ${int(x.n)}`).join(" · ") || "none"}
+          </li>
+          <li className="num">
+            Players who pushed, by day: {r.pushed.map((x) => `${x.day.slice(5)} ${int(x.players)}`).join(" · ") || "none"}
+          </li>
+        </ul>
+      )}
+      {error && <p className="admin__note">Couldn't load: {error}</p>}
+      <div className="admin__row">
+        <PixelButton variant="outline" onClick={() => void load()}>
+          Refresh
+        </PixelButton>
+      </div>
+    </Window>
   );
 }
 
@@ -596,6 +658,7 @@ export function AdminPage() {
 
             <NetworkCap adminKey={key} />
             <Shares adminKey={key} />
+            <Players adminKey={key} />
             <EarlyBeta adminKey={key} />
 
             <Window

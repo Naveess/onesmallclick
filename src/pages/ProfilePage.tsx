@@ -1,3 +1,5 @@
+import { LAUNCH, NUDGES, betaLine, ctaLabel, fillNudge, signInHref } from "../game/nudges";
+import { Window } from "../components/Window";
 import { useEffect, useState } from "react";
 import { BADGE_INFO, KEEPER_IDS, RECRUITER_IDS, ROMAN, type BadgeId } from "../../shared/badges";
 import { BETA, betaOpen } from "../../shared/beta";
@@ -259,11 +261,22 @@ export function ProfilePage() {
               onClose={() => setSharing(false)}
             />
           )}
-          {!player.account && (
-            <p className="profile__note">
-              You're playing as a guest. <Link href="/sign-in">Sign in</Link> to keep your badges on every device and to
-              appear on the leaderboard.
-            </p>
+          {player.known && !player.account && (
+            // Phase G1: what signing in gives a guest.
+            <Window as="section" tone="orange" className="profile__signin" aria-labelledby="profile-signin">
+              <h2 id="profile-signin" className="profile__signin-title">
+                {NUDGES.profileTitle}
+              </h2>
+              <ul className="profile__signin-list">
+                {NUDGES.profileList.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+                {betaLine() && <li>{fillNudge(NUDGES.profileBeta, LAUNCH)}</li>}
+              </ul>
+              <Link href={signInHref("profile")} className="pbtn pbtn--orange profile__signin-go">
+                {ctaLabel(player.emailSignIn)}
+              </Link>
+            </Window>
           )}
         </main>
       )}

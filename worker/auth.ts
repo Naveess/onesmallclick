@@ -23,6 +23,7 @@ import {
   type NameOffers,
 } from "../shared/account";
 import { generateName, isGeneratedName } from "../shared/names";
+import { SIGNUP_COOKIE, isNudgeSource } from "../shared/nudges";
 import { deviceCookie, readDevice } from "./device";
 import { emailReady, sendSignInLink } from "./email";
 
@@ -195,11 +196,16 @@ async function findOrCreate(
     country_changed_at: null,
     created_at: Date.now(),
   };
+  // Phase G1: which nudge brought them (the sign-in page keeps ?from= in a short cookie).
+  const from = (request.headers.get("Cookie") ?? "")
+    .split(/;\s*/)
+    .find((c) => c.startsWith(`${SIGNUP_COOKIE}=`))
+    ?.slice(SIGNUP_COOKIE.length + 1);
   await env.DB.prepare(
-    `INSERT INTO accounts (id, email, google_sub, name, name_chosen, country, country_changed_at, created_at)
-     VALUES (?, ?, ?, ?, 0, ?, NULL, ?)`,
+    `INSERT INTO accounts (id, email, google_sub, name, name_chosen, country, country_changed_at, created_at, signup_source)
+     VALUES (?, ?, ?, ?, 0, ?, NULL, ?, ?)`,
   )
-    .bind(account.id, account.email, account.google_sub, account.name, account.country, account.created_at)
+    .bind(account.id, account.email, account.google_sub, account.name, account.country, account.created_at, isNudgeSource(from) ? from : null)
     .run();
   return account;
 }

@@ -1,3 +1,5 @@
+import { LAUNCH, NUDGES, betaLine, dismissForToday, dismissedToday, fillNudge, signInHref } from "../game/nudges";
+import { Link } from "../router";
 import type { WelcomeBack as WelcomeData } from "../../shared/upgrades";
 import { int } from "../game/format";
 import { useGame } from "../game/store";
@@ -45,8 +47,9 @@ interface WelcomeBackProps {
 
 /** Welcome back (1d): what your thrusters pushed while you were away. The server has already paid it. */
 export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) {
-  const { view } = useGame();
+  const { view, player } = useGame();
   const { probeId, probeName } = view;
+  const guest = player.known && !player.account;
   const { awayMs, countedMs, km, crewKm, arrivalSoonerMs, keptAliveBy } = welcome;
   const lostMs = Math.max(0, awayMs - countedMs);
   const countedPct = awayMs > 0 ? Math.min(100, (countedMs / awayMs) * 100) : 100;
@@ -115,6 +118,12 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
         <PixelButton size="lg" block autoFocus onClick={onClose}>
           Collect &amp; keep pushing
         </PixelButton>
+        {guest && !dismissedToday("welcome") && (
+          // Phase G1: a guest's progress lives in one browser.
+          <Link href={signInHref("welcome")} className="welcome__signin" onClick={() => dismissForToday("welcome")}>
+            {fillNudge(betaLine() ? NUDGES.welcomeBeta : NUDGES.welcome, LAUNCH)}
+          </Link>
+        )}
       </Window>
     </main>
   );

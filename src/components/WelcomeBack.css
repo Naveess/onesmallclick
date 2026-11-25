@@ -138,3 +138,15 @@
 .welcome__orange {
   color: var(--text-orange);
 }
+
+/* Phase G1: a guest's way to keep what they've pushed. */
+.welcome__signin {
+  display: block;
+  min-height: 44px;
+  padding-top: 12px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--text-orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

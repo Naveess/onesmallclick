@@ -1,3 +1,4 @@
+import { NUDGES, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { useEffect, useState } from "react";
 import type { Board, BoardResult, BoardRow } from "../../shared/boards";
 import { Flag } from "../components/Flag";
@@ -5,6 +6,7 @@ import { GameShell } from "../components/GameShell";
 import { PixelIcon } from "../components/PixelIcon";
 import { countryName } from "../game/countries";
 import { int } from "../game/format";
+import { useGame } from "../game/store";
 import { Link } from "../router";
 import { ShareNudge } from "../components/ShareNudge";
 import { flagEmoji } from "../../shared/share";
@@ -59,6 +61,7 @@ function RankShare({ board, rank, cc, rows }: { board: Board; rank: number; cc: 
 
 export function RanksPage() {
   useDocumentTitle("Leaderboards · OneSmallClick");
+  const { player } = useGame();
   const [board, setBoard] = useState<Board>("players");
   const [data, setData] = useState<Partial<Record<Board, BoardResult>>>({});
   const [error, setError] = useState(false);
@@ -130,28 +133,27 @@ export function RanksPage() {
             </ol>
           )}
 
-          {shown && me && (
+          {shown && me && board === "players" && !shown.signedIn ? (
+            // Phase G1: the ghost row, where a guest would rank if they signed in.
+            <Link href={signInHref("ghost")} className="ranks__me ranks__me--ghost" aria-label="Sign in to claim your spot on the board">
+              <span className="ranks__me-rank num">{shown.ghostRank ? `#${int(shown.ghostRank)}` : "–"}</span>
+              <Flag cc={me.cc} label={countryName(me.cc)} />
+              <span className="ranks__name">
+                {me.name} (you)
+                <span className="ranks__me-hint">
+                  {shown.ghostRank ? fillNudge(NUDGES.ghost, { rank: int(shown.ghostRank) }) : NUDGES.ghostZero}
+                </span>
+              </span>
+              <span className="ranks__km num">{int(me.km)} km</span>
+            </Link>
+          ) : shown && me && (
             <Link href="/profile" className="ranks__me" aria-label="Your row: open your profile">
-              {board === "players" && !shown.signedIn ? (
-                <>
-                  <span className="ranks__me-rank">–</span>
-                  <Flag cc={me.cc} label={countryName(me.cc)} />
-                  <span className="ranks__name">
-                    {me.name} (you)
-                    <span className="ranks__me-hint">Sign in to appear on the board</span>
-                  </span>
-                  <span className="ranks__km num">{int(me.km)} km</span>
-                </>
-              ) : (
-                <>
-                  <span className="ranks__me-rank num">{me.rank === null ? "–" : `#${int(me.rank)}`}</span>
-                  <Flag cc={me.cc} label={countryName(me.cc)} />
-                  <span className="ranks__name">
-                    {board === "countries" ? `${countryName(me.cc)} (yours)` : `${me.name} (you)`}
-                  </span>
-                  <span className="ranks__km num">{int(me.km)} km</span>
-                </>
-              )}
+              <span className="ranks__me-rank num">{me.rank === null ? "–" : `#${int(me.rank)}`}</span>
+              <Flag cc={me.cc} label={countryName(me.cc)} />
+              <span className="ranks__name">
+                {board === "countries" ? `${countryName(me.cc)} (yours)` : `${me.name} (you)`}
+              </span>
+              <span className="ranks__km num">{int(me.km)} km</span>
             </Link>
           )}
           {shown && me && me.rank !== null && (board === "countries" ? me.cc !== null : shown.signedIn) && (
@@ -159,7 +161,15 @@ export function RanksPage() {
           )}
           {shown && board === "players" && !shown.signedIn && (
             <p className="ranks__note">
-              Only signed-in crew are on the Players board. <Link href="/sign-in">Sign in</Link> to join it; your progress comes with you.
+              Only signed-in crew are on the Players board. <Link href={signInHref("ghost")}>{ctaLabel(player.emailSignIn)}</Link> to join it; your
+              progress comes with you.
+            </p>
+          )}
+          {shown && board === "countries" && !shown.signedIn && (
+            // Phase G1 (prompt 91): the countries board counts signed-in crew only.
+            <p className="ranks__note">
+              {fillNudge(NUDGES.countries, { country: me?.cc ? countryName(me.cc) : "your country" })}{" "}
+              <Link href={signInHref("countries")}>{ctaLabel(player.emailSignIn)}</Link>
             </p>
           )}
         </main>

@@ -1,3 +1,5 @@
+import { NUDGES, signInHref } from "../game/nudges";
+import { Link } from "../router";
 import { useEffect, useState } from "react";
 import { probeFor, stop as campaignStop, stopName } from "../../shared/campaign";
 import type { CreditsInfo } from "../../shared/boards";
@@ -139,7 +141,10 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
         )}
       </section>
       {credits && credits.names.length > 0 && !player.account && (
-        <p className="arrival-screen__note">Signed-in crew are named in the credits. Guests are counted.</p>
+        <p className="arrival-screen__note">
+          Signed-in crew are named in the credits. Guests are counted.{" "}
+          <Link href={signInHref("credits")}>{NUDGES.credits}</Link>
+        </p>
       )}
       {credits && <ArrivalRewards credits={credits} current={{ stop: probe.stop, missionId: probe.missionId }} />}
 

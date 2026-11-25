@@ -30,7 +30,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
 - [x] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); approved by Nav from screenshots (prompt 92). See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
-- [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
+- [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (split, prompt 89: **G1 built and pushed 2026-11-25, not deployed, migration 0017**; G2 sharing on the home later) (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
@@ -882,6 +882,21 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 - Share from the header, the card and the nudge: each appears under its own moment in /admin.
 - Sign in from the ghost row: the Players card counts it under that nudge.
 - The Players card's numbers match the D1 console.
+
+**G1 status (built 2026-11-25, prompt 93; pushed, not deployed; needs migration 0017):**
+- **The copy** is `content/nudges.json` (approved by Nav, prompt 93); `shared/nudges.ts` reads it, and lists the sources (`chip`, `ghost`, `countries`, `progress`, `welcome`, `credits`, `profile`, and B1's `banner`). The browser rules are `src/game/nudges.ts`.
+- **Sign-in nudges, guests only:**
+  - the header: "Guest · Save progress" under the probe line on phones, and on the wide header's sign-in button;
+  - the Players board's ghost row: "You'd be #N today · sign in to claim your spot" (the server works out `ghostRank` from today's km), or "Push today, then sign in to get on the board";
+  - after real progress (an upgrade, a badge or 500 clicks): a toast, "You've pushed X km. Sign in so you don't lose it, and get the Early Beta badge before 15 Dec." ("Your progress lives in this browser" with no km yet), with a Sign in button. Once a day at most (one toast nudge a day, shared with G2's), never over another toast or screen, in safe mode or the signal's last minute; × puts it away for the day;
+  - welcome back: "Keep this safe: sign in, and get the Early Beta badge before 15 Dec" (put away for the day once used);
+  - the arrival credits: "Sign in to get your name in the mission credits";
+  - the profile: "Sign in to keep it all" with what it gives (any device, leaderboards and credits, your country's board, and Early Beta before launch);
+  - buttons say "Sign in with Google" while email sign-in is off (`/api/session` now says `emailSignIn`). The Early Beta lines go at launch with the banner.
+- **Where sign-ups come from:** each nudge links to `/sign-in?from=<source>`; the page keeps it for an hour in the `osc_from` cookie, and a brand-new account saves it (`accounts.signup_source`, migration 0017). Unknown values are ignored. The privacy page says so.
+- **The countries board counts signed-in crew only** (Nav, prompt 91), each in their account's country; guests see "Only signed-in crew count for their country. Sign in to add your km to …".
+- **/admin Players card** (`GET /api/admin/players`, counts only): accounts (total, 24 h, 7 days), devices (total, new and active in 24 h), new players signed in within 7 days, today's shares and recruits, sign-ups by nudge, new players by country, and players who pushed each day for 14 days.
+- **Checked locally:** `node scripts/check-nudges.mjs` ALL PASS (13: email sign-in flag, the source saved and bad ones ignored, the ghost rank, no ghost rank signed in, the countries board without guests, the Players card matching D1 with no emails or ids, the key). Browser flow (headless Edge, phone and wide, dark and light): the header link, the progress toast after a first badge and not again after a reload, the ghost row, the countries note, the profile box, the wide button, the Players card, and nothing for a signed-in player; no sideways scroll, no console errors. tsc clean.
 
 **Main risks**
 - **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.

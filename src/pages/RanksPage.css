@@ -163,3 +163,20 @@
 .ranks__note a {
   color: var(--text-blue);
 }
+
+/* Phase G1: the ghost row, where a guest would rank if they signed in. */
+.ranks__me--ghost {
+  outline: 2px dashed var(--orange);
+  outline-offset: -2px;
+}
+
+.ranks__me--ghost .ranks__me-hint {
+  color: var(--text-orange);
+}
+
+/* The ghost row's hint is the point: let it wrap rather than cut off. */
+.ranks__me--ghost .ranks__me-hint {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}

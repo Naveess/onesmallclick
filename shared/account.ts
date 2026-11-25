@@ -20,6 +20,8 @@ export interface SessionInfo {
   /** This device's crew number ("Keep playing as guest · Crew #48,213"). */
   crew: number;
   account: AccountInfo | null;
+  /** Email sign-in works here (phase G1: the nudges say "Sign in with Google" while it doesn't). */
+  emailSignIn?: boolean;
 }
 
 /** POST /api/auth/email. In local development the link comes back in `devLink` instead of an email. */

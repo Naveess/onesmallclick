@@ -101,6 +101,8 @@ export interface PlayerState {
   account: AccountInfo | null;
   /** False until the first /api/session answer. */
   known: boolean;
+  /** Email sign-in works here (phase G1: else the nudges say "Sign in with Google"). */
+  emailSignIn: boolean;
   /** Credits now: the server's, plus auto-thrust since its last message, plus taps not yet credited. */
   credits: number;
   levels: UpgradeLevels;
@@ -141,6 +143,10 @@ export interface Toast {
   body: string;
   /** A badge just earned: the toast offers to share it (phase S1). */
   badge?: BadgeId;
+  /** Phase G1: a button ("Sign in") to a page. */
+  action?: { label: string; href: string };
+  /** Phase G1: the nudge this toast is; closing it puts that nudge away for the day. */
+  nudge?: string;
 }
 
 /** A milestone moment and the leg it belongs to. */
@@ -285,6 +291,7 @@ function initialState(): GameState {
       crew: 0,
       account: null,
       known: false,
+      emailSignIn: false,
       credits: 0,
       levels: { cold: 0, ion: 0, sail: 0, hands: 0, chant: 0 },
       patches: 0,
@@ -574,8 +581,15 @@ function showToast(t: Omit<Toast, "id">) {
   toastId += 1;
   set({ ...state, toast: { ...t, id: toastId } });
   window.clearTimeout(toastTimer);
-  // A badge toast has a Share button, so it stays a little longer.
-  toastTimer = window.setTimeout(dismissToast, t.badge ? TOAST_MS * 2 : TOAST_MS);
+  // A badge toast has a Share button, so it stays a little longer; a nudge's button longer still.
+  toastTimer = window.setTimeout(dismissToast, t.action ? TOAST_MS * 3 : t.badge ? TOAST_MS * 2 : TOAST_MS);
+}
+
+/** Phase G1: a nudge toast, only when no other toast is showing. Returns whether it showed. */
+export function nudgeToast(t: { title: string; body: string; action: { label: string; href: string }; nudge: string }): boolean {
+  if (state.toast) return false;
+  showToast({ tier: null, ...t });
+  return true;
 }
 
 /** A short message (e.g. "Copied"), in the same toast as Ping's results. */

@@ -8,6 +8,7 @@
 // your own row is looked up for each request.
 
 import { BURN_TARGET_KM } from "../shared/burn";
+import type { PlayersReport } from "../shared/nudges";
 import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo, type TourInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
@@ -44,10 +45,9 @@ async function topRows(env: Env, board: Board, day: string): Promise<BoardRow[]>
       .all<{ name: string; cc: string | null; km: number }>();
     rows = res.results.map((r, i) => ({ rank: i + 1, cc: r.cc, name: r.name, km: r.km }));
   } else {
-    // Everyone for now (prompt 38): an account counts for its country, a guest for its device's country.
+    // Signed-in crew only (Nav, prompt 91: it promotes signing up), each for their account's country.
     const res = await env.DB.prepare(
-      `SELECT COALESCE(a.country, v.country) AS cc, SUM(d.km) AS km FROM daily_km d
-       LEFT JOIN accounts a ON a.id = d.account_id LEFT JOIN devices v ON v.id = d.device_id
+      `SELECT a.country AS cc, SUM(d.km) AS km FROM daily_km d JOIN accounts a ON a.id = d.account_id
        WHERE d.day = ? GROUP BY cc HAVING cc IS NOT NULL AND km > 0 ORDER BY km DESC, cc`,
     )
       .bind(day)
@@ -63,6 +63,7 @@ export async function leaderboard(request: Request, env: Env, url: URL, day: str
   const asking = await whoIsAsking(request, env);
   const all = await topRows(env, board, day);
   let me: BoardRow | null = null;
+  let ghostRank: number | null = null;
 
   if (asking) {
     const device = await env.DB.prepare(`SELECT name, country FROM devices WHERE id = ?`)
@@ -90,11 +91,21 @@ export async function leaderboard(request: Request, env: Env, url: URL, day: str
       }
       me = { rank, cc, name: acct.name, km };
     } else {
-      // A guest isn't on the Players board; their row says how to get on it.
+      // A guest isn't on the Players board; their row says how to get on it, and where they'd be (phase G1).
       const mine = await env.DB.prepare(`SELECT COALESCE(SUM(km), 0) AS km FROM daily_km WHERE day = ? AND device_id = ?`)
         .bind(day, asking.deviceId)
         .first<{ km: number }>();
-      me = { rank: null, cc, name: device?.name ?? "", km: mine?.km ?? 0 };
+      const km = mine?.km ?? 0;
+      me = { rank: null, cc, name: device?.name ?? "", km };
+      if (km > 0) {
+        const above = await env.DB.prepare(
+          `SELECT COUNT(*) AS n FROM (SELECT SUM(km) AS s FROM daily_km WHERE day = ? AND account_id IS NOT NULL
+             GROUP BY account_id HAVING s > ?)`,
+        )
+          .bind(day, km)
+          .first<{ n: number }>();
+        ghostRank = (above?.n ?? 0) + 1;
+      }
     }
   }
 
@@ -104,6 +115,7 @@ export async function leaderboard(request: Request, env: Env, url: URL, day: str
     rows: board === "players" ? all : all.slice(0, BOARD_TOP),
     me,
     signedIn: asking?.account != null,
+    ghostRank,
   };
   return json(body);
 }
@@ -268,5 +280,42 @@ export async function betaReport(env: Env) {
   return {
     accounts: all.results[0]?.n ?? 0,
     players: rows.results.map((r) => ({ name: r.name!, country: r.country ?? null, at: r.at! })),
+  };
+}
+
+/** /admin's Players card (phase G1): counts only, never emails or device ids. */
+export async function playersReport(env: Env): Promise<PlayersReport> {
+  const db = env.DB;
+  const now = Date.now();
+  const dayAgo = now - DAY_MS;
+  const weekAgo = now - 7 * DAY_MS;
+  const today = new Date(now).toISOString().slice(0, 10);
+  const from14 = new Date(now - 13 * DAY_MS).toISOString().slice(0, 10);
+  const r = await db.batch<Record<string, number | string | null>>([
+    db.prepare(`SELECT COUNT(*) AS total, SUM(created_at > ?) AS day, SUM(created_at > ?) AS week FROM accounts`).bind(dayAgo, weekAgo),
+    db.prepare(`SELECT COUNT(*) AS total, SUM(created_at > ?) AS newDay, SUM(last_seen > ?) AS activeDay FROM devices`).bind(dayAgo, dayAgo),
+    db.prepare(
+      `SELECT day, COUNT(DISTINCT COALESCE('a:' || account_id, device_id)) AS players FROM daily_km
+       WHERE day >= ? AND taps > 0 GROUP BY day ORDER BY day`,
+    ).bind(from14),
+    db.prepare(`SELECT country AS cc, COUNT(*) AS n FROM devices WHERE created_at > ? GROUP BY country ORDER BY n DESC, cc LIMIT 20`).bind(dayAgo),
+    db.prepare(`SELECT COALESCE(SUM(shares), 0) AS shares FROM share_counts WHERE day = ?`).bind(today),
+    db.prepare(`SELECT COUNT(*) AS n FROM recruits WHERE status = 'recruit' AND converted_at >= ?`).bind(Date.parse(`${today}T00:00:00Z`)),
+    db.prepare(`SELECT signup_source AS source, COUNT(*) AS n FROM accounts GROUP BY signup_source ORDER BY n DESC`),
+    db.prepare(
+      `SELECT COUNT(*) AS newPlayers, SUM(v.account_id IS NOT NULL) AS signedIn FROM devices v
+       WHERE v.created_at > ? AND EXISTS (SELECT 1 FROM daily_km d WHERE d.device_id = v.id AND d.taps > 0)`,
+    ).bind(weekAgo),
+  ]);
+  const one = (i: number) => r[i].results[0] ?? {};
+  const n = (v: unknown) => Number(v ?? 0);
+  return {
+    accounts: { total: n(one(0).total), day: n(one(0).day), week: n(one(0).week) },
+    devices: { total: n(one(1).total), newDay: n(one(1).newDay), activeDay: n(one(1).activeDay) },
+    pushed: r[2].results.map((x) => ({ day: String(x.day), players: n(x.players) })),
+    newByCountry: r[3].results.map((x) => ({ cc: (x.cc as string | null) ?? null, n: n(x.n) })),
+    today: { shares: n(one(4).shares), recruits: n(one(5).n) },
+    signups: r[6].results.map((x) => ({ source: (x.source as string | null) ?? null, n: n(x.n) })),
+    conversion: { newPlayers: n(one(7).newPlayers), signedIn: n(one(7).signedIn) },
   };
 }

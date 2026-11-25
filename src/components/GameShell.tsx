@@ -1,5 +1,7 @@
-import { useState, type ReactNode } from "react";
-import { buyUpgrade, dismissArrival, dismissMoment, dismissWelcome, handOver, useGame } from "../game/store";
+import { useEffect, useState, type ReactNode } from "react";
+import { buyUpgrade, dismissArrival, dismissMoment, dismissWelcome, handOver, nudgeToast, useGame } from "../game/store";
+import { LAUNCH, NUDGES, betaLine, ctaLabel, dismissedToday, fillNudge, signInHref, toastNudgeUsed, spendToastNudge } from "../game/nudges";
+import { int } from "../game/format";
 import { ArrivalScreen } from "./ArrivalScreen";
 import { BetaBanner } from "./BetaBanner";
 import { Link } from "../router";
@@ -32,6 +34,29 @@ export function GameShell({ tab, children }: GameShellProps) {
   const safe = view.safe;
   const reveal = useProbeReveal(ready, view.probeId, probe.stop);
   const openUpgrades = () => setUpgradesOpen(true);
+  const guest = player.known && !player.account;
+
+  // Phase G1: after real progress (an upgrade, a badge or 500 clicks), one toast a day asks a guest to sign in.
+  // Never in safe mode, the signal's last minute, or over another screen or toast.
+  const upgraded = Object.values(player.levels).some((l) => l > 0);
+  const progressed = upgraded || player.badges.length > 0 || player.tapsAll >= 500;
+  const quiet = !safe && view.signalLeftS > 60 && !welcome && !arrival && !moment && toast === null;
+  useEffect(() => {
+    if (!guest || !progressed || !quiet || toastNudgeUsed() || dismissedToday("progress")) return;
+    spendToastNudge();
+    void fetch("/api/profile", { credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((p: { totalKm?: number } | null) => {
+        const km = Math.max(p?.totalKm ?? 0, player.kmToday);
+        nudgeToast({
+          title: km >= 1 ? fillNudge(NUDGES.progressTitle, { km: int(km) }) : NUDGES.progressTitleNoKm,
+          body: fillNudge(betaLine() ? NUDGES.progressBeta : NUDGES.progressBody, LAUNCH),
+          action: { label: ctaLabel(player.emailSignIn), href: signInHref("progress") },
+          nudge: "progress",
+        });
+      })
+      .catch(() => {});
+  }, [guest, progressed, quiet]);
 
   if (welcome) {
     return (
@@ -114,6 +139,11 @@ export function GameShell({ tab, children }: GameShellProps) {
               <p className="game-head__sub">
                 Probe {view.probeTag} · Mission day {view.missionDay}
               </p>
+              {guest && !wide && (
+                <Link href={signInHref("chip")} className="game-head__guest">
+                  {NUDGES.chip}
+                </Link>
+              )}
             </div>
             {wide ? (
               <nav className="game-nav" aria-label="Game">
@@ -138,8 +168,8 @@ export function GameShell({ tab, children }: GameShellProps) {
                   How to play
                 </Link>
                 <ThemeLink className="game-nav__item" />
-                <Link href={player.account ? "/profile" : "/sign-in"} className="pbtn pbtn--blue game-nav__signin">
-                  {player.account ? player.name : "Sign in"}
+                <Link href={player.account ? "/profile" : signInHref("chip")} className="pbtn pbtn--blue game-nav__signin">
+                  {player.account ? player.name : guest ? NUDGES.chipWide : "Sign in"}
                 </Link>
               </nav>
             ) : (

@@ -32,14 +32,16 @@
 //   GET  /api/admin/networks    }   (phase 9a: today's busiest networks against the per-network cap)
 //   GET  /api/admin/shares      }   (phase S1: shares and crew-link visits, last 7 days)
 //   GET  /api/admin/beta        }   (prompts 82-83: the accounts with the Early Beta badge)
+//   GET  /api/admin/players     }   (phase G1: the Players card, counts only)
 
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
+import { emailReady } from "./email";
 import { LAUNCH_WIPE_PHRASE } from "../shared/beta";
 import { BURN_TARGET_KM } from "../shared/burn";
-import { betaReport, credits, leaderboard, profile, tour } from "./boards";
+import { betaReport, credits, leaderboard, playersReport, profile, tour } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
@@ -126,6 +128,7 @@ async function session(request: Request, env: Env): Promise<Response> {
     name: signedIn?.account.name ?? row.name,
     crew: row.crew,
     account: signedIn ? accountInfo(signedIn.account) : null,
+    emailSignIn: emailReady(env) || env.DEV_SIGN_IN_LINKS === "1",
   };
   return json(body, 200, {}, cookies);
 }
@@ -294,6 +297,7 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
   if (action === "networks" && request.method === "GET") return json(await capReport(env));
   if (action === "shares" && request.method === "GET") return json(await shareReport(env));
   if (action === "beta" && request.method === "GET") return json(await betaReport(env));
+  if (action === "players" && request.method === "GET") return json(await playersReport(env));
   if (request.method !== "POST") return json({ error: "Not found" }, 404);
 
   const body = (await request.json().catch(() => ({}))) as { km?: unknown; hours?: unknown };

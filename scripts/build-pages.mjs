@@ -544,6 +544,7 @@ const privacySections = [
     [
       "Signing in is optional. If you sign in with an email link, we keep your email address. If you sign in with Google, we keep your email address and Google's id for your account, and nothing else from Google: no name, no photo, no contacts.",
       "Your account also has its generated crew name and a country (detected when the account is made; you can change it once). A sign-in cookie (osc_session) keeps you signed in for up to 90 days; a short cookie (osc_oauth) lasts 10 minutes while you're away at Google.",
+      "When you make an account, we note which of our sign-in links brought you (for example the leaderboard's), so we can tell which ones help; a short cookie (osc_from) carries that for up to an hour. Only counts are ever looked at.",
       "A sign-in link is stored only as a scrambled code (a hash), and it stops working after one use or 15 minutes.",
       "Anyone can play as a guest. If you're under 13, ask a parent or guardian before you sign in.",
     ],

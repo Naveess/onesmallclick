@@ -1,3 +1,4 @@
+import { rememberSignupSource } from "../game/nudges";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { isCountryCode, type ConfirmResult, type EmailLinkResult, type NameOffers } from "../../shared/account";
 import { PixelButton } from "../components/PixelButton";
@@ -61,6 +62,8 @@ function Frame({ children, label }: { children: ReactNode; label: string }) {
 export function SignInPage() {
   useDocumentTitle("Sign in · OneSmallClick");
   const { player } = useGame();
+  // Phase G1: which nudge sent them here, kept for an hour so a new account records it.
+  useEffect(() => rememberSignupSource(window.location.search), []);
   if (!player.known) return <Frame label="Sign in">{null}</Frame>;
   if (!player.account) return <GuestForm crew={player.crew} />;
   if (!player.account.nameChosen) return <NamePicker current={player.account.name} />;

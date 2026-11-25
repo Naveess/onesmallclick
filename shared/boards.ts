@@ -26,6 +26,8 @@ export interface BoardResult {
   me: BoardRow | null;
   /** Only signed-in players are on the Players board. */
   signedIn: boolean;
+  /** A guest's rank on the Players board if they signed in (phase G1's ghost row), or null. */
+  ghostRank?: number | null;
 }
 
 export interface ProfileInfo {

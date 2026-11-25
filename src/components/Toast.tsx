@@ -2,7 +2,9 @@ import { useState } from "react";
 import { BADGE_INFO, type BadgeId } from "../../shared/badges";
 import type { BadgeTier } from "../../shared/mission";
 import { shareMessage } from "../../shared/share";
+import { dismissForToday } from "../game/nudges";
 import { dismissToast, useGame, type Toast as ToastData } from "../game/store";
+import { Link } from "../router";
 import { STILLS, badgeStill } from "../sprites";
 import { PixelIcon } from "./PixelIcon";
 import { ShareSheet } from "./ShareSheet";
@@ -35,6 +37,11 @@ export function Toast({ toast, wide }: { toast: ToastData | null; wide: boolean 
             <div className="toast__text">
               <p className="toast__title">{toast.title}</p>
               <p className="toast__body">{toast.body}</p>
+              {toast.action && (
+                <Link href={toast.action.href} className="toast__share toast__action" onClick={dismissToast}>
+                  {toast.action.label}
+                </Link>
+              )}
               {toast.badge && (
                 <button type="button" className="toast__share" onClick={() => setSharing(toast.badge!)} aria-haspopup="dialog">
                   <PixelIcon name="share" size={18} tone="orange" />
@@ -42,7 +49,15 @@ export function Toast({ toast, wide }: { toast: ToastData | null; wide: boolean 
                 </button>
               )}
             </div>
-            <button type="button" className="toast__close" onClick={dismissToast} aria-label="Dismiss">
+            <button
+              type="button"
+              className="toast__close"
+              onClick={() => {
+                if (toast.nudge) dismissForToday(toast.nudge);
+                dismissToast();
+              }}
+              aria-label="Dismiss"
+            >
               ×
             </button>
           </Window>

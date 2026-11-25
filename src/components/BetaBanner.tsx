@@ -56,7 +56,7 @@ export function BetaBanner({ signedIn, hasBadge, safe }: { signedIn: boolean; ha
           {signedIn ? (
             hasBadge && <p className="beta__have">{BETA.haveBadge}</p>
           ) : (
-            <Link href="/sign-in" className="pbtn pbtn--orange beta__signin">
+            <Link href="/sign-in?from=banner" className="pbtn pbtn--orange beta__signin">
               {BETA.signIn}
             </Link>
           )}

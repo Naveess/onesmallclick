@@ -1,0 +1,24 @@
+{
+  "_about": "Phase G1 (prompts 89-93): the sign-in nudges for guests. Wording approved by Nav (prompt 93). {launch} is content/beta.json's launchShort; the Early Beta lines show only until its endsAt. Fill-ins: {rank}, {km}, {country}.",
+  "chip": "Guest · Save progress",
+  "chipWide": "Guest · Save progress",
+  "ghost": "You'd be #{rank} today · sign in to claim your spot",
+  "ghostZero": "Push today, then sign in to get on the board",
+  "countries": "Only signed-in crew count for their country. Sign in to add your km to {country}.",
+  "progressTitle": "You've pushed {km} km",
+  "progressTitleNoKm": "Your progress lives in this browser",
+  "progressBody": "Sign in so you don't lose it.",
+  "progressBeta": "Sign in so you don't lose it, and get the Early Beta badge before {launch}.",
+  "welcome": "Keep this safe: sign in",
+  "welcomeBeta": "Keep this safe: sign in, and get the Early Beta badge before {launch}",
+  "credits": "Sign in to get your name in the mission credits",
+  "profileTitle": "Sign in to keep it all",
+  "profileList": [
+    "Your km, badges and stamps on any device",
+    "Your name on the leaderboards and in the mission credits",
+    "Your km count for your country's board"
+  ],
+  "profileBeta": "The Early Beta badge, if you sign in before {launch}",
+  "cta": "Sign in",
+  "ctaGoogle": "Sign in with Google"
+}

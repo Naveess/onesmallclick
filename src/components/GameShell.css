@@ -66,6 +66,24 @@
 }
 
 /* Safe mode (1f): the name goes quiet, and on phones the mission line steps aside for the chip. */
+/* Phase G1: a guest's way to sign in, under the probe line on phones. */
+.game-head__guest {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  margin-top: 2px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--text-orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.game-head__guest:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
 .game-head--safe .game-head__title {
   color: var(--text-muted);
 }
