@@ -268,6 +268,8 @@ export function AdminPage() {
   const [km, setKm] = useState("");
   const [hours, setHours] = useState("24");
   const [legDays, setLegDays] = useState("24");
+  const [burnMinutes, setBurnMinutes] = useState("60");
+  const [burnTarget, setBurnTarget] = useState("2000000");
   const [seconds, setSeconds] = useState("70");
   const [give, setGive] = useState("100000");
 
@@ -478,6 +480,36 @@ export function AdminPage() {
               </label>
               <PixelButton type="submit" disabled={busy}>
                 Move forward
+              </PixelButton>
+            </Window>
+
+            <Window
+              as="form"
+              className="admin__card"
+              aria-labelledby="admin-burn"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                void run("burn", { minutes: Number(burnMinutes), target: Number(burnTarget) });
+              }}
+            >
+              <h2 id="admin-burn" className="admin__h2">
+                Start the landing burn now
+              </h2>
+              <p className="admin__note">
+                {state.probe.burn
+                  ? `Burning: ${int(state.probe.burn.km)} of ${int(state.probe.burn.target)} km, landing ${when(state.probe.burn.landAt)}.`
+                  : "E4b part 2b. Moves the probe to this many minutes from arrival at today's pace and starts the burn (it starts by itself an hour out). On live this changes the real probe: everyone sees it and the leg lands."}
+              </p>
+              <label className="admin__field">
+                <span className="label">Minutes to landing (1–60)</span>
+                <input inputMode="decimal" value={burnMinutes} onChange={(e) => setBurnMinutes(e.target.value)} required />
+              </label>
+              <label className="admin__field">
+                <span className="label">Bar target, km</span>
+                <input inputMode="numeric" value={burnTarget} onChange={(e) => setBurnTarget(e.target.value)} required />
+              </label>
+              <PixelButton type="submit" disabled={busy || !!state.probe.burn || state.probe.arrivedAt !== null}>
+                Start the burn
               </PixelButton>
             </Window>
 

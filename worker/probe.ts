@@ -25,6 +25,7 @@ import {
   type PingResult,
   type ProbeSnapshot,
   type ServerMessage,
+  type ArrivalInfo,
 } from "../shared/mission";
 import { CREW_HALF_KM_S, CREW_TOP_KM_S, TODAY_PACE_MIN_MS, TODAY_PACE_MS } from "../shared/balance";
 import {
@@ -72,6 +73,7 @@ import {
   type EarnedBadge,
 } from "../shared/badges";
 import { betaOpen } from "../shared/beta";
+import { BURN_MS, BURN_TAP_MULTIPLIER, BURN_TARGET_KM, burnKmAt, spareText, type BurnResult, type BurnState } from "../shared/burn";
 import {
   VOTE_QUESTION,
   VOTE_RECENT_ROUNDS,
@@ -339,7 +341,9 @@ export class Probe extends DurableObject<Env> {
   /** An arrival is being handled (crediting the crew awaits D1). */
   private arriving = false;
   /** The latest arrival this tour (kept in meta; the launch reset clears it). */
-  private lastArrival: { missionId: number; stop: string; at: number } | null = null;
+  private lastArrival: ArrivalInfo | null = null;
+  /** The landing burn in progress (E4b part 2b), with where the probe was when it started; null otherwise. */
+  private burn: (BurnState & { startKm: number }) | null = null;
   /** The crew's planet tech from every leg arrived at this tour (E4b part 2a; shared/tech.ts). */
   private tech: CrewTech = NO_TECH;
   private lastLogId = 0;
@@ -432,6 +436,15 @@ export class Probe extends DurableObject<Env> {
       ["crew_half", "REAL"],
       ["arrived_at", "INTEGER"],
       ["medal", "TEXT"],
+      // The landing burn (E4b part 2b).
+      ["burn_started_at", "INTEGER"],
+      ["burn_land_at", "INTEGER"],
+      ["burn_start_km", "REAL"],
+      ["burn_target", "REAL"],
+      ["burn_km", "REAL"],
+      ["burn_at", "INTEGER"],
+      ["burn_filled_at", "INTEGER"],
+      ["burn_ok", "INTEGER"],
     ]) {
       if (!cols.has(col)) this.sql.exec(`ALTER TABLE mission ADD COLUMN ${col} ${type}`);
     }
@@ -448,9 +461,9 @@ export class Probe extends DurableObject<Env> {
     const lastId = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'last_arrival_mission'`).toArray()[0]?.value;
     if (lastId !== undefined) {
       const r = this.sql
-        .exec<{ id: number; stop: string | null; arrived_at: number | null }>(`SELECT id, stop, arrived_at FROM mission WHERE id = ?`, lastId)
+        .exec<{ id: number; stop: string | null; from_stop: string | null; arrived_at: number | null }>(`SELECT id, stop, from_stop, arrived_at FROM mission WHERE id = ?`, lastId)
         .toArray()[0];
-      if (r?.arrived_at) this.lastArrival = { missionId: r.id, stop: r.stop ?? FIRST_STOP, at: r.arrived_at };
+      if (r?.arrived_at) this.lastArrival = { missionId: r.id, stop: r.stop ?? FIRST_STOP, fromStop: r.from_stop ?? START_STOP, at: r.arrived_at, burn: this.burnResultOf(r.id) };
     }
     const offset = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'clock_offset_ms'`).toArray()[0];
     this.clockOffsetMs = offset?.value ?? 0;
@@ -496,6 +509,30 @@ export class Probe extends DurableObject<Env> {
       if (row.signal_deadline === null || row.moved_ms === null) this.saveSignal();
     } else {
       await this.startMission(1);
+    }
+    // A landing burn in progress survives a restart (its auto-thrust is re-counted as players reconnect).
+    const br = this.sql
+      .exec<{
+        burn_started_at: number | null;
+        burn_land_at: number | null;
+        burn_start_km: number | null;
+        burn_target: number | null;
+        burn_km: number | null;
+        burn_at: number | null;
+        burn_filled_at: number | null;
+      }>(`SELECT burn_started_at, burn_land_at, burn_start_km, burn_target, burn_km, burn_at, burn_filled_at FROM mission WHERE id = ?`, this.mission.id)
+      .toArray()[0];
+    if (br?.burn_started_at != null && br.burn_land_at != null && this.mission.arrivedAt === null) {
+      this.burn = {
+        startedAt: br.burn_started_at,
+        landAt: br.burn_land_at,
+        startKm: br.burn_start_km ?? 0,
+        target: br.burn_target ?? BURN_TARGET_KM,
+        km: br.burn_km ?? 0,
+        at: br.burn_at ?? br.burn_started_at,
+        autoKmS: 0,
+        filledAt: br.burn_filled_at,
+      };
     }
 
     this.reached = this.sql
@@ -569,6 +606,7 @@ export class Probe extends DurableObject<Env> {
       lastSafeTo: null,
     };
     this.reached = [];
+    this.burn = null;
     this.track = [];
     this.sql.exec(`DELETE FROM track`);
     this.sample(true);
@@ -631,6 +669,7 @@ export class Probe extends DurableObject<Env> {
       );
     }
     this.dirtyMinutes.clear();
+    this.saveBurn();
     const old = Math.floor(this.now() / MINUTE_MS) - 60;
     this.sql.exec(`DELETE FROM pace WHERE minute <= ?`, old);
     for (const minute of this.pace.keys()) if (minute <= old) this.pace.delete(minute);
@@ -851,6 +890,11 @@ export class Probe extends DurableObject<Env> {
   }
 
   private coastKmS(): number {
+    // The landing burn (E4b part 2b): the probe glides in at a steady speed and lands at the fixed time.
+    const b = this.burn;
+    if (b && this.mission.arrivedAt === null) {
+      return Math.max(0, this.mission.routeKm - b.startKm) / Math.max(1, (b.landAt - b.startedAt) / 1000);
+    }
     return COAST_KM_S * this.legScale();
   }
 
@@ -893,6 +937,7 @@ export class Probe extends DurableObject<Env> {
       vote: this.liveVote(),
       logId: this.lastLogId,
       milestones: this.reached,
+      burn: this.burnView(now),
     };
   }
 
@@ -1073,7 +1118,8 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     const raw = this.autoRaw(except);
     if (raw > 0 && m.pausedSince === null) m.lastActiveAt = Math.max(m.lastActiveAt, now);
-    m.autoKmS = m.safeSince === null && m.pausedSince === null ? raw * this.factor(now, except) : 0;
+    m.autoKmS = m.safeSince === null && m.pausedSince === null && !this.burn ? raw * this.factor(now, except) : 0;
+    if (this.burn) this.burnAccrue(now, raw); // during the burn, connected auto-thrust fills the bar instead
     this.scheduleSave();
     this.scheduleBroadcast();
   }
@@ -1081,6 +1127,18 @@ export class Probe extends DurableObject<Env> {
   /** Crew km arriving in one go (a tap batch or an offline catch-up): counted in full, balanced for the probe. Returns the km it moved the probe. */
   private pushCrewKm(now: number, rawKm: number, kind: "taps" | "catchup"): number {
     if (rawKm <= 0 || this.mission.pausedSince !== null) return 0;
+    if (this.burn) {
+      // The landing time is fixed: taps fill the burn bar (counting double) instead of moving the probe.
+      if (kind !== "taps") return 0;
+      const minute = Math.floor(now / MINUTE_MS);
+      this.pace.set(minute, (this.pace.get(minute) ?? 0) + rawKm);
+      this.dirtyMinutes.add(minute);
+      this.burnAccrue(now, this.autoRaw());
+      this.burnAdd(now, rawKm * BURN_TAP_MULTIPLIER);
+      this.scheduleSave();
+      this.scheduleBroadcast();
+      return 0;
+    }
     this.rebase(now);
     const minute = Math.floor(now / MINUTE_MS);
     const map = kind === "taps" ? this.pace : this.catchup;
@@ -1120,7 +1178,10 @@ export class Probe extends DurableObject<Env> {
     const m = this.mission;
     let at = this.vote.closesAt;
     if (m.pausedSince === null) {
-      if (m.safeSince === null) at = Math.min(at, m.signalDeadline);
+      if (m.safeSince === null && !this.burn) at = Math.min(at, m.signalDeadline);
+      // When the arrival will be an hour away at today's pace: the landing burn starts (E4b part 2b).
+      const burnAt = this.burnStartsAt(this.now());
+      if (burnAt !== null) at = Math.min(at, Math.max(this.now() + 5_000, Math.ceil(burnAt / 1000) * 1000));
       const pauseAt = this.pausesAt();
       if (pauseAt !== null) at = Math.min(at, pauseAt);
       // When the probe reaches the next milestone without help (rounded up to the minute, so taps don't rewrite it).
@@ -1148,6 +1209,7 @@ export class Probe extends DurableObject<Env> {
   async alarm() {
     this.alarmAt = 0; // it fired: the next one must be set again
     await this.checkSignal();
+    await this.maybeStartBurn();
     await this.checkVote();
     await this.checkMilestones();
     await this.scheduleAlarm();
@@ -1163,7 +1225,7 @@ export class Probe extends DurableObject<Env> {
     const pauseAt = this.pausesAt();
     // The signal's clock stops when the probe pauses, so it only runs out if that comes first.
     const until = m.pausedSince ?? Math.min(now, pauseAt ?? Infinity);
-    if (m.safeSince === null && m.signalDeadline <= until) await this.enterSafe(until);
+    if (m.safeSince === null && m.signalDeadline <= until && !this.burn) await this.enterSafe(until);
     if (pauseAt !== null && pauseAt <= now) await this.enterIdle(pauseAt);
     await this.scheduleAlarm();
   }
@@ -1185,7 +1247,7 @@ export class Probe extends DurableObject<Env> {
   /** When the probe pauses if nothing happens: 8 hours after the last activity; never while auto-thrust is connected (or once paused). */
   private pausesAt(): number | null {
     const m = this.mission;
-    if (m.pausedSince !== null || this.autoRaw() > 0) return null;
+    if (m.pausedSince !== null || this.autoRaw() > 0 || this.burn) return null;
     return m.lastActiveAt + IDLE_PAUSE_MS;
   }
 
@@ -1328,6 +1390,7 @@ export class Probe extends DurableObject<Env> {
 
   /** Records any milestone the probe has passed: everyone connected gets the moment, and it goes in the log. */
   private async checkMilestones() {
+    await this.maybeStartBurn();
     await this.checkReached();
     await this.checkArrival();
   }
@@ -1502,11 +1565,149 @@ export class Probe extends DurableObject<Env> {
   }
 
 
+  // ---------- The landing burn (E4b part 2b) ----------
+
+  /** When the arrival will be an hour away at today's pace (the burn starts then), or null if it can't start. */
+  private burnStartsAt(now: number): number | null {
+    const m = this.mission;
+    if (this.burn || m.arrivedAt !== null || m.pausedSince !== null || m.safeSince !== null) return null;
+    const left = m.routeKm - distanceAt(this.moving(), now);
+    const speed = this.coastKmS() + m.autoKmS;
+    if (left <= 0 || speed <= 0) return null;
+    const window = this.todayPace(now) * (BURN_MS / 1000);
+    return now + Math.max(0, ((left - window) / speed) * 1000);
+  }
+
+  /** Starts the landing burn once the arrival is an hour away at today's pace. */
+  private async maybeStartBurn() {
+    const m = this.mission;
+    if (this.burn || m.arrivedAt !== null || m.pausedSince !== null || m.safeSince !== null) return;
+    const now = this.now();
+    const left = m.routeKm - distanceAt(this.moving(), now);
+    if (left <= 0 || left > this.todayPace(now) * (BURN_MS / 1000) + 1) return;
+    await this.startBurn(now, BURN_MS, BURN_TARGET_KM);
+  }
+
+  /** The final hour: the landing time is fixed, and the crew's pushed km fill the bar from now on. */
+  private async startBurn(now: number, ms: number, target: number) {
+    const m = this.mission;
+    this.rebase(now);
+    this.burn = { startedAt: now, landAt: now + ms, target, km: 0, at: now, autoKmS: this.autoRaw(), filledAt: null, startKm: m.distanceKm };
+    // The signal can't run out during the burn, or as the probe lands.
+    m.signalDeadline = Math.max(m.signalDeadline, this.burn.landAt + MINUTE_MS);
+    this.retune(now); // auto-thrust stops moving the probe: it fills the bar instead
+    this.saveSignal();
+    this.saveBurn();
+    await this.scheduleAlarm();
+    this.broadcast();
+    const probeName = probeFor(m.stop, m.fromStop)?.name ?? "The probe";
+    const time = new Date(this.burn.landAt).toISOString().slice(11, 16);
+    await this.log(
+      "burn_start",
+      "Final hour: the landing burn",
+      `${probeName} lands on ${stopName(m.stop)} at ${time} UTC. ${gb.format(target)} km of crew thrust sticks the landing, and every tap counts double.`,
+      { stop: m.stop, landAt: this.burn.landAt, target },
+    );
+    this.onBurnStart();
+  }
+
+  /**
+   * Phase 8d's hook: when crew emails exist (after the payday setup), the "final burn, join the push" email to
+   * opted-in accounts goes out from here (docs/plan.md, "8d: Crew emails").
+   */
+  private onBurnStart() {
+    // Nothing yet: email sending waits for the domain, Email Service and Workers Paid.
+  }
+
+  /** Adds the connected auto-thrust up to `now` to the bar, then counts `raw` (everyone connected's) from here. */
+  private burnAccrue(now: number, raw: number) {
+    const b = this.burn;
+    if (!b) return;
+    const t = Math.max(b.at, Math.min(now, b.landAt));
+    const before = b.km;
+    b.km = burnKmAt(b, t);
+    if (b.filledAt === null && b.km >= b.target) {
+      b.filledAt = b.autoKmS > 0 ? Math.min(t, b.at + ((b.target - before) / b.autoKmS) * 1000) : t;
+    }
+    b.at = t;
+    b.autoKmS = raw;
+  }
+
+  /** Burn km from a tap batch (already doubled). */
+  private burnAdd(now: number, km: number) {
+    const b = this.burn;
+    if (!b || km <= 0 || now > b.landAt) return;
+    b.km += km;
+    if (b.filledAt === null && b.km >= b.target) b.filledAt = now;
+  }
+
+  /** The burn as the browser sees it, with the connected auto-thrust added up to now. */
+  private burnView(now: number): BurnState | null {
+    const b = this.burn;
+    if (!b || this.mission.arrivedAt !== null) return null;
+    const km = burnKmAt(b, now);
+    return { startedAt: b.startedAt, landAt: b.landAt, target: b.target, km, at: now, autoKmS: b.autoKmS, filledAt: b.filledAt };
+  }
+
+  private saveBurn() {
+    const b = this.burn;
+    if (!b) return;
+    this.sql.exec(
+      `UPDATE mission SET burn_started_at = ?, burn_land_at = ?, burn_start_km = ?, burn_target = ?, burn_km = ?, burn_at = ?,
+         burn_filled_at = ? WHERE id = ?`,
+      b.startedAt,
+      b.landAt,
+      b.startKm,
+      b.target,
+      b.km,
+      b.at,
+      b.filledAt,
+      this.mission.id,
+    );
+  }
+
+  /** The probe landed: the burn's result, saved with the leg. */
+  private finishBurn(at: number): BurnResult | null {
+    const b = this.burn;
+    if (!b) return null;
+    this.burnAccrue(at, b.autoKmS);
+    const ok = b.km >= b.target;
+    const result: BurnResult = {
+      km: b.km,
+      target: b.target,
+      ok,
+      spareMs: ok && b.filledAt !== null ? Math.max(0, at - b.filledAt) : null,
+    };
+    this.saveBurn();
+    this.sql.exec(`UPDATE mission SET burn_ok = ? WHERE id = ?`, ok ? 1 : 0, this.mission.id);
+    this.burn = null;
+    return result;
+  }
+
+  /** A leg's saved burn result (for the latest arrival after a restart), or null if it had none. */
+  private burnResultOf(id: number): BurnResult | null {
+    const r = this.sql
+      .exec<{ burn_km: number | null; burn_target: number | null; burn_ok: number | null; burn_filled_at: number | null; arrived_at: number | null }>(
+        `SELECT burn_km, burn_target, burn_ok, burn_filled_at, arrived_at FROM mission WHERE id = ?`,
+        id,
+      )
+      .toArray()[0];
+    if (!r || r.burn_km === null || r.burn_ok === null) return null;
+    return {
+      km: r.burn_km,
+      target: r.burn_target ?? BURN_TARGET_KM,
+      ok: r.burn_ok === 1,
+      spareMs: r.burn_ok === 1 && r.burn_filled_at !== null && r.arrived_at !== null ? Math.max(0, r.arrived_at - r.burn_filled_at) : null,
+    };
+  }
+
   // ---------- Arrival and the next leg (phase 8c) ----------
 
   /** When the probe reached the end of the route: now, or earlier if the alarm was late. */
   private reachedAt(now: number): number {
     const m = this.mission;
+    // The landing burn fixed the landing time, whatever moved the probe's stored distance since.
+    if (this.burn) return Math.min(now, this.burn.landAt);
     const speed = m.pausedSince === null ? this.coastKmS() + m.autoKmS : 0;
     if (speed <= 0) return now;
     return Math.min(now, Math.max(m.at, m.at + ((m.routeKm - m.distanceKm) / speed) * 1000));
@@ -1535,7 +1736,8 @@ export class Probe extends DurableObject<Env> {
     m.pausedSince = at;
     m.autoKmS = 0;
     this.saveSignal();
-    this.lastArrival = { missionId: m.id, stop: m.stop, at };
+    const burn = this.finishBurn(at);
+    this.lastArrival = { missionId: m.id, stop: m.stop, fromStop: m.fromStop, at, burn };
     this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('last_arrival_mission', ?)`, m.id);
     this.broadcast();
     // The crew's medal for the leg (E4b part 2a), saved with it so a later rule change never alters it, and the
@@ -1544,13 +1746,18 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`UPDATE mission SET medal = ? WHERE id = ?`, medal, m.id);
     this.loadTech();
     this.broadcast();
-    const crew = await this.creditCrew(at, medal);
+    const crew = await this.creditCrew(at, medal, burn);
     const day = Math.max(1, Math.ceil((at - m.startedAt) / DAY_MS));
+    const landing = !burn
+      ? ""
+      : burn.ok
+        ? ` Landing stuck: ${gb.format(Math.round(burn.target))} km burned${burn.spareMs !== null ? ` with ${spareText(burn.spareMs)} to spare` : ""}.`
+        : ` Rough landing, but we made it: ${gb.format(Math.round(burn.km))} of ${gb.format(Math.round(burn.target))} km burned.`;
     await this.log(
       "arrival",
       `Arrived at ${stopName(m.stop)}`,
-      `Day ${day}. ${gb.format(crew.count)} crew pushed us here with ${gb.format(crew.taps)} taps.`,
-      { stop: m.stop, from: m.fromStop, days: (at - m.startedAt) / DAY_MS, crew: crew.count, taps: crew.taps, medal },
+      `Day ${day}. ${gb.format(crew.count)} crew pushed us here with ${gb.format(crew.taps)} taps.${landing}`,
+      { stop: m.stop, from: m.fromStop, days: (at - m.startedAt) / DAY_MS, crew: crew.count, taps: crew.taps, medal, burn },
     );
     const here = campaignStop(m.stop);
     const now = this.now();
@@ -1580,7 +1787,7 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Snapshots who helped on this leg (at least one credited tap) into D1's mission_crew: the credits, and E4b's stamps. */
-  private async creditCrew(at: number, medal: Medal): Promise<{ count: number; taps: number }> {
+  private async creditCrew(at: number, medal: Medal, burn: BurnResult | null = null): Promise<{ count: number; taps: number }> {
     await this.flushD1();
     const m = this.mission;
     const db = this.env.DB;
@@ -1603,8 +1810,11 @@ export class Probe extends DurableObject<Env> {
       const count = row?.n ?? 0;
       const taps = row?.taps ?? 0;
       await db
-        .prepare(`UPDATE missions SET arrived_at = ?, crew_count = ?, taps = ?, medal = ? WHERE id = ?`)
-        .bind(at, count, taps, medal, m.id)
+        .prepare(
+          `UPDATE missions SET arrived_at = ?, crew_count = ?, taps = ?, medal = ?, burn_km = ?, burn_target = ?, burn_ok = ?,
+             burn_spare_ms = ? WHERE id = ?`,
+        )
+        .bind(at, count, taps, medal, burn?.km ?? null, burn?.target ?? null, burn ? (burn.ok ? 1 : 0) : null, burn?.spareMs ?? null, m.id)
         .run();
       return { count, taps };
     } catch (err) {
@@ -1788,7 +1998,9 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`UPDATE vote_round SET closed_at = ?, winner = ?, tallies = ? WHERE round = ?`, now, w, JSON.stringify(v.tallies), v.round);
 
     const def = w >= 0 ? voteOption(v.ids[w]) : undefined;
-    const hours = def?.hours ?? 0;
+    // During the landing burn the landing time is fixed: the winning option changes nothing (E4b part 2b).
+    const held = this.burn !== null && (def?.hours ?? 0) !== 0;
+    const hours = held ? 0 : (def?.hours ?? 0);
     if (hours !== 0) {
       this.rebase(now);
       // Hours at today's pace, so "about 4 hours sooner" is what the arrival date does.
@@ -1809,7 +2021,7 @@ export class Probe extends DurableObject<Env> {
       return;
     }
     const pct = Math.round((v.tallies[w] / total) * 100);
-    await this.log("vote_result", `Crew chose: ${shortLabel(def.label)}`, `${pct}% of ${gb.format(total)} vote${total === 1 ? "" : "s"}. ${def.result}`, {
+    await this.log("vote_result", `Crew chose: ${shortLabel(def.label)}`, `${pct}% of ${gb.format(total)} vote${total === 1 ? "" : "s"}. ${held ? "The landing burn is on, so the landing time stays put." : def.result}`, {
       round: v.round,
       option: def.id,
       votes: v.tallies[w],
@@ -2355,6 +2567,7 @@ export class Probe extends DurableObject<Env> {
     if (msg.t !== "taps" || !Number.isInteger(msg.n) || msg.n < 0 || msg.n > MAX_TAPS_PER_MESSAGE) return;
     // Any tap batch is activity: it keeps the probe awake, or wakes it (decision 5).
     if (msg.n > 0) await this.wake(deviceId, now);
+    if (msg.n > 0) await this.maybeStartBurn(); // an hour out: these taps already count for the burn
 
     // Refill the device's bucket for the real time that passed, then take what it can afford.
     const real = Date.now();
@@ -2604,6 +2817,35 @@ export class Probe extends DurableObject<Env> {
     this.track = [];
     this.sql.exec(`DELETE FROM track`);
     this.sample(true);
+    return this.adminCommit();
+  }
+
+  /**
+   * E4b part 2b test control: moves the probe to `minutes` from arrival at today's pace and starts the landing burn
+   * (landing in `minutes`, with this bar `target`). Wakes it or ends safe mode first, like a ping would.
+   */
+  async adminStartBurn(minutes: number, target: number): Promise<AdminState> {
+    const m = this.mission;
+    if (m.arrivedAt !== null || this.burn) return this.adminState();
+    const now = this.now();
+    this.rebase(now);
+    if (m.pausedSince !== null) {
+      m.pausedSince = null;
+      m.at = now;
+    }
+    if (m.safeSince !== null) {
+      m.lastSafeFrom = m.safeSince;
+      m.lastSafeTo = now;
+      m.safeSince = null;
+    }
+    m.lastActiveAt = now;
+    const ms = Math.round(minutes * MINUTE_MS);
+    const left = m.routeKm - m.distanceKm;
+    m.distanceKm = m.routeKm - Math.min(left, Math.max(1, this.todayPace(now)) * (ms / 1000));
+    this.track = [];
+    this.sql.exec(`DELETE FROM track`);
+    this.sample(true);
+    await this.startBurn(now, ms, target);
     return this.adminCommit();
   }
 

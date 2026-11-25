@@ -19,6 +19,7 @@ export const MOMENTS = [
   "fact",
   "page",
   "map",
+  "burn",
 ] as const;
 export type Moment = (typeof MOMENTS)[number];
 
@@ -148,6 +149,7 @@ export const PREVIEW_IMAGES = [
   "badge",
   "countries",
   "destination-mars",
+  "burn",
 ] as const;
 
 /** The Wordle-style result line (the design's 1e share card, one line per row), easy to paste anywhere. */

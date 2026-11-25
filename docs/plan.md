@@ -32,7 +32,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
-- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
+- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: built and pushed 2026-11-25 (prompts 84–85), not deployed (migration 0016)**; 2c cosmetics. See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
@@ -616,6 +616,8 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - the top 10 contributors by their public generated names (already public on the leaderboards);
   - for anyone who didn't help: "If you missed out, don't worry, help us on the next journey!";
   - the main button: "Vote now: Ceres or Vesta?", while the destination vote is open.
+- **The landing burn email** (added 2026-11-25, prompt 85, Nav's idea): when a leg's landing burn starts (E4b part 2b, `Probe.onBurnStart`), opted-in accounts get "The final burn has started: OSC-1 lands on <stop> within the hour. Join the final push" with the countdown's end time, the 2,000,000 km target and one button, "Join the burn". Sent at once in fast batches (the burn lasts an hour), at most once per account per leg, and never to anyone with the game open right now. It makes three crew emails per leg, so the opt-in box says "a few a month".
+
 - **Sending:**
   - all of it through `worker/email.ts`;
   - from a separate address from the sign-in emails (e.g. `crew@onesmallclick.io`), so spam reports on updates can't hurt sign-in links;
@@ -628,7 +630,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 
 **Data changes** (the next free migration number)
 - `accounts`: `email_updates` (on/off), `email_updates_at` and `email_updates_source`.
-- `email_sends` (account_id, mission_id, kind, sent_at), one row per account per mission per kind.
+- `email_sends` (account_id, mission_id, kind, sent_at), one row per account per mission per kind (kind: halfway, burn, arrival).
 
 **How you test it**
 - Opt in on a test account. In `/admin`, move the distance past halfway: one halfway email arrives with the right numbers, and moving past it again sends nothing new.
@@ -1065,6 +1067,14 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
   - Browser flow (headless Edge, phone and wide, dark and light): the rewards box for Gold (helped) and Silver (missed), the upgrade sheet at 146, the passport with Mars Gold, Vesta Silver and the Jupiter slot, no sideways scroll, no console errors.
   - check-arrival, check-badges, check-recruits and check-auth ALL PASS (check-auth's ping step needs 5 seconds after another ping, so don't run it twice back to back).
   - tsc and build clean; `npm run sim` unchanged.
+
+**E4b part 2b status (built 2026-11-25, prompts 84–85; pushed, not deployed; needs migration 0016):**
+- **The rules** (`shared/burn.ts`): `BURN_MS` 60 min, `BURN_TARGET_KM` 2,000,000 for every stop, taps ×2 (`BURN_TAP_MULTIPLIER`) for the bar only. Nav's choices (prompt 85): credits and leaderboards stay normal; the signal can't run out in the burn; a vote that closes in the burn changes nothing about the landing; the target is the same for every stop for now.
+- **The Probe** (`worker/probe.ts`, "The landing burn"): an alarm (and every tap batch) starts the burn once the arrival is an hour away at today's pace. The landing is fixed at the start plus 60 minutes: the probe glides in at a steady speed (`coastKmS` while burning), auto-thrust stops moving it and fills the bar instead (everyone connected's raw km/s), and tap batches add double km to the bar without moving the probe. No idle pause and no safe mode during the burn (the signal deadline is pushed past the landing). The arrival is at the fixed landing time; the result (`BurnResult`: km, target, ok, spareMs) is saved with the leg (its own SQLite and D1 `missions`, migration 0016), sent as `lastArrival.burn`, returned by `/api/credits`, and in the arrival's log entry. The burn's start is a log entry (`burn_start`). `onBurnStart()` is the hook for 8d's burn email.
+- **The screens:** the home card ("FINAL HOUR · LANDING BURN", countdown, the 20-block bar, Join the burn), a LANDING BURN chip on the flight view, the burn screen (1o: the destination close up, the countdown, the bar, "N here now · everyone's taps count double", THRUST "burn, burn, burn", Call the crew in, Back to the mission), then at arrival "Landing stuck!" (gold-framed postcard) or "Rough landing, but we made it" before the arrival screen. The mission log shows the burn and, under the arrival, the postcard with its gold frame. The postcard photo is the destination until PixelLab postcard art (2c). Components: `src/components/LandingBurn.tsx` (BurnBar, BurnCard, BurnScreen), `LandingResult.tsx`, `LandingBurn.css`.
+- **Sharing:** a new `burn` moment (content/share.json, Nav's approved wording; preview image `public/share/burn.png`).
+- **/admin:** "Start the landing burn now" (`POST /api/admin/burn {minutes, target}`): moves the probe to that many minutes from arrival at today's pace and starts the burn. On live it changes the real probe.
+- **Checked locally:** `node scripts/check-burn.mjs` ALL PASS (26: the start an hour out, a fixed landing, taps double on the bar and not moving the probe, the signal held, a faster vote held, landing on time, a missed and a stuck landing saved with the leg, /api/credits, the log, the self-start from a tap 48 minutes out). Browser flow (headless Edge, phone and wide, dark and light): the home card and chip, Join the burn, tapping fills the bar, the bar full, rough and stuck landings, then the arrival, the log's gold postcard, no sideways scroll, no console errors. check-arrival, check-rewards, check-badges, check-beta, check-auth, check-recruits and check-clicks ALL PASS; tsc and build clean; `npm run sim` unchanged.
 
 ### E5: Later ideas from the brief
 

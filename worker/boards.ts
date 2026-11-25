@@ -7,6 +7,7 @@
 // The top of each board is worked out at most once a minute per Worker instance and reused;
 // your own row is looked up for each request.
 
+import { BURN_TARGET_KM } from "../shared/burn";
 import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo, type TourInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
@@ -208,7 +209,8 @@ export async function credits(env: Env, url: URL): Promise<Response> {
   const id = Number(url.searchParams.get("mission"));
   if (!Number.isInteger(id) || id < 1) return json({ error: "mission must be a mission id" }, 400);
   const m = await env.DB.prepare(
-    `SELECT id, stop, from_stop, started_at, arrived_at, crew_count, taps, medal FROM missions WHERE id = ? AND arrived_at IS NOT NULL`,
+    `SELECT id, stop, from_stop, started_at, arrived_at, crew_count, taps, medal, burn_km, burn_target, burn_ok, burn_spare_ms
+       FROM missions WHERE id = ? AND arrived_at IS NOT NULL`,
   )
     .bind(id)
     .first<{
@@ -220,6 +222,10 @@ export async function credits(env: Env, url: URL): Promise<Response> {
       crew_count: number | null;
       taps: number | null;
       medal: string | null;
+      burn_km: number | null;
+      burn_target: number | null;
+      burn_ok: number | null;
+      burn_spare_ms: number | null;
     }>();
   if (!m) return json({ error: "No arrival for that mission yet" }, 404);
   const named = await env.DB.prepare(
@@ -240,6 +246,11 @@ export async function credits(env: Env, url: URL): Promise<Response> {
     names,
     guests: Math.max(0, crew - names.length),
     medal: (m.medal as Medal | null) ?? medalFor((m.arrived_at - m.started_at) / DAY_MS),
+    // The landing burn (E4b part 2b); legs before it had none.
+    burn:
+      m.burn_km === null || m.burn_ok === null
+        ? null
+        : { km: m.burn_km, target: m.burn_target ?? BURN_TARGET_KM, ok: m.burn_ok === 1, spareMs: m.burn_spare_ms },
   };
   return Response.json(body, { headers: { "Cache-Control": "public, max-age=300" } });
 }

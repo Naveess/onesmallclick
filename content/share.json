@@ -39,6 +39,11 @@
       "preview": "The probe has lost its signal and is drifting. One Ping from anyone wakes it up.",
       "image": "safe"
     },
+    "burn": {
+      "message": "{probe} lands on {dest} within the hour and needs 2,000,000 km of thrust. Every tap counts double right now. Help us stick the landing:",
+      "preview": "The crew's probe lands on {dest} within the hour. Every tap counts double in the landing burn. Jump in and help stick the landing.",
+      "image": "burn"
+    },
     "badge": {
       "message": "I just earned {badge} on OneSmallClick. Help push our probe to {dest}:",
       "preview": "{name} just earned {badge}. Join the crew flying one probe to {dest}.",

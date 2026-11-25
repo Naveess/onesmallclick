@@ -21,6 +21,7 @@
 //   POST /api/admin/distance    }   Authorization: Bearer <ADMIN_KEY>
 //   POST /api/admin/clock       }
 //   POST /api/admin/leg-start   }   (E4b: the current leg launched { days } ago, for testing medals)
+//   POST /api/admin/burn        }   (E4b part 2b: start the landing burn now { minutes, target })
 //   POST /api/admin/signal      }
 //   POST /api/admin/clear-ping  }   (lets the admin's own device ping again today)
 //   POST /api/admin/give        }   (gives the admin's own device km: credits and prestige progress)
@@ -35,6 +36,7 @@ import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
 import { accountInfo, auth, readSession, renewSession } from "./auth";
+import { BURN_TARGET_KM } from "../shared/burn";
 import { betaReport, credits, leaderboard, profile, tour } from "./boards";
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
@@ -297,6 +299,14 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     const km = Number(body.km);
     if (!Number.isFinite(km) || km < 0) return json({ error: "km must be a number, 0 or more" }, 400);
     return json(await stub.adminSetDistance(km));
+  }
+  if (action === "burn") {
+    const b = body as { minutes?: unknown; target?: unknown };
+    const minutes = b.minutes === undefined ? 60 : Number(b.minutes);
+    const target = b.target === undefined ? BURN_TARGET_KM : Number(b.target);
+    if (!Number.isFinite(minutes) || minutes < 1 || minutes > 60) return json({ error: "minutes must be between 1 and 60" }, 400);
+    if (!Number.isFinite(target) || target < 1 || target > 1e9) return json({ error: "target must be between 1 and 1,000,000,000 km" }, 400);
+    return json(await stub.adminStartBurn(minutes, target));
   }
   if (action === "leg-start") {
     const days = Number((body as { days?: unknown }).days);

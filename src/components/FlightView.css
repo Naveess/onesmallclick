@@ -409,6 +409,20 @@
   color: var(--space-text-soft);
 }
 
+/* The landing burn (E4b part 2b, 1o): gold, with the countdown and how full the bar is. */
+.flight__chip--burn {
+  display: block;
+  color: var(--medal-gold-2);
+  border-color: var(--medal-gold-2);
+  outline: 2px solid var(--medal-gold-5);
+  background: var(--space-orange-well);
+}
+
+.flight__chip--burn .flight__chip-num {
+  font: 18px/1 var(--font-num);
+  color: inherit;
+}
+
 @keyframes flight-urgent-box {
   0%,
   100% {

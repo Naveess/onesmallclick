@@ -18,7 +18,7 @@ interface Entry {
   kind: string;
   title: string;
   body: string;
-  data: { fact?: string; source?: string; slug?: string; postcard?: number } | null;
+  data: { fact?: string; source?: string; slug?: string; postcard?: number; burn?: { ok: boolean } | null } | null;
 }
 
 interface Look {
@@ -38,6 +38,7 @@ const LOOKS: Record<string, Look> = {
   branch_open: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
   branch_result: { label: "ROUTE VOTE", icon: "check", tone: "blue" },
   leg_start: { label: "NEW LEG", icon: "up", tone: "blue" },
+  burn_start: { label: "LANDING BURN", icon: "bolt", tone: "orange" },
 };
 const FALLBACK: Look = { label: "LOG", icon: "log", tone: "blue" };
 
@@ -150,6 +151,12 @@ export function LogPage() {
                   {e.kind === "milestone" && e.data?.postcard && (
                     <div className="log__postcard" aria-hidden="true">
                       <div className="log__postcard-photo">POSTCARD {String(e.data.postcard).padStart(2, "0")}</div>
+                    </div>
+                  )}
+                  {e.kind === "arrival" && e.data?.burn && (
+                    // The landing burn's postcard (E4b part 2b): a gold frame when the crew stuck the landing.
+                    <div className={e.data.burn.ok ? "log__postcard log__postcard--gold" : "log__postcard"} aria-hidden="true">
+                      <div className="log__postcard-photo">{e.data.burn.ok ? "GOLD EDITION" : "TOUCHDOWN"}</div>
                     </div>
                   )}
                   {e.kind === "milestone" && e.data?.slug && (

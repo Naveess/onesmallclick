@@ -91,6 +91,13 @@ const IMAGES = {
     sub: "One Ping from anyone keeps it alive.",
     art: [at(150, 60, img("/sprites/signal-badge-red.png", 32, 32, 8)), at(130, 400, probe(4))],
   },
+  burn: {
+    tone: "orange",
+    label: "FINAL HOUR · LANDING BURN",
+    title: "Help us stick the landing",
+    sub: "Every tap counts double for the next hour.",
+    art: [at(300, 60, img("/sprites/firework.png", 64, 64, 3)), at(120, 380, probe(4))],
+  },
   safe: {
     tone: "muted",
     label: "SAFE MODE",

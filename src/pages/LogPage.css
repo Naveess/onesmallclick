@@ -124,6 +124,19 @@
   transform: rotate(-1.5deg);
 }
 
+/* A stuck landing's postcard (E4b part 2b): the gold frame from 1o. */
+.log__postcard--gold {
+  background: var(--medal-gold-2);
+  box-shadow:
+    inset 0 0 0 2px var(--medal-gold-1),
+    0 0 0 2px var(--medal-gold-4),
+    3px 3px 0 2px var(--outline);
+}
+
+.log__postcard--gold .log__postcard-photo {
+  color: var(--medal-gold-2);
+}
+
 .log__postcard-photo {
   height: 100%;
   display: grid;

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { probeFor, stop as campaignStop, stopName } from "../../shared/campaign";
 import type { CreditsInfo } from "../../shared/boards";
+import type { ArrivalInfo } from "../../shared/mission";
 import { destinationArt } from "../game/flightArt";
 import { int } from "../game/format";
 import { castVote, useGame } from "../game/store";
 import { SPRITES } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
 import { ArrivalRewards } from "./ArrivalRewards";
+import { LandingResult } from "./LandingResult";
 import { BranchVote } from "./BranchVote";
 import { Flag } from "./Flag";
 import { PixelButton } from "./PixelButton";
@@ -17,7 +19,7 @@ import { Window } from "./Window";
 import "./ArrivalScreen.css";
 
 interface ArrivalScreenProps {
-  arrival: { missionId: number; stop: string; at: number };
+  arrival: ArrivalInfo;
   wide: boolean;
   onClose: () => void;
 }
@@ -42,6 +44,8 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
   const reduceMotion = usePrefersReducedMotion();
   const [credits, setCredits] = useState<CreditsInfo | null>(null);
   const [failed, setFailed] = useState(false);
+  // How the landing burn went comes first (E4b part 2b, 1o), then the arrival.
+  const [landed, setLanded] = useState(!arrival.burn);
 
   useEffect(() => {
     let alive = true;
@@ -76,6 +80,10 @@ export function ArrivalScreen({ arrival, wide, onClose }: ArrivalScreenProps) {
       ]
     : [];
   const rollSeconds = Math.max(20, lines.length * 2.4);
+
+  if (!landed && arrival.burn) {
+    return <LandingResult stop={arrival.stop} fromStop={arrival.fromStop} burn={arrival.burn} wide={wide} onContinue={() => setLanded(true)} />;
+  }
 
   return (
     <main className={wide ? "arrival-screen arrival-screen--wide" : "arrival-screen"} aria-labelledby="arrival-title">

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { ClickCounter } from "../components/ClickCounter";
 import { FlightView, type FlightHandle } from "../components/FlightView";
 import { AdSlot, ArrivalEstimate, SignalCard, VoteCard } from "../components/GameCards";
@@ -10,6 +10,7 @@ import { castVote, openArrival, ping, switches, thrust, useGame } from "../game/
 import { BranchVote } from "../components/BranchVote";
 import { DestinationFile } from "../components/DestinationFile";
 import { InviteBanner } from "../components/InviteBanner";
+import { BurnCard, BurnScreen } from "../components/LandingBurn";
 import { ShareNudge } from "../components/ShareNudge";
 import { milestonesFor } from "../../shared/milestones";
 import { int, probeSpeed } from "../game/format";
@@ -24,6 +25,8 @@ export function GamePage() {
   useDocumentTitle("OneSmallClick · push one probe to Mars together");
   const { probe, player, view, connection } = useGame();
   const flight = useRef<FlightHandle>(null);
+  // The landing burn screen (1o), opened from the home card's "Join the burn".
+  const [burnOpen, setBurnOpen] = useState(false);
   // THRUST also boosts the probe in the flight view, with its "+km".
   const onThrust = () => {
     const km = thrust();
@@ -57,9 +60,26 @@ export function GamePage() {
           probeId: view.probeId,
           probeTag: view.probeTag,
           moonLeg: view.moonLeg,
+          burn: view.burn,
         };
         const track = <FlightView handle={flight} wide={wide} {...flightProps} />;
         const invite = <InviteBanner known={player.known} destName={view.destName} />;
+        // The landing burn (E4b part 2b): the final hour before arrival.
+        if (view.burn && burnOpen) {
+          return (
+            <BurnScreen
+              burn={view.burn}
+              wide={wide}
+              online={probe.online}
+              stop={probe.stop}
+              probeId={view.probeId}
+              probeTag={view.probeTag}
+              onThrust={thrust}
+              onBack={() => setBurnOpen(false)}
+            />
+          );
+        }
+        const burnCard = view.burn && <BurnCard burn={view.burn} wide={wide} onJoin={() => setBurnOpen(true)} />;
         if (view.safe) {
           return (
             <SafeMode
@@ -129,6 +149,7 @@ export function GamePage() {
             <main className="home" aria-label="Mission">
               <h1 className="visually-hidden">OneSmallClick mission control</h1>
               {invite}
+              {burnCard}
               <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               {track}
               {signal}
@@ -160,6 +181,7 @@ export function GamePage() {
           <main className="home home--wide" aria-label="Mission">
             <h1 className="visually-hidden">OneSmallClick mission control</h1>
             {invite}
+            {burnCard}
             <div className="home__top">
               <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
               <dl className="home__stats">

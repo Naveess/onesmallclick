@@ -1,5 +1,6 @@
 // The leaderboards (1g) and the profile (1j), phase 8b: what /api/leaderboard and /api/profile answer.
 
+import type { BurnResult } from "./burn";
 import type { Medal } from "./medals";
 
 export type Board = "players" | "countries";
@@ -82,4 +83,6 @@ export interface CreditsInfo {
   guests: number;
   /** The crew's medal for the leg (E4b part 2a). */
   medal: Medal;
+  /** How its landing burn went (E4b part 2b), or null for legs before it. */
+  burn: BurnResult | null;
 }

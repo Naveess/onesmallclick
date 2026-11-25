@@ -1,6 +1,7 @@
 // Shared by the browser (src/) and the Worker (worker/): the mission's fixed numbers
 // and the messages that go over the probe's WebSocket. No DOM or Worker APIs here.
 
+import type { BurnResult, BurnState } from "./burn";
 import type { Progress, UpgradeKey, WelcomeBack } from "./upgrades";
 import type { LiveVote } from "./votes";
 import type { ReachedMilestone } from "./milestones";
@@ -72,6 +73,16 @@ export function setbackMs(safeSince: number | null, now: number): number {
 }
 
 /** What everyone sees. Times are the server's clock (epoch ms). */
+/** An arrival, as the arrival screen needs it: the leg, when, and how its landing burn went (E4b part 2b). */
+export interface ArrivalInfo {
+  missionId: number;
+  stop: string;
+  /** Where the leg started (for its probe), when known. */
+  fromStop?: string;
+  at: number;
+  burn?: BurnResult | null;
+}
+
 export interface ProbeSnapshot {
   missionId: number;
   destination: string;
@@ -81,7 +92,9 @@ export interface ProbeSnapshot {
   /** When the probe reached `stop`, or null on the way. In orbit it waits there for the branch vote. */
   arrivedAt: number | null;
   /** The latest arrival this tour (this leg's in orbit, or the last one), so everyone sees its arrival screen once. */
-  lastArrival: { missionId: number; stop: string; at: number } | null;
+  lastArrival: ArrivalInfo | null;
+  /** The landing burn in progress (E4b part 2b), or null. */
+  burn?: BurnState | null;
   /** The crew's planet tech from the legs arrived at this tour (E4b part 2a; shared/tech.ts). */
   tech?: CrewTech;
   missionStartedAt: number;

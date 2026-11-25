@@ -1,0 +1,375 @@
+/* The landing burn (E4b part 2b, design 1o): the home card, the burn screen, the bar and the landing result.
+   Gold is the medal palette (docs/tokens.css: "the gold postcard frame and the landing-burn bar"). */
+
+/* ---------- The bar: 20 blocks ---------- */
+.burn-bar {
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 2px;
+  padding: 3px;
+  background: var(--space-outline);
+  border: 2px solid var(--medal-bronze-4);
+}
+
+.burn-bar__seg {
+  height: 10px;
+  background: var(--space-line-dim);
+}
+
+.burn-bar__seg--on {
+  background: var(--medal-gold-2);
+}
+
+.burn-bar__seg--now {
+  background: var(--medal-gold-4);
+}
+
+.burn-bar--lg {
+  gap: 3px;
+  padding: 4px;
+  border-color: var(--medal-gold-2);
+  outline: 2px solid var(--medal-gold-5);
+}
+
+.burn-bar--lg .burn-bar__seg {
+  height: 24px;
+}
+
+.burn--wide .burn-bar--lg .burn-bar__seg {
+  height: 34px;
+}
+
+/* ---------- The home card ---------- */
+.burn-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 2px;
+  padding: 12px;
+  background: linear-gradient(180deg, var(--window-orange-top), var(--window-orange-bottom));
+  border: 2px solid var(--orange);
+  outline: 2px solid var(--outline);
+  animation: burn-urgent 1.4s steps(4) infinite;
+}
+
+.burn-card__top,
+.burn-card__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.burn-card__top {
+  align-items: baseline;
+}
+
+.burn-card__label {
+  font: 400 12px/1.3 var(--font-ui);
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.burn-card__left {
+  font: 28px/1 var(--font-num);
+  color: var(--text-orange-soft);
+}
+
+.burn-card--wide .burn-card__left {
+  font-size: 34px;
+}
+
+.burn-card--wide .burn-bar__seg {
+  height: 14px;
+}
+
+.burn-card__km {
+  font-size: 13px;
+  color: var(--text-orange-soft);
+}
+
+.burn-card__join {
+  flex: none;
+}
+
+@keyframes burn-urgent {
+  0%,
+  100% {
+    box-shadow: 0 0 0 rgb(var(--glow-orange) / 0);
+  }
+  50% {
+    box-shadow: 0 0 28px rgb(var(--glow-orange) / 0.5);
+  }
+}
+
+/* ---------- The burn screen ---------- */
+.burn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+.burn--wide {
+  width: min(100%, 620px);
+  margin: 0 auto;
+}
+
+.burn__art {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+
+.burn--wide .burn__art {
+  height: 180px;
+}
+
+/* The destination close up, its top half off the screen, as in 1o. */
+.burn__planet {
+  position: absolute;
+  top: -128px;
+  filter: drop-shadow(0 0 30px rgb(var(--glow-mars) / 0.4));
+}
+
+.burn__probe {
+  position: absolute;
+  bottom: 4px;
+  filter: drop-shadow(0 0 6px rgb(var(--glow-orange) / 0.8));
+}
+
+.burn__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.burn__kick {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+  animation: burn-blink 1.6s steps(1) infinite;
+}
+
+.burn__left {
+  font: 76px/0.9 var(--font-num);
+  color: var(--text-orange-soft);
+  text-shadow: 4px 4px 0 var(--orange-text-shadow), 0 0 24px rgb(var(--glow-orange) / 0.45);
+}
+
+.burn--wide .burn__left {
+  font-size: 112px;
+}
+
+.burn__title {
+  font: 500 16px/1.35 var(--font-ui);
+}
+
+.burn--wide .burn__title {
+  font-size: 20px;
+}
+
+.burn__meter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.burn__nums {
+  display: flex;
+  justify-content: space-between;
+  font: 18px/1 var(--font-num);
+  color: var(--text-muted);
+}
+
+.burn__km {
+  color: var(--medal-gold-text);
+}
+
+.burn__here {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.burn__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--orange);
+  animation: burn-blink 1s steps(1) infinite;
+}
+
+.burn__online {
+  font: 20px/1 var(--font-num);
+  color: var(--text);
+}
+
+.burn__thrust {
+  display: grid;
+  place-items: center;
+}
+
+.burn__note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.burn__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@keyframes burn-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burn-card,
+  .burn__kick,
+  .burn__dot {
+    animation: none;
+  }
+}
+
+/* ---------- The landing result ---------- */
+.landing {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px 0 20px;
+}
+
+.landing--wide {
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.landing__bursts {
+  position: absolute;
+  inset: 4px 0 auto;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+}
+
+.landing__head {
+  position: relative;
+  z-index: 1; /* above the fireworks */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.landing__kick {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.landing__kick--gold {
+  color: var(--medal-gold-text);
+}
+
+.landing__title {
+  font: 600 28px/1.05 var(--font-ui);
+  text-shadow: 3px 3px 0 var(--orange-shadow);
+}
+
+.landing__title--gold {
+  font-size: 36px;
+  color: var(--medal-gold-text);
+  text-shadow: 3px 3px 0 var(--medal-gold-5);
+}
+
+.landing__line {
+  font: 20px/1.2 var(--font-num);
+  color: var(--text-orange-soft);
+}
+
+/* The gold frame (1o success): gold with a light inner edge, dark outer edges, a glow, and four corner studs. */
+.landing__frame {
+  position: relative;
+  align-self: center;
+  padding: 8px;
+  background: var(--medal-gold-2);
+  box-shadow:
+    inset 0 0 0 2px var(--medal-gold-1),
+    0 0 0 2px var(--medal-gold-4),
+    0 0 0 4px var(--medal-gold-5),
+    0 0 28px rgb(var(--glow-orange) / 0.45);
+  transform: rotate(-1.5deg);
+}
+
+.landing__corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--medal-gold-1);
+  border: 2px solid var(--medal-gold-4);
+}
+
+.landing__corner--tl {
+  left: -6px;
+  top: -6px;
+}
+
+.landing__corner--tr {
+  right: -6px;
+  top: -6px;
+}
+
+.landing__corner--bl {
+  left: -6px;
+  bottom: -6px;
+}
+
+.landing__corner--br {
+  right: -6px;
+  bottom: -6px;
+}
+
+.landing__card {
+  width: min(100%, 306px);
+}
+
+.landing__card--gold {
+  width: min(calc(100vw - 64px), 290px);
+  box-shadow: none;
+  transform: none;
+}
+
+.landing__photo {
+  height: 170px;
+}
+
+.landing__edition {
+  color: var(--medal-gold-4);
+  border-color: var(--medal-gold-4);
+}
+
+.landing__note {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.landing__go {
+  margin-top: 8px;
+}

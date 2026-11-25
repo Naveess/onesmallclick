@@ -64,6 +64,8 @@ interface FlightViewProps {
   probeTag?: string;
   /** A moon leg: the speed reads in km/h. */
   moonLeg?: boolean;
+  /** The landing burn (E4b part 2b): seconds to landing and how full the bar is, or null. */
+  burn?: { leftS: number; share: number } | null;
   handle?: Ref<FlightHandle>;
 }
 
@@ -112,6 +114,7 @@ export function FlightView({
   probeId = "pathfinder",
   probeTag = "OSC-1",
   moonLeg = false,
+  burn = null,
 }: FlightViewProps) {
   const [ref, measured] = useWidth<HTMLDivElement>();
   const reduceMotion = usePrefersReducedMotion();
@@ -332,6 +335,10 @@ export function FlightView({
         {safe ? (
           <div className="flight__chip flight__chip--safe">
             SAFE MODE · ENGINE OFF<span>Drifting. Ping to wake the probe.</span>
+          </div>
+        ) : burn ? (
+          <div className="flight__chip flight__chip--burn">
+            LANDING BURN <span className="flight__chip-num">{hms(burn.leftS)}</span> · {Math.floor(Math.min(1, burn.share) * 100)}%
           </div>
         ) : orbit ? (
           <div className="flight__chip flight__chip--idle">

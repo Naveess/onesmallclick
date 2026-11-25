@@ -1,3 +1,4 @@
+import { burnKmAt, type BurnState } from "../../shared/burn";
 import { useSyncExternalStore } from "react";
 import {
   BASE_TAP_KM,
@@ -10,6 +11,7 @@ import {
   distanceAt,
   probeClock,
   setbackMs,
+  type ArrivalInfo,
   type BadgeTier,
   type DeviceToday,
   type PingResult,
@@ -55,7 +57,9 @@ export interface ProbeState {
   arrivedAt: number | null;
   /** The crew's planet tech from this tour's arrivals (E4b part 2a): credits and prices only. */
   tech: CrewTech;
-  lastArrival: { missionId: number; stop: string; at: number } | null;
+  lastArrival: ArrivalInfo | null;
+  /** The landing burn in progress (E4b part 2b), as the server last sent it, or null. */
+  burn: BurnState | null;
   /** The route, including setbacks already made permanent. */
   routeKm: number;
   /** What to show: the server's distance, plus coasting and auto-thrust since, plus this device's taps not yet credited. */
@@ -161,7 +165,7 @@ export interface GameState {
    */
   moment: MomentState | null;
   /** The arrival screen (1k) to show: the latest arrival this browser hasn't seen yet, or one reopened from the home. */
-  arrival: { missionId: number; stop: string; at: number } | null;
+  arrival: ArrivalInfo | null;
 }
 
 /** Test switches, from the URL: ?crew=handful  ?ads=off */
@@ -258,6 +262,7 @@ function initialState(): GameState {
       arrivedAt: server?.arrivedAt ?? null,
       tech: server?.tech ?? NO_TECH,
       lastArrival: server?.lastArrival ?? null,
+      burn: server?.burn ?? null,
       routeKm: server?.routeKm ?? ROUTE_KM,
       distanceKm: server ? distanceAt(server, now) : 0,
       coastKmS: server?.coastKmS ?? COAST_KM_S,
@@ -338,8 +343,10 @@ function compose(base: GameState, connection = base.connection): GameState {
         arrivedAt: p.arrivedAt ?? null,
         tech: p.tech ?? NO_TECH,
         lastArrival: p.lastArrival ?? null,
+        burn: p.burn ?? null,
         routeKm: p.routeKm,
-        distanceKm: Math.min(p.routeKm, distanceAt(p, now) + optimisticKm * (p.crewFactor ?? 1)),
+        // During the landing burn taps fill the bar instead of moving the probe (E4b part 2b).
+        distanceKm: Math.min(p.routeKm, distanceAt(p, now) + (p.burn ? 0 : optimisticKm * (p.crewFactor ?? 1))),
         coastKmS: p.coastKmS,
         autoKmS: p.autoKmS ?? 0,
         crewKmS: p.crewKmS,
@@ -777,8 +784,11 @@ function derive({ now, probe, player }: GameState) {
     const cost = upgradeCost(def.key, level, probe.tech.priceCut); // less Vesta's planet tech (E4b)
     return { def, level, cost, affordable: player.credits >= cost, line: named?.line ?? null };
   });
-  // At today's pace, plus the setback; null (on hold) while the probe is paused.
-  const arrivalAt = paused ? null : now + (toGoKm / pace) * 1000 + setback;
+  // The landing burn (E4b part 2b): the landing time is fixed, and the crew's km fill the bar.
+  const b = probe.arrivedAt === null ? probe.burn : null;
+  const burnKm = b ? Math.min(b.target, burnKmAt(b, now)) : 0;
+  // At today's pace, plus the setback; null (on hold) while the probe is paused. During the burn, the landing time.
+  const arrivalAt = b ? b.landAt : paused ? null : now + (toGoKm / pace) * 1000 + setback;
   return {
     missionDay: Math.floor((now - probe.missionStartedAt) / DAY_MS) + 1,
     speedKmS,
@@ -825,6 +835,10 @@ function derive({ now, probe, player }: GameState) {
     upgrades,
     affordable: upgrades.filter((u) => u.affordable).length,
     prestigeReady: player.kmSinceShift >= PRESTIGE_AT_KM,
+    /** The landing burn in progress: seconds to landing, the crew's km (capped at the target), and how full the bar is. */
+    burn: b
+      ? { leftS: Math.max(0, (b.landAt - now) / 1000), km: burnKm, target: b.target, share: burnKm / b.target, filled: burnKm >= b.target, landAt: b.landAt }
+      : null,
   };
 }
 
