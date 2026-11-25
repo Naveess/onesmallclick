@@ -1025,6 +1025,145 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 - **Season 2 after interstellar:** a new campaign (a Moon base, or retracing Voyager), so the game doesn't end. It needs its own plan first.
 - **A supporter tip jar** (e.g. Ko-fi) with a cosmetic "Supporter" flair and **no gameplay advantage**, never linked to ads.
 
+## A: The admin panel: players, moderation, messages and save states (added 2026-11-25)
+
+**Why (Nav, 2026-11-25).** Today's `/admin` is a page of test controls behind `ADMIN_KEY`. Once real crowds arrive, Nav needs to run the game. That means finding any player and fixing their account when something breaks: reset their progress, add or remove rewards, change their name. It means dealing with bad behaviour (warn, time out, ban) and talking to players (one player, or everyone). It also needs **save states**: snapshots of every player's progress, rewards and profile, and of the probe itself, so Nav can look back at any point and restore it in an emergency.
+
+**Where it goes (decision 33).** After Q1 and before G2. A1 and A2 should be live before launch day (15 Dec), because the launch brings the first real crowd and the first cheats. A3 can follow after launch.
+
+**Rules for the whole phase.**
+- **Every admin action is logged** (who, when, which player, what changed (before and after), and a reason, which is required for anything that changes a player). The log can't be edited or deleted from the panel. It's kept 1 year.
+- **Every change to a player saves a snapshot first**, so every change can be undone in one tap from the log.
+- **Destructive actions ask twice.** A reset, ban, delete or restore shows what will change and asks Nav to type the player's name (the whole-game restore asks for a phrase, like the launch wipe).
+- **Honest to players.** No shadow bans. Someone who's timed out, banned or hidden from the boards sees a clear screen saying so, why, until when, and how to appeal (the contact page, or Q1's feedback form).
+- **Phone-first.** The panel has to work at 375px. Nav will often use it on his phone. Its sections are tabs, not one long page.
+- **No new dependencies** without Nav's OK. **No new Cloudflare resource** without Nav's OK (A1 asks for one R2 bucket: decision 35).
+- `/admin` stays unlinked and `noindex`. The API stays under `/api/admin/*`.
+
+### A1: Admin sign-in, players, fixes and save states (before launch)
+
+**1. Admin sign-in and roles (decision 34).**
+- The admin signs in with **Nav's Google account** (on an allowlist secret, `ADMIN_EMAILS`) **plus** the existing `ADMIN_KEY`. An admin session lasts 12 hours and is separate from the player's session.
+- **Roles:** *owner* (everything) and *moderator* (look up players, warn, time out, hide from boards, read the feedback; no resets, bans, deletes, restores or game controls). Only owner exists for now. Moderator is there for when Nav adds a helper.
+- Admin API calls are rate-limited, and failed admin sign-ins are logged.
+
+**2. The Players tab: find anyone.**
+- **Search** by generated name, email, account id, device id, crew code, or country. A guest (device only) can be found by device id or crew code.
+- **Lists:** newest, most active today, top of each board, recently flagged (A2), recently changed by an admin.
+
+**3. The player page: everything about one player, on one screen.**
+- **Profile:** name (and its history), country (and when it last changed), sign-in method (Google or email; the email is shown masked until tapped), created, last seen, signup source (G1), Early Beta, recruits and who recruited them (S2).
+- **Progress:** credits, upgrades and levels, tap power, auto-thrust, prestige, offline cap, planet tech that applies to them.
+- **Rewards:** badges (with when each was earned), click badges, medals and stamps from legs they helped on, cosmetics (from 2c).
+- **Activity:** km per day (a small chart, last 30 days), taps per day, pings, votes, shares, the legs they crewed. Plus devices and sessions (browser, first and last seen, the hashed network).
+- **History:** their snapshots (save states), every admin action on them, messages sent to them, and moderation (A2).
+- **Notes:** private admin notes on the player (e.g. "said on Discord his credits vanished, 25 Nov").
+
+**4. Fixes (owner only; reason required, snapshot first, undoable).**
+- **Reset progress:** all of it, or just one part (credits, upgrades, prestige, today's numbers). Rewards and profile are kept unless ticked.
+- **Set values:** credits, an upgrade's level, prestige.
+- **Rewards:** add or remove any badge, the Early Beta badge, a click badge, a stamp, a cosmetic. A medal belongs to a leg, so it can't be given to one player, but their crew credit for a leg can be added or removed.
+- **Restore from a save state:** see 6.
+- **Name:** give a new generated name (Nav picks from fresh offers), or type one by hand (checked against the name rules and the blocklist). Optionally lock it so the player can't change it. The old name is kept in its history.
+- **Country:** change it, or clear the 30-day cooldown.
+- **Account:** sign out everywhere, move a device to another account, merge a guest device into an account (when someone played as a guest and then signed in on a new browser).
+- **Privacy:** **export** everything about the player as a JSON file (a subject access request), or **delete** the account. Deleting runs the same path as the player's own "Delete account", and the backups and save states age it out within 90 days, as the privacy page says.
+
+**5. Save states: what's saved, and when (decision 35).**
+- **Player save states.** One per player: progress, rewards, profile and their counters (km, taps, pings, votes, badges, name, country). Saved:
+  - **every day at 00:00 UTC**, for every player who played that day;
+  - **before every admin change** to that player;
+  - **at big moments:** prestige, a leg's arrival (for everyone who crewed it), an account merge and a restore.
+- **Game save states.** The probe and the mission: distance, the leg, the clock, the signal, the vote round, the landing burn, milestones, today's pace and the crew balance. Saved:
+  - **every hour**, kept 7 days;
+  - **every day** at 00:00 UTC, kept 90 days;
+  - **before** any game control in the panel, a reset, the launch wipe, and every deploy (the deploy step runs it).
+- **Where they're stored:** a new **R2 bucket**, `onesmallclick-snapshots` (the free tier is 10 GB, far more than needed). One gzipped JSON file per day for all players (`players/2026-11-25.json.gz`), one small file per admin change or big moment, and one per game save state. D1 keeps an index (`snapshots`: kind, player, time, reason, file) so the panel can list them fast.
+- **Kept:** player save states 90 days, the same as the encrypted backups, so the privacy page stays true (a deleted account is gone from every copy within 90 days). The privacy page adds one line about save states.
+- **Underneath, Cloudflare's own copies stay too:** the Probe's storage can be rolled back to any minute in the last 30 days (Durable Objects point-in-time recovery), and D1 to any minute in the last 7 days (30 on Workers Paid; D1 Time Travel). Plus the encrypted backups in Drive.
+
+**6. Restoring.**
+- **The Save states tab** lists the game's save states. Each player page lists theirs. Each one shows its time and why it was taken.
+- **Compare before restoring.** Tap a save state to see it against now, e.g. "credits 3,100 → 12,400; badges +First Ping, −nothing; upgrade Ion drive 4 → 7".
+- **Restore one player:** all of it, or ticked parts only (e.g. just the badges). Today's leaderboard km can be restored too.
+- **Restore the game's probe** (owner, typed phrase): from a game save state (distance, leg, clock, signal, vote, burn), without touching players.
+- **The emergency rollback** (owner, typed phrase): the whole game back to a minute in the last 30 days. It freezes the game (maintenance mode), rolls the Probe back with point-in-time recovery, rolls D1 back to the same minute with Time Travel (Nav runs one Wrangler command the panel shows), then unfreezes. Within 7 days for D1 (30 on Workers Paid).
+- **Every restore is undoable:** it saves the current state first, and the log has an "Undo this restore" button. The Probe's own point-in-time recovery also returns a bookmark that undoes it.
+- **A written runbook**, `docs/runbook.md`: what to do if progress is lost, a bad deploy breaks saves, the probe jumps, or the database is damaged. Which tool to use for each, in order: one player's save state → game save state → point-in-time recovery → Time Travel → Drive backup.
+
+**7. Maintenance mode.**
+- One switch freezes the game: taps, pings, votes and the clock all pause. Everyone sees a banner ("Mission control is fixing something — back soon", editable). The pause doesn't count toward the idle pause or the signal deadline.
+- It's used for restores and risky deploys.
+
+### A2: Moderation and messages (before launch)
+
+**1. Moderation actions (decisions 36–37).**
+- **Warn:** a message the player must tap "OK" on next visit (see Messages). It's logged on their record.
+- **Time out:** 1 hour, 24 hours, 3 days or 7 days. The player can look around, but taps, pings, votes and shares don't count, and they see "Your account is paused until 7:00 pm your time — reason". It ends by itself.
+- **Hide from the leaderboards:** for suspected cheating. They still play and help the probe, but they're left off the boards, and told so.
+- **Ban:** the account and its devices. Optionally the hashed network too, for a set time only (at most 7 days), because a network can be a school, an office or a whole mobile network. A banned player sees the ban screen with the reason and how to appeal.
+- **Remove a cheat's km:** take a player's km off today's (or a past day's) leaderboards. Optionally also take it off the probe's distance, with a preview first. That changes everyone's trip, so it asks twice.
+- **Unban and undo** from the log, as for every action.
+
+**2. The Flags queue: things to look at.** The Probe flags them; nothing happens to the player automatically.
+- taps at the cap for hours on end, or at perfectly even intervals (an autoclicker);
+- many accounts or devices from one network in a day;
+- a new account climbing the boards unusually fast;
+- several failed Turnstile checks;
+- a name reported by players (below).
+
+Each flag shows the evidence and has quick actions (dismiss, warn, time out, hide, ban).
+
+**3. Names.**
+- Names are generated, so bad ones are rare. But a **"Report name"** button on the leaderboards (one per player per name, rate-limited) puts it in the Flags queue.
+- A **blocklist** of words that no generated or hand-typed name may contain, editable in the panel.
+
+**4. Messages.**
+- **To one player:** an in-game inbox (a small envelope on the home screen). It shows on their next visit, with a "read" tick on Nav's side. Optionally it's also a push notification if they've opted in (Q1), and an email after payday (8d) if they've opted in to emails.
+- **To everyone:**
+  - an **announcement banner** with a start and end time, and a level (info, warning or celebration). One at a time, dismissable, and never over THRUST in the final 60 seconds;
+  - a **push broadcast** to everyone opted in (it counts toward the 3-a-day cap);
+  - a **Discord post** through Q1's webhook.
+- **Templates** for the common ones: "We've restored your progress", "Your account is paused", "Welcome back", "Maintenance tonight", "Thanks for the report".
+- **Gifts:** a message can carry credits or a badge (e.g. "Sorry about the outage: here's 5,000 credits"), to one player or everyone. It's logged and has a snapshot like any change.
+- Messages are kept 90 days.
+
+**5. Player-facing pages.**
+- The **terms page** gets short crew rules: no autoclickers or scripts, no multiple accounts to farm, be kind in names and on Discord. Plus what happens if you break them (warn, time out, hide, ban) and how to appeal.
+- The **privacy page** adds moderation records and messages (kept 1 year and 90 days).
+
+### A3: Game controls, switches and health (after launch)
+
+**1. Tidy the test controls into a Game tab:** the probe's distance and clock, the signal, the vote (close it, change today's options), the landing burn, the leg's start, reset mission, and the launch wipe. Each is owner only, logged, with a game save state first. Also: pick tomorrow's fact, and schedule Q3's space events.
+
+**2. Feature switches** that turn things on or off without a deploy, kept in the Probe:
+- notifications, sharing, the sign-in nudges, the crew goal, ads, new sign-ups and the Discord bot;
+- **"read-only mode"**, which keeps the game visible but stops all writes (a softer maintenance mode).
+
+**3. The Health tab:**
+- players online now, today's taps, km and new players;
+- the crash reports from the last hour (phase 9a) and push failures;
+- how long since the last backup and the last game save state;
+- the Probe's and D1's storage size;
+- cap hits (9a) and the Discord webhook's status.
+
+Anything red also posts to Discord (Q5's error alerts).
+
+**4. The Log tab:** the full admin log, searchable by player, action and date, with undo where possible. Plus a CSV export.
+
+**5. Feedback and Flags together:** Q1's feedback inbox and A2's Flags queue live side by side, with "done" and "replied" states.
+
+### Decisions for A (added 2026-11-25; recommendations in brackets)
+
+33. **Where A goes:** *(after Q1, before G2; A1 and A2 live before launch day, A3 after.)*
+34. **Admin sign-in:** *(Nav's Google account on an allowlist plus `ADMIN_KEY`, 12-hour admin sessions; owner and moderator roles, only owner used for now.)*
+35. **Save states:** *(a new R2 bucket on the free tier. Players' daily save states, and one before every change, kept 90 days to match the backups. The game's hourly states kept 7 days and daily ones 90.)*
+36. **Ban scope:** *(the account and its devices; a network ban only by hand, for at most 7 days.)*
+37. **While timed out or banned, do taps count?** *(No, and the player is told why on a clear screen. Past km stays unless Nav removes it.)*
+38. **Hide cheats from the boards — tell them?** *(Yes. No shadow bans.)*
+39. **Gifts in messages:** *(yes, credits or a badge, logged and undoable.)*
+40. **Records kept:** *(the admin log 1 year; moderation records 1 year; messages 90 days; player save states 90 days.)*
+
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
 The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
@@ -1300,6 +1439,8 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 28. ~~**Share buttons**~~ **Decided: the phone's own share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy; no share SDKs** (built in S1).
 
 ### Before Q1 (added 2026-11-25): decisions 29–32 are listed in "Q: Quality of life, retention and community".
+
+### Before A (added 2026-11-25): decisions 33–40 are listed in "A: The admin panel".
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
