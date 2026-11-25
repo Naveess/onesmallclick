@@ -1,5 +1,5 @@
 import { ShareNudge } from "./ShareNudge";
-import { miles } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { GOAL_BONUS_CAP, type CrewGoal } from "../../shared/goal";
 import { LocalTime } from "./LocalTime";
 import { KEEPER_DAYS, ROMAN, keeperLevel } from "../../shared/badges";
@@ -277,6 +277,7 @@ export function VoteCard({ question, options, total, mine, leftS, closesAt, onVo
 export function GoalCard({ goal, destName, wide = false }: { goal: CrewGoal; destName: string; wide?: boolean }) {
   const pct = Math.min(100, Math.floor((goal.km / Math.max(1, goal.targetKm)) * 100));
   const reached = goal.reachedAt !== null;
+  const units = useUnits();
   return (
     <Window as="section" tone={reached ? "orange" : "blue"} className={wide ? "goal goal--wide" : "goal"} aria-labelledby="goal-label">
       <div className="goal__head">
@@ -297,10 +298,7 @@ export function GoalCard({ goal, destName, wide = false }: { goal: CrewGoal; des
         <div className={reached ? "goal__fill goal__fill--reached" : "goal__fill"} style={{ width: `${pct}%` }} />
       </div>
       <p className="goal__nums num">
-        {int(goal.km)} of {int(goal.targetKm)} km
-        <span className="mi">
-          {int(miles(goal.km))} of {int(miles(goal.targetKm))} mi
-        </span>
+        {units.of(goal.km, goal.targetKm)}
       </p>
       <p className="goal__note">
         {reached ? (

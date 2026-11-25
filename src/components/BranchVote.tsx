@@ -1,5 +1,6 @@
 import { LocalTime } from "./LocalTime";
-import { compactKmMi } from "../../shared/units";
+import { distCompact } from "../../shared/units";
+import { currentUnit, useUnit } from "../game/units";
 import { branchStopId, legKm, probeFor, stop as campaignStop, stopName } from "../../shared/campaign";
 import { hms, int } from "../game/format";
 import type { VoteOption } from "../game/store";
@@ -21,9 +22,9 @@ interface BranchVoteProps {
   busy?: boolean;
 }
 
-/** "1.07M km / 0.66M mi", "186M km / 116M mi" (phase M: shared/units.ts). */
+/** "1.07M km" or "0.66M mi", "186M km" or "116M mi": the player's unit (prompt 108). */
 function distance(km: number | null): string {
-  return km === null ? "" : compactKmMi(km);
+  return km === null ? "" : distCompact(km, currentUnit());
 }
 
 /**
@@ -31,6 +32,7 @@ function distance(km: number | null): string {
  * Each branch shows its new probe, its distance and the planet tech it would unlock. The probe art comes in E2.
  */
 export function BranchVote({ at, options, total, mine, leftS, closesAt, onVote, busy = false }: BranchVoteProps) {
+  useUnit(); // re-render when the unit changes
   const names = options.map((o) => stopName(branchStopId(o.id) ?? ""));
   return (
     <section className="branch" aria-labelledby="branch-label">

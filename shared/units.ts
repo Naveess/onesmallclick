@@ -145,3 +145,47 @@ export function kmMiFine(km: number): string {
   const f = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
   return `${f.format(km)} km / ${f.format(Math.round(miles(km) * 100) / 100)} mi`;
 }
+
+// ---------- One unit at a time (prompts 107–108) ----------
+// The game's numbers show km or miles, the player's choice (src/game/units.ts keeps it; km by default). Sentences
+// keep their miles in brackets (`withMiles`), and the content pages keep both.
+
+export type Unit = "km" | "mi";
+
+const inUnit = (km: number, u: Unit) => (u === "mi" ? miles(km) : km);
+
+/** 38266 → "38,266 km", or "23,777 mi". */
+export function dist(km: number, u: Unit): string {
+  return `${whole(inUnit(km, u))} ${u}`;
+}
+
+/** Just the number, for a "12,000 of 20,000 km" pair: 38266 → "38,266" or "23,777". */
+export function distNum(km: number, u: Unit): string {
+  return whole(inUnit(km, u));
+}
+
+/** Small distances to 2 decimals at most: 0.8 → "0.8 km" or "0.5 mi" (tap power). */
+export function distFine(km: number, u: Unit): string {
+  const f = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 2 });
+  return `${f.format(u === "mi" ? Math.round(miles(km) * 100) / 100 : km)} ${u}`;
+}
+
+/** 186_400_000 → "186M km" or "116M mi" (the map and the branch vote). */
+export function distCompact(km: number, u: Unit): string {
+  return compact(inUnit(km, u), u);
+}
+
+/** 57_593_689 → "57.59M km" or "35.79M mi". */
+export function distMillions(km: number, u: Unit): string {
+  return `${(Math.max(0, inUnit(km, u)) / 1e6).toFixed(2)}M ${u}`;
+}
+
+/** 24.1 → "24.10 km/s" or "14.98 mi/s". */
+export function speedIn(kmS: number, u: Unit, digits = 2): string {
+  return `${inUnit(kmS, u).toFixed(digits)} ${u}/s`;
+}
+
+/** A speed in km/h (the moon legs): "1,234 km/h" or "766 mph". */
+export function speedHourIn(kmH: number, u: Unit): string {
+  return u === "mi" ? `${whole(miles(kmH))} mph` : `${whole(kmH)} km/h`;
+}

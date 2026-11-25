@@ -1,4 +1,4 @@
-import { kmMi, miOnly } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { LAUNCH, NUDGES, betaLine, dismissForToday, dismissedToday, fillNudge, signInHref } from "../game/nudges";
 import { Link } from "../router";
 import type { WelcomeBack as WelcomeData } from "../../shared/upgrades";
@@ -49,6 +49,7 @@ interface WelcomeBackProps {
 /** Welcome back (1d): what your thrusters pushed while you were away. The server has already paid it. */
 export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) {
   const { view, player } = useGame();
+  const units = useUnits();
   const { probeId, probeName } = view;
   const guest = player.known && !player.account;
   const { awayMs, countedMs, km, crewKm, arrivalSoonerMs, keptAliveBy } = welcome;
@@ -72,7 +73,7 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
 
         <div>
           <p className="welcome__km num">
-            +{kmText} km<span className="mi">+{miOnly(Math.round(km))}</span>
+            +{units.dist(Math.round(km))}
           </p>
           <p className="welcome__sub">pushed by your thrusters · +{kmText} cr</p>
         </div>
@@ -98,7 +99,7 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
             {crewKm !== null && (
               <div className="welcome__row">
                 <dt>The crew pushed</dt>
-                <dd className="num">{kmMi(Math.round(crewKm))}</dd>
+                <dd className="num">{units.dist(Math.round(crewKm))}</dd>
               </div>
             )}
             {arrivalSoonerMs !== null && (

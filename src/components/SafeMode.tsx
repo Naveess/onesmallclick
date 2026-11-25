@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { SETBACK_HOURS_PER_QUIET_HOUR } from "../../shared/mission";
 import { longDate } from "../game/format";
+import { useUnit } from "../game/units";
 import { PingButton } from "./PingButton";
 import { ShareNudge } from "./ShareNudge";
 import { Window } from "./Window";
@@ -58,6 +59,7 @@ export function SafeMode({
   pinging,
   onPing,
 }: SafeModeProps) {
+  const unit = useUnit();
   return (
     <main className={wide ? "safe safe--wide" : "safe"} aria-label="Safe mode">
       <div className="safe__vignette" aria-hidden="true" />
@@ -82,7 +84,7 @@ export function SafeMode({
         {flight}
         <p className="safe__foot">
           <span>{paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
-          <span className="num">0 km/s / 0 mi/s from crew</span>
+          <span className="num">0 {unit}/s from crew</span>
         </p>
       </div>
 

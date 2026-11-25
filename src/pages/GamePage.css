@@ -155,3 +155,11 @@
   display: flex;
   justify-content: center;
 }
+
+/* The stats with KM | MI beside them (prompts 107–108). */
+.home__statrow {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}

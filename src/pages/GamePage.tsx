@@ -1,4 +1,3 @@
-import { kmMi, kmMiFine, speedKmMi } from "../../shared/units";
 import { useRef, useState } from "react";
 import { ClickCounter } from "../components/ClickCounter";
 import { FlightView, type FlightHandle } from "../components/FlightView";
@@ -14,7 +13,9 @@ import { InviteBanner } from "../components/InviteBanner";
 import { BurnCard, BurnScreen } from "../components/LandingBurn";
 import { ShareNudge } from "../components/ShareNudge";
 import { milestonesFor } from "../../shared/milestones";
-import { int, probeSpeed } from "../game/format";
+import { int } from "../game/format";
+import { useUnits } from "../game/units";
+import { UnitToggle } from "../components/UnitToggle";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
 
@@ -25,6 +26,7 @@ const SIGNAL_ASK_S = 3600;
 export function GamePage() {
   useDocumentTitle("OneSmallClick · push one probe to Mars together");
   const { probe, player, view, connection } = useGame();
+  const units = useUnits();
   const flight = useRef<FlightHandle>(null);
   // The landing burn screen (1o), opened from the home card's "Join the burn".
   const [burnOpen, setBurnOpen] = useState(false);
@@ -163,10 +165,10 @@ export function GamePage() {
                 <ThrustButton onThrust={onThrust} />
                 <div className="home__rates">
                   <span className="num">
-                    +{kmMiFine(view.tapKm)} <small>per tap</small>
+                    +{units.fine(view.tapKm)} <small>per tap</small>
                   </span>
                   <span className="num">
-                    +{speedKmMi(view.autoKmS)} <small>auto</small>
+                    +{units.speed(view.autoKmS)} <small>auto</small>
                   </span>
                 </div>
                 {clicks}
@@ -190,20 +192,23 @@ export function GamePage() {
             {burnCard}
             <div className="home__top">
               <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
-              <dl className="home__stats">
-                <div>
-                  <dt>TRAVELLED</dt>
-                  <dd className="num">{kmMi(probe.distanceKm)}</dd>
-                </div>
-                <div>
-                  <dt>PROBE SPEED</dt>
-                  <dd className="num">{probeSpeed(view.speedKmS, view.moonLeg)}</dd>
-                </div>
-                <div>
-                  <dt>TO GO</dt>
-                  <dd className="num">{kmMi(view.toGoKm)}</dd>
-                </div>
-              </dl>
+              <div className="home__statrow">
+                <dl className="home__stats">
+                  <div>
+                    <dt>TRAVELLED</dt>
+                    <dd className="num">{units.dist(probe.distanceKm)}</dd>
+                  </div>
+                  <div>
+                    <dt>PROBE SPEED</dt>
+                    <dd className="num">{units.probeSpeed(view.speedKmS, view.moonLeg)}</dd>
+                  </div>
+                  <div>
+                    <dt>TO GO</dt>
+                    <dd className="num">{units.dist(view.toGoKm)}</dd>
+                  </div>
+                </dl>
+                <UnitToggle />
+              </div>
             </div>
             {track}
             <div className="home__columns">
@@ -212,10 +217,10 @@ export function GamePage() {
                 <ThrustButton onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
                 <div className="home__rates">
                   <span className="num">
-                    +{kmMiFine(view.tapKm)} <small>per click</small>
+                    +{units.fine(view.tapKm)} <small>per click</small>
                   </span>
                   <span className="num">
-                    +{speedKmMi(view.autoKmS)} <small>auto-thrust</small>
+                    +{units.speed(view.autoKmS)} <small>auto-thrust</small>
                   </span>
                 </div>
                 {clicks}

@@ -1,4 +1,5 @@
-import { kmMiFine, miles, withMiles } from "../../shared/units";
+import { withMiles } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { useEffect, useRef, useState } from "react";
 import type { GameView, PlayerState } from "../game/store";
 import { int } from "../game/format";
@@ -26,6 +27,7 @@ interface UpgradesSheetProps {
 export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHandOver }: UpgradesSheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const [confirming, setConfirming] = useState(false);
+  const units = useUnits();
 
   useEffect(() => {
     const d = ref.current;
@@ -114,7 +116,7 @@ export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHand
 
         <h3 className="sheet__group sheet__group--gap">
           <span className="sheet__group-name">TAP POWER</span>
-          <span className="sheet__group-rate">+{kmMiFine(view.tapKm)} a tap</span>
+          <span className="sheet__group-rate">+{units.fine(view.tapKm)} a tap</span>
         </h3>
         {rows("tap")}
 
@@ -140,10 +142,7 @@ export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHand
           </div>
           <div className="prestige__numbers">
             <span>
-              {int(Math.min(kmSinceShift, PRESTIGE_AT_KM))} / {int(PRESTIGE_AT_KM)} km
-              <span className="mi">
-                {int(miles(Math.min(kmSinceShift, PRESTIGE_AT_KM)))} / {int(miles(PRESTIGE_AT_KM))} mi
-              </span>
+              {units.num(Math.min(kmSinceShift, PRESTIGE_AT_KM))} / {units.dist(PRESTIGE_AT_KM)}
             </span>
             <span>{prestigePct}%</span>
           </div>

@@ -1,4 +1,4 @@
-import { kmMi } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { postcardOf } from "../../shared/postcards";
 import { PostcardPhoto } from "./PostcardPhoto";
 import { useEffect, useRef, useState } from "react";
@@ -115,6 +115,7 @@ function celebrate(host: HTMLElement) {
 /** The milestone moment (1e): postcard, a fact from the flight deck, fireworks, and a result to share. */
 export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onClose }: MilestoneMomentProps) {
   const probeTag = useGame().view.probeTag;
+  const units = useUnits();
   const fx = useRef<HTMLDivElement>(null);
   const reduceMotion = usePrefersReducedMotion();
   const all = milestonesFor(stopId);
@@ -147,7 +148,7 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
           {m.title}
         </h1>
         <p className="moment__where num">
-          {kmMi(m.km)}
+          {units.dist(m.km)}
           {missionDay !== null ? ` · mission day ${missionDay}` : ""}
         </p>
       </div>

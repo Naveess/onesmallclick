@@ -1,4 +1,5 @@
-import { compactKmMi } from "../../shared/units";
+import { distCompact } from "../../shared/units";
+import { currentUnit, useUnit } from "../game/units";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { branchStopId, legKm, probeFor, stopName, type Stop } from "../../shared/campaign";
 import type { TourInfo, TourLeg } from "../../shared/boards";
@@ -46,9 +47,9 @@ function thisTour(legs: TourLeg[], missionId: number, fromStop: string, orbit: b
   return start < 0 ? done : done.slice(start);
 }
 
-/** "1.07M km / 0.66M mi", "186M km / 116M mi", "1.44B km / 0.89B mi" (phase M: shared/units.ts). */
+/** "1.07M km", "186M km", "1.44B km", or in miles: the player's unit (prompt 108). */
 function distance(km: number): string {
-  return compactKmMi(km);
+  return distCompact(km, currentUnit());
 }
 
 const dateOf = (ms: number) => new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -82,6 +83,7 @@ const KICKER: Record<StopState, string> = {
 export function MapPage() {
   useDocumentTitle("Campaign map · OneSmallClick");
   const { probe, player, view } = useGame();
+  useUnit(); // re-render when the unit changes
   const legs = thisTour(useTour(probe.lastArrival?.missionId ?? 0), probe.missionId, probe.fromStop, probe.arrivedAt !== null);
   const [selected, setSelected] = useState<string | null>(null);
   const [techOpen, setTechOpen] = useState(false);

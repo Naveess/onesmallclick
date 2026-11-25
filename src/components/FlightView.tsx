@@ -1,7 +1,8 @@
-import { miles, millionsMi, miOnly } from "../../shared/units";
 import { Fragment, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type Ref } from "react";
 import { CREW_TOP_KM_S } from "../../shared/balance";
-import { hms, int, longDate, millionsKm, probeSpeed } from "../game/format";
+import { hms, int, longDate } from "../game/format";
+import { useUnits } from "../game/units";
+import { UnitToggle } from "./UnitToggle";
 import {
   EARTH_RADII,
   FLAME,
@@ -194,7 +195,8 @@ export function FlightView({
   const xf = Math.round(SW * (wide ? 0.9 : 0.875));
 
   const pct = `${(f * 100).toFixed(2)}%`;
-  const speed = probeSpeed(speedKmS, moonLeg);
+  const units = useUnits();
+  const speed = units.probeSpeed(speedKmS, moonLeg);
   const fl = boosting ? 4 : 2; // the flame at 2×, or 4× while boosting
   const streaks = streaksArt();
 
@@ -206,7 +208,7 @@ export function FlightView({
         ref={ref}
         className={classes}
         role="img"
-        aria-label={`Flight view: the probe is ${pct} of the way to ${destName}, moving at ${speed} km (${miles(Number(speed)).toFixed(2)} miles) per second${
+        aria-label={`Flight view: the probe is ${pct} of the way to ${destName}, moving at ${speed}${
           fork ? `; at ${destName} the crew votes ${stopName(beyond[0])} or ${stopName(beyond[1])}` : ""
         }`}
       >
@@ -417,15 +419,15 @@ export function FlightView({
           <div>
             <div className="flightview__foot-label">Travelled</div>
             <div className="num">
-              {int(distanceKm)} km<span className="mi">{miOnly(distanceKm)}</span>
+              {units.dist(distanceKm)}
             </div>
           </div>
+          <UnitToggle className="flightview__units" />
           {next && (
             <div className="flightview__foot-next">
               <div className="flightview__foot-label">Next · {next.name}</div>
               <div className="num">
-                {millionsKm(toNextKm)}
-                <span className="mi">{millionsMi(toNextKm)}</span>
+                {units.millions(toNextKm)}
               </div>
             </div>
           )}

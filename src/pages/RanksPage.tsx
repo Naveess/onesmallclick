@@ -1,5 +1,5 @@
 import { yourTime } from "../game/format";
-import { miOnly } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { NUDGES, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { useEffect, useState } from "react";
 import type { Board, BoardResult, BoardRow } from "../../shared/boards";
@@ -33,13 +33,14 @@ function rankClass(rank: number | null): string {
 }
 
 function Row({ row, board }: { row: BoardRow; board: Board }) {
+  const units = useUnits();
   return (
     <li className="ranks__row">
       <span className={rankClass(row.rank)}>{row.rank ?? "–"}</span>
       <Flag cc={row.cc} label={countryName(row.cc)} />
       <span className="ranks__name">{board === "countries" ? countryName(row.cc) : row.name}</span>
       <span className="ranks__km num">
-                {int(row.km)} km<span className="mi">{miOnly(row.km)}</span>
+                {units.dist(row.km)}
               </span>
     </li>
   );
@@ -66,6 +67,7 @@ function RankShare({ board, rank, cc, rows }: { board: Board; rank: number; cc: 
 export function RanksPage() {
   useDocumentTitle("Leaderboards · OneSmallClick");
   const { player } = useGame();
+  const units = useUnits();
   const [board, setBoard] = useState<Board>("players");
   const [data, setData] = useState<Partial<Record<Board, BoardResult>>>({});
   const [error, setError] = useState(false);
@@ -149,7 +151,7 @@ export function RanksPage() {
                 </span>
               </span>
               <span className="ranks__km num">
-                {int(me.km)} km<span className="mi">{miOnly(me.km)}</span>
+                {units.dist(me.km)}
               </span>
             </Link>
           ) : shown && me && (
@@ -160,7 +162,7 @@ export function RanksPage() {
                 {board === "countries" ? `${countryName(me.cc)} (yours)` : `${me.name} (you)`}
               </span>
               <span className="ranks__km num">
-                {int(me.km)} km<span className="mi">{miOnly(me.km)}</span>
+                {units.dist(me.km)}
               </span>
             </Link>
           )}

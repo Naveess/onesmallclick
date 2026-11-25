@@ -1,4 +1,5 @@
-import { millionsMi, miOnly, withMiles } from "../../shared/units";
+import { withMiles } from "../../shared/units";
+import { useUnits } from "../game/units";
 import { LAUNCH, NUDGES, betaLine, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { Window } from "../components/Window";
 import { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ import { PixelButton } from "../components/PixelButton";
 import { PixelIcon, type IconTone } from "../components/PixelIcon";
 import type { IconName } from "../components/iconPaths";
 import { countryName } from "../game/countries";
-import { int, millionsKm } from "../game/format";
+import { int } from "../game/format";
 import { useGame } from "../game/store";
 import { Link } from "../router";
 import { badgeStill } from "../sprites";
@@ -98,6 +99,7 @@ function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
 export function ProfilePage() {
   useDocumentTitle("Profile · OneSmallClick");
   const { player, view, probe } = useGame();
+  const units = useUnits();
   const [info, setInfo] = useState<ProfileInfo | null>(null);
   const [tour, setTour] = useState<TourInfo | null>(null);
   const [error, setError] = useState(false);
@@ -150,14 +152,13 @@ export function ProfilePage() {
           <div className="profile__stats">
             <div className="profile__stat">
               <div className="profile__stat-label">TOTAL PUSHED</div>
-              <div className="profile__stat-value num profile__stat-value--blue">{info ? (info.totalKm < 1e6 ? `${int(info.totalKm)} km` : millionsKm(info.totalKm)) : "…"}
-                {info && <span className="mi">{info.totalKm < 1e6 ? miOnly(info.totalKm) : millionsMi(info.totalKm)}</span>}
+              <div className="profile__stat-value num profile__stat-value--blue">{info ? (info.totalKm < 1e6 ? units.dist(info.totalKm) : units.millions(info.totalKm)) : "…"}
               </div>
             </div>
             <div className="profile__stat">
               <div className="profile__stat-label">TODAY</div>
               <div className="profile__stat-value num">
-                {int(player.kmToday)} km<span className="mi">{miOnly(player.kmToday)}</span>
+                {units.dist(player.kmToday)}
               </div>
             </div>
             <div className="profile__stat">

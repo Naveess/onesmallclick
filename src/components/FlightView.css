@@ -592,3 +592,8 @@
 .flightview__foot-next .flightview__foot-label {
   color: var(--text-orange);
 }
+
+/* KM | MI between Travelled and Next on the phone (prompts 107–108). */
+.flightview__units {
+  align-self: center;
+}

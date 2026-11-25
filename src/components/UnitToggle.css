@@ -1,0 +1,39 @@
+/* KM | MI (prompts 107–108): a small two-way switch, like the leaderboards' tabs. Each half is a 44px tap target. */
+.units {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  flex: none;
+  border: 2px solid var(--line);
+  outline: 2px solid var(--outline);
+}
+
+.units__btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0 8px;
+  font: 400 20px/1 var(--font-num);
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.units__btn + .units__btn {
+  border-left: 2px solid var(--line);
+}
+
+.units__btn:hover {
+  color: var(--text);
+}
+
+.units__btn--on,
+.units__btn--on:hover {
+  color: var(--text-on-blue);
+  background: var(--blue);
+}
+
+.units__btn:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
