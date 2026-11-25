@@ -8,34 +8,18 @@ import { Sky } from "../components/Sky";
 import { Window } from "../components/Window";
 import { int } from "../game/format";
 import { useDocumentTitle, useNoIndex } from "./useDocumentTitle";
+import { PlayersTab } from "./admin/PlayersTab";
+import type { AdminWho } from "../../shared/admin";
 import "./AdminPage.css";
 
-// /admin: test controls for the shared probe. Not linked anywhere, noindex.
-// The key is checked by the Worker on every call; this page keeps it only for this tab.
+// /admin: the admin panel. Not linked anywhere, noindex.
+// Phase A1a: signing in needs the game's Google sign-in (an allowlisted account) plus the admin key; the Worker then
+// sets a 12-hour admin cookie, sent with every /api/admin call. Tabs: Players, Game (the test controls), Reports.
 
-const KEY_STORE = "osc.adminKey";
-
-function readKey(): string {
-  try {
-    return sessionStorage.getItem(KEY_STORE) ?? "";
-  } catch {
-    return "";
-  }
-}
-
-function saveKey(key: string) {
-  try {
-    if (key) sessionStorage.setItem(KEY_STORE, key);
-    else sessionStorage.removeItem(KEY_STORE);
-  } catch {
-    // storage blocked: the key just isn't remembered
-  }
-}
-
-async function call(key: string, action: string, body?: object): Promise<AdminState> {
+async function call(_who: string, action: string, body?: object): Promise<AdminState> {
   const res = await fetch(`/api/admin/${action}`, {
     method: body ? "POST" : "GET",
-    headers: { Authorization: `Bearer ${key}`, ...(body && { "Content-Type": "application/json" }) },
+    headers: body ? { "Content-Type": "application/json" } : {},
     body: body && JSON.stringify(body),
     cache: "no-store",
   });
@@ -57,7 +41,7 @@ function NetworkCap({ adminKey }: { adminKey: string }) {
   const load = async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin/networks", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      const res = await fetch("/api/admin/networks", { cache: "no-store" });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setReport((await res.json()) as NetworkReport);
     } catch (err) {
@@ -159,7 +143,7 @@ function Players({ adminKey }: { adminKey: string }) {
   const load = async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin/players", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      const res = await fetch("/api/admin/players", { cache: "no-store" });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setReport((await res.json()) as PlayersReport);
     } catch (err) {
@@ -225,7 +209,7 @@ function EarlyBeta({ adminKey }: { adminKey: string }) {
   const load = async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin/beta", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      const res = await fetch("/api/admin/beta", { cache: "no-store" });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setReport((await res.json()) as BetaReport);
     } catch (err) {
@@ -271,7 +255,7 @@ function Shares({ adminKey }: { adminKey: string }) {
   const load = async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin/shares", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      const res = await fetch("/api/admin/shares", { cache: "no-store" });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setReport((await res.json()) as ShareReport);
     } catch (err) {
@@ -363,7 +347,7 @@ function Feedback({ adminKey }: { adminKey: string }) {
   const load = async () => {
     setError("");
     try {
-      const res = await fetch("/api/admin/feedback", { headers: { Authorization: `Bearer ${adminKey}` }, cache: "no-store" });
+      const res = await fetch("/api/admin/feedback", { cache: "no-store" });
       if (!res.ok) throw new Error(`Error ${res.status}`);
       setReport((await res.json()) as { open: number; items: FeedbackItem[] });
     } catch (err) {
@@ -427,8 +411,12 @@ function Feedback({ adminKey }: { adminKey: string }) {
 export function AdminPage() {
   useDocumentTitle("Admin · OneSmallClick");
   useNoIndex();
-  const [key, setKey] = useState(readKey);
+  // The signed-in admin's email ("" until signed in), and the sign-in form.
+  const [key, setKey] = useState("");
   const [draftKey, setDraftKey] = useState("");
+  const [checking, setChecking] = useState(true);
+  const [game, setGame] = useState<{ email: string | null; google: boolean } | null>(null);
+  const [tab, setTab] = useState<"players" | "game" | "reports">("players");
   const [state, setState] = useState<AdminState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -456,23 +444,47 @@ export function AdminPage() {
     }
   };
 
+  // An admin session already open? Otherwise, who is signed in to the game (for the sign-in form).
   useEffect(() => {
-    if (key) void run("state");
-    // Only on first load with a remembered key.
+    void (async () => {
+      try {
+        const res = await fetch("/api/admin/whoami", { cache: "no-store" });
+        if (res.ok) {
+          const who = (await res.json()) as AdminWho;
+          setKey(who.email);
+          await run("state", undefined, who.email);
+        } else {
+          const s = await (await fetch("/api/session", { cache: "no-store" })).json().catch(() => ({}));
+          const a = (s as { account?: { email?: string | null; google?: boolean } | null }).account;
+          setGame(a ? { email: a.email ?? null, google: !!a.google } : null);
+        }
+      } finally {
+        setChecking(false);
+      }
+    })();
   }, []);
 
   const signIn = async (e: FormEvent) => {
     e.preventDefault();
-    if (await run("state", undefined, draftKey)) {
-      setKey(draftKey);
-      saveKey(draftKey);
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: draftKey }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error((data as { error?: string }).error ?? `Error ${res.status}`);
       setDraftKey("");
+      setKey((data as AdminWho).email);
+      await run("state", undefined, (data as AdminWho).email);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
     }
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    await fetch("/api/admin/signout", { method: "POST" }).catch(() => {});
     setKey("");
-    saveKey("");
     setState(null);
   };
 
@@ -488,10 +500,18 @@ export function AdminPage() {
       <Sky fixed />
       <main className="admin">
         <h1 className="admin__title">Mission admin</h1>
-        <p className="admin__lede">Test controls for the shared probe. Every change reaches every open screen.</p>
 
-        {!key || !state ? (
+        {checking ? (
+          <p className="admin__lede">Checking…</p>
+        ) : !key ? (
           <Window as="form" className="admin__card" onSubmit={signIn} aria-labelledby="admin-key-label">
+            <h2 className="admin__h2">Sign in</h2>
+            <p className="admin__note">
+              {game?.email
+                ? `Signed in to the game as ${game.email}${game.google ? " (Google)" : " (email link: the panel needs Google)"}.`
+                : "First sign in to the game with your Google account, then come back here."}{" "}
+              <a href="/sign-in">Game sign-in</a>
+            </p>
             <label id="admin-key-label" className="admin__field">
               <span className="label">Admin key</span>
               <input
@@ -513,6 +533,35 @@ export function AdminPage() {
           </Window>
         ) : (
           <>
+            <div className="admin__top">
+              <p className="admin__note">
+                {key} · owner · <button type="button" className="admin__link" onClick={() => void signOut()}>Sign out</button>
+              </p>
+              <div className="admin__tabs" role="tablist" aria-label="Admin sections">
+                {(["players", "game", "reports"] as const).map((t) => (
+                  <button key={t} type="button" role="tab" aria-selected={tab === t} className={tab === t ? "admin__tab admin__tab--on" : "admin__tab"} onClick={() => setTab(t)}>
+                    {t === "players" ? "Players" : t === "game" ? "Game" : "Reports"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {tab === "players" && <PlayersTab />}
+
+            {tab === "reports" && (
+              <>
+                <Feedback adminKey={key} />
+                {state && <Discord state={state} busy={busy} onTest={() => void run("discord-test", {})} />}
+                <Players adminKey={key} />
+                <Shares adminKey={key} />
+                <NetworkCap adminKey={key} />
+                <EarlyBeta adminKey={key} />
+              </>
+            )}
+
+            {tab === "game" && state && (
+            <>
+            <p className="admin__lede">Test controls for the shared probe. Every change reaches every open screen.</p>
             <Window as="section" className="admin__card" aria-labelledby="admin-state">
               <h2 id="admin-state" className="admin__h2">
                 Mission {p!.missionId} · {p!.destination}
@@ -791,12 +840,6 @@ export function AdminPage() {
               </div>
             </Window>
 
-            <NetworkCap adminKey={key} />
-            <Shares adminKey={key} />
-            <Players adminKey={key} />
-            <Feedback adminKey={key} />
-            <Discord state={state} busy={busy} onTest={() => void run("discord-test", {})} />
-            <EarlyBeta adminKey={key} />
 
             <Window
               as="form"
@@ -869,6 +912,8 @@ export function AdminPage() {
                 Wipe and launch
               </PixelButton>
             </Window>
+            </>
+            )}
 
             {error && (
               <p className="admin__error" role="alert">

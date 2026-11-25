@@ -2307,6 +2307,8 @@ export class Probe extends DurableObject<Env> {
   /** Opens a round with these options (a daily vote, or a branch vote on arrival). */
   private async startRound(now: number, round: string, ids: string[], closesAt: number) {
     this.vote = { round, openedAt: now, closesAt, ids, tallies: ids.map(() => 0) };
+    // A new round gets its own "closes in an hour" alert, even if it closes at the same time as the last (phase Q1b-2).
+    this.sql.exec(`DELETE FROM meta WHERE key = 'vote_notice_closes'`);
     this.sql.exec(
       `INSERT OR REPLACE INTO vote_round (round, opened_at, closes_at, options, tallies) VALUES (?, ?, ?, ?, ?)`,
       round,

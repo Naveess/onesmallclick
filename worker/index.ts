@@ -42,6 +42,7 @@
 
 import { feedbackReport, markFeedback, sendFeedback } from "./feedback";
 import { pushRoute } from "./push";
+import { adminLog, adminPanel, adminWho } from "./admin";
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
@@ -287,21 +288,25 @@ async function missionLog(env: Env, url: URL): Promise<Response> {
   return json({ entries: list, more: rows.results.length > LOG_PAGE });
 }
 
-const enc = new TextEncoder();
-
-/** Compares the key in constant time (both sides hashed first, so lengths match). */
-async function keyMatches(given: string, expected: string): Promise<boolean> {
-  const [a, b] = await Promise.all([
-    crypto.subtle.digest("SHA-256", enc.encode(given)),
-    crypto.subtle.digest("SHA-256", enc.encode(expected)),
-  ]);
-  return crypto.subtle.timingSafeEqual(a, b);
-}
-
 async function admin(request: Request, env: Env, action: string): Promise<Response> {
   if (!env.ADMIN_KEY) return json({ error: "ADMIN_KEY is not set" }, 503);
-  const given = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ?? "";
-  if (!given || !(await keyMatches(given, env.ADMIN_KEY))) return json({ error: "Wrong key" }, 401);
+  // Phase A1a: an admin session (Google on the allowlist plus the key; worker/admin.ts). Locally the key alone too.
+  if (request.method !== "GET") {
+    const origin = request.headers.get("Origin");
+    if (origin && new URL(origin).host !== new URL(request.url).host) return json({ error: "Wrong origin" }, 403);
+  }
+  const who = await adminWho(request, env);
+  const panel = await adminPanel(request, env, action, who);
+  if (panel) return panel;
+  if (!who) return json({ error: "sign-in" }, 401);
+  // Every test control that changes something is logged (who, what, with what).
+  if (request.method === "POST") {
+    const detail = await request
+      .clone()
+      .json()
+      .catch(() => null);
+    await adminLog(env, who.email, action, null, null, detail);
+  }
 
   const stub = probe(env);
   if (action === "state" && request.method === "GET") return json(await stub.adminState());

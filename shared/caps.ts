@@ -4,6 +4,7 @@
 
 // Phase Q1a: feedback, 20 a day per network (a household can still send plenty; a flood can't).
 // Phase Q1b-2: turning alerts on, 20 new browsers a day per network.
-export const NETWORK_CAP = { ping: 50, vote: 50, feedback: 20, push: 20 } as const;
+// Phase A1a: failed admin sign-ins, 10 a day per network.
+export const NETWORK_CAP = { ping: 50, vote: 50, feedback: 20, push: 20, admin: 10 } as const;
 
 export type CapKind = keyof typeof NETWORK_CAP;

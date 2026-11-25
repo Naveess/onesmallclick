@@ -105,3 +105,5 @@
 - 2026-11-25 · Fix (prompt 116) · /admin's "Send a test post" sent a GET, which the admin routes answer with Not found; it now sends a POST (the check script always used POST, so it passed). Deployed: 4f00dc0a (prompt 117).
 - 2026-11-25 · Q1b confirmed (prompt 118) · Nav: the Discord test post showed up in #mission-log, and the iPhone install steps worked.
 - 2026-11-25 · Q1b fully checked (prompt 119) · Nav: a real test alert arrived on the phone.
+
+- 2026-11-25 · A1a: admin sign-in, the Players tab and the player page (prompt 120; migration 0020) · Nav approved decisions 33-35 and the A1a/A1b/A1c split. /admin now needs the game's Google sign-in on the ADMIN_EMAILS allowlist plus the key (a 12-hour, /api/admin-only cookie); every admin action and failed sign-in is logged; tabs Players, Game, Reports; search and lists; one page per player (profile, progress, activity with a 30-day chart and the busiest day's taps, rewards, devices, notes, admin history). Also: the vote alert is once per round. scripts/check-admin.mjs (30 pass). Not deployed yet.

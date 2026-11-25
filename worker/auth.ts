@@ -71,15 +71,15 @@ function b64url(bytes: ArrayBuffer | Uint8Array): string {
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function randomToken(): string {
+export function randomToken(): string {
   return b64url(crypto.getRandomValues(new Uint8Array(32)));
 }
 
-async function sha256(s: string): Promise<string> {
+export async function sha256(s: string): Promise<string> {
   return b64url(await crypto.subtle.digest("SHA-256", enc.encode(s)));
 }
 
-function cookieValue(request: Request, name: string): string | null {
+export function cookieValue(request: Request, name: string): string | null {
   const cookie = request.headers.get("Cookie") ?? "";
   return (
     cookie
