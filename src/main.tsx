@@ -4,11 +4,13 @@ import { createRoot } from "react-dom/client";
 import "./game/share";
 import { App } from "./App";
 import { CrashScreen, watchErrors } from "./components/CrashScreen";
+import { startApp } from "./game/push";
 import "./styles/fonts.css";
 import "./styles/theme.css";
 import "./styles/base.css";
 
 watchErrors();
+startApp(); // the service worker and the install prompt (phase Q1b-2)
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -580,6 +580,15 @@ const privacySections = [
     ],
   ],
   [
+    "Alerts and installing the app",
+    [
+      "If you turn on alerts, your browser gives us a push address: a web address from its own push service (Google's, Mozilla's, Microsoft's or Apple's). We keep it with a link to your device (and your account, if you're signed in), your three on/off switches, and how many alerts we sent you today, so we can send only the alerts you chose, at most 3 a day.",
+      "An alert is sent through that push service, which sees that a notification was sent but not what it says: the text isn't sent with it. Your browser asks our server what to show.",
+      "Turning alerts off, or deleting your account, deletes the address. We also delete it when the push service says your browser has gone. “Send me a test alert” works once an hour.",
+      "Installing the game as an app adds an icon to your home screen. The game keeps one small page on your device, to show when you're offline, and nothing else.",
+    ],
+  ],
+  [
     "Discord",
     [
       "We run a Discord server for the crew. A bot posts the big moments there: milestones, arrivals, the daily vote and its result, the landing burn, the signal's final hour, and the crew goal. A post can name the player who saved the signal, by their crew name, never an email.",
@@ -596,6 +605,7 @@ const privacySections = [
     "Who else handles it",
     [
       "Cloudflare runs the whole site: the pages, the game server and the database. Its network handles your IP address to deliver the site, and the game server keeps short-lived logs for fixing problems.",
+      "Alerts are delivered by your browser's own push service (for example Google's, Mozilla's, Microsoft's or Apple's), only if you turn them on.",
       "Ping, the daily vote, the email sign-in and the feedback form use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
       "Sign-in emails are sent with Cloudflare's Email Service. Google sees that you signed in to OneSmallClick if you use “Continue with Google”.",
       "The database is backed up by Cloudflare, and as encrypted copies in our private Google Drive, in case something goes wrong with either. The copies are locked with a key only we hold, so Google can't read them, and each is deleted after 90 days.",

@@ -16,6 +16,7 @@ import { milestonesFor } from "../../shared/milestones";
 import { int } from "../game/format";
 import { useUnits } from "../game/units";
 import { UnitToggle } from "../components/UnitToggle";
+import { AlertsCard } from "../components/Alerts";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./GamePage.css";
 
@@ -180,6 +181,7 @@ export function GamePage() {
               {vote}
               {goal}
               {destFile}
+              <AlertsCard />
               {switches.ads && <AdSlot width={320} height={50} />}
             </main>
           );
@@ -234,6 +236,7 @@ export function GamePage() {
                 {vote}
                 {goal}
                 {destFile}
+                <AlertsCard wide />
               </div>
             </div>
             {switches.ads && (

@@ -9,6 +9,8 @@ import {
   type DiscordPost,
   type DiscordRow,
 } from "./discord";
+import { pushBatch } from "./push";
+import type { PushKind } from "../shared/push";
 import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
 import {
@@ -370,6 +372,8 @@ export class Probe extends DurableObject<Env> {
   private alarmAt = 0;
   /** Real ms before which Discord asked us to wait (a 429), kept in memory only (phase Q1b-1). */
   private discordRetryAt = 0;
+  /** Real ms before which the next push batch waits (batches are spaced out; phase Q1b-2). */
+  private pushNextAt = 0;
   /** Sockets found silent (see DEAD_SOCKET_MS), being closed. */
   private dead = new WeakSet<WebSocket>();
   /** onlineDevices() and its auto-thrust total, kept for ONLINE_CACHE_MS; null when a socket opened, closed or changed. */
@@ -441,6 +445,10 @@ export class Probe extends DurableObject<Env> {
     // The daily crew goal (phase Q1a): one row a day; the crew's km today is counted live from D1 and the queue.
     this.sql.exec(`CREATE TABLE IF NOT EXISTS crew_goal (
       day TEXT PRIMARY KEY, target_km REAL NOT NULL, reached_at INTEGER, paid_at INTEGER)`);
+    // Notifications waiting to go out (phase Q1b-2): one job per moment, sent in batches by the alarm (worker/push.ts).
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS push_job (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, day TEXT NOT NULL, round TEXT, at INTEGER NOT NULL,
+      cursor INTEGER NOT NULL DEFAULT 0, fails INTEGER NOT NULL DEFAULT 0, done INTEGER NOT NULL DEFAULT 0)`);
     // The Discord bot's queue (phase Q1b-1): posts wait here until they can be sent (worker/discord.ts).
     this.sql.exec(`CREATE TABLE IF NOT EXISTS discord_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, title TEXT NOT NULL, text TEXT NOT NULL,
@@ -966,6 +974,55 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`DELETE FROM discord_out WHERE sent_at IS NOT NULL AND id <= (SELECT MAX(id) FROM discord_out) - ?`, DISCORD_KEEP);
   }
 
+  // ---------- Notifications (phase Q1b-2) ----------
+
+  /** Queues an alert for everyone who has it on; the alarm sends it in batches (worker/push.ts). */
+  private queuePush(kind: PushKind, round: string | null = null) {
+    if (!this.env.VAPID_PRIVATE_KEY) return; // no key (not set up): no alerts
+    this.sql.exec(`INSERT INTO push_job (kind, day, round, at) VALUES (?, ?, ?, ?)`, kind, utcDay(this.now()), round, Date.now());
+    void this.scheduleAlarm();
+  }
+
+  /** Real ms when the next batch can go, or null when no job waits. */
+  private pushDueAt(): number | null {
+    if (this.sql.exec(`SELECT 1 FROM push_job WHERE done = 0 LIMIT 1`).toArray().length === 0) return null;
+    return Math.max(Date.now(), this.pushNextAt);
+  }
+
+  /** From the alarm: one batch of the oldest waiting alert, then wait a few seconds (the free plan's subrequest limit). */
+  private async flushPush() {
+    if (Date.now() < this.pushNextAt) return;
+    // An alert more than 2 hours late isn't news.
+    this.sql.exec(`UPDATE push_job SET done = 1 WHERE done = 0 AND at < ?`, Date.now() - 2 * 3_600_000);
+    this.sql.exec(`DELETE FROM push_job WHERE done = 1 AND at < ?`, Date.now() - 24 * 3_600_000);
+    const job = this.sql
+      .exec<{ id: number; kind: PushKind; day: string; round: string | null; cursor: number; fails: number }>(
+        `SELECT id, kind, day, round, cursor, fails FROM push_job WHERE done = 0 ORDER BY id LIMIT 1`,
+      )
+      .toArray()[0];
+    if (!job) return;
+    try {
+      const r = await pushBatch(this.env, job.kind, job.cursor, job.day, job.round);
+      this.sql.exec(`UPDATE push_job SET cursor = ?, done = ?, fails = 0 WHERE id = ?`, r.next, r.done ? 1 : 0, job.id);
+      this.pushNextAt = Date.now() + (r.done ? 0 : 5_000);
+    } catch (err) {
+      console.error("push batch failed", err);
+      this.sql.exec(`UPDATE push_job SET fails = fails + 1, done = ? WHERE id = ?`, job.fails + 1 >= 5 ? 1 : 0, job.id);
+      this.pushNextAt = Date.now() + 30_000;
+    }
+  }
+
+  /** An hour before the open vote closes: the "vote closes in an hour" alert, once per round. */
+  private voteHourNotice() {
+    const v = this.vote;
+    const now = this.now();
+    if (now < v.closesAt - 3_600_000 || now >= v.closesAt) return;
+    const done = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'vote_notice_closes'`).toArray()[0]?.value;
+    if (done === v.closesAt) return;
+    this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('vote_notice_closes', ?)`, v.closesAt);
+    this.queuePush("vote", v.round);
+  }
+
   /** The signal's final hour: a post, once per outage (the next deadline is a new outage). Phase Q1b-2 adds the notification. */
   private signalFinalHour() {
     const m = this.mission;
@@ -973,6 +1030,7 @@ export class Probe extends DurableObject<Env> {
     if (done === m.signalDeadline) return;
     this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES ('final_hour_deadline', ?)`, m.signalDeadline);
     const at = new Date(m.signalDeadline).toISOString().slice(11, 16);
+    this.queuePush("signal");
     this.queueDiscord({
       tone: "orange",
       title: "The signal is in its final hour",
@@ -1455,6 +1513,10 @@ export class Probe extends DurableObject<Env> {
     let at = this.vote.closesAt;
     // 00:00 UTC: the crew goal's new day (and yesterday's bonus), even while the probe is paused (phase Q1a).
     at = Math.min(at, (Math.floor(this.now() / DAY_MS) + 1) * DAY_MS);
+    // An hour before the vote closes: the "vote closes in an hour" alert (phase Q1b-2), once per round.
+    const voteHour = this.vote.closesAt - 3_600_000;
+    const voteNoticed = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'vote_notice_closes'`).toArray()[0]?.value;
+    if (voteHour > this.now() && voteNoticed !== this.vote.closesAt) at = Math.min(at, voteHour);
     if (m.pausedSince === null) {
       if (m.safeSince === null && !this.burn) {
         at = Math.min(at, m.signalDeadline);
@@ -1485,8 +1547,8 @@ export class Probe extends DurableObject<Env> {
       }
     }
     // The Discord bot's next post (real time, so no clock offset).
-    const discordAt = this.discordDueAt();
-    const real = Math.max(Date.now(), Math.min(at - this.clockOffsetMs, discordAt ?? Infinity));
+    const discordAt = Math.min(this.discordDueAt() ?? Infinity, this.pushDueAt() ?? Infinity); // and the next push batch (phase Q1b-2)
+    const real = Math.max(Date.now(), Math.min(at - this.clockOffsetMs, discordAt));
     if (real === this.alarmAt) return;
     this.alarmAt = real;
     await this.ctx.storage.setAlarm(real);
@@ -1500,6 +1562,7 @@ export class Probe extends DurableObject<Env> {
     await this.checkGoal();
     await this.checkMilestones();
     await this.flushDiscord();
+    await this.flushPush();
     await this.scheduleAlarm();
   }
 
@@ -1894,6 +1957,7 @@ export class Probe extends DurableObject<Env> {
     this.broadcast();
     const probeName = probeFor(m.stop, m.fromStop)?.name ?? "The probe";
     const time = new Date(this.burn.landAt).toISOString().slice(11, 16);
+    this.queuePush("burn");
     await this.log(
       "burn_start",
       "Final hour: the landing burn",
@@ -2265,6 +2329,7 @@ export class Probe extends DurableObject<Env> {
 
   /** Closes the round if midnight has passed (from the alarm, or any message if the alarm is late). */
   private async checkVote() {
+    this.voteHourNotice(); // an hour before it closes: the alert (phase Q1b-2)
     if (this.now() < this.vote.closesAt) return;
     await this.rollVote();
   }

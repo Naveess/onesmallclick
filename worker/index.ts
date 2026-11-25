@@ -15,6 +15,7 @@
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
 //   POST /api/feedback        { token, kind, message, contact, page, info } (Turnstile) → "Report a bug or idea" (phase Q1a, worker/feedback.ts)
+//   /api/push/*, POST /api/notice   opt-in notifications: subscribe, switches, test, and what to show (phase Q1b-2, worker/push.ts)
 //   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
 //   GET  /c/<code>            the game with that crew link's link preview (phase S1; run_worker_first in wrangler.jsonc)
 //   GET  /milestones/*, /destinations/*, /how-to-play   content pages with absolute preview links (phase S1)
@@ -40,6 +41,7 @@
 //   POST /api/admin/feedback-done } (phase Q1a: { id, done } marks one done)
 
 import { feedbackReport, markFeedback, sendFeedback } from "./feedback";
+import { pushRoute } from "./push";
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
 import type { VoteResult } from "../shared/votes";
@@ -87,6 +89,8 @@ export default {
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
     if (path === "/api/feedback" && request.method === "POST") return sendFeedback(request, env, turnstileOk);
+    if (path === "/api/notice" && request.method === "POST") return pushRoute(request, env, "notice");
+    if (path.startsWith("/api/push/")) return pushRoute(request, env, path.slice("/api/push/".length));
     if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);
     if (path === "/api/share" && request.method === "POST") return countShare(request, env);
     if (path.startsWith("/api/crew/") && request.method === "GET") return crewInfo(request, env, path.slice("/api/crew/".length), url);

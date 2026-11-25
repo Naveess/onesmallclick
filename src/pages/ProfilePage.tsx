@@ -1,6 +1,7 @@
 import { withMiles } from "../../shared/units";
 import { useUnits } from "../game/units";
 import { DISCORD_INVITE, DISCORD_NAME } from "../../shared/community";
+import { AlertsPanel } from "../components/Alerts";
 import { LAUNCH, NUDGES, betaLine, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { Window } from "../components/Window";
 import { useEffect, useState } from "react";
@@ -280,6 +281,7 @@ export function ProfilePage() {
               .
             </p>
           </section>
+          <AlertsPanel />
           {player.known && !player.account && (
             // Phase G1: what signing in gives a guest.
             <Window as="section" tone="orange" className="profile__signin" aria-labelledby="profile-signin">

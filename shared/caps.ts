@@ -3,6 +3,7 @@
 // Counted per network per UTC day; only pings and votes that went through count.
 
 // Phase Q1a: feedback, 20 a day per network (a household can still send plenty; a flood can't).
-export const NETWORK_CAP = { ping: 50, vote: 50, feedback: 20 } as const;
+// Phase Q1b-2: turning alerts on, 20 new browsers a day per network.
+export const NETWORK_CAP = { ping: 50, vote: 50, feedback: 20, push: 20 } as const;
 
 export type CapKind = keyof typeof NETWORK_CAP;

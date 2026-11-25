@@ -1,0 +1,73 @@
+/* Phase Q1b-2: the home page's alerts card and the profile's "Alerts and app". */
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+.alerts--wide {
+  gap: 10px;
+  padding: 18px;
+}
+.alerts__label {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.alerts__text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+.alerts__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.alerts__error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-orange);
+}
+.alerts__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+.alerts__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.alerts__check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  min-height: 44px;
+  cursor: pointer;
+}
+.alerts__check input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 2px 0 0;
+  accent-color: var(--blue);
+}
+.alerts__check span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 15px;
+  color: var(--text);
+}
+.alerts__check small {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}

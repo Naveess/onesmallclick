@@ -33,9 +33,13 @@
   ],
 
   // Where the game lives, for the links in the Discord posts (and later the notifications). Change it when the domain moves.
-  "vars": { "SITE_URL": "https://onesmallclick.naveessharma.workers.dev" }
+  "vars": {
+    "SITE_URL": "https://onesmallclick.naveessharma.workers.dev",
+    // Phase Q1b-2: the public half of the push key pair (scripts/make-vapid.mjs); the private half is the secret VAPID_PRIVATE_KEY.
+    "VAPID_PUBLIC_KEY": "BLctcGySbY5seen9ohufA34rSq7p8Zvclw0PFRYrLAv1JJFT2IMQ8GnM4YkxLllcQfPjaQqI--0rAMOGWEUkN70"
+  }
 
-  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET, TURNSTILE_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and (phase Q1b) DISCORD_WEBHOOK_URL.
+  // Secrets (not in this file): ADMIN_KEY, DEVICE_SECRET, TURNSTILE_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and (phase Q1b) DISCORD_WEBHOOK_URL and VAPID_PRIVATE_KEY.
   // Email sign-in (worker/email.ts) also needs, once onesmallclick.io is in Email Service and on Workers Paid:
   //   "send_email": [{ "name": "EMAIL" }]  and  "EMAIL_FROM": "signin@onesmallclick.io" in "vars"
   // Production: npx wrangler secret put <NAME>. Local: .dev.vars (git-ignored).

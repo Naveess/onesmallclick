@@ -518,6 +518,7 @@ async function deleteAccount(request: Request, env: Env): Promise<Response> {
     env.DB.prepare(`DELETE FROM share_links WHERE player_key = ?`).bind(`a:${id}`),
     env.DB.prepare(`DELETE FROM recruits WHERE recruiter_key = ?`).bind(`a:${id}`),
     env.DB.prepare(`UPDATE feedback SET account_id = NULL WHERE account_id = ?`).bind(id), // phase Q1a: their "contact me" goes
+    env.DB.prepare(`DELETE FROM push_subscriptions WHERE account_id = ?`).bind(id), // phase Q1b-2: their alerts go
     env.DB.prepare(`DELETE FROM accounts WHERE id = ?`).bind(id),
   ]);
   const headers = new Headers();
