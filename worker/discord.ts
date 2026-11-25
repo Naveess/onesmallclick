@@ -84,12 +84,34 @@ export function nextBatch<T extends { at: number }>(
 export type DiscordOutcome =
   | { status: "sent" }
   | { status: "off" } // no webhook set
-  | { status: "retry"; retryAfterMs: number }
-  | { status: "failed"; code: number };
+  | { status: "retry"; retryAfterMs: number; detail: string }
+  | { status: "failed"; code: number; detail: string };
+
+/** The webhook secret as pasted: spaces, line breaks or quotes around it are dropped (prompt 113). */
+export function cleanWebhook(raw: string | undefined): string {
+  return (raw ?? "").trim().replace(/^["'<]+|["'>]+$/g, "").trim();
+}
+
+/** What Discord said, short enough for /admin: "HTTP 404 {"message": "Unknown Webhook", ...}". Never the URL itself. */
+async function said(res: Response): Promise<string> {
+  const text = (await res.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160);
+  return `HTTP ${res.status}${text ? ` ${text}` : ""}`;
+}
 
 /** One webhook message with these posts as embeds. Each title links back to the game. */
-export async function sendToDiscord(webhookUrl: string | undefined, posts: DiscordPost[], siteUrl: string): Promise<DiscordOutcome> {
+export async function sendToDiscord(
+  webhookUrl: string | undefined,
+  posts: DiscordPost[],
+  siteUrl: string,
+  /** Local checks only: a stand-in webhook on this computer. */
+  allowLocal = false,
+): Promise<DiscordOutcome> {
+  webhookUrl = cleanWebhook(webhookUrl);
   if (!webhookUrl) return { status: "off" };
+  const local = allowLocal && /^http:\/\/127\.0\.0\.1:\d+\//.test(webhookUrl);
+  if (!local && !/^https:\/\/(?:[\w-]+\.)?(?:discord|discordapp)\.com\/api\/(?:v\d+\/)?webhooks\//.test(webhookUrl)) {
+    return { status: "failed", code: 0, detail: "the DISCORD_WEBHOOK_URL secret isn't a Discord webhook address (https://discord.com/api/webhooks/...)" };
+  }
   const body = {
     username: "OSC-1 Mission Control",
     // Whatever the text says, never ping anyone.
@@ -104,15 +126,16 @@ export async function sendToDiscord(webhookUrl: string | undefined, posts: Disco
   let res: Response;
   try {
     res = await fetch(webhookUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  } catch {
-    return { status: "retry", retryAfterMs: DISCORD_GAP_MS };
+  } catch (err) {
+    return { status: "retry", retryAfterMs: DISCORD_GAP_MS, detail: `couldn't reach Discord: ${String(err).slice(0, 120)}` };
   }
   if (res.ok) return { status: "sent" };
   if (res.status === 429) {
+    const detail = await said(res.clone());
     const j = (await res.json().catch(() => ({}))) as { retry_after?: number };
     const s = Number(j.retry_after ?? res.headers.get("Retry-After") ?? 60);
-    return { status: "retry", retryAfterMs: Math.max(1_000, Math.min(10 * 60_000, Math.ceil((Number.isFinite(s) ? s : 60) * 1000))) };
+    return { status: "retry", retryAfterMs: Math.max(1_000, Math.min(10 * 60_000, Math.ceil((Number.isFinite(s) ? s : 60) * 1000))), detail };
   }
-  if (res.status >= 500) return { status: "retry", retryAfterMs: DISCORD_GAP_MS };
-  return { status: "failed", code: res.status }; // a deleted or wrong webhook: retrying won't help
+  if (res.status >= 500) return { status: "retry", retryAfterMs: DISCORD_GAP_MS, detail: await said(res) };
+  return { status: "failed", code: res.status, detail: await said(res) }; // a deleted or wrong webhook: retrying won't help
 }

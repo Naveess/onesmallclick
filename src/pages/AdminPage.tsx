@@ -332,14 +332,15 @@ function Discord({ state, busy, onTest }: { state: AdminState; busy: boolean; on
       <p className="admin__note">
         Posts the big moments to the mission-log channel: milestones, arrivals, the daily vote and its result, the landing
         burn, the signal's final hour, safe mode and saves, and the crew goal. At most one post a minute; several moments
-        go together. {d.pending} waiting. A test post goes to the real channel when the webhook is set.
+        go together. {d.pending} waiting. "Send a test post" goes to the real channel straight away and shows what Discord
+        answered (the newest line below).
       </p>
       {d.recent.length > 0 && (
         <ul className="admin__feedback">
           {d.recent.map((p) => (
             <li key={p.id} className="admin__fb">
               <p className="admin__fb-head">
-                <strong>{p.title}</strong> · {when(p.at)} · {p.sentAt ? (p.note ?? "sent") : "waiting"}
+                <strong>{p.title}</strong> · {when(p.at)} · {p.sentAt ? (p.note ?? "sent") : `waiting${p.note ? ` (${p.note})` : ""}`}
               </p>
               <p className="admin__fb-msg">{p.text}</p>
             </li>

@@ -71,3 +71,57 @@
   line-height: 1.35;
   color: var(--text-muted);
 }
+
+/* Prompt 113: the iPhone's Add to Home Screen steps. */
+.alerts__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.alerts__list-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+.alerts__list-steps li {
+  position: relative;
+  padding-left: 34px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-soft);
+  counter-increment: step;
+}
+.alerts__list-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font: 18px/1 var(--font-num);
+  color: var(--text-on-blue);
+  background: var(--blue);
+  outline: 2px solid var(--outline);
+}
+.alerts__list-steps strong {
+  color: var(--text);
+}
+.alerts__share-icon {
+  display: inline-block;
+  vertical-align: -3px;
+  margin: 0 2px;
+  color: var(--text-blue);
+}
+.alerts__small {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}

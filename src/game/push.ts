@@ -36,6 +36,18 @@ const set = (patch: Partial<PushStore>) => {
 
 const isStandalone = () => window.matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
 const isIos = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+/**
+ * Which browser an iPhone is in (prompt 113), for the install steps: Safari; another browser (Chrome, Firefox, Edge,
+ * Opera: each has its own Share button); or an app's built-in browser (Facebook, Instagram, TikTok and so on), which
+ * can't add to the Home Screen at all. Discord's and WhatsApp's look like Safari, so the steps mention them too.
+ */
+export function iosBrowser(): "safari" | "other" | "in-app" {
+  const ua = navigator.userAgent;
+  if (/FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|musical_ly|Twitter|MicroMessenger|GSA\//.test(ua)) return "in-app";
+  if (/CriOS|FxiOS|EdgiOS|OPiOS|OPT\//.test(ua)) return "other";
+  return "safari";
+}
+
 const canPush = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 
 interface InstallPrompt extends Event {

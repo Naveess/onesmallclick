@@ -3,6 +3,7 @@ import {
   DISCORD_KEEP,
   DISCORD_MAX_TRIES,
   DISCORD_STALE_MS,
+  cleanWebhook,
   nextBatch,
   postForLog,
   sendToDiscord,
@@ -938,14 +939,14 @@ export class Probe extends DurableObject<Env> {
   /** Real ms when the next post can go, or null when nothing waits. */
   private discordDueAt(): number | null {
     if (this.discordPending().length === 0) return null;
-    if (!this.env.DISCORD_WEBHOOK_URL) return Date.now(); // no webhook (local): nothing to wait for
+    if (!cleanWebhook(this.env.DISCORD_WEBHOOK_URL)) return Date.now(); // no webhook (local): nothing to wait for
     return Math.max(Date.now(), this.lastDiscordAt() + 60_000, this.discordRetryAt);
   }
 
   /** From the alarm: send what's due. */
   private async flushDiscord() {
     const now = Date.now();
-    const url = this.env.DISCORD_WEBHOOK_URL;
+    const url = cleanWebhook(this.env.DISCORD_WEBHOOK_URL);
     // Late news is dropped, so a webhook that was down for a day doesn't flood the channel when it's back.
     this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'dropped: too late' WHERE sent_at IS NULL AND at < ?`, now, now - DISCORD_STALE_MS);
     const rows = this.discordPending();
@@ -956,7 +957,7 @@ export class Probe extends DurableObject<Env> {
       if (b.send.length === 0) return;
       batch = b.send;
     }
-    const out = await sendToDiscord(url || undefined, batch, this.env.SITE_URL);
+    const out = await sendToDiscord(url || undefined, batch, this.env.SITE_URL, this.env.DEV_SIGN_IN_LINKS === "1");
     const ids = batch.map((r) => r.id).join(",");
     if (out.status === "sent") {
       this.sql.exec(`UPDATE discord_out SET sent_at = ? WHERE id IN (${ids})`, Date.now());
@@ -964,12 +965,14 @@ export class Probe extends DurableObject<Env> {
     } else if (out.status === "off") {
       this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'not sent: no webhook set' WHERE id IN (${ids})`, Date.now());
     } else if (out.status === "retry") {
+      console.warn(JSON.stringify({ event: "discord-retry", detail: out.detail }));
       this.discordRetryAt = Date.now() + out.retryAfterMs;
-      this.sql.exec(`UPDATE discord_out SET tries = tries + 1 WHERE id IN (${ids})`);
+      // The reason shows in /admin while it waits (prompt 113).
+      this.sql.exec(`UPDATE discord_out SET tries = tries + 1, note = ? WHERE id IN (${ids})`, `retrying: ${out.detail}`);
       this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = 'dropped: Discord kept refusing it' WHERE sent_at IS NULL AND tries >= ?`, Date.now(), DISCORD_MAX_TRIES);
     } else {
-      console.error("discord refused the post", out.code);
-      this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = ? WHERE id IN (${ids})`, Date.now(), `refused: HTTP ${out.code}`);
+      console.error(JSON.stringify({ event: "discord-refused", detail: out.detail }));
+      this.sql.exec(`UPDATE discord_out SET sent_at = ?, note = ? WHERE id IN (${ids})`, Date.now(), `refused: ${out.detail}`);
     }
     this.sql.exec(`DELETE FROM discord_out WHERE sent_at IS NOT NULL AND id <= (SELECT MAX(id) FROM discord_out) - ?`, DISCORD_KEEP);
   }
@@ -3177,7 +3180,7 @@ export class Probe extends DurableObject<Env> {
       pausesAt: this.pausesAt(),
       players,
       discord: {
-        webhook: !!this.env.DISCORD_WEBHOOK_URL,
+        webhook: !!cleanWebhook(this.env.DISCORD_WEBHOOK_URL),
         pending: this.discordPending().length,
         recent: this.sql
           .exec<{ id: number; at: number; title: string; text: string; sentAt: number | null; note: string | null }>(
@@ -3188,9 +3191,21 @@ export class Probe extends DurableObject<Env> {
     };
   }
 
-  /** Queues a test post for the Discord channel (phase Q1b-1): it goes out with the next batch. */
+  /**
+   * A test post for the Discord channel (phase Q1b-1). Sent straight away (not queued), so /admin shows what Discord
+   * answered (prompt 113). With no webhook (local) it's only listed.
+   */
   async adminDiscordTest(): Promise<AdminState> {
-    this.queueDiscord({ tone: "blue", title: "Test post from /admin", text: "If you can read this, the OSC-1 mission log bot is working." });
+    const post: DiscordPost = { tone: "blue", title: "Test post from /admin", text: "If you can read this, the OSC-1 mission log bot is working." };
+    const url = cleanWebhook(this.env.DISCORD_WEBHOOK_URL);
+    if (!url) {
+      this.queueDiscord(post);
+      return this.adminState();
+    }
+    const out = await sendToDiscord(url, [post], this.env.SITE_URL, this.env.DEV_SIGN_IN_LINKS === "1");
+    const note = out.status === "sent" ? null : out.status === "off" ? "not sent: no webhook set" : `test failed: ${out.detail}`;
+    if (out.status !== "sent") console.error(JSON.stringify({ event: "discord-test-failed", detail: note }));
+    this.sql.exec(`INSERT INTO discord_out (at, title, text, tone, sent_at, note) VALUES (?, ?, ?, ?, ?, ?)`, Date.now(), post.title, post.text, post.tone, Date.now(), note);
     return this.adminState();
   }
 
