@@ -795,7 +795,7 @@ export function AdminPage() {
             <Shares adminKey={key} />
             <Players adminKey={key} />
             <Feedback adminKey={key} />
-            <Discord state={state} busy={busy} onTest={() => void run("discord-test")} />
+            <Discord state={state} busy={busy} onTest={() => void run("discord-test", {})} />
             <EarlyBeta adminKey={key} />
 
             <Window
