@@ -1130,7 +1130,7 @@ Also decided with phase 6 (2026-11-19): **a crew-speed ceiling** (full up to 10 
 ### Before phase 7 (11 and 12 decided 2026-11-19)
 11. ~~**Vote**~~ **Decided:** 3 options closing at 00:00 UTC, from a pool of about 30 drafted for approval (`content/vote-options.json`), each between a day sooner and a day later.
 12. ~~**Milestones**~~ **Decided:** I draft all six, with distances and checked facts, for approval in 7b. Fact pages are built from the kit in the style of How to play (1l), at `/milestones/<name>`.
-13. **Postcards** *(brief)*: real photos or pixel art? This can wait. Placeholders stay until then (todo, "At the end").
+13. ~~**Postcards** *(brief)*: real photos or pixel art?~~ **Decided 2026-11-25 (prompt 91): real NASA photos**, each with its credit line and licence checked. The list is in docs/todo.md ("Postcard photos").
 
 ### Before phase 8 (14, 16, 17 and 18 decided 2026-11-19)
 14. ~~**Email service**~~ **Decided: Cloudflare Email Service**, with the sending code in one file so switching to Resend is a one-file change. Nav switches on Workers Paid when the domain is connected. See the next section.
@@ -1143,9 +1143,9 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 
 ### Before 8d (added 2026-11-20; recommendations in brackets)
 22. **Crew emails go ahead** *(decided 2026-11-20, Nav's idea)*: halfway and arrival, accounts only, opt-in.
-23. **The sender address** *(`crew@onesmallclick.io`, separate from the sign-in sender)*.
-24. **How many top contributors to name** *(top 10 by km this leg, using their generated names)*.
-25. **Existing accounts** *(asked once in the game; nobody is opted in automatically)*.
+23. **The sender address:** **decided 2026-11-25 (prompt 91):** `crew@onesmallclick.io`, separate from the sign-in sender.
+24. **How many top contributors to name:** top 10 this leg, by their generated names (prompt 91). Nav asked for km and miles side by side ("38,266 km / 23,777 mi"): in the emails for sure; whether the whole game shows miles too is still to confirm.
+25. **Existing accounts:** **decided 2026-11-25 (prompt 91):** asked once in the game; nobody is opted in automatically.
 
 ### Before phase S (added 2026-11-20; all three approved as written by Nav, prompt 62, 2026-11-22)
 26. ~~**What counts as a recruit**~~ **Decided: a new device that arrives through your link and makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter** (built in S2).
@@ -1154,7 +1154,7 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
-20. **AdSense:** is the account set up for this site? Ads stay off until it's approved.
+20. **AdSense:** Nav has an AdSense account (prompt 91). The site is added to it after the domain move (AdSense needs your own domain, not workers.dev); ads stay off until it's approved.
 21. **The per-network daily cap number.** *(Set it from the load test. Generous enough that a household or office isn't blocked.)*
 
 ## Email for sign-in

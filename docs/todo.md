@@ -19,7 +19,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **2a, 2b and E2 only show at an arrival.** Claude sent screenshots from a local copy (prompt 87): the burn, the landing, the arrival rewards, the branch vote, the probe reveal, the passport. Nav to say if they look right; the live check waits for the Mars arrival after launch.
 - [ ] **E2:** the new probe reveal (it shows when the probe sets off on a new leg, so after the first arrival).
 - [x] **Publish the Google sign-in app** (done by Nav 25 Nov, prompt 89; no logo, so no verification). It's in "Testing" (prompt 87), so only listed test users can sign in, and email sign-in is off until payday: new players can't make an account or get the Early Beta badge. Google Cloud console → Google Auth Platform → Audience → Publish app (In production). The app only asks for "openid email", so Google needs no verification. Then sign in from an account that isn't a test user to check. Branding (prompt 88): leave the logo off for now (a logo makes Google require verification); home page, privacy and terms links are the workers.dev ones. After the domain move, add onesmallclick.io as an authorised domain and switch the links; the logo (`design/brand/logo-120.png`) can go on then, with verification.
-- [ ] **Older unticked checks (19–20 Nov):** the flight view follow-up live (1f safe mode with the flight view, "Back to the mission" on the account page), and that the counts survive a reload.
+- [x] **Older checks (19–20 Nov):** "Back to the mission" on the account page, and the click count surviving a reload: screenshots sent (prompt 91), both fine.
 
 ## Payday (from Monday 30 Nov): domain, Email Service and Workers Paid
 
@@ -41,13 +41,13 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 
 ### 4. 8d: Crew emails (Claude; docs/plan.md "8d: Crew emails")
 - [ ] **Set up the crew sender** (e.g. `crew@onesmallclick.io`), separate from the sign-in sender.
-- [ ] **Approve decisions 22–25** in docs/plan.md (sender, top 10 named, existing accounts asked once).
+- [x] **Decisions 22–25 approved** (prompt 91): crew@onesmallclick.io, the top 10 named (km / miles), existing accounts asked once.
 - [ ] **Build 8d:** the opt-in box and toggle, one-click unsubscribe, the halfway, **landing burn** (prompt 85: "the final burn has started, join the final push"; the Probe's `onBurnStart()` hook) and arrival emails, batched sending, /admin previews and test sends.
 - [ ] **Check the opt-in and email wording** against UK rules (PECR and GDPR). Claude isn't a lawyer.
 - [ ] **Privacy page:** crew emails and how to stop them.
 
 ### 5. Phase 9b (docs/plan.md, phase 9)
-- [ ] **AdSense** in the ad slots, with its consent message, and the privacy page updated for ads.
+- [ ] **AdSense** (Nav has an account, prompt 91): add onesmallclick.io to it after the domain move, then the ad slots with the consent message, and the privacy page updated for ads.
 - [ ] **The live load test** (docs/load-test.md), if Nav OKs it.
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
@@ -81,7 +81,7 @@ Back up every master to Drive (OneSmallClick › Sprites). File names are the on
 - [ ] **Link previews for Ceres and Vesta:** two Destination file images and nine milestone images (`npm run check-leg ceres` / `vesta` lists them), by adding lines to scripts/make-previews.mjs.
 - [ ] **The map share card**, 1080×1080 (in code, like the fact card).
 - [ ] **UI icons, 9×9:** map, flag, share, close, exported to SVG like the other ten in `design/icons/`.
-- [ ] **Postcard photos** (Nav picks or approves): a real space photo for each milestone (Mars 6, Ceres 5, Vesta 4) and a landing postcard per stop. Check each licence (prefer public-domain NASA/JPL) and note the credit. Or turn them into pixel art (an open question in the brief). Until then the postcards show "Postcard photo coming soon", and the landing postcard shows the destination.
+- [ ] **Postcard photos: real NASA photos** (prompt 91). Claude finds candidates in NASA's image library, Nav approves a contact sheet, each with its credit line and licence checked (NASA's are free to use with credit; partner images such as ESA's or the Dawn camera's need checking). Needed first: Mars 6 (Past the Moon, Waving at Webb, Mid-course burn, Halfway, Three quarters, Phobos in view) and a Mars landing postcard, by mid-January; then Ceres 5 and Vesta 4 and their landing postcards. Until then the postcards say "Postcard photo coming soon" and the landing postcard shows the destination.
 
 ## Clean-ups (Claude, small)
 - [ ] **Delete `src/components/JourneyTrack.tsx` and `JourneyTrack.css`.** The flight view replaced them and was approved (prompt 33).
@@ -89,10 +89,11 @@ Back up every master to Drive (OneSmallClick › Sprites). File names are the on
 - [ ] **Load only the current leg's content in the app** before Jupiter's (each leg's files add about 6 kB gzipped to the bundle).
 
 ## Decisions for Nav
-- [ ] **An off-computer copy of the D1 backups?** They're only in `Documents\onesmallclick-backups\`. They hold players' emails and names, so if they go to Drive, the privacy page should say backups are kept there.
-- [ ] **Countries board:** signed-in players only, later? It counts everyone for now (guests by device country).
-- [ ] **The heliopause's distance:** no NASA page found gives it. The map says "distance not yet charted".
-- [ ] **Postcards:** real photos, or pixel-art versions?
+- [ ] **Off-computer D1 backups: yes (Nav, prompt 91).** Where: Nav to pick (Claude recommends an encrypted copy in Drive; options in prompt 91's answer). Then: a passphrase in `.dev.vars` (`BACKUP_PASSPHRASE`, also in Nav's password manager), a backup script that exports and encrypts, and a privacy-page line saying encrypted backups are kept.
+- [x] **Countries board: signed-in players only** (Nav, prompt 91, to promote signing up). Built with G1.
+- [x] **The heliopause's distance:** 122 AU, where Voyager 1 crossed it (NASA, checked 25 Nov, prompt 91): 12,344.5 million km from Pluto, 11,653.6 million km from Arrokoth (content/campaign.json).
+- [x] **Postcards: real NASA photos** (Nav, prompt 91). See "Postcard photos" under the art list.
+- [ ] **Miles:** km and miles side by side ("38,266 km / 23,777 mi") in the crew emails (prompt 91). The whole game too, or just the emails?
 
 ## Before each new leg (about a week before arrival)
 Run `npm run check-leg <stop>` for both branches (E3). Content must pass; the art list is the PixelLab to-do. New content goes in `content/milestones/<stop>.json`, `content/facts/<stop>.json` and `content/detours/<stop>.json` (copy Ceres's), with one import line each in `shared/content.ts`, and Nav's approval date in each file's `approved`.

@@ -23,6 +23,10 @@
       "label": "JPL Small-Body Database: Arrokoth a = 44.1 au",
       "url": "https://ssd-api.jpl.nasa.gov/sbdb.api?sstr=Arrokoth"
     },
+    "heliopause": {
+      "label": "NASA, Voyager interstellar mission: \"Voyager 1 entered interstellar space at about 122 AU, or about 11 billion miles (18 billion kilometers) from the Sun.\" (checked 2026-11-25)",
+      "url": "https://science.nasa.gov/mission/voyager/interstellar-mission/"
+    },
     "au": {
       "label": "JPL astrodynamic parameters: 1 au = 149,597,870,700 m",
       "url": "https://ssd.jpl.nasa.gov/astro_par.html"
@@ -725,8 +729,8 @@
         "pluto",
         "arrokoth"
       ],
-      "distanceKm": "TODO",
-      "distanceNote": "TODO: no NASA page read on 2026-11-20 gives the heliopause's distance from the Sun. The design's ~11B km from the Kuiper belt is unchecked.",
+      "distanceKm": { "pluto": 12344500000, "arrokoth": 11653600000 },
+      "distanceNote": "The heliopause at 122 AU (18,250.9 million km), where Voyager 1 crossed it (NASA, checked 2026-11-25, prompt 91), less Pluto's average distance from the Sun (5,906.4 million km) or Arrokoth's (44.1 au, 6,597.3 million km).",
       "mission": 7,
       "probe": "long-voyager",
       "tech": {
