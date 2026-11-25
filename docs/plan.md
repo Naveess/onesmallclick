@@ -32,7 +32,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [ ] **E4: Sharing, fun facts and destination pages**
-- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: built and pushed 2026-11-24 (prompts 77–78), not deployed (migration 0014)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
+- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; 2b the landing burn; 2c cosmetics. See "E4b part 2a status" below.
 - [ ] **E5: Later ideas from the brief**
 
 ## What changed from the order in prompt 06
@@ -1012,7 +1012,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
 
 **E4b part 2 split (prompt 76):** 2a medals, planet tech and passport stamps; 2b the landing burn; 2c cosmetics (waits for PixelLab art).
 
-**E4b part 2a status (built 2026-11-24, prompts 77–78; pushed, not deployed; needs migration 0014):**
+**E4b part 2a status (built 2026-11-24, prompts 77–78; deployed 2026-11-25, prompt 81: D1 backed up pre-E4b2a, migration 0014 `--remote`, version 92aabd39, tag `e4b2a-live`; Nav OK'd the three wording changes):**
 - **Medal at arrival:** the Probe saves the leg's medal (shared/medals.ts `medalFor`, days from the leg's launch) in its own mission table and in D1 `missions.medal` (migration 0014, which also fills in legs that arrived before it). The arrival's log entry carries it. `/api/credits` and `/api/tour` return it; the map reads the saved medal.
 - **Planet tech** (`shared/tech.ts`): every stop's `tech.effect` in content/campaign.json is `{kind, gold, silver, bronze}`. The Probe adds up every leg arrived at this tour (since the latest Earth → Mars start), sends it in the probe state (`tech`), and applies it:
   - tap and auto-thrust credits (`earn`; km, the probe and leaderboards unchanged);
