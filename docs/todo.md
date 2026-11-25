@@ -3,7 +3,7 @@
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
 ## Start here (25 Nov, prompt 94)
-- **Everything built is live:** version `3c1bb51c` (tag `d-live`), with D (the desktop layouts, prompt 102), the NASA postcard photos (prompt 98), G1 (the sign-in nudges, the signed-in countries board, the /admin Players card, migration 0017), E4b part 2b (the landing burn, migration 0016), B2 (the launch wipe, not run) and B1 (the early-access banner and Early Beta badge). The live probe is on a fresh Earth → Mars leg (mission 9).
+- **Everything built is live:** version `7746bc10` (tag `m-live`), with M (km and miles everywhere, prompt 104), D (the desktop layouts, prompt 102), the NASA postcard photos (prompt 98), G1 (the sign-in nudges, the signed-in countries board, the /admin Players card, migration 0017), E4b part 2b (the landing burn, migration 0016), B2 (the launch wipe, not run) and B1 (the early-access banner and Early Beta badge). The live probe is on a fresh Earth → Mars leg (mission 9).
 - **Backups (25 Nov):** live D1 exported before each deploy to `Documents\onesmallclick-backups\` (latest `d1-onesmallclick-2026-11-25-pre-E4b2b.sql`); code, docs and tags on GitHub; new art in Drive (OneSmallClick › Sprites: `onesmallclick-art-2026-11-25.zip`, and the 19 Nov stills in `onesmallclick-stills-2026-11-19.zip`). The D1 exports are on this computer only (see "Decisions for Nav").
 - **Next prompt 94, next migration 0018.** Run `git pull` first: other sessions push here too.
 
@@ -51,7 +51,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
-- [ ] **M (miles) is built and pushed, not deployed** (prompt 103; docs/plan.md "M: Miles status"). No data change; deploy when Nav asks. Next: Q1 (decisions 29–32 first), then G2.
+- [x] **M (miles) is live** (prompts 103–104, version `7746bc10`, tag `m-live`; docs/plan.md "M: Miles status"). Next: Q1 (decisions 29–32 first), then G2.
 - [x] **D: desktop layouts are live** (prompts 99–102, version `3c1bb51c`, tag `d-live`; docs/plan.md "D: Desktop layouts"): 1o, 1k and 1n desktop match the design, and the landing burn has its dusk sky.
 - [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: ~~the NASA postcard photos~~ (live, prompt 98), M (miles), **Q1 (the first five, added 25 Nov)**, **A1 and A2 (the admin panel, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.

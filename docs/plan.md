@@ -36,7 +36,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **D: Desktop layouts** (added 2026-11-25, prompts 99–100): the desktop designs for 1o (the landing burn), 1k (the arrival and credits) and 1n (the new probe reveal) had been built as a centred phone column. **LIVE 2026-11-25 (prompt 102, version 3c1bb51c, tag d-live).** See "D: Desktop layouts" below.
-- [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). **Built and pushed 2026-11-25 (prompt 103), not deployed.** See "M: Miles status" below. Order agreed: G1, then the NASA postcard photos, then M, then G2.
+- [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). **LIVE 2026-11-25 (prompt 104, version 7746bc10, tag m-live).** See "M: Miles status" below. Order agreed: G1, then the NASA postcard photos, then M, then G2.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
@@ -905,7 +905,7 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 - **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.
 - **Clutter on the home.** Keep the card compact on phones, and keep the 150px ad gap from THRUST.
 
-## M: Miles status (built 2026-11-25, prompt 103; not deployed; no data change)
+## M: Miles status (built 2026-11-25, prompt 103; LIVE prompt 104, version 7746bc10, tag m-live; no data change)
 
 **The rules (Nav, prompts 92 and 103):** numbers and labels use a slash ("38,266 km / 23,777 mi", "21.44 km/s / 13.32 mi/s", "186M km / 116M mi"); sentences use brackets ("384,400 km (238,900 miles)"); the "+0.8 km" pop-up on each tap stays km only. AU, light-minutes, source quotes, /admin and /kit are left alone.
 
