@@ -10,7 +10,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **Phase 4: The shared probe** (deployed c189904 and approved, 2026-11-18)
 - [x] **Phase 5: Signal, Ping and safe mode** (deployed from 7261f30 and approved 2026-11-19)
 - [x] **Phase 6: Idle upgrades and offline thrust** (deployed from 3faffe7 and approved 2026-11-19)
-- [ ] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
+- [x] **Phase 7: Votes, mission log, milestones and fact pages** (split in two, decided 2026-11-19)
   - [x] **7a: The daily vote and the mission log** (deployed from d80f813 and approved 2026-11-19)
   - [x] **7b: Milestones, the milestone moment, fact pages and How to play** (deployed from 31172c3 with migration 0005, 2026-11-19)
 - [ ] **Phase 8: Accounts, leaderboards, profile and arrival** (split in three, decided 2026-11-19)
@@ -23,7 +23,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **E4b part 1: the medal pace line and the Destination file card** (before launch; straight after 8c). Built 2026-11-20 (prompts 49–50), with `/destinations/mars` pulled forward from E4; live (c6e1027f) and approved (prompt 52).
 - [ ] **Phase 9: Launch hardening, ads and legal pages** (split in two, prompt 54)
   - [x] **9a: now** (the network cap, the load test, terms and contact, the crash screen, monitoring, the launch checklist). **Deployed 2026-11-21** (prompt 58, version 17358aa0) and checked by Nav (prompt 60): see "Phase 9a status" below.
-  - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test, then the launch reset)
+  - [ ] **9b: after payday** (the domain, Workers Paid, AdSense and its consent message, the live load test). The launch reset is now B2's launch wipe (docs/todo.md "Launch day").
 - [x] **S: Sharing and invites (K-factor)** (added 2026-11-20, after 9a and before E1, so the growth loop is ready for launch): share buttons for WhatsApp, X, Facebook and more at every big moment, rich link previews, personal crew invite links, recruit badges, and a K-factor panel in /admin. It also takes over E4's map card and share texts. Split in two (prompt 62):
   - [x] **S1: share kit, crew links, previews, share moments, counts.** Built 2026-11-22 (prompt 62); approved by Nav and **deployed 2026-11-23** (prompt 63, version 0bf5a6ee). See "S1 status" below.
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
@@ -31,12 +31,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
-- [ ] **E4: Sharing, fun facts and destination pages**
-- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: built and pushed 2026-11-25 (prompts 84–85), not deployed (migration 0016)**; 2c cosmetics. See "E4b part 2a status" and "E4b part 2b status" below.
+- [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
+- [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
-  - [ ] **B2: the launch wipe.** Built 2026-11-25 (prompt 85); pushed, not deployed (no migration). Run on launch day by Nav (or Claude when asked), after a D1 backup. See "B2 status" below.
+  - [ ] **B2: the launch wipe.** Built 2026-11-25 (prompt 85); **live 2026-11-25** (prompt 86, version d79ceb92), not run yet. Run on launch day by Nav (or Claude when asked), after a D1 backup (docs/todo.md "Launch day"). See "B2 status" below.
 
 ## What changed from the order in prompt 06
 
@@ -814,7 +814,7 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Art:** `badge-early-beta.png`, 32×32, drawn in code on the First Ping medal's orange ring (a white β and an orange sparkle; `scripts/make-beta-badge.py`), no PixelLab generations.
 - **Checked locally:** `node scripts/check-beta.mjs` ALL PASS (a guest gets none; signing in gives it; kept on the next visit; /admin lists it; needs the key; a deleted account leaves the list). check-badges, check-rewards, check-auth, check-recruits and check-arrival ALL PASS. Browser flow (headless Edge, phone and wide, dark and light): the banner closed and open, closing remembered, the profile tile for a guest, the How to play box, no sideways scroll, no console errors. tsc clean.
 
-**B2 status (built 2026-11-25, prompt 85; pushed, not deployed; no migration):**
+**B2 status (built 2026-11-25, prompt 85; live 2026-11-25 with d79ceb92, not run; no migration):**
 - **/admin "Launch wipe (phase B2)"** (`POST /api/admin/launch-wipe {confirm: "WIPE EVERYTHING"}`, `Probe.adminLaunchWipe`): the phrase typed out (`LAUNCH_WIPE_PHRASE` in shared/beta.ts), plus a "have you backed up D1?" confirm.
 - **What it does:** closes every open game without saving (code 4002; browsers reconnect in about a second), clears the Probe's own storage (progress, the D1 queue, pace, track, milestones, the vote round, the missions, the clock offset), and deletes from D1: daily_km, pings, votes, vote_days, log_entries, milestones, mission_crew, missions, progress, every badge but `early-beta`, recruits, share_counts and network_caps. It then starts mission (old id + 1), Earth → Mars on real time (ids keep counting, so every browser still sees the next arrival screen), opens a fresh vote and logs "Launch day".
 - **Kept:** accounts, sessions and sign-in tokens, devices (names and countries), crew links (share_links), Early Beta badges.
@@ -1074,7 +1074,7 @@ The plan is docs/expansion.md (prompt 43); the content drafts are content/campai
   - check-arrival, check-badges, check-recruits and check-auth ALL PASS (check-auth's ping step needs 5 seconds after another ping, so don't run it twice back to back).
   - tsc and build clean; `npm run sim` unchanged.
 
-**E4b part 2b status (built 2026-11-25, prompts 84–85; pushed, not deployed; needs migration 0016):**
+**E4b part 2b status (built 2026-11-25, prompts 84–85; deployed 2026-11-25, prompt 86: D1 backed up pre-E4b2b, migration 0016 `--remote`, version d79ceb92, tag `e4b2b-live`):**
 - **The rules** (`shared/burn.ts`): `BURN_MS` 60 min, `BURN_TARGET_KM` 2,000,000 for every stop, taps ×2 (`BURN_TAP_MULTIPLIER`) for the bar only. Nav's choices (prompt 85): credits and leaderboards stay normal; the signal can't run out in the burn; a vote that closes in the burn changes nothing about the landing; the target is the same for every stop for now.
 - **The Probe** (`worker/probe.ts`, "The landing burn"): an alarm (and every tap batch) starts the burn once the arrival is an hour away at today's pace. The landing is fixed at the start plus 60 minutes: the probe glides in at a steady speed (`coastKmS` while burning), auto-thrust stops moving it and fills the bar instead (everyone connected's raw km/s), and tap batches add double km to the bar without moving the probe. No idle pause and no safe mode during the burn (the signal deadline is pushed past the landing). The arrival is at the fixed landing time; the result (`BurnResult`: km, target, ok, spareMs) is saved with the leg (its own SQLite and D1 `missions`, migration 0016), sent as `lastArrival.burn`, returned by `/api/credits`, and in the arrival's log entry. The burn's start is a log entry (`burn_start`). `onBurnStart()` is the hook for 8d's burn email.
 - **The screens:** the home card ("FINAL HOUR · LANDING BURN", countdown, the 20-block bar, Join the burn), a LANDING BURN chip on the flight view, the burn screen (1o: the destination close up, the countdown, the bar, "N here now · everyone's taps count double", THRUST "burn, burn, burn", Call the crew in, Back to the mission), then at arrival "Landing stuck!" (gold-framed postcard) or "Rough landing, but we made it" before the arrival screen. The mission log shows the burn and, under the arrival, the postcard with its gold frame. The postcard photo is the destination until PixelLab postcard art (2c). Components: `src/components/LandingBurn.tsx` (BurnBar, BurnCard, BurnScreen), `LandingResult.tsx`, `LandingBurn.css`.

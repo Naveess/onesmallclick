@@ -32,7 +32,8 @@ Sizes are width × height in pixels, read from the files on 2026-11-18. The file
 | `stills/jupiter.png` | 96×96 | Added 2026-11-19 (PixelLab). Jupiter with the Great Red Spot. The campaign map (1m) and the reveal's backdrop (shown at 2× and 4×). |
 | `stills/saturn.png` | 128×80 | Added 2026-11-19 (PixelLab). Saturn with its rings. The campaign map (1m). |
 | `stills/europa.png` | 64×64 | Added 2026-11-19 (PixelLab). Jupiter's moon Europa. The campaign map (1m) and the reveal (1n, at 2×). |
-| `stills/badges/badge-<id>.png` | 32×32 each | Added 2026-11-24 (PixelLab, prompt 67). The 15 profile badges, one file per badge id in shared/badges.ts: `first-ping`, `night-shift`, `voter-30`, `halfway`, `patch`, `keeper-1`…`keeper-4` (one dish that goes orange, silver, gold, gold with a crown), `clicks-1`…`clicks-3` (finger, iron thumb, gold thumb), `recruit-1`…`recruit-3` (one, two, three astronauts). Round medals in the signal badge's style (it was the style reference). Not wired in yet: the profile and the badge toast still use the 9×9 icons. |
+| `stills/badges/badge-<id>.png` | 32×32 each | Added 2026-11-24 (PixelLab, prompt 67). The 15 profile badges, one file per badge id in shared/badges.ts: `first-ping`, `night-shift`, `voter-30`, `halfway`, `patch`, `keeper-1`…`keeper-4` (one dish that goes orange, silver, gold, gold with a crown), `clicks-1`…`clicks-3` (finger, iron thumb, gold thumb), `recruit-1`…`recruit-3` (one, two, three astronauts). Round medals in the signal badge's style (it was the style reference). Shown on the profile and the badge toast since E1 (24 Nov). |
+| `stills/badges/badge-early-beta.png` | 32×32 | Added 2026-11-25 (phase B1, prompt 82). Early Beta: drawn in code, not PixelLab, on the First Ping medal's orange ring, with a white β and an orange sparkle (`scripts/make-beta-badge.py`). In Drive as `onesmallclick-art-2026-11-25.zip`. |
 | `stills/probe-<id>.png` (nine) | 64×64 each | Added 2026-11-24 (PixelLab, prompt 67), with OSC-1 and the Europa Lander as the style reference. One per probe id in content/campaign.json: `ceres-hopper`, `vesta-surveyor` (OSC-2), `titan-glider`, `plume-diver` (OSC-4), `cliff-climber`, `titania-lander` (OSC-5), `heart-lander`, `snowman-flyby` (OSC-6), `long-voyager` (OSC-7). Three-quarter view, like the Europa Lander. |
 | `alternates/` | | Added 2026-11-24. The runner-up probes (`probe-<id>-b.png`) and both candidate sheets (all 64 badge tries, all 16 probe tries, numbered), in case Nav prefers another. |
 
@@ -82,5 +83,5 @@ The Claude Design file (`../OneSmallClick.dc.html`) loads its sprites from `../a
 
 The milestone flag and signal badge were made on 2026-11-18 (see Stills). Still missing:
 
-- **Other profile badges:** made 2026-11-24 (`stills/badges/`), not wired into the profile and toast yet.
+- **The rest of the PixelLab list** (engine loops for the new probes, map and stamp art, cosmetics): docs/todo.md, "PixelLab art still to make".
 - **Postcard photos.** The design leaves image slots for real space photos (e.g. `postcard-04`). They aren't sprites, but they're still to find and licence-check.

@@ -252,6 +252,7 @@ Three slots, as in the design (1j): sky, THRUST trail and probe paint. Helpers u
 | First Gold (anywhere) | Gold foil paint (the design ties it to Gold at Mars) |
 
 ### The landing burn
+**Built in E4b part 2b (live 2026-11-25, docs/plan.md "E4b part 2b status")** as proposed below, with Nav's choices from prompt 85: taps double for the bar only, no safe mode, idle pause or vote effect during the burn, and the same 2,000,000 km target for every stop for now.
 - **It has to count km the crew pushes, not the probe's movement.** The probe's top speed is about 358 km/s with coasting (`shared/balance.ts`), which is at most about 1.3 million km in an hour. So "2,000,000 km in the final hour" can only mean the crew's pushed km: taps (double during the burn, as in 1o) plus connected auto-thrust.
 - **How it runs (proposed).**
   - When the arrival is one hour away at today's pace, the burn starts.
@@ -344,6 +345,7 @@ The first leg is the only one that can't slip. Mars arrives about 25–30 days a
 | Monthly after that | E3's checklist for each next pair of branches |
 
 ## 13. Asset list check
+**Superseded 2026-11-25:** the current list, with PixelLab prices, is docs/todo.md, "PixelLab art still to make".
 
 I checked docs/todo.md's art list against the design (1a/1b, 1j, 1k, 1m, 1n, 1o and the Art kit). Missing, now added to the todo:
 - **16×16 stamp icons for the branch moons:** Vesta, Europa, Ganymede, Titan, Enceladus, Miranda, Titania, Pluto, Arrokoth. The list only has the planets and a "not chosen yet" icon.

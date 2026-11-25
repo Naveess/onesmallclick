@@ -13,15 +13,17 @@ wrangler.jsonc       Worker config (Cloudflare Vite plugin)
 index.html           the app's HTML shell (theme script, font preloads)
 src/                 the React + TypeScript app: pixel kit, game screens, store, WebSocket client
 worker/              the Worker (/api/*) and the Probe Durable Object (the shared game)
-shared/              rules both sides use: mission, upgrades, votes, milestones
-content/             game content as JSON: the vote pool and the six milestones
+shared/              rules both sides use: balance, mission, upgrades, votes, campaign, medals, tech, burn, badges, share, beta
+content/             game content as JSON: the Grand Tour (campaign.json), per-stop milestones, facts and detours, the vote pool, share texts, the early-access copy (beta.json)
 migrations/          D1 schema, one file per change
-scripts/             build-pages.mjs (the plain HTML content pages), tap-flood.mjs (the tap-cap check)
+scripts/             build-pages.mjs (the content pages), make-previews.mjs (link-preview images), check-*.mjs (scripted checks), check-leg.mjs (is a leg ready), sim.mjs, load-test.mjs
 public/              served as-is: sprites, icons, self-hosted fonts (+ the generated content pages)
 docs/brief.md        what we're building
 docs/plan.md         phase plan, with what was actually built and every decision
 docs/changelog.md    one line per finished phase
-docs/todo.md         loose ends and content waiting for approval
+docs/todo.md         what's left: launch day, payday, phases, the PixelLab art still to make
+docs/expansion.md    the Grand Tour plan (route, rewards, facts)
+docs/launch-checklist.md  phone checks before launch, and where to look once it's live
 docs/prompts/        every prompt given to Claude Code, numbered
 design/              Claude Design export and PixelLab sprites
 ```
@@ -34,7 +36,9 @@ npx wrangler login    # once per machine
 npx wrangler d1 migrations apply onesmallclick --local   # once, and after each new migration
 npm run dev           # app + Worker at http://localhost:5173 (pixel kit at /kit, test controls at /admin)
 npm run pages         # rebuild only the content pages (dev and build already do this)
-npm run sim           # days to Mars for different crowd sizes (shared/balance.ts)
+npm run sim           # days per leg for different crowd sizes (shared/balance.ts)
+npm run check-leg     # is each leg's content ready, and what art it still needs
+node scripts/check-burn.mjs   # one of the scripted checks (check-*.mjs), against npm run dev
 npm run build         # type-check and build to dist/
 npm run deploy        # build, then deploy to https://onesmallclick.naveessharma.workers.dev
                       # (never bare `wrangler deploy`: it skips the build)
@@ -51,4 +55,6 @@ New migrations go to production with `npx wrangler d1 migrations apply onesmallc
 ## Backups
 
 - **Code and docs:** GitHub `Naveess/onesmallclick` (private). Everything that matters is committed; only `node_modules/`, `.wrangler/` (local dev data), `dist/`, `.dev.vars` and the generated content pages are ignored.
-- **Sprite masters:** Google Drive, OneSmallClick › Sprites.
+- **Sprite masters:** Google Drive, OneSmallClick › Sprites (the PixelLab zips, and the art made since: `onesmallclick-art-2026-11-25.zip`).
+- **Live database (D1):** exported before every deploy that changes data, to `Documents\onesmallclick-backups\` on this computer (`npx wrangler d1 export onesmallclick --remote --output ../onesmallclick-backups/d1-onesmallclick-<date>-<what>.sql`). Not on GitHub: it holds players' emails.
+- **Releases:** each live version is tagged in git (`s1-live` … `e4b2b-live`).

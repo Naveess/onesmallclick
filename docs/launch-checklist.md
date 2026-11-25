@@ -23,13 +23,16 @@ Use mobile data for one run and Wi-Fi for another.
 14. **A broken address**, like /nothing-here. It says "Lost signal" with a way back.
 15. **The leaderboard catches up** (phase 9a's storage change). After tapping in step 2, wait 5 minutes, then open Ranks: your km today are there. Before that they can be missing: D1 now gets them every 5 minutes.
 
-## Before the launch reset (Claude, after payday: phase 9b)
+## Before launch (after payday: phase 9b)
 
 - onesmallclick.io connected, Turnstile and Google sign-in updated for it, email sign-in working.
 - Workers Paid on.
 - AdSense in the slots with its consent message, and the privacy page updated for ads.
 - The live load test (docs/load-test.md), if Nav OKs it.
-- Then "Reset mission (keep players)" in /admin.
+
+## Launch day (15 Dec 2026; phase B2, prompts 83–85)
+
+The step-by-step list is in docs/todo.md ("Launch day"): back up D1, then /admin → "Launch wipe (phase B2)" (type WIPE EVERYTHING). It replaces the old "Reset mission (keep players)": the game starts fresh, and only accounts, devices, crew links and Early Beta badges stay. Then check mission day 1, the "Launch day" log entry, an empty leaderboard, and your profile with only Early Beta. Redeploy once after `endsAt` so How to play loses its early-access box.
 
 ## Automated (Claude, phase 9a)
 
@@ -38,7 +41,7 @@ Done 2026-11-21 (prompt 57); the results are in docs/plan.md ("Phase 9a status")
 - Lighthouse (`npx lighthouse`, not part of the project) on the game home, How to play, a milestone page, the Mars facts page and Privacy: phone and desktop.
 - An accessibility pass: keyboard only (every control reachable, a visible focus ring, dialogs trap focus and Esc closes them), text contrast in both themes, labels on icon buttons, reduced motion.
 - Screenshots at 375, 390 and 1440 in both themes.
-- The scripted checks: sign-in, clicks, badges, arrival and the network cap.
+- The scripted checks (`scripts/check-*.mjs`, local, against `npm run dev`): sign-in, clicks, badges, arrival, the network cap, recruits, rewards (medals, planet tech, stamps), Early Beta, the landing burn and the launch wipe. All passed on 2026-11-25.
 
 ## Monitoring (where to look once it's live)
 

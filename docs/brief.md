@@ -104,7 +104,7 @@ Answered ones point to the decision in docs/plan.md ("Decisions").
 - ~~Safe mode: how many days does the arrival date jump back?~~ **Decided:** every quiet hour adds about 2 hours, capped at 1 day per outage (decision 8, retuned 19 Nov for a 30-day trip).
 - ~~Signal timer: how long is the window at launch?~~ **Decided:** 48 hours (decision 7).
 - ~~How long should the first Mars mission take at launch traffic levels?~~ **Decided (changed 18–19 Nov):** about 30 days with a small crew, never under about 14 days however big the crowd, with self-balancing thrust (decision 4). The probe pauses after 8 hours with nobody playing (decision 5).
-- ~~Wipe the test data at launch?~~ **Decided (changed 18–19 Nov):** reset only the mission; players keep their progress, pings and streaks (decision 6).
+- ~~Wipe the test data at launch?~~ **Decided again (25 Nov, prompts 83–84):** on launch day (15 Dec, may move) the game starts fresh: everything is wiped except accounts, devices, crew links and the Early Beta badge that every account signed in before launch keeps (phase B). This replaces decision 6 (18–19 Nov: reset only the mission).
 - ~~Which email service sends the magic-link sign-in emails?~~ **Decided:** Cloudflare Email Service (decision 14).
 - ~~Country for leaderboards: detected automatically, or chosen by the player?~~ **Decided:** detected, changeable once (decision 16).
 - ~~Display names: how are rude names filtered out?~~ **Decided:** generated names only at launch, picked from three offers (decision 17).

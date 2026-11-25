@@ -57,7 +57,7 @@ One shared probe on a real Earth–Mars route, flown by everyone at once. The he
 ## Product Principles
 
 1. The shared mission comes first. Personal progress serves the crew's probe, never competes with it.
-2. Setbacks, never wipes. Losing the signal costs time, not everything the crew built.
+2. Setbacks, never wipes. Losing the signal costs time, not everything the crew built. (The one exception is before launch: the early-access game is wiped once on launch day, which the banner says up front, and early players keep an Early Beta badge.)
 3. The server is the truth. Anything that could be cheated is decided on the server.
 4. Respect the visit. A daily drop-in should feel complete in a minute, and ads never get in the way of play or pay out for clicks.
 5. Real space. Distances, milestones and facts are true; the fiction is only that everyone is flying it.
