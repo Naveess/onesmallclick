@@ -2,10 +2,15 @@
 
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
-## Start here (25 Nov, prompt 94)
-- **Everything built is live:** version `0b44dac0` (tag `q1a-live`), with Q1a (local times, the daily crew goal, Report a bug or idea, migration 0018, prompt 105), M (km and miles everywhere, prompt 104), D (the desktop layouts, prompt 102), the NASA postcard photos (prompt 98), G1 (the sign-in nudges, the signed-in countries board, the /admin Players card, migration 0017), E4b part 2b (the landing burn, migration 0016), B2 (the launch wipe, not run) and B1 (the early-access banner and Early Beta badge). The live probe is on a fresh Earth → Mars leg (mission 9).
-- **Backups (25 Nov):** live D1 exported before each deploy to `Documents\onesmallclick-backups\` (latest `d1-onesmallclick-2026-11-25-pre-E4b2b.sql`); code, docs and tags on GitHub; new art in Drive (OneSmallClick › Sprites: `onesmallclick-art-2026-11-25.zip`, and the 19 Nov stills in `onesmallclick-stills-2026-11-19.zip`). The D1 exports are on this computer only (see "Decisions for Nav").
-- **Next prompt 94, next migration 0018.** Run `git pull` first: other sessions push here too.
+## Start here (25 Nov, prompt 122)
+- **Everything built is live:** version `ace47a54` (tag `a1a-live`, prompt 121). Live, newest first:
+  - **A1a** (prompt 120, migration 0020): /admin needs your Google game sign-in (on `ADMIN_EMAILS`) plus the admin key; tabs Players, Game, Reports; search, lists and a page per player; every admin action logged.
+  - **Q1b** (prompts 107-118, migration 0019): the Discord bot posting to #mission-log, install as an app, and opt-in alerts (signal final hour, landing burn, vote closing). Checked by Nav on a real iPhone.
+  - **M2** (tag `m2-live`): km first with a KM | MI toggle.
+  - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
+- **Next to build:** A1b (fixes and player save states; needs the R2 bucket `onesmallclick-snapshots`, which Claude can create when asked), then A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
+- **Backups (25 Nov, prompt 122):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-25-2255-checkpoint-a1a.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
+- **Next prompt 123, next migration 0021.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -56,11 +61,14 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: ~~the NASA postcard photos~~ (live, prompt 98), M (miles), **Q1 (the first five, added 25 Nov)**, **A1 and A2 (the admin panel, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [x] **Q1a is live** (prompt 105, version `0b44dac0`, tag `q1a-live`; docs/plan.md "Q1a status"): times in each player's own timezone, the daily crew goal, and "Report a bug or idea" (migration 0018). Decisions 29–32 approved.
-- [x] **Q1b: install as an app with opt-in notifications (signal final hour, landing burn, vote closing), and the Discord bot.** Nav made the Discord server and webhook and set `DISCORD_WEBHOOK_URL` (prompt 107); the invite link is https://discord.gg/JPEree2vZF (never expires, prompt 112; in content/community.json). **Q1b is live and checked (prompts 112-118):** Nav confirmed the /admin test post reached #mission-log and the iPhone Add to Home Screen steps work. Still worth a look: a real alert arriving on the phone (Profile > Send me a test alert, from the Home Screen app).
-- [ ] **A1 and A2: the admin panel, before launch** (docs/plan.md "A"; Nav, 25 Nov), after Q1 and before G2:
+- [x] **Q1b: install as an app with opt-in notifications (signal final hour, landing burn, vote closing), and the Discord bot.** Nav made the Discord server and webhook and set `DISCORD_WEBHOOK_URL` (prompt 107); the invite link is https://discord.gg/JPEree2vZF (never expires, prompt 112; in content/community.json). **Q1b is live and checked (prompts 112-118):** Nav confirmed the /admin test post reached #mission-log and the iPhone Add to Home Screen steps work. A real test alert arrived on Nav's phone too (prompt 119).
+- [ ] **A1 and A2: the admin panel, before launch** (docs/plan.md "A"; Nav, 25 Nov), after Q1 and before G2. Decisions 33-35 approved (prompt 120); A1 is split into A1a (live, prompt 121), A1b and A1c:
   - A1: admin sign-in (your Google account plus `ADMIN_KEY`), find any player, the player page, fixes (reset, set values, add or remove rewards, name, country, merge, export, delete), save states for every player and the probe (R2), restore with a before-and-after view, the emergency rollback, maintenance mode and docs/runbook.md;
   - A2: warn, time out, hide from boards, ban, the Flags queue, "Report name", the name blocklist, messages (inbox, banner, push, Discord, templates, gifts), and the crew rules on the terms page.
-  Decisions 33–40 first. Nav makes the R2 bucket when asked.
+  - [x] **A1a is live** (`ace47a54`, tag `a1a-live`): admin sign-in, the Players tab, the player page, the admin log.
+  - [ ] **A1b:** the fixes and player save states (R2 bucket `onesmallclick-snapshots`); starts recording name history.
+  - [ ] **A1c:** the game's save states, maintenance mode, docs/runbook.md. The emergency rollback waits until after launch (a runbook entry until then).
+  - [ ] **A2:** decisions 36-40 first.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.
 - [ ] **Q2–Q6, after Q1:**
   - Q2: settings, the first-visit guide, haptics and sound;
@@ -106,7 +114,7 @@ Back up every master to Drive (OneSmallClick › Sprites). File names are the on
 ## Decisions for Nav
 - [x] **Off-computer D1 backups** (prompt 92): Cloudflare's Time Travel plus encrypted copies in Drive, kept 90 days (docs/plan.md, "Backups and retention"). First one uploaded 25 Nov.
 - [ ] **Nav, from home: copy `BACKUP_PASSPHRASE` from `.dev.vars` into your password manager.** Without it the Drive backups can't be opened. (Claude made a random 40-character one; it's never been shown in chat.)
-- [ ] **The privacy page's backup lines go live with the next deploy** (updated 25 November 2026).
+- [x] **The privacy page's backup lines are live** (since the Q1a deploy).
 - [x] **Countries board: signed-in players only** (Nav, prompt 91, to promote signing up). Built with G1.
 - [x] **The heliopause's distance:** 122 AU, where Voyager 1 crossed it (NASA, checked 25 Nov, prompt 91): 12,344.5 million km from Pluto, 11,653.6 million km from Arrokoth (content/campaign.json).
 - [x] **Postcards: real NASA photos** (Nav, prompt 91). See "Postcard photos" under the art list.
