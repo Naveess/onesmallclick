@@ -104,3 +104,4 @@
 - 2026-11-25 · Q1b fixes deployed (prompt 114) · npm run deploy → 223a7200 (tag q1b-fixes-live); the live bundle has the new iPhone steps. No data change.
 - 2026-11-25 · Fix (prompt 116) · /admin's "Send a test post" sent a GET, which the admin routes answer with Not found; it now sends a POST (the check script always used POST, so it passed). Deployed: 4f00dc0a (prompt 117).
 - 2026-11-25 · Q1b confirmed (prompt 118) · Nav: the Discord test post showed up in #mission-log, and the iPhone install steps worked.
+- 2026-11-25 · Q1b fully checked (prompt 119) · Nav: a real test alert arrived on the phone.
