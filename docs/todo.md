@@ -16,8 +16,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 
 ## Checks for Nav (live now)
 - [x] **B1:** the early-access banner on a phone (prompt 87: looks fine).
-- [ ] **2a, 2b and E2 only show at an arrival.** Claude sent screenshots from a local copy (prompt 87): the burn, the landing, the arrival rewards, the branch vote, the probe reveal, the passport. Nav to say if they look right; the live check waits for the Mars arrival after launch.
-- [ ] **E2:** the new probe reveal (it shows when the probe sets off on a new leg, so after the first arrival).
+- [x] **2a, 2b and E2:** approved from screenshots of a local copy (prompt 92). The live versions show at the Mars arrival after launch.
 - [x] **Publish the Google sign-in app** (done by Nav 25 Nov, prompt 89; no logo, so no verification). It's in "Testing" (prompt 87), so only listed test users can sign in, and email sign-in is off until payday: new players can't make an account or get the Early Beta badge. Google Cloud console → Google Auth Platform → Audience → Publish app (In production). The app only asks for "openid email", so Google needs no verification. Then sign in from an account that isn't a test user to check. Branding (prompt 88): leave the logo off for now (a logo makes Google require verification); home page, privacy and terms links are the workers.dev ones. After the domain move, add onesmallclick.io as an authorised domain and switch the links; the logo (`design/brand/logo-120.png`) can go on then, with verification.
 - [x] **Older checks (19–20 Nov):** "Back to the mission" on the account page, and the click count surviving a reload: screenshots sent (prompt 91), both fine.
 
@@ -52,7 +51,8 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
-- [ ] **G: Grow** (docs/plan.md "G: Grow"): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
+- [ ] **G1 then the rest of G** (docs/plan.md "G: Grow"; split in prompt 89: G1 the sign-in nudges, the countries board for signed-in players only and the /admin Players card; G2 sharing on the home). Order agreed (prompt 92): G1, the NASA postcard photos, M (miles), then G2.
+- [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [ ] **E4b part 2c: cosmetics** (skies, THRUST trails, probe paints; unlocked at arrival, picked on the profile). Needs the art below; Mars's (Mars-dust sky, Red dust trail, Gold foil paint) before the first arrival, about mid-January.
 - [ ] **Jupiter's content** (E3 pipeline, before the Ceres/Vesta arrival, about mid-February): 4–6 milestones, 30 facts and 8+ detours, all NASA-checked, for Nav to approve. Then Europa and Ganymede, and so on, a leg ahead. `npm run check-leg <stop>` lists what's missing.
 - [ ] **Wire the planet tech kinds that aren't yet:** Ganymede's safeAuto, Enceladus's pingCredits, Arrokoth's postcardCredits and Titania's nightTapCredits (shared/tech.ts and the Probe), before those legs. `check-leg` fails them until then.
@@ -89,11 +89,13 @@ Back up every master to Drive (OneSmallClick › Sprites). File names are the on
 - [ ] **Load only the current leg's content in the app** before Jupiter's (each leg's files add about 6 kB gzipped to the bundle).
 
 ## Decisions for Nav
-- [ ] **Off-computer D1 backups: yes (Nav, prompt 91).** Where: Nav to pick (Claude recommends an encrypted copy in Drive; options in prompt 91's answer). Then: a passphrase in `.dev.vars` (`BACKUP_PASSPHRASE`, also in Nav's password manager), a backup script that exports and encrypts, and a privacy-page line saying encrypted backups are kept.
+- [x] **Off-computer D1 backups** (prompt 92): Cloudflare's Time Travel plus encrypted copies in Drive, kept 90 days (docs/plan.md, "Backups and retention"). First one uploaded 25 Nov.
+- [ ] **Nav, from home: copy `BACKUP_PASSPHRASE` from `.dev.vars` into your password manager.** Without it the Drive backups can't be opened. (Claude made a random 40-character one; it's never been shown in chat.)
+- [ ] **The privacy page's backup lines go live with the next deploy** (updated 25 November 2026).
 - [x] **Countries board: signed-in players only** (Nav, prompt 91, to promote signing up). Built with G1.
 - [x] **The heliopause's distance:** 122 AU, where Voyager 1 crossed it (NASA, checked 25 Nov, prompt 91): 12,344.5 million km from Pluto, 11,653.6 million km from Arrokoth (content/campaign.json).
 - [x] **Postcards: real NASA photos** (Nav, prompt 91). See "Postcard photos" under the art list.
-- [ ] **Miles:** km and miles side by side ("38,266 km / 23,777 mi") in the crew emails (prompt 91). The whole game too, or just the emails?
+- [x] **Miles:** the whole game and the emails (prompt 92): phase M in docs/plan.md.
 
 ## Before each new leg (about a week before arrival)
 Run `npm run check-leg <stop>` for both branches (E3). Content must pass; the art list is the PixelLab to-do. New content goes in `content/milestones/<stop>.json`, `content/facts/<stop>.json` and `content/detours/<stop>.json` (copy Ceres's), with one import line each in `shared/content.ts`, and Nav's approval date in each file's `approved`.

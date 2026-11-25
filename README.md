@@ -56,5 +56,9 @@ New migrations go to production with `npx wrangler d1 migrations apply onesmallc
 
 - **Code and docs:** GitHub `Naveess/onesmallclick` (private). Everything that matters is committed; only `node_modules/`, `.wrangler/` (local dev data), `dist/`, `.dev.vars` and the generated content pages are ignored.
 - **Sprite masters:** Google Drive, OneSmallClick › Sprites (the PixelLab zips, and the art made since: `onesmallclick-art-2026-11-25.zip`).
-- **Live database (D1):** exported before every deploy that changes data, to `Documents\onesmallclick-backups\` on this computer (`npx wrangler d1 export onesmallclick --remote --output ../onesmallclick-backups/d1-onesmallclick-<date>-<what>.sql`). Not on GitHub: it holds players' emails.
+- **Live database (D1), three layers** (prompt 92; retention in docs/plan.md, "Backups and retention"):
+  - Cloudflare's D1 Time Travel: restore to any minute in the last 7 days (30 on Workers Paid). Automatic.
+  - `npm run backup -- <label>` before every deploy that changes data, and at least weekly: exports to `Documents\onesmallclick-backups\` (plain, kept 30 days), encrypts it with AES-256 into `encrypted\` (kept 90 days), checks it decrypts, and prunes old files. The passphrase is `BACKUP_PASSPHRASE` in `.dev.vars`, with a copy in Nav's password manager.
+  - The encrypted file goes to Google Drive, OneSmallClick › Backups (encrypted); copies over 90 days are deleted there too.
+  - To open one: `openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in <file>.sql.enc -out <file>.sql -pass env:BACKUP_PASSPHRASE` (set the variable first). Never on GitHub: it holds players' emails.
 - **Releases:** each live version is tagged in git (`s1-live` … `e4b2b-live`).

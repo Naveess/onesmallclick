@@ -406,7 +406,7 @@ const mailto = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
 const operatorLink = `<a href="${OPERATOR.url}" rel="noopener">${OPERATOR.name}</a>`;
 const LEGAL_UPDATED = "20 November 2026";
 // The privacy page alone changed in phase S1 (crew links and share counts).
-const PRIVACY_UPDATED = "24 November 2026";
+const PRIVACY_UPDATED = "25 November 2026";
 
 /** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML. */
 function sectionsHtml(id, sections) {
@@ -569,6 +569,7 @@ const privacySections = [
       "Cloudflare runs the whole site: the pages, the game server and the database. Its network handles your IP address to deliver the site, and the game server keeps short-lived logs for fixing problems.",
       "Ping, the daily vote and the email sign-in use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
       "Sign-in emails are sent with Cloudflare's Email Service. Google sees that you signed in to OneSmallClick if you use “Continue with Google”.",
+      "The database is backed up by Cloudflare, and as encrypted copies in our private Google Drive, in case something goes wrong with either. The copies are locked with a key only we hold, so Google can't read them, and each is deleted after 90 days.",
       "There are no ads, no analytics trackers and no Google scripts on our pages. We never sell your data and never post anything for you.",
     ],
   ],
@@ -576,7 +577,7 @@ const privacySections = [
     "Your choices",
     [
       "Sign out at any time: your progress stays with your account, and the device carries on as a new guest.",
-      "Delete your account from the sign-in page: your email, name, account progress and passport stamps are deleted straight away, and your name comes off the mission credits (the database's own backups roll off within 30 days). The km you pushed stay in the mission without your name.",
+      "Delete your account from the sign-in page: your email, name, account progress and passport stamps are deleted straight away, and your name comes off the mission credits. Backups roll off on their own: Cloudflare's within 30 days, and our encrypted copies within 90 days. The km you pushed stay in the mission without your name.",
       `For a copy of your data, or anything else about privacy, email ${mailto}.`,
     ],
   ],

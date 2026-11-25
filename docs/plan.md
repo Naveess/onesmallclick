@@ -28,11 +28,12 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - [x] **S1: share kit, crew links, previews, share moments, counts.** Built 2026-11-22 (prompt 62); approved by Nav and **deployed 2026-11-23** (prompt 63, version 0bf5a6ee). See "S1 status" below.
   - [x] **S2: recruits, recruiter badges, "your recruits have pushed X km", the K-factor panel in /admin.** Built 2026-11-24 (prompts 64–65); **deployed 2026-11-24** (prompt 66, version 5875b23d). See "S2 status" below.
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
-- [ ] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); waiting for Nav's check. See "E2 status" below.
+- [x] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); approved by Nav from screenshots (prompt 92). See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
+- [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
@@ -826,6 +827,14 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Decided (Nav, prompt 84): everything else is wiped too**: credits, upgrades, patches, km totals (daily_km), ping streaks and pings, votes, the leaderboards, recruits and Crew Recruiter counts. The game starts fresh on 15 Dec (subject to change). **Kept:** accounts (sign-in, name, country), their sessions, crew links, and the Early Beta badge.
 - After launch day `endsAt` has passed: the banner goes and no new Early Beta badges are given.
 
+
+## Backups and retention (2026-11-25, prompt 92)
+
+Nav: Cloudflare's backup, plus an encrypted copy in Google Drive in case something happens with Cloudflare, with a retention period.
+- **Cloudflare D1 Time Travel:** any minute in the last 7 days (30 on Workers Paid). Automatic.
+- **`npm run backup -- <label>`** (`scripts/backup-d1.mjs`): before every deploy that changes data, and at least weekly. Exports D1, encrypts it (AES-256, PBKDF2 600,000 rounds, passphrase `BACKUP_PASSPHRASE` in `.dev.vars` with a copy in Nav's password manager), checks the encrypted copy decrypts to the same file, and prunes.
+- **Retention:** plain exports on this computer 30 days; encrypted copies 90 days, on this computer and in Drive (OneSmallClick › Backups (encrypted)); the newest 3 of each always kept. A deleted account is gone from every backup within 90 days. The privacy page says so (updated 25 November 2026).
+- **Drive:** Claude uploads each encrypted file and deletes Drive copies over 90 days when it runs a backup.
 
 ## G: Grow: sharing on the home, the Players card, and sign-in nudges (added 2026-11-24)
 
