@@ -1,3 +1,4 @@
+import { miOnly } from "../../shared/units";
 import { NUDGES, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { useEffect, useState } from "react";
 import type { Board, BoardResult, BoardRow } from "../../shared/boards";
@@ -36,7 +37,9 @@ function Row({ row, board }: { row: BoardRow; board: Board }) {
       <span className={rankClass(row.rank)}>{row.rank ?? "–"}</span>
       <Flag cc={row.cc} label={countryName(row.cc)} />
       <span className="ranks__name">{board === "countries" ? countryName(row.cc) : row.name}</span>
-      <span className="ranks__km num">{int(row.km)} km</span>
+      <span className="ranks__km num">
+                {int(row.km)} km<span className="mi">{miOnly(row.km)}</span>
+              </span>
     </li>
   );
 }
@@ -144,7 +147,9 @@ export function RanksPage() {
                   {shown.ghostRank ? fillNudge(NUDGES.ghost, { rank: int(shown.ghostRank) }) : NUDGES.ghostZero}
                 </span>
               </span>
-              <span className="ranks__km num">{int(me.km)} km</span>
+              <span className="ranks__km num">
+                {int(me.km)} km<span className="mi">{miOnly(me.km)}</span>
+              </span>
             </Link>
           ) : shown && me && (
             <Link href="/profile" className="ranks__me" aria-label="Your row: open your profile">
@@ -153,7 +158,9 @@ export function RanksPage() {
               <span className="ranks__name">
                 {board === "countries" ? `${countryName(me.cc)} (yours)` : `${me.name} (you)`}
               </span>
-              <span className="ranks__km num">{int(me.km)} km</span>
+              <span className="ranks__km num">
+                {int(me.km)} km<span className="mi">{miOnly(me.km)}</span>
+              </span>
             </Link>
           )}
           {shown && me && me.rank !== null && (board === "countries" ? me.cc !== null : shown.signedIn) && (

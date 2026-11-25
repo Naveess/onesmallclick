@@ -1,3 +1,4 @@
+import { compactKmMi } from "../../shared/units";
 import { branchStopId, legKm, probeFor, stop as campaignStop, stopName } from "../../shared/campaign";
 import { hms, int } from "../game/format";
 import type { VoteOption } from "../game/store";
@@ -17,13 +18,9 @@ interface BranchVoteProps {
   busy?: boolean;
 }
 
-/** "1.07M km", "671,100 km", "186M km". */
+/** "1.07M km / 0.66M mi", "186M km / 116M mi" (phase M: shared/units.ts). */
 function distance(km: number | null): string {
-  if (km === null) return "";
-  if (km >= 1e9) return `${(km / 1e9).toFixed(2)}B km`;
-  if (km >= 1e7) return `${Math.round(km / 1e6)}M km`;
-  if (km >= 1e6) return `${(km / 1e6).toFixed(2)}M km`;
-  return `${int(km)} km`;
+  return km === null ? "" : compactKmMi(km);
 }
 
 /**

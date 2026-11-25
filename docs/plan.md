@@ -36,7 +36,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **D: Desktop layouts** (added 2026-11-25, prompts 99–100): the desktop designs for 1o (the landing burn), 1k (the arrival and credits) and 1n (the new probe reveal) had been built as a centred phone column. **LIVE 2026-11-25 (prompt 102, version 3c1bb51c, tag d-live).** See "D: Desktop layouts" below.
-- [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
+- [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). **Built and pushed 2026-11-25 (prompt 103), not deployed.** See "M: Miles status" below. Order agreed: G1, then the NASA postcard photos, then M, then G2.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
@@ -904,6 +904,26 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 **Main risks**
 - **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.
 - **Clutter on the home.** Keep the card compact on phones, and keep the 150px ad gap from THRUST.
+
+## M: Miles status (built 2026-11-25, prompt 103; not deployed; no data change)
+
+**The rules (Nav, prompts 92 and 103):** numbers and labels use a slash ("38,266 km / 23,777 mi", "21.44 km/s / 13.32 mi/s", "186M km / 116M mi"); sentences use brackets ("384,400 km (238,900 miles)"); the "+0.8 km" pop-up on each tap stays km only. AU, light-minutes, source quotes, /admin and /kit are left alone.
+
+**How:**
+- `shared/units.ts` is the one formatter, used by the app, the Worker and the build scripts. Its functions are `kmMi`, `miOnly`, `compactKmMi`, `millionsKmMi`/`millionsMi`, `speedKmMi`, `speedKmhMph`, `kmMiFine` and `withMiles`.
+- `withMiles` adds the miles to every km in a sentence, rounded to the figures the km was written with (at least 2). Ranges work ("1 to 10 km (0.62 to 6.2 miles)"), and it leaves miles that are already written alone, so running it twice is safe.
+- `milesInContent` runs a whole content file through `withMiles`, skipping source quotes, links and notes. `shared/content.ts`, `shared/campaign.ts` and `scripts/build-pages.mjs` load every content file through it, so the files stay in km and a new leg gets its miles for free.
+- **Screens:**
+  - big km figures get the miles on a smaller second line (`.mi`: the flight view, the burn bar, the burn card, the prestige bar, welcome back, the profile tiles and the leaderboards);
+  - one-line stats use the slash (the home rates and the wide stats, the probe's speed, tap power, the milestone moment, safe mode);
+  - sentences use brackets (the burn title, the landing result, the unlock line, recruits).
+- **Text:** share texts and link previews (`fillIn`) and nudges (`fillNudge`) add miles. The mission log adds them when it's written (`Probe.log`) and when it's shown (`LogPage`, for older entries). The content pages' labels read "430,000,000 KM / 267,189,612 MI FROM EARTH".
+- **Emails:** the sign-in email has no distances; 8d's crew emails will use `withMiles`.
+
+**Checked locally:**
+- `node scripts/check-units.mjs` ALL PASS: 15 formatter cases. It also lists the 69 content sentences that gain miles (`--all` prints them).
+- check-burn, check-arrival, check-rewards, check-nudges, check-badges, check-beta, check-recruits, check-clicks and check-auth ALL PASS; check-leg is unchanged.
+- Browser (headless Edge, phone and wide) shows miles on the home, the milestone moment, upgrades, leaderboards, profile, log, burn and fact pages, with no sideways scroll and no console errors.
 
 ## D: Desktop layouts (added 2026-11-25, prompts 99–100)
 

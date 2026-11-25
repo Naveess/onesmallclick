@@ -1,3 +1,4 @@
+import { withMiles } from "../../shared/units";
 import { landingPostcardOf } from "../../shared/postcards";
 import { PostcardPhoto } from "./PostcardPhoto";
 import { spareText, type BurnResult } from "../../shared/burn";
@@ -55,8 +56,8 @@ export function LandingResult({ stop, fromStop, burn, wide, onContinue }: Landin
         </h1>
         <p className="landing__line num">
           {burn.ok
-            ? `${int(burn.target)} km burned${burn.spareMs !== null ? ` with ${spareText(burn.spareMs)} to spare` : ""}.`
-            : `${int(burn.km)} of ${int(burn.target)} km burned.`}
+            ? withMiles(`${int(burn.target)} km burned${burn.spareMs !== null ? ` with ${spareText(burn.spareMs)} to spare` : ""}.`)
+            : withMiles(`${int(burn.km)} of ${int(burn.target)} km burned.`)}
         </p>
       </header>
 

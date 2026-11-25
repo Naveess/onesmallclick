@@ -1,3 +1,4 @@
+import { millionsMi, miOnly, withMiles } from "../../shared/units";
 import { LAUNCH, NUDGES, betaLine, ctaLabel, fillNudge, signInHref } from "../game/nudges";
 import { Window } from "../components/Window";
 import { useEffect, useState } from "react";
@@ -64,7 +65,7 @@ function tiles(have: Set<BadgeId>, info: ProfileInfo | null): Tile[] {
   const recruitHow =
     n === 0
       ? "Bring in a new player with your crew link: they count once they've played"
-      : `${int(n)} recruit${n === 1 ? "" : "s"} · they've pushed ${int(info?.recruitKm ?? 0)} km${next ? ` · next level at ${next}` : ""}`;
+      : withMiles(`${int(n)} recruit${n === 1 ? "" : "s"} · they've pushed ${int(info?.recruitKm ?? 0)} km${next ? ` · next level at ${next}` : ""}`);
   const t = (id: BadgeId, icon: IconName, tone: IconTone): Tile => ({
     key: id,
     badge: id,
@@ -149,11 +150,15 @@ export function ProfilePage() {
           <div className="profile__stats">
             <div className="profile__stat">
               <div className="profile__stat-label">TOTAL PUSHED</div>
-              <div className="profile__stat-value num profile__stat-value--blue">{info ? (info.totalKm < 1e6 ? `${int(info.totalKm)} km` : millionsKm(info.totalKm)) : "…"}</div>
+              <div className="profile__stat-value num profile__stat-value--blue">{info ? (info.totalKm < 1e6 ? `${int(info.totalKm)} km` : millionsKm(info.totalKm)) : "…"}
+                {info && <span className="mi">{info.totalKm < 1e6 ? miOnly(info.totalKm) : millionsMi(info.totalKm)}</span>}
+              </div>
             </div>
             <div className="profile__stat">
               <div className="profile__stat-label">TODAY</div>
-              <div className="profile__stat-value num">{int(player.kmToday)} km</div>
+              <div className="profile__stat-value num">
+                {int(player.kmToday)} km<span className="mi">{miOnly(player.kmToday)}</span>
+              </div>
             </div>
             <div className="profile__stat">
               <div className="profile__stat-label">PINGS</div>

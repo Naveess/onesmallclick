@@ -1,10 +1,10 @@
+import { kmMi } from "../../shared/units";
 import { postcardOf } from "../../shared/postcards";
 import { PostcardPhoto } from "./PostcardPhoto";
 import { useEffect, useRef, useState } from "react";
 import { milestoneDetail, milestonesFor } from "../../shared/milestones";
 import type { ReachedMilestone } from "../../shared/milestones";
 import { resultLine, sentence, shareMessage } from "../../shared/share";
-import { int } from "../game/format";
 import { useGame } from "../game/store";
 import { SPRITES } from "../sprites";
 import { usePrefersReducedMotion } from "../theme";
@@ -147,7 +147,8 @@ export function MilestoneMoment({ reached, stopId, missionDay, today, wide, onCl
           {m.title}
         </h1>
         <p className="moment__where num">
-          {int(m.km)} km{missionDay !== null ? ` · mission day ${missionDay}` : ""}
+          {kmMi(m.km)}
+          {missionDay !== null ? ` · mission day ${missionDay}` : ""}
         </p>
       </div>
 

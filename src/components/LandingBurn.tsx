@@ -1,3 +1,4 @@
+import { miles, withMiles } from "../../shared/units";
 import { stopName } from "../../shared/campaign";
 import { destinationArt } from "../game/flightArt";
 import { hms, int } from "../game/format";
@@ -35,7 +36,7 @@ export function BurnBar({ burn, size = "sm" }: { burn: BurnView; size?: "sm" | "
       aria-valuemin={0}
       aria-valuemax={burn.target}
       aria-valuenow={Math.floor(burn.km)}
-      aria-valuetext={`${int(burn.km)} of ${int(burn.target)} km`}
+      aria-valuetext={`${int(burn.km)} of ${int(burn.target)} km (${int(miles(burn.km))} of ${int(miles(burn.target))} miles)`}
     >
       {Array.from({ length: SEGMENTS }, (_, i) => (
         <span key={i} className={i < full ? "burn-bar__seg burn-bar__seg--on" : i === full ? "burn-bar__seg burn-bar__seg--now" : "burn-bar__seg"} />
@@ -60,6 +61,9 @@ export function BurnCard({ burn, wide, onJoin }: { burn: BurnView; wide: boolean
       <div className="burn-card__bottom">
         <span className="burn-card__km">
           {int(burn.km)} of {int(burn.target)} km burned
+          <span className="mi">
+            {int(miles(burn.km))} of {int(miles(burn.target))} mi
+          </span>
         </span>
         <PixelButton variant="orange" className="burn-card__join" onClick={onJoin}>
           Join the burn
@@ -109,7 +113,7 @@ export function BurnScreen({ burn, wide, online, stop, probeId, probeTag, onThru
             {hms(burn.leftS)}
           </p>
           <h1 id="burn-title" className="burn__title">
-            Landing burn: {int(burn.target)} km to stick the landing
+            Landing burn: {withMiles(`${int(burn.target)} km`)} to stick the landing
           </h1>
         </header>
 
@@ -118,6 +122,9 @@ export function BurnScreen({ burn, wide, online, stop, probeId, probeTag, onThru
           <p className="burn__nums num">
             <span>
               <span className="burn__km">{int(burn.km)}</span> of {int(burn.target)} km
+              <span className="mi">
+                {int(miles(burn.km))} of {int(miles(burn.target))} mi
+              </span>
             </span>
             <span>{pct}%</span>
           </p>

@@ -1,3 +1,4 @@
+import { withMiles } from "../shared/units";
 import { DurableObject } from "cloudflare:workers";
 import {
   BATCH_MS,
@@ -868,7 +869,8 @@ export class Probe extends DurableObject<Env> {
       const res = await this.env.DB.prepare(
         `INSERT INTO log_entries (mission_id, at, kind, title, body, data) VALUES (?, ?, ?, ?, ?, ?)`,
       )
-        .bind(this.mission.id, this.now(), kind, title, body, JSON.stringify(data))
+        // Phase M: every distance in the log gets its miles ("430,000,000 km (270 million miles) from Earth").
+        .bind(this.mission.id, this.now(), kind, withMiles(title), withMiles(body), JSON.stringify(data))
         .run();
       this.lastLogId = Math.max(this.lastLogId, res.meta.last_row_id ?? 0);
       this.scheduleBroadcast(); // the log page reloads when logId changes

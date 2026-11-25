@@ -2,6 +2,7 @@
 // Each nudge's sign-in link carries ?from=<source>; the sign-in page keeps it in a short cookie (osc_from), and a
 // brand-new account records it (accounts.signup_source), so /admin's Players card shows which nudge works.
 
+import { withMiles } from "./units";
 import nudges from "../content/nudges.json";
 
 export const NUDGES = nudges;
@@ -19,7 +20,8 @@ export const SIGNUP_COOKIE = "osc_from";
 
 /** {name} fill-ins. */
 export function fillNudge(text: string, fill: Record<string, string | number>): string {
-  return text.replace(/\{(\w+)\}/g, (m, k: string) => (k in fill ? String(fill[k]) : m));
+  // Phase M: a filled-in distance gets its miles ("You've pushed 1,234 km (767 miles)").
+  return withMiles(text.replace(/\{(\w+)\}/g, (m, k: string) => (k in fill ? String(fill[k]) : m)));
 }
 
 /** Admin: sign-ups by source, and how guests turn into accounts. */

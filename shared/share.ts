@@ -3,6 +3,7 @@
 // milestone's number) and the channel (v), so the counts in /admin show what works. The texts are in
 // content/share.json. Plain links only: no share SDKs, no third-party scripts (decision 28).
 
+import { withMiles } from "./units";
 import content from "../content/share.json";
 
 export const MOMENTS = [
@@ -95,13 +96,16 @@ type Fill = Record<string, string | number | null | undefined>;
 
 /** Puts the fill-ins into a template from content/share.json; a missing one becomes "". */
 export function fillIn(template: string, fill: Fill): string {
-  return template
-    .replace(/\{(\w+)\}/g, (_, k: string) => {
-      const v = fill[k];
-      return v === null || v === undefined ? "" : typeof v === "number" ? v.toLocaleString("en-GB") : v;
-    })
-    .replace(/[ \t]{2,}/g, " ")
-    .trim();
+  // Phase M: every distance in a share text gets its miles ("has pushed 12,345 km (7,671 miles)").
+  return withMiles(
+    template
+      .replace(/\{(\w+)\}/g, (_, k: string) => {
+        const v = fill[k];
+        return v === null || v === undefined ? "" : typeof v === "number" ? v.toLocaleString("en-GB") : v;
+      })
+      .replace(/[ \t]{2,}/g, " ")
+      .trim(),
+  );
 }
 
 interface MomentText {

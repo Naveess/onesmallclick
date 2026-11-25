@@ -1,3 +1,4 @@
+import { kmMiFine, miles, withMiles } from "../../shared/units";
 import { useEffect, useRef, useState } from "react";
 import type { GameView, PlayerState } from "../game/store";
 import { int } from "../game/format";
@@ -113,7 +114,7 @@ export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHand
 
         <h3 className="sheet__group sheet__group--gap">
           <span className="sheet__group-name">TAP POWER</span>
-          <span className="sheet__group-rate">+{view.tapKm} km/tap</span>
+          <span className="sheet__group-rate">+{kmMiFine(view.tapKm)} a tap</span>
         </h3>
         {rows("tap")}
 
@@ -140,6 +141,9 @@ export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHand
           <div className="prestige__numbers">
             <span>
               {int(Math.min(kmSinceShift, PRESTIGE_AT_KM))} / {int(PRESTIGE_AT_KM)} km
+              <span className="mi">
+                {int(miles(Math.min(kmSinceShift, PRESTIGE_AT_KM)))} / {int(miles(PRESTIGE_AT_KM))} mi
+              </span>
             </span>
             <span>{prestigePct}%</span>
           </div>
@@ -155,7 +159,7 @@ export function UpgradesSheet({ open, onClose, player, live, view, onBuy, onHand
             </button>
           ) : (
             <button type="button" className="prestige__locked" disabled>
-              Unlocks at {int(PRESTIGE_AT_KM)} km pushed
+              {withMiles(`Unlocks at ${int(PRESTIGE_AT_KM)} km pushed`)}
             </button>
           )}
         </Window>

@@ -1,7 +1,11 @@
 // The Grand Tour (E0, approved 2026-11-20): stops, branches, leg lengths and probes, from
 // content/campaign.json. Phase 8c uses it for arrival and the branch vote; E1–E4b add the rest.
 
-import campaign from "../content/campaign.json";
+import campaignRaw from "../content/campaign.json";
+import { milesInContent } from "./units";
+
+// Phase M: the miles in every sentence a player reads (shared/units.ts).
+const campaign = milesInContent(campaignRaw);
 
 export interface PlanetTech {
   short: string;

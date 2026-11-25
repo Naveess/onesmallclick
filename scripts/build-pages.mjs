@@ -10,6 +10,7 @@
 // for checking, but they're marked noindex and say DRAFT (E3).
 // Runs on `npm run dev` and `npm run build`. No dependencies: plain Node.
 
+import { kmMi, milesInContent } from "../shared/units.ts";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -26,8 +27,9 @@ const out = (p, text) => {
 const jsonDir = (dir) =>
   readdirSync(join(root, dir))
     .filter((f) => f.endsWith(".json"))
-    .map((f) => JSON.parse(read(`${dir}/${f}`)));
-const { stops, probes } = JSON.parse(read("content/campaign.json"));
+    // Phase M: every sentence a reader sees gets its miles (shared/units.ts); source quotes stay as written.
+    .map((f) => milesInContent(JSON.parse(read(`${dir}/${f}`))));
+const { stops, probes } = milesInContent(JSON.parse(read("content/campaign.json")));
 // Every leg's milestones (E3), Mars first. `milestones` is the Mars leg's, for How to play.
 const legs = jsonDir("content/milestones").sort((a, b) => (a.stop === "mars" ? -1 : b.stop === "mars" ? 1 : 0));
 const milestones = legs.find((l) => l.stop === "mars").milestones;
@@ -247,7 +249,7 @@ function milestoneList(list = milestones) {
   return `<ol class="milestones">
 ${list
   .map(
-    (m) => `          <li><a href="/milestones/${m.slug}"><span class="milestones__n">${m.n}</span><span class="milestones__name">${esc(m.name)}</span><span class="milestones__km">${gb.format(m.km)} km</span></a></li>`,
+    (m) => `          <li><a href="/milestones/${m.slug}"><span class="milestones__n">${m.n}</span><span class="milestones__name">${esc(m.name)}</span><span class="milestones__km">${esc(kmMi(m.km))}</span></a></li>`,
   )
   .join("\n")}
         </ol>`;
@@ -325,7 +327,7 @@ function factPage(leg, m, i) {
     description: m.description,
     noindex: !leg.approved,
     body: `      <div>${leg.approved ? "" : `\n        ${DRAFT_NOTE}`}
-        <p class="page__label page__label--orange">${leg.stop === "mars" ? "" : `${esc(from.toUpperCase())} → ${esc(dest.toUpperCase())} · `}MILESTONE ${m.n} OF ${list.length} · ${gb.format(m.km)} KM FROM ${esc(from.toUpperCase())}</p>
+        <p class="page__label page__label--orange">${leg.stop === "mars" ? "" : `${esc(from.toUpperCase())} → ${esc(dest.toUpperCase())} · `}MILESTONE ${m.n} OF ${list.length} · ${kmMi(m.km).toUpperCase()} FROM ${esc(from.toUpperCase())}</p>
         <h1 id="page-title" class="page__title">${esc(m.name)}</h1>
       </div>
       <section class="window window--orange fact" aria-labelledby="fact-label">

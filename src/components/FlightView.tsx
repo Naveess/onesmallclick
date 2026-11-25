@@ -1,3 +1,4 @@
+import { miles, millionsMi, miOnly } from "../../shared/units";
 import { Fragment, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type CSSProperties, type Ref } from "react";
 import { CREW_TOP_KM_S } from "../../shared/balance";
 import { hms, int, longDate, millionsKm, probeSpeed } from "../game/format";
@@ -205,7 +206,7 @@ export function FlightView({
         ref={ref}
         className={classes}
         role="img"
-        aria-label={`Flight view: the probe is ${pct} of the way to ${destName}, moving at ${speed} km per second${
+        aria-label={`Flight view: the probe is ${pct} of the way to ${destName}, moving at ${speed} km (${miles(Number(speed)).toFixed(2)} miles) per second${
           fork ? `; at ${destName} the crew votes ${stopName(beyond[0])} or ${stopName(beyond[1])}` : ""
         }`}
       >
@@ -415,12 +416,17 @@ export function FlightView({
         <div className="flightview__foot">
           <div>
             <div className="flightview__foot-label">Travelled</div>
-            <div className="num">{int(distanceKm)} km</div>
+            <div className="num">
+              {int(distanceKm)} km<span className="mi">{miOnly(distanceKm)}</span>
+            </div>
           </div>
           {next && (
             <div className="flightview__foot-next">
               <div className="flightview__foot-label">Next · {next.name}</div>
-              <div className="num">{millionsKm(toNextKm)}</div>
+              <div className="num">
+                {millionsKm(toNextKm)}
+                <span className="mi">{millionsMi(toNextKm)}</span>
+              </div>
             </div>
           )}
         </div>

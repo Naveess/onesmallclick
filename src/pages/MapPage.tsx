@@ -1,3 +1,4 @@
+import { compactKmMi } from "../../shared/units";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { branchStopId, legKm, probeFor, stopName, type Stop } from "../../shared/campaign";
 import type { TourInfo, TourLeg } from "../../shared/boards";
@@ -8,7 +9,6 @@ import { PixelIcon } from "../components/PixelIcon";
 import { ShareNudge } from "../components/ShareNudge";
 import { Sprite } from "../components/Sprite";
 import { factCount, firstFact } from "../game/facts";
-import { int } from "../game/format";
 import { beltArt, kuiperArt, probeRingArt, stopArt } from "../game/mapArt";
 import { layout, mapModel, phoneGeometry, rowOf, wideGeometry, type StopState, type StopView } from "../game/mapLayout";
 import { medalArt } from "../game/rewardArt";
@@ -46,12 +46,9 @@ function thisTour(legs: TourLeg[], missionId: number, fromStop: string, orbit: b
   return start < 0 ? done : done.slice(start);
 }
 
-/** "1.07M km", "671,100 km", "186M km", "1.44B km". */
+/** "1.07M km / 0.66M mi", "186M km / 116M mi", "1.44B km / 0.89B mi" (phase M: shared/units.ts). */
 function distance(km: number): string {
-  if (km >= 1e9) return `${(km / 1e9).toFixed(2)}B km`;
-  if (km >= 1e7) return `${Math.round(km / 1e6)}M km`;
-  if (km >= 1e6) return `${(km / 1e6).toFixed(2)}M km`;
-  return `${int(km)} km`;
+  return compactKmMi(km);
 }
 
 const dateOf = (ms: number) => new Date(ms).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });

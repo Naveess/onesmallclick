@@ -1,3 +1,4 @@
+import { kmMi, miOnly } from "../../shared/units";
 import { LAUNCH, NUDGES, betaLine, dismissForToday, dismissedToday, fillNudge, signInHref } from "../game/nudges";
 import { Link } from "../router";
 import type { WelcomeBack as WelcomeData } from "../../shared/upgrades";
@@ -70,7 +71,9 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
         </div>
 
         <div>
-          <p className="welcome__km num">+{kmText} km</p>
+          <p className="welcome__km num">
+            +{kmText} km<span className="mi">+{miOnly(Math.round(km))}</span>
+          </p>
           <p className="welcome__sub">pushed by your thrusters · +{kmText} cr</p>
         </div>
 
@@ -95,7 +98,7 @@ export function WelcomeBack({ welcome, name, wide, onClose }: WelcomeBackProps) 
             {crewKm !== null && (
               <div className="welcome__row">
                 <dt>The crew pushed</dt>
-                <dd className="num">{int(Math.round(crewKm))} km</dd>
+                <dd className="num">{kmMi(Math.round(crewKm))}</dd>
               </div>
             )}
             {arrivalSoonerMs !== null && (

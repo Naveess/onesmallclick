@@ -1,3 +1,4 @@
+import { kmMi, kmMiFine, speedKmMi } from "../../shared/units";
 import { useRef, useState } from "react";
 import { ClickCounter } from "../components/ClickCounter";
 import { FlightView, type FlightHandle } from "../components/FlightView";
@@ -158,10 +159,10 @@ export function GamePage() {
                 <ThrustButton onThrust={onThrust} />
                 <div className="home__rates">
                   <span className="num">
-                    +{view.tapKm} km <small>per tap</small>
+                    +{kmMiFine(view.tapKm)} <small>per tap</small>
                   </span>
                   <span className="num">
-                    +{view.autoKmS.toFixed(2)} km/s <small>auto</small>
+                    +{speedKmMi(view.autoKmS)} <small>auto</small>
                   </span>
                 </div>
                 {clicks}
@@ -187,7 +188,7 @@ export function GamePage() {
               <dl className="home__stats">
                 <div>
                   <dt>TRAVELLED</dt>
-                  <dd className="num">{int(probe.distanceKm)} km</dd>
+                  <dd className="num">{kmMi(probe.distanceKm)}</dd>
                 </div>
                 <div>
                   <dt>PROBE SPEED</dt>
@@ -195,7 +196,7 @@ export function GamePage() {
                 </div>
                 <div>
                   <dt>TO GO</dt>
-                  <dd className="num">{int(view.toGoKm)} km</dd>
+                  <dd className="num">{kmMi(view.toGoKm)}</dd>
                 </div>
               </dl>
             </div>
@@ -206,10 +207,10 @@ export function GamePage() {
                 <ThrustButton onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
                 <div className="home__rates">
                   <span className="num">
-                    +{view.tapKm} km <small>per click</small>
+                    +{kmMiFine(view.tapKm)} <small>per click</small>
                   </span>
                   <span className="num">
-                    +{view.autoKmS.toFixed(2)} km/s <small>auto-thrust</small>
+                    +{speedKmMi(view.autoKmS)} <small>auto-thrust</small>
                   </span>
                 </div>
                 {clicks}

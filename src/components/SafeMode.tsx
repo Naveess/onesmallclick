@@ -82,7 +82,7 @@ export function SafeMode({
         {flight}
         <p className="safe__foot">
           <span>{paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
-          <span className="num">0 km/s from crew</span>
+          <span className="num">0 km/s / 0 mi/s from crew</span>
         </p>
       </div>
 

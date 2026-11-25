@@ -2,15 +2,27 @@
 // To add a leg, add its three files and one line for each below; `npm run check-leg <stop>` says what's missing.
 // The app and the Worker both read these maps (Vite bundles the JSON), so no other code changes per leg.
 
-import ceresDetours from "../content/detours/ceres.json";
-import marsDetours from "../content/detours/mars.json";
-import vestaDetours from "../content/detours/vesta.json";
-import ceresFacts from "../content/facts/ceres.json";
-import marsFacts from "../content/facts/mars.json";
-import vestaFacts from "../content/facts/vesta.json";
-import ceresMilestones from "../content/milestones/ceres.json";
-import marsMilestones from "../content/milestones/mars.json";
-import vestaMilestones from "../content/milestones/vesta.json";
+import ceresDetoursRaw from "../content/detours/ceres.json";
+import marsDetoursRaw from "../content/detours/mars.json";
+import vestaDetoursRaw from "../content/detours/vesta.json";
+import ceresFactsRaw from "../content/facts/ceres.json";
+import marsFactsRaw from "../content/facts/mars.json";
+import vestaFactsRaw from "../content/facts/vesta.json";
+import ceresMilestonesRaw from "../content/milestones/ceres.json";
+import marsMilestonesRaw from "../content/milestones/mars.json";
+import vestaMilestonesRaw from "../content/milestones/vesta.json";
+import { milesInContent } from "./units";
+
+// Phase M: every sentence a player reads gets its miles (shared/units.ts); source quotes stay as written.
+const ceresDetours = milesInContent(ceresDetoursRaw);
+const marsDetours = milesInContent(marsDetoursRaw);
+const vestaDetours = milesInContent(vestaDetoursRaw);
+const ceresFacts = milesInContent(ceresFactsRaw);
+const marsFacts = milesInContent(marsFactsRaw);
+const vestaFacts = milesInContent(vestaFactsRaw);
+const ceresMilestones = milesInContent(ceresMilestonesRaw);
+const marsMilestones = milesInContent(marsMilestonesRaw);
+const vestaMilestones = milesInContent(vestaMilestonesRaw);
 
 /** A postcard's real NASA photo (prompts 95-97; shared/postcards.ts). */
 export interface PostcardPhoto {

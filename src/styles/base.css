@@ -103,3 +103,11 @@ button {
     transition: none !important;
   }
 }
+
+/* Phase M: the miles under a km figure, on their own line, smaller and quieter. */
+.mi {
+  display: block;
+  font-size: 0.72em;
+  line-height: 1.15;
+  color: var(--text-muted);
+}

@@ -1,3 +1,4 @@
+import { withMiles } from "../../shared/units";
 import { landingPostcardOf, postcardBySlug } from "../../shared/postcards";
 import { PostcardPhoto } from "../components/PostcardPhoto";
 import { useEffect, useRef, useState } from "react";
@@ -149,8 +150,8 @@ export function LogPage() {
                     <span className="log__day num">DAY {e.day ?? view.missionDayAt(e.at)}</span>
                     <span className="log__kind">{look.label}</span>
                   </p>
-                  <h2 className="log__entry-title">{e.title}</h2>
-                  <p className="log__body">{e.body}</p>
+                  <h2 className="log__entry-title">{withMiles(e.title)}</h2>
+                  <p className="log__body">{withMiles(e.body)}</p>
                   {e.kind === "milestone" && e.data?.postcard && (
                     <div className="log__postcard" aria-hidden="true">
                       <div className="log__postcard-photo">
@@ -178,7 +179,7 @@ export function LogPage() {
                   )}
                   {e.data?.fact && (
                     <p className="log__fact">
-                      <span className="log__fact-label">FROM THE FLIGHT DECK</span> {e.data.fact}
+                      <span className="log__fact-label">FROM THE FLIGHT DECK</span> {withMiles(e.data.fact)}
                     </p>
                   )}
                 </li>
