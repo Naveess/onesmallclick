@@ -51,8 +51,21 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
-- [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: the NASA postcard photos (Mars first, then Ceres and Vesta), M (miles), then G2.
+- [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: the NASA postcard photos (Mars first, then Ceres and Vesta), M (miles), **Q1 (the first five, added 25 Nov)**, then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
+- [ ] **Q1: the first five** (docs/plan.md "Q"; Nav: do these first of the 25 Nov ideas):
+  - install as an app, with opt-in notifications (signal final hour, landing burn, vote closing);
+  - times in each player's own timezone;
+  - a daily crew goal;
+  - a Discord server and bot (Nav makes the server and webhook);
+  - a "Report a bug or idea" button.
+  Decisions 29–32 first.
+- [ ] **Q2–Q6, after Q1:**
+  - Q2: settings, the first-visit guide, haptics and sound;
+  - Q3: random space events, the daily quiz, the postcard album, and a seasonal cosmetic for December (with or after 2c);
+  - Q4: the live crew ticker and emoji cheers;
+  - Q5: retention (D1 and D7) in the Players card, and error alerts;
+  - Q6 (after launch): science objectives, Season 2 and a supporter tip jar.
 - [ ] **E4b part 2c: cosmetics** (skies, THRUST trails, probe paints; unlocked at arrival, picked on the profile). Needs the art below; Mars's (Mars-dust sky, Red dust trail, Gold foil paint) before the first arrival, about mid-January.
 - [ ] **Jupiter's content** (E3 pipeline, before the Ceres/Vesta arrival, about mid-February): 4–6 milestones, 30 facts and 8+ detours, all NASA-checked, for Nav to approve. Then Europa and Ganymede, and so on, a leg ahead. `npm run check-leg <stop>` lists what's missing.
 - [ ] **Wire the planet tech kinds that aren't yet:** Ganymede's safeAuto, Enceladus's pingCredits, Arrokoth's postcardCredits and Titania's nightTapCredits (shared/tech.ts and the Probe), before those legs. `check-leg` fails them until then.

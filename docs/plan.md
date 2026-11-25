@@ -31,6 +31,8 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); approved by Nav from screenshots (prompt 92). See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
 - [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (split, prompt 89: **G1 LIVE 2026-11-25 (prompt 94, version 48bfb759, migration 0017, tag g1-live)**; G2 sharing on the home later) (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
+- [ ] **Q1: The first five (quality of life and community)** (added 2026-11-25, Nav: "focus on the first five"): install as an app with opt-in notifications, times in each player's own timezone, a daily crew goal, a Discord server with a bot, and a feedback button. Next after M (miles), before G2. See "Q: Quality of life, retention and community" below.
+- [ ] **Q2–Q6: The rest of the 25 Nov ideas** (after Q1, roughly in this order; each gets its approach OK'd first): Q2 settings, first-visit guide, haptics and sound; Q3 random space events, the daily quiz, the postcard album and a seasonal cosmetic; Q4 the live crew ticker and emoji cheers; Q5 retention numbers and error alerts; Q6 after launch: science objectives, Season 2 and a supporter tip jar.
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
@@ -902,6 +904,111 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 - **Nagging.** Keep to the rules above; one dismissal hides that nudge for the day.
 - **Clutter on the home.** Keep the card compact on phones, and keep the 150px ad gap from THRUST.
 
+## Q: Quality of life, retention and community (added 2026-11-25)
+
+**Why (Nav, 2026-11-25).** Nav asked for more ways to grow the game and smooth it out, liked all of Claude's ideas, and asked to **do the first five first** (Q1). The rest follow in Q2–Q6. None of Q1 needs payday or PixelLab. The notifications and the Discord bot both strengthen the urgent moments already built: the signal, the landing burn and the vote.
+
+### Q1: The first five (next after M, before G2)
+
+**1. Install as an app, with opt-in notifications (PWA + Web Push).**
+- **Install:**
+  - a web app manifest (name, short name, theme colours from tokens, icons made from the probe sprite, including a maskable one) and an install prompt where the browser offers one;
+  - iPhones get a short "Share → Add to Home Screen" hint.
+- **Service worker:** kept small. It handles push and an offline "the probe needs a connection" page. It must not cache the app aggressively, so deploys still show straight away.
+- **Notifications, opt-in per alert from the settings or a small card:**
+  - "Signal in its final hour" (once per outage);
+  - "The landing burn has started";
+  - "Today's vote closes in 1 hour".
+
+  At most 3 a day per player, and none for an alert they turned off.
+- **How they're sent:**
+  - Web Push with VAPID keys (`VAPID_PRIVATE_KEY` as a secret; the public key in the app). Send payload-free pushes; the service worker then asks `/api/notice` what to show. That avoids encrypting payloads by hand. No push library without Nav's OK.
+  - Subscriptions go in D1, one row per browser, and are deleted when the push service says they've gone.
+  - The Probe fires the three moments.
+- **iPhone note:** web notifications on iPhone only work once the game is installed to the home screen (iOS 16.4+). Say so in the opt-in.
+
+**2. Times in each player's own timezone.**
+- One helper formats every UTC moment in the player's local time, e.g. "Vote closes 7:00 pm your time (00:00 UTC)". The UTC time stays in smaller text or a tooltip, so the crew still shares one clock.
+- It covers the vote close, the next fact, the daily reset, the leaderboards' reset, the signal deadline when it's more than a day away, the landing burn and the launch date in the banner.
+- The content pages keep UTC, since they're static.
+
+**3. A daily crew goal.**
+- **The target:** a shared target for today's crew km, set at 00:00 UTC from recent pace (e.g. 1.2× the last 7 days' average, rounded to a nice number, with a floor so quiet days are still reachable).
+- **On the game home:** a small card with a progress bar ("Crew goal today: 2,000,000 km, 64%").
+- **When it's reached:**
+  - a log entry and a short celebration;
+  - everyone who pushed today gets a small credit bonus (e.g. 10% of their credits earned today, capped). **It never touches trip speed.**
+  - a new share moment, "goal reached".
+- **Data:** `daily_goals` (day, target_km, reached_at).
+
+**4. A Discord server, with a bot that posts the big moments.**
+- **Nav sets up** the server and channel, makes a webhook, and adds its URL as the secret `DISCORD_WEBHOOK_URL`.
+- **The Probe posts:**
+  - milestones;
+  - arrivals with their medal;
+  - each day's vote options and result;
+  - the landing burn's start and result;
+  - "The signal is in its final hour" and safe mode or saved.
+- **Rules:** generated names only (never emails), and rate-limited (at most one post a minute, with nothing lost).
+- **Linked from** the footer, How to play and the profile.
+
+**5. A "Report a bug or idea" button.**
+- **Where:** in the footer, the settings and the crash screen.
+- **The form:** kind (bug, idea, other), a message (up to 1,000 characters), and optional "contact me", using the account's email only if signed in and ticked. The page and device details are attached automatically, with no personal data.
+- **Protection:** Turnstile and the per-network cap.
+- **Storage:** D1 `feedback`.
+- **In /admin:** a Feedback card listing new items, marked done one by one.
+- **The privacy page** gets a line on feedback.
+
+**Data changes for Q1** (the next free migration numbers): `push_subscriptions`, `daily_goals`, `feedback`.
+
+**Decisions for Q1** (recommendations in brackets; Nav OKs them when Q1 starts):
+29. **Notifications:** which alerts are on when someone first opts in *(all three, each easy to turn off)* and the daily cap *(3)*.
+30. **The crew goal:** the formula *(1.2× the 7-day average, with a floor)* and the bonus *(10% of the day's credits, capped)*.
+31. **Discord:** which moments the bot posts *(all of the above)*, and whether to post the leaderboard each day *(no, to keep it calm)*.
+32. **Feedback:** how long it's kept *(until marked done, plus 90 days)*.
+
+**How you test Q1**
+- **Install:** on Android and on an iPhone. The app icon, name and theme look right, and it opens full screen.
+- **Notifications:** opt in, then use /admin to set the signal to under an hour, start a burn and move the vote close near. Each notification arrives once, and turning one off stops it.
+- **Local time:** change your computer's timezone and the times move. UTC still shows.
+- **Crew goal:** in /admin, push past the goal. The card fills, the log says so, and the bonus is credited once.
+- **Discord:** each moment posts once, with no emails anywhere.
+- **Feedback:** send a bug and an idea, and see them in /admin.
+
+**Main risks**
+- **Notifications that nag:** opt-in only, a daily cap, and every alert can be switched off.
+- **The service worker caching an old version:** keep it to push and the offline page.
+- **The crew goal on quiet days:** the floor keeps it reachable.
+
+### Q2: Settings, first-visit guide, haptics and sound
+- **A settings page:** sound, vibration on tap (Android), notifications (from Q1), theme, reduced motion and number format (from M), all in one place.
+- **A 3-step first-visit guide:** "Tap THRUST, Ping once a day, vote on the route". It can be skipped and is shown once.
+- **Haptics and sound:** a short vibration on THRUST (Android) and a soft click, both off by default for sound and following the settings. Chiptune music stays in E5.
+
+### Q3: Reasons to come back
+- **Random space events**, announced live and in Discord:
+  - a "meteor shower": double credits for 10 minutes;
+  - a "solar storm": the signal drains faster for an hour.
+
+  At most one a day, never during a landing burn, and they never change the 30-day balance beyond a set amount.
+- **A daily space quiz:** one question a day from the checked facts, for a few credits.
+- **A postcard album** on the profile: every postcard you've collected.
+- **A seasonal cosmetic for launch month** (December): unlocked by playing that week, made in the free workbench. It needs E4b part 2c's cosmetics system, so do it with or after 2c.
+
+### Q4: Community
+- **A live crew ticker** on the home: "🇩🇪 Germany just passed 🇫🇷 France", "pulsar_otter saved the signal with 9 s left". Generated names only, rate-limited.
+- **Emoji cheers instead of chat:** fixed reactions (🚀 👏 🔥) on log entries, one of each per player per entry. Nothing to moderate.
+
+### Q5: For the owner
+- **Retention in the Players card:** of each day's new players, how many came back the next day (D1) and after 7 days (D7), for guests and accounts.
+- **Error alerts:** when the crash report fires repeatedly (e.g. 5 in 10 minutes), post to Discord (from Q1) or email after payday.
+
+### Q6: After launch
+- **Science objectives during a leg:** e.g. "Photograph the asteroid: 500,000 km of crew taps in 6 hours". It unlocks a postcard and a fact.
+- **Season 2 after interstellar:** a new campaign (a Moon base, or retracing Voyager), so the game doesn't end. It needs its own plan first.
+- **A supporter tip jar** (e.g. Ko-fi) with a cosmetic "Supporter" flair and **no gameplay advantage**, never linked to ads.
+
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
 The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
@@ -1175,6 +1282,8 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 26. ~~**What counts as a recruit**~~ **Decided: a new device that arrives through your link and makes 50 credited taps or a Ping; never your own devices; at most 10 a day per recruiter** (built in S2).
 27. ~~**Recruiter badges**~~ **Decided: Crew Recruiter I / II / III at 1, 5 and 25 recruits** (built in S2).
 28. ~~**Share buttons**~~ **Decided: the phone's own share sheet first, then WhatsApp, X, Facebook, Reddit, Telegram and Copy; no share SDKs** (built in S1).
+
+### Before Q1 (added 2026-11-25): decisions 29–32 are listed in "Q: Quality of life, retention and community".
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
