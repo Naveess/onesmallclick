@@ -4,8 +4,9 @@
 //  2. Shows a plain "the probe needs a connection" page when the game can't be reached.
 // It stores nothing but that one page, so a deploy always shows straight away.
 
-const OFFLINE = "/offline.html";
-const CACHE = "osc-offline-v1";
+// The clean address: the host redirects /offline.html to /offline, and a redirected page can't answer a navigation.
+const OFFLINE = "/offline";
+const CACHE = "osc-offline-v2";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)).then(() => self.skipWaiting()));
