@@ -1,6 +1,6 @@
 # Postcard photos (prompts 95-97)
 
-**Status (prompt 97): wired in, not deployed.** Every milestone on the Mars, Ceres and Vesta legs, and each stop's landing postcard, shows its photo with its credit line:
+**Status: LIVE 2026-11-25** (built prompt 97, deployed prompt 98, version 9550bc10, tag `postcards-live`). Every milestone on the Mars, Ceres and Vesta legs, and each stop's landing postcard, shows its photo with its credit line:
 - on the milestone moment, the landing result, the mission log and the fact pages (which also link the photo's NASA page under Sources);
 - the data is each milestone's `postcard` and the stop's `landingPostcard` in `content/milestones/<stop>.json` (NASA id, image, alt, credit, licence, source);
 - the images are `public/postcards/<id>.jpg` (596 × 368), made by `python -I scripts/make-postcards.py` (originals cached in `../onesmallclick-postcard-originals/`);
