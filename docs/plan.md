@@ -374,7 +374,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
     - The idle pause: engine off, the stars stop, 0.00 km/s, ETA "On hold", and a blue "PROBE IDLE · Tap THRUST to wake it" chip. This chip isn't in the design; it's built in the design's chip style.
     - Reduced motion: no streaming, flame, sparks, comet or pop.
     - Safe mode: engine off, the probe greyed out, the "SAFE MODE · ENGINE OFF" chip. In the game, safe mode still replaces the home with its own screen (1f), so this state shows only on `/kit`, which now has the flight view in all four states.
-  - It stays deep space in light mode: it uses only the fixed `--space-*` colours at the end of `src/styles/theme.css`. Two of them are new and wait for Nav's OK (listed at the end of `docs/tokens.css`): `--space-dusk` #140b14 (the window's gradient near Mars) and `--glow-mars` (rgba 255,140,80 at 30%, the glow behind Mars).
+  - It stays deep space in light mode: it uses only the fixed `--space-*` colours at the end of `src/styles/theme.css`. Two of them are new, agreed by Nav on 2026-11-20 (prompt 41; listed at the end of `docs/tokens.css`): `--space-dusk` #140b14 (the window's gradient near Mars) and `--glow-mars` (rgba 255,140,80 at 30%, the glow behind Mars).
 - **Art drawn in code** (`src/game/flightArt.ts`, ported from the design's drawing code, made once on a canvas and cached): Mars and Earth, the flame (3 frames of 12×6), the comet (18×5), the speed lines, Ceres, Vesta (16×14), Jupiter, Phobos, the tiny probe and the strip's swatches.
   - Mars and Earth step through fixed radii (Mars 9 sizes, Earth 6, each drawn 1:1); everything else shows at 1×, 2× or 4×.
   - The Sun isn't in the flight view, so it wasn't drawn.
@@ -457,7 +457,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - Screenshots at 375, 390 and 1440 in both themes: the pace line on Gold and on Bronze pace (and hidden when idle), the card, the share dialog, the saved PNG (also with the longest fact), and the Mars page.
   - `npm run build` passes, and the badge, arrival and click checks pass again.
 
-**8c as built (2026-11-20, prompts 45–46; deployed with migration 0010 on 2026-11-20, prompt 47; waiting for Nav's checks)**
+**8c as built (2026-11-20, prompts 45–46; deployed with migration 0010 on 2026-11-20, prompt 47; checked and approved by Nav 2026-11-20)**
 - **Answers (prompt 46):**
   - The orbit pause is approved.
   - The branch vote closes at the next midnight UTC, or the one after if that's under 12 hours away; ties are settled by a logged random draw.
@@ -510,7 +510,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
   - The badge, click and sign-in checks pass again, and `npm run build` passes.
   - Screenshots: the arrival screen at 390 in both themes and at 1440, the home in orbit, and the Vesta leg.
 
-**8b as built (2026-11-20, prompts 37–38; deployed with migration 0009 on 2026-11-20, prompt 39; waiting for Nav's checks)**
+**8b as built (2026-11-20, prompts 37–38; deployed with migration 0009 on 2026-11-20, prompt 39; checked and approved by Nav 2026-11-20)**
 - **Answers (prompt 38):**
   - Signal Keeper I–IV at 3 / 7 / 21 / 30-day ping streaks.
   - Night Shift is THRUST taps credited between 02:00 and 04:59 local time.
@@ -743,7 +743,7 @@ Done in prompt 57 (2026-11-21): **the automated checks** (docs/launch-checklist.
 - **Privacy page:** the recruit line in "Sharing", as approved; updated 24 November 2026.
 - **Known gap:** your own second phone, not signed in, opening your link looks like a new player. The 10-a-day cap keeps it small, and it only touches badges.
 - **Checked locally:** `node scripts/check-recruits.mjs` 19/19 (arrival, 50 taps, a Ping, once per device, old device, the badge on the open tab, profile, the cap, Recruiter II, existing account, own account, the move on sign-in, guest link → account, the K report), `check-auth.mjs` and `check-badges.mjs` ALL PASS, screenshots at 390 and 1280 wide (profile tile unearned and earned, the badge toast, /admin), no console errors, `npm run build` clean.
-- **Deployed 2026-11-24 (prompt 66):** live D1 backed up to `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-24-pre-S2.sql`, migration 0013 applied `--remote`, `npm run deploy` → version 5875b23d. Live checks: pages and images 200, the live bundle matches the build, the privacy page has the recruit line (updated 24 November 2026), the `recruits` table is there (empty). Waiting for Nav's two-phone check.
+- **Deployed 2026-11-24 (prompt 66):** live D1 backed up to `Documents\onesmallclick-backups\d1-onesmallclick-2026-11-24-pre-S2.sql`, migration 0013 applied `--remote`, `npm run deploy` → version 5875b23d. Live checks: pages and images 200, the live bundle matches the build, the privacy page has the recruit line (updated 24 November 2026), the `recruits` table is there (empty). Nav's two-phone check passed (prompt 70).
 
 **Why (Nav's idea, 2026-11-20).** A friend suggested the K-factor: K = i × c, where *i* is invites (shares) per player and *c* is the share of invitees who become players. K above 1 means each player brings in more than one new player, which is exponential growth ([Wikipedia](https://en.wikipedia.org/wiki/K-factor_(marketing))). It only counts direct invites. Shared content also brings in visitors who then share themselves (the "social K-factor"). So the phase works on three levers:
 - **Raise *i*** (more shares): one-tap share at the moments people feel something, and shares that make the sharer look good.
