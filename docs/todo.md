@@ -2,8 +2,8 @@
 
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
-## Start here (25 Nov, prompt 86)
-- **Everything built is live:** version `d79ceb92` (tag `e4b2b-live`), with E4b part 2b (the landing burn, migration 0016), B2 (the launch wipe, not run) and B1 (the early-access banner and Early Beta badge). The live probe is on a fresh Earth → Mars leg (mission 9).
+## Start here (25 Nov, prompt 94)
+- **Everything built is live:** version `48bfb759` (tag `g1-live`), with G1 (the sign-in nudges, the signed-in countries board, the /admin Players card, migration 0017), E4b part 2b (the landing burn, migration 0016), B2 (the launch wipe, not run) and B1 (the early-access banner and Early Beta badge). The live probe is on a fresh Earth → Mars leg (mission 9).
 - **Backups (25 Nov):** live D1 exported before each deploy to `Documents\onesmallclick-backups\` (latest `d1-onesmallclick-2026-11-25-pre-E4b2b.sql`); code, docs and tags on GitHub; new art in Drive (OneSmallClick › Sprites: `onesmallclick-art-2026-11-25.zip`, and the 19 Nov stills in `onesmallclick-stills-2026-11-19.zip`). The D1 exports are on this computer only (see "Decisions for Nav").
 - **Next prompt 94, next migration 0018.** Run `git pull` first: other sessions push here too.
 
@@ -51,7 +51,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **The launch checklist** on a real phone (docs/launch-checklist.md).
 
 ## Build phases still to do (in order)
-- [ ] **G1 is built and pushed, not deployed** (prompt 93; docs/plan.md "G1 status"). To deploy (when Nav asks): `npm run backup -- pre-G1` and upload it to Drive, migration **0017** `--remote`, `npm run deploy`, check live, tag `g1-live`. The privacy page's backup and sign-up lines go live with it. Then: the NASA postcard photos, M (miles), then G2.
+- [x] **G1 is live** (built prompt 93, deployed prompt 94: encrypted backup pre-G1 in Drive, migration 0017 `--remote`, version `48bfb759`, tag `g1-live`). Next, in order: the NASA postcard photos (Mars first, then Ceres and Vesta), M (miles), then G2.
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [ ] **E4b part 2c: cosmetics** (skies, THRUST trails, probe paints; unlocked at arrival, picked on the profile). Needs the art below; Mars's (Mars-dust sky, Red dust trail, Gold foil paint) before the first arrival, about mid-January.
 - [ ] **Jupiter's content** (E3 pipeline, before the Ceres/Vesta arrival, about mid-February): 4–6 milestones, 30 facts and 8+ detours, all NASA-checked, for Nav to approve. Then Europa and Ganymede, and so on, a leg ahead. `npm run check-leg <stop>` lists what's missing.

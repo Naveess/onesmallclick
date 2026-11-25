@@ -30,7 +30,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [x] **E1: The campaign map** (1m). Built 2026-11-24 (prompts 67–68); **deployed 2026-11-24** (prompt 69, version f99de022); checked by Nav on a phone and a laptop and approved (prompt 70). See "E1 status" below.
 - [x] **E2: Per-mission probes, upgrade names and per-leg balance**. Built 2026-11-24 (prompts 70–71); **deployed 2026-11-24** (prompt 72, version 659a6f51); approved by Nav from screenshots (prompt 92). See "E2 status" below.
 - [x] **E3: A content pipeline for each new leg**. LIVE 2026-11-24 (prompts 73–75, version 34f3aabd); the Ceres and Vesta content approved by Nav (prompt 75). See "E3 status" below.
-- [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (split, prompt 89: **G1 built and pushed 2026-11-25, not deployed, migration 0017**; G2 sharing on the home later) (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
+- [ ] **G: Grow: sharing on the home, the Players card, and sign-in nudges** (split, prompt 89: **G1 LIVE 2026-11-25 (prompt 94, version 48bfb759, migration 0017, tag g1-live)**; G2 sharing on the home later) (added 2026-11-24, after the Reddit post brought 39 new players in a day but only about 1 in 8 signed in; next after the E4b part 2 step in progress). See "G: Grow" below.
 - [x] **E4: Sharing, fun facts and destination pages** (the Destination file card and /destinations pages went live with E4b part 1, 2026-11-20; the share cards with phase S).
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). A small phase; plan and explain first. Order agreed: G1, then the NASA postcard photos, then M, then G2.
@@ -883,7 +883,7 @@ Run it next, after the E4b part 2 step in progress. Nothing here needs payday.
 - Sign in from the ghost row: the Players card counts it under that nudge.
 - The Players card's numbers match the D1 console.
 
-**G1 status (built 2026-11-25, prompt 93; pushed, not deployed; needs migration 0017):**
+**G1 status (built 2026-11-25, prompt 93; deployed 2026-11-25, prompt 94: encrypted D1 backup pre-G1 to Drive, migration 0017 `--remote`, version 48bfb759, tag `g1-live`):**
 - **The copy** is `content/nudges.json` (approved by Nav, prompt 93); `shared/nudges.ts` reads it, and lists the sources (`chip`, `ghost`, `countries`, `progress`, `welcome`, `credits`, `profile`, and B1's `banner`). The browser rules are `src/game/nudges.ts`.
 - **Sign-in nudges, guests only:**
   - the header: "Guest · Save progress" under the probe line on phones, and on the wide header's sign-in button;
