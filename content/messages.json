@@ -1,6 +1,6 @@
 {
-  "_note": "Phase A2b-1: the message templates on /admin (decision 39). Picking one fills the title and text, which can still be edited before sending. {name} becomes the player's name (an everyone message says 'crew'). Drafted by Claude 2026-11-26 (prompt 139); approved: null until Nav approves the wording.",
-  "approved": null,
+  "_note": "Phase A2b-1: the message templates on /admin (decision 39). Picking one fills the title and text, which can still be edited before sending. {name} becomes the player's name (an everyone message says 'crew'). Drafted by Claude 2026-11-26 (prompt 139); Wording approved by Nav on 2026-11-26 (prompt 140).",
+  "approved": "2026-11-26",
   "templates": [
     {
       "id": "restored",
