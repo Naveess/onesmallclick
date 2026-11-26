@@ -1,11 +1,21 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { ADMIN_TEXT_MAX, CONFIRM_FIXES, type AdminLogItem, type Fix, type FixKind, type PlayerDetail, type StatePart } from "../../../shared/admin";
+import {
+  ADMIN_TEXT_MAX,
+  CONFIRM_FIXES,
+  diffStates,
+  type AdminLogItem,
+  type Fix,
+  type FixKind,
+  type PlayerDetail,
+  type PlayerRow,
+  type StateCompare,
+  type StatePart,
+} from "../../../shared/admin";
 import { BADGE_INFO, type BadgeId } from "../../../shared/badges";
 import { stopName } from "../../../shared/campaign";
 import { UPGRADES } from "../../../shared/upgrades";
 import { PixelButton } from "../../components/PixelButton";
 import { Window } from "../../components/Window";
-import { int } from "../../game/format";
 
 // Phase A1b-1: the player page's fixes, their save states, and Undo in their admin history. Every fix needs a reason
 // and saves a save state first (the server does that); reset and delete, and every undo, ask for the name typed out.
@@ -19,7 +29,9 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 const when = (ms: number) => new Date(ms).toISOString().replace("T", " ").slice(0, 16) + " UTC";
 
-const FIXES: { id: FixKind | "export"; label: string; accountOnly?: boolean }[] = [
+type Kind = FixKind | "export" | "merge" | "move";
+
+const FIXES: { id: Kind; label: string; accountOnly?: boolean; guestOnly?: boolean }[] = [
   { id: "set", label: "Set values" },
   { id: "reset", label: "Reset" },
   { id: "badge", label: "Badges" },
@@ -27,6 +39,8 @@ const FIXES: { id: FixKind | "export"; label: string; accountOnly?: boolean }[] 
   { id: "name", label: "Name" },
   { id: "country", label: "Country" },
   { id: "signout", label: "Sign out everywhere", accountOnly: true },
+  { id: "merge", label: "Merge into an account", guestOnly: true },
+  { id: "move", label: "Move a device", accountOnly: true },
   { id: "export", label: "Export (JSON)" },
   { id: "delete", label: "Delete account", accountOnly: true },
 ];
@@ -46,6 +60,60 @@ function Check({ checked, onChange, children }: { checked: boolean; onChange: (o
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
       <span>{children}</span>
     </label>
+  );
+}
+
+/** Find an account to merge into or move a device to (not this player). */
+function AccountPicker({ self, picked, onPick }: { self: string; picked: PlayerRow | null; onPick: (r: PlayerRow | null) => void }) {
+  const [q, setQ] = useState("");
+  const [rows, setRows] = useState<PlayerRow[] | null>(null);
+  const find = async () => {
+    if (!q.trim()) return;
+    const r = await fetch(`/api/admin/search?q=${encodeURIComponent(q.trim())}`, { cache: "no-store" });
+    const list = ((await r.json().catch(() => [])) as PlayerRow[]).filter((x) => x.kind === "account" && x.key !== self);
+    setRows(list);
+  };
+  if (picked)
+    return (
+      <p className="admin__note">
+        Into <strong>{picked.name}</strong>
+        {picked.country ? ` (${picked.country})` : ""}{" "}
+        <button type="button" className="admin__link" onClick={() => onPick(null)}>
+          Change
+        </button>
+      </p>
+    );
+  return (
+    <>
+      <label className="admin__field">
+        <span className="label">The account (name or email)</span>
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void find();
+            }
+          }}
+          autoComplete="off"
+          spellCheck={false}
+        />
+      </label>
+      <PixelButton variant="outline" onClick={() => void find()}>
+        Find
+      </PixelButton>
+      {rows && rows.length === 0 && <p className="admin__note">No account found.</p>}
+      {rows && rows.length > 0 && (
+        <div className="admin__row">
+          {rows.slice(0, 8).map((r) => (
+            <PixelButton key={r.key} variant="outline" onClick={() => onPick(r)}>
+              {r.name}
+            </PixelButton>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -82,7 +150,7 @@ function Confirm({ name, needName, busy, label, reason, setReason, typed, setTyp
 }
 
 export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: () => void; onGone: () => void }) {
-  const [kind, setKind] = useState<FixKind | "export">("set");
+  const [kind, setKind] = useState<Kind>("set");
   const [reason, setReason] = useState("");
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
@@ -102,6 +170,8 @@ export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: ()
   const [offers, setOffers] = useState<string[]>([]);
   const [country, setCountry] = useState(p.profile.country ?? "");
   const [clearCooldown, setClearCooldown] = useState(false);
+  const [into, setInto] = useState<PlayerRow | null>(null);
+  const [device, setDevice] = useState(p.devices[0]?.id ?? "");
 
   useEffect(() => {
     setMsg("");
@@ -149,11 +219,26 @@ export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: ()
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const fix = fixFor();
-    if (!fix) return;
     setBusy(true);
     setError("");
     setMsg("");
+    if (kind === "merge" || kind === "move") {
+      try {
+        const body = kind === "merge" ? { key: p.key, into: into?.key, reason, confirm: typed } : { key: p.key, device, into: into?.key, reason, confirm: typed };
+        await post(`/api/admin/${kind}`, body);
+        setReason("");
+        setTyped("");
+        setMsg(kind === "merge" ? `Merged into ${into?.name}. Save states of both were taken first, and ${into?.name}'s log has Undo.` : "Moved. Save states were taken first, and the log has Undo.");
+        onChanged();
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+    const fix = fixFor();
+    if (!fix) return setBusy(false);
     try {
       const r = await post<{ snapshot: number; notes: string[]; gone: boolean }>("/api/admin/fix", { key: p.key, reason, confirm: typed, fix });
       setReason("");
@@ -168,8 +253,9 @@ export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: ()
     }
   };
 
-  const needName = CONFIRM_FIXES.includes(kind as FixKind);
-  const list = FIXES.filter((f) => !f.accountOnly || p.kind === "account");
+  const needName = CONFIRM_FIXES.includes(kind as FixKind) || kind === "merge" || kind === "move";
+  const list = FIXES.filter((f) => (!f.accountOnly || p.kind === "account") && (!f.guestOnly || p.kind === "guest"));
+  const blocked = (kind === "crew" && p.arrivedLegs.length === 0) || ((kind === "merge" || kind === "move") && !into) || (kind === "move" && !device);
   return (
     <Window as="section" className="admin__card" aria-labelledby="pl-fixes">
       <h2 id="pl-fixes" className="admin__h2">
@@ -305,18 +391,50 @@ export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: ()
             </>
           )}
           {kind === "signout" && <p className="admin__note">Ends every signed-in browser. Their progress stays with the account.</p>}
+          {kind === "merge" && (
+            <>
+              <p className="admin__note">
+                For someone who played as this guest, then signed in on another browser. It merges like signing in: the higher level of each upgrade
+                and the higher patch count, credits and km added, badges and crew credit combined. If this browser is used again, it starts as a fresh
+                guest (they should sign in there). Undo is on the account's log.
+              </p>
+              <AccountPicker self={p.key} picked={into} onPick={setInto} />
+            </>
+          )}
+          {kind === "move" &&
+            (p.devices.length === 0 ? (
+              <p className="admin__note">No device is signed in to this account.</p>
+            ) : (
+              <>
+                <label className="admin__field">
+                  <span className="label">Device</span>
+                  <select value={device} onChange={(e) => setDevice(e.target.value)}>
+                    {p.devices.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name} · last seen {when(d.lastSeen)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="admin__note">
+                  Moves this device's km by day, pings and votes to another account, and signs it out. Credits, upgrades, badges and crew credit stay
+                  here: they belong to the account. Legs that have already arrived keep their crew lists.
+                </p>
+                <AccountPicker self={p.key} picked={into} onPick={setInto} />
+              </>
+            ))}
           {kind === "delete" && (
             <p className="admin__note">
               Deletes the account, the same way as their own "Delete account". The save state taken first, and the backups, age out within 90 days.
               This can't be undone from the log.
             </p>
           )}
-          {!(kind === "crew" && p.arrivedLegs.length === 0) && (
+          {!blocked && (
             <Confirm
               name={p.profile.name}
               needName={needName}
               busy={busy}
-              label={kind === "delete" ? "Delete the account" : "Apply the fix"}
+              label={kind === "delete" ? "Delete the account" : kind === "merge" ? "Merge" : kind === "move" ? "Move the device" : "Apply the fix"}
               reason={reason}
               setReason={setReason}
               typed={typed}
@@ -331,21 +449,28 @@ export function Fixes({ p, onChanged, onGone }: { p: PlayerDetail; onChanged: ()
   );
 }
 
-/** Their save states (newest first). A1b-2 adds compare and restore. */
-export function SaveStates({ p }: { p: PlayerDetail }) {
+/** Their save states (newest first). Compare one with now, then restore the ticked parts. */
+export function SaveStates({ p, onChanged }: { p: PlayerDetail; onChanged: () => void }) {
+  const [open, setOpen] = useState<number | null>(null);
   return (
     <Window as="section" className="admin__card" aria-labelledby="pl-states">
       <h2 id="pl-states" className="admin__h2">
         Save states
       </h2>
       {p.snapshots.length === 0 ? (
-        <p className="admin__note">None yet. One is taken before every fix.</p>
+        <p className="admin__note">None yet. One is taken before every fix, every day they play, and at big moments.</p>
       ) : (
         <ul className="admin__days">
           {p.snapshots.map((s) => (
             <li key={s.id} className="num">
               {when(s.at)} · {s.reason}
-              {s.admin ? ` · ${s.admin}` : ""} · {int(s.bytes)} bytes
+              {s.admin ? ` · ${s.admin}` : ""}{" "}
+              {open !== s.id && (
+                <button type="button" className="admin__link" onClick={() => setOpen(s.id)}>
+                  Compare
+                </button>
+              )}
+              {open === s.id && <Compare p={p} id={s.id} onClose={() => setOpen(null)} onChanged={onChanged} />}
             </li>
           ))}
         </ul>
@@ -355,9 +480,90 @@ export function SaveStates({ p }: { p: PlayerDetail }) {
   );
 }
 
+/** One save state against now, part by part, with a tick box on each part that differs. */
+function Compare({ p, id, onClose, onChanged }: { p: PlayerDetail; id: number; onClose: () => void; onChanged: () => void }) {
+  const [data, setData] = useState<StateCompare | null>(null);
+  const [error, setError] = useState("");
+  const [ticked, setTicked] = useState<Set<StatePart>>(new Set());
+  const [reason, setReason] = useState("");
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  useEffect(() => {
+    void fetch(`/api/admin/save-state?id=${id}&key=${encodeURIComponent(p.key)}`, { cache: "no-store" })
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error((d as { error?: string }).error ?? `Error ${r.status}`);
+        setData(d as StateCompare);
+      })
+      .catch((err: Error) => setError(err.message));
+  }, [id]);
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const r = await post<{ notes: string[] }>("/api/admin/restore", { key: p.key, snapshot: id, parts: [...ticked], reason, confirm: typed });
+      setMsg(["Restored. A save state was taken first, and the log has Undo.", ...r.notes].join(" "));
+      onChanged();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (error && !data) return <p className="admin__error" role="alert">{error}</p>;
+  if (!data) return <p className="admin__note">Loading…</p>;
+  const changed = diffStates(data.then, data.now).filter((d) => d.changed);
+  return (
+    <form className="admin__fix" onSubmit={submit}>
+      <p className="admin__note">The save state → now:</p>
+      {changed.length === 0 && <p className="admin__note">Nothing differs: they're as they were.</p>}
+      {changed.map((d) => (
+        <div key={d.part}>
+          <Check
+            checked={ticked.has(d.part)}
+            onChange={(on) => {
+              const next = new Set(ticked);
+              if (on) next.add(d.part);
+              else next.delete(d.part);
+              setTicked(next);
+            }}
+          >
+            Restore: {d.label}
+          </Check>
+          <ul className="admin__days">
+            {d.lines.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {changed.length > 0 && !msg && (
+        <Confirm
+          name={p.profile.name}
+          needName
+          busy={busy || ticked.size === 0}
+          label="Restore the ticked parts"
+          reason={reason}
+          setReason={setReason}
+          typed={typed}
+          setTyped={setTyped}
+        />
+      )}
+      <PixelButton variant="outline" onClick={onClose}>
+        Close
+      </PixelButton>
+      {msg && <p className="admin__note" role="status">{msg}</p>}
+      {error && <p className="admin__error" role="alert">{error}</p>}
+    </form>
+  );
+}
+
 const partsOf = (l: AdminLogItem): StatePart[] => {
   try {
     const d = l.detail ? (JSON.parse(l.detail) as { snapshot?: number; parts?: StatePart[] }) : {};
+    if (d.snapshot && l.action === "move-device") return ["today"]; // the device's km history (Undo moves it back)
     return d.snapshot && d.parts?.length ? d.parts : [];
   } catch {
     return [];
@@ -400,7 +606,13 @@ export function LogLine({ l, name, onChanged }: { l: AdminLogItem; name: string;
       )}
       {open && (
         <form className="admin__fix" onSubmit={undo}>
-          <p className="admin__note">Puts back: {parts.join(", ")}, as they were just before this change. A save state is taken first.</p>
+          <p className="admin__note">
+            {l.action === "merge"
+              ? "Puts both back as they were before the merge (the account's progress, badges and crew credit; the guest's too), and gives the device its history back. A save state is taken first."
+              : l.action === "move-device"
+                ? "Moves the device's km, pings and votes back to this account. The device stays signed out. A save state is taken first."
+                : `Puts back: ${parts.join(", ")}, as they were just before this change. A save state is taken first.`}
+          </p>
           <Confirm name={name} needName busy={busy} label="Undo this change" reason={reason} setReason={setReason} typed={typed} setTyped={setTyped} />
           <PixelButton variant="outline" onClick={() => setOpen(false)}>
             Cancel

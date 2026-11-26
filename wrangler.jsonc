@@ -35,6 +35,8 @@
   // Phase A1b: save states (decision 35). Created by Claude 2026-11-26 (prompt 124), free tier.
   // Lifecycle rule 'expire-players': everything under players/ is deleted after 90 days (the privacy page's promise).
   "r2_buckets": [{ "binding": "SNAPSHOTS", "bucket_name": "onesmallclick-snapshots" }],
+  // Phase A1b-2: the daily save state (worker/savestates.ts dailySaveStates), 00:05 UTC.
+  "triggers": { "crons": ["5 0 * * *"] },
 
   // Where the game lives, for the links in the Discord posts (and later the notifications). Change it when the domain moves.
   "vars": {

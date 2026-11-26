@@ -293,7 +293,7 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
       </Window>
 
       <Fixes key={version} p={p} onChanged={reload} onGone={() => setGone(true)} />
-      <SaveStates p={p} />
+      <SaveStates key={`s${version}`} p={p} onChanged={reload} />
 
       <Window as="section" className="admin__card" aria-labelledby="pl-notes">
         <h2 id="pl-notes" className="admin__h2">

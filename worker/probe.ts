@@ -12,6 +12,7 @@ import {
 } from "./discord";
 import { pushBatch } from "./push";
 import type { DayRow, ProgressState } from "../shared/admin";
+import { buildStates, saveGroup } from "./savestates";
 import type { PushKind } from "../shared/push";
 import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
@@ -2176,6 +2177,7 @@ export class Probe extends DurableObject<Env> {
         )
         .bind(at, count, taps, medal, burn?.km ?? null, burn?.target ?? null, burn ? (burn.ok ? 1 : 0) : null, burn?.spareMs ?? null, m.id)
         .run();
+      this.saveArrivalState(m.id, at);
       return { count, taps };
     } catch (err) {
       console.error("crediting the crew failed", err);
@@ -2820,6 +2822,7 @@ export class Probe extends DurableObject<Env> {
   /** "Hand over the shift": upgrades and credits back to zero for 3 Mission Patches. */
   private prestige(w: Who, p: ProgressEntry, now: number): boolean {
     if (p.kmSinceShift < PRESTIGE_AT_KM) return false;
+    this.savePrestigeState(w.key, { creditsMilli: p.creditsMilli, levels: { ...p.levels }, patches: p.patches, kmSinceShift: p.kmSinceShift });
     p.creditsMilli = 0;
     p.levels = zeroLevels();
     p.kmSinceShift = 0;
@@ -3529,6 +3532,77 @@ export class Probe extends DurableObject<Env> {
       day,
       rows: await this.dayRows(key, day),
     };
+  }
+
+  /** The probe's clock (real time plus the test offset), so the daily save state picks the probe's yesterday. */
+  async adminClock(): Promise<number> {
+    return this.now();
+  }
+
+  /** Progress as stored, without loading it into memory: a big group (the daily save state) stays light. */
+  private storedProgress(keys: string[]): Record<string, ProgressState | null> {
+    const out: Record<string, ProgressState | null> = {};
+    for (const key of keys) {
+      const have = this.progress.get(key);
+      const row = have ? null : this.sql.exec<ProgressRow>(`SELECT * FROM progress WHERE device_id = ?`, key).toArray()[0];
+      out[key] = have
+        ? { creditsMilli: have.creditsMilli, levels: { ...have.levels }, patches: have.patches, kmSinceShift: have.kmSinceShift }
+        : row
+          ? {
+              creditsMilli: row.credits_milli,
+              levels: { cold: row.cold, ion: row.ion, sail: row.sail, hands: row.hands, chant: row.chant },
+              patches: row.patches,
+              kmSinceShift: row.km_since_shift,
+            }
+          : null;
+    }
+    return out;
+  }
+
+  /** Many players' progress for a group save state; `settle` pays connected ones up to now first. */
+  async adminProgressMany(keys: string[], settle: boolean): Promise<{ now: number; progress: Record<string, ProgressState | null> }> {
+    const now = this.now();
+    if (settle) {
+      const want = new Set(keys);
+      const done = new Set<string>();
+      for (const ws of this.ctx.getWebSockets()) {
+        if (ws.readyState !== WebSocket.OPEN || this.dead.has(ws)) continue;
+        const a = ws.deserializeAttachment() as Attachment | null;
+        if (!a) continue;
+        const w = whoOf(a);
+        if (!want.has(w.key) || done.has(w.key)) continue;
+        done.add(w.key);
+        this.settleConnected(w, this.prog(w.key, now), await this.device(w, now), now);
+      }
+      await this.flushD1();
+    }
+    return { now, progress: this.storedProgress(keys) };
+  }
+
+  /** A save state of one player just before they hand over the shift (phase A1b-2), so a mistaken prestige can be undone. */
+  private savePrestigeState(key: string, before: ProgressState) {
+    const day = utcDay(this.now());
+    this.ctx.waitUntil(
+      buildStates(this.env, [key], { [key]: before }, day)
+        .then((s) => saveGroup(this.env, s, `players/${key}/${Date.now()}-prestige.json.gz`, "before prestige"))
+        .catch((err) => console.error("prestige save state failed", err)),
+    );
+  }
+
+  /** A save state of everyone who crewed the leg, as it arrives (phase A1b-2). Progress as last saved: nobody is settled mid-arrival. */
+  private saveArrivalState(missionId: number, at: number) {
+    const env = this.env;
+    const progressOf = (keys: string[]) => this.storedProgress(keys);
+    this.ctx.waitUntil(
+      (async () => {
+        const keys = (await env.DB.prepare(`SELECT player_key FROM mission_crew WHERE mission_id = ?`).bind(missionId).all<{ player_key: string }>()).results.map(
+          (r) => r.player_key,
+        );
+        if (keys.length === 0) return;
+        const states = await buildStates(env, keys, progressOf(keys), utcDay(at));
+        await saveGroup(env, states, `players/arrival/leg-${missionId}-${Date.now()}.json.gz`, `leg ${missionId} arrived`);
+      })().catch((err) => console.error("arrival save state failed", err)),
+    );
   }
 
   /**

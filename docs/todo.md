@@ -8,11 +8,11 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **Q1b** (prompts 107-118, migration 0019): the Discord bot posting to #mission-log, install as an app, and opt-in alerts (signal final hour, landing burn, vote closing). Checked by Nav on a real iPhone.
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
-- **Built, not deployed:** A1b-1 (prompt 124: admin fixes, player save states in R2, Undo, export; migration 0021; the bucket exists). Deploy when Nav asks.
-- [ ] **Tonight (Nav, 26 Nov, prompt 125): check A1b-1 locally.** `npm run dev`, open /admin, sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. Say "deploy" when happy.
-- **Next to build:** A1b-2 (compare and partial restore, daily save states, move and merge devices), then A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
+- **Built, not deployed:** A1b-1 (prompt 124: admin fixes, player save states in R2, Undo, export; migration 0021; the bucket exists) and A1b-2 (prompt 127: compare and restore, daily and big-moment save states, merge a guest, move a device; no migration; a daily cron trigger). Deploy both together when Nav asks.
+- [ ] **Tonight (Nav, 26 Nov, prompt 125): check A1b-1 locally.** `npm run dev`, open /admin, sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. A1b-2 too: press Compare on a save state, tick a part and restore it; on a guest, try "Merge into an account"; on an account, "Move a device" (each has Undo in the account's history). Say "deploy" when happy.
+- **Next to build:** A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
 - **Backups (25 Nov, prompt 122):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-25-2255-checkpoint-a1a.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 126, next migration 0022.** Run `git pull` first: other sessions push here too.
+- **Next prompt 128, next migration 0022.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -69,7 +69,13 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - A2: warn, time out, hide from boards, ban, the Flags queue, "Report name", the name blocklist, messages (inbox, banner, push, Discord, templates, gifts), and the crew rules on the terms page.
   - [x] **A1a is live** (`ace47a54`, tag `a1a-live`): admin sign-in, the Players tab, the player page, the admin log.
   - [ ] **A1b-1 (built 26 Nov, prompt 124, not deployed):** the fixes, player save states in R2 (bucket `onesmallclick-snapshots` created), Undo, export, name history (docs/plan.md "A1b-1 status"). To deploy: backup, migration 0021 `--remote`, `npm run deploy`.
-  - [ ] **A1b-2:** compare and partial restore, daily and big-moment save states, move and merge devices.
+  - [ ] **A1b-2 (built 26 Nov, prompt 127, not deployed):** compare and restore, daily and big-moment save states, merge a guest, move a device (docs/plan.md "A1b-2 status"). Deploys with A1b-1.
+  - [ ] **Left over from A1b (later, small):**
+    - After the first live night, check the 00:05 UTC daily save state ran (Workers Logs: "daily save state"; or the Players page's save states). On the free plan a big crowd could hit the 10 ms CPU limit; Workers Paid (from 30 Nov) lifts it. If it fails, that day is just missing.
+    - A Save states tab for the whole game (lists every group file) belongs with A1c's game save states.
+    - Undoing a merge leaves the guest's recruits with the account (rare; move them by hand in D1 if ever needed).
+    - Known quirk (since 8a): if a device signs out (or is merged or moved) and plays as a guest the same day, those km still add to the account's row for that day. Harmless before launch; fix with A2 if it matters.
+    - Opening one player from a daily file downloads the whole day's file; fine for hundreds of players, slow for tens of thousands (split the file by key prefix then).
   - [ ] **A1c:** the game's save states, maintenance mode, docs/runbook.md. The emergency rollback waits until after launch (a runbook entry until then).
   - [ ] **A2:** decisions 36-40 first.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.

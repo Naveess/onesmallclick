@@ -1,5 +1,8 @@
 // Phase A1a: the admin panel's types, used by the Worker (worker/admin.ts) and /admin.
 
+import { BADGE_INFO, type BadgeId } from "./badges";
+import { UPGRADES } from "./upgrades";
+
 export type AdminRole = "owner" | "moderator";
 
 /** Who's using the panel. */
@@ -197,3 +200,68 @@ export const isAdminName = (name: string) => /^[a-z0-9_]{3,24}$/.test(name);
 
 /** The admin log's reasons and notes: plain text, this long at most. */
 export const ADMIN_TEXT_MAX = 1000;
+
+// ---------- Phase A1b-2: compare a save state with now, restore ticked parts, merge and move ----------
+
+/** GET /api/admin/save-state: a save state and the player as they are now (with the same day's km, for "today"). */
+export interface StateCompare {
+  snapshot: SnapshotItem;
+  then: PlayerState;
+  now: PlayerState;
+}
+
+/** One part of a comparison: what changed between the save state and now. */
+export interface PartDiff {
+  part: StatePart;
+  label: string;
+  changed: boolean;
+  lines: string[];
+}
+
+const fmt = (n: number) => Math.floor(n).toLocaleString("en-GB");
+const sum = (rows: DayRow[], f: (r: DayRow) => number) => rows.reduce((t, r) => t + f(r), 0);
+
+/** The save state against now, part by part, e.g. "credits 3,100 → 12,400". */
+export function diffStates(then: PlayerState, now: PlayerState): PartDiff[] {
+  const a = then.progress;
+  const b = now.progress;
+  const out: PartDiff[] = [];
+  const add = (part: StatePart, label: string, lines: string[]) => out.push({ part, label, changed: lines.length > 0, lines });
+  const arrow = (what: string, x: string, y: string) => (x === y ? [] : [`${what} ${x} → ${y}`]);
+
+  add("credits", "Credits", arrow("credits", fmt((a?.creditsMilli ?? 0) / 1000), fmt((b?.creditsMilli ?? 0) / 1000)));
+  add(
+    "upgrades",
+    "Upgrades",
+    UPGRADES.flatMap((u) => arrow(u.name, String(a?.levels[u.key] ?? 0), String(b?.levels[u.key] ?? 0))),
+  );
+  add("prestige", "Patches (prestige)", [
+    ...arrow("patches", String(a?.patches ?? 0), String(b?.patches ?? 0)),
+    ...arrow("km towards the next handover", fmt(a?.kmSinceShift ?? 0), fmt(b?.kmSinceShift ?? 0)),
+  ]);
+  const day = then.today.day;
+  add("today", `Km and taps on ${day}`, [
+    ...arrow("km", fmt(sum(then.today.rows, (r) => r.km)), fmt(sum(now.today.rows, (r) => r.km))),
+    ...arrow("taps", fmt(sum(then.today.rows, (r) => r.taps)), fmt(sum(now.today.rows, (r) => r.taps))),
+  ]);
+  const badge = (id: string) => BADGE_INFO[id as BadgeId]?.name ?? id;
+  const had = new Set(then.badges.map((x) => x.badge));
+  const has = new Set(now.badges.map((x) => x.badge));
+  add("badges", "Badges", [
+    ...[...had].filter((x) => !has.has(x)).map((x) => `${badge(x)}: in the save state, not now`),
+    ...[...has].filter((x) => !had.has(x)).map((x) => `${badge(x)}: now, not in the save state`),
+  ]);
+  const legsThen = new Map(then.crew.map((c) => [c.missionId, c]));
+  const legsNow = new Map(now.crew.map((c) => [c.missionId, c]));
+  add("crew", "Crew credit for legs", [
+    ...[...legsThen.keys()].filter((m) => !legsNow.has(m)).map((m) => `leg ${m}: crewed in the save state, not now`),
+    ...[...legsNow.keys()].filter((m) => !legsThen.has(m)).map((m) => `leg ${m}: crewed now, not in the save state`),
+    ...[...legsThen].filter(([m, c]) => legsNow.has(m) && legsNow.get(m)!.km !== c.km).map(([m, c]) => `leg ${m} km ${fmt(c.km)} → ${fmt(legsNow.get(m)!.km)}`),
+  ]);
+  add("name", "Name", arrow("name", then.profile.name, now.profile.name));
+  add("country", "Country", arrow("country", then.profile.country ?? "none", now.profile.country ?? "none"));
+  return out;
+}
+
+/** The parts a merge changes on the account (and puts back on both, if it's undone). */
+export const MERGE_PARTS: StatePart[] = ["credits", "upgrades", "prestige", "badges", "crew"];

@@ -13,6 +13,7 @@
 //
 // Tokens and session ids are random; only their SHA-256 hashes are stored.
 
+import { capture, saveState } from "./savestates";
 import {
   LINK_TTL_MS,
   SESSION_TTL_MS,
@@ -212,6 +213,7 @@ async function findOrCreate(
 
 /** Signs this browser in: a session, the device linked, and its progress merged into the account. */
 async function completeSignIn(env: Env, deviceId: string, account: AccountRow): Promise<string> {
+  await mergeSaveStates(env, deviceId, account.id);
   const token = randomToken();
   const now = Date.now();
   await env.DB.batch([
@@ -226,6 +228,22 @@ async function completeSignIn(env: Env, deviceId: string, account: AccountRow): 
   ]);
   await probe(env).signIn(deviceId, account.id);
   return sessionCookie(token);
+}
+
+/**
+ * Phase A1b-2: before a guest's progress merges into an account, a save state of each, so a merge gone wrong can be
+ * put right from /admin. Only when the guest has something to merge. Never blocks signing in.
+ */
+async function mergeSaveStates(env: Env, deviceId: string, accountId: string) {
+  try {
+    const guest = await capture(env, deviceId);
+    if (!guest || !(guest.progress || guest.badges.length || guest.crew.length || guest.today.rows.length)) return;
+    const acct = await capture(env, `a:${accountId}`);
+    await saveState(env, guest, "before sign-in merge", null);
+    if (acct) await saveState(env, acct, `before sign-in merge (guest ${guest.profile.name})`, null);
+  } catch (err) {
+    console.error("merge save states failed", err);
+  }
 }
 
 /** A brand-new guest device for this browser (after signing out or deleting the account). */

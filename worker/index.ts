@@ -42,6 +42,7 @@
 
 import { feedbackReport, markFeedback, sendFeedback } from "./feedback";
 import { pushRoute } from "./push";
+import { dailySaveStates } from "./savestates";
 import { adminLog, adminPanel, adminWho } from "./admin";
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
@@ -99,6 +100,15 @@ export default {
     if (path.startsWith("/api/admin/")) return admin(request, env, path.slice("/api/admin/".length));
 
     return json({ error: "Not found" }, 404);
+  },
+
+  // Phase A1b-2: the daily save state at 00:05 UTC (wrangler.jsonc triggers.crons): everyone who played yesterday, one file.
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(
+      dailySaveStates(env)
+        .then((r) => console.log("daily save state", JSON.stringify(r)))
+        .catch((err) => console.error("daily save state failed", err)),
+    );
   },
 } satisfies ExportedHandler<Env>;
 

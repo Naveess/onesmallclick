@@ -13,6 +13,13 @@
 //   POST /api/admin/undo         { logId, reason, confirm } → { ok, snapshot }
 //   GET  /api/admin/export       ?key= → everything about the player, as a JSON file (a subject access request)
 //   GET  /api/admin/name-offers  → three free generated names
+//
+// Phase A1b-2 (prompt 127):
+//   GET  /api/admin/save-state   ?id=&key= → { snapshot, then, now } (compare a save state with now)
+//   POST /api/admin/restore      { key, snapshot, parts, reason, confirm } → put back the ticked parts (undoable)
+//   POST /api/admin/merge        { key (a guest), into (an account), reason, confirm } → as if the guest signed in there
+//   POST /api/admin/move         { key (an account), device, into (another account), reason, confirm } → the device's history moves
+//   POST /api/admin/daily-save   { day?, force? } → the daily save state now (the cron runs it at 00:05 UTC)
 
 import { BADGE_INFO } from "../shared/badges";
 import { isCountryCode } from "../shared/account";
@@ -24,6 +31,8 @@ import {
   fixParts,
   isAccountKey,
   isAdminName,
+  MERGE_PARTS,
+  STATE_PARTS,
   type AdminWho,
   type DayRow,
   type Fix,
@@ -32,88 +41,13 @@ import {
 } from "../shared/admin";
 import { adminLog } from "./admin";
 import { freeName, removeAccount } from "./auth";
-
-const KEEP_MS = 90 * 86_400_000;
+import { capture, dailySaveStates, loadState, saveState } from "./savestates";
 
 const json = (body: unknown, status = 200, headers: HeadersInit = {}) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store", ...headers } });
 
 function probe(env: Env) {
   return env.PROBE.get(env.PROBE.idFromName("mission"));
-}
-
-async function gzip(value: unknown): Promise<ArrayBuffer> {
-  const stream = new Blob([JSON.stringify(value)]).stream().pipeThrough(new CompressionStream("gzip"));
-  return new Response(stream).arrayBuffer();
-}
-
-async function gunzip<T>(body: ReadableStream): Promise<T> {
-  return new Response(body.pipeThrough(new DecompressionStream("gzip"))).json<T>();
-}
-
-/** A player's save state as of now, or null if there's no such player. */
-export async function capture(env: Env, key: string): Promise<PlayerState | null> {
-  const db = env.DB;
-  const account = isAccountKey(key);
-  const id = account ? key.slice(2) : key;
-  const profile = account
-    ? await db
-        .prepare(`SELECT name, name_chosen, country, country_changed_at FROM accounts WHERE id = ?`)
-        .bind(id)
-        .first<{ name: string; name_chosen: number; country: string | null; country_changed_at: number | null }>()
-    : await db.prepare(`SELECT name, country FROM devices WHERE id = ? AND account_id IS NULL`).bind(id).first<{ name: string; country: string | null }>();
-  if (!profile) return null;
-  const live = await probe(env).adminCapture(key);
-  const [badges, crew] = await db.batch([
-    db.prepare(`SELECT badge, earned_at FROM badges WHERE player_key = ? ORDER BY earned_at`).bind(key),
-    db.prepare(`SELECT mission_id, account_id, name, country, km, taps FROM mission_crew WHERE player_key = ? ORDER BY mission_id`).bind(key),
-  ]);
-  const p = profile as { name: string; name_chosen?: number; country: string | null; country_changed_at?: number | null };
-  return {
-    v: 1,
-    key,
-    at: Date.now(),
-    kind: account ? "account" : "guest",
-    profile: {
-      name: p.name,
-      nameChosen: account ? !!p.name_chosen : null,
-      country: p.country,
-      countryChangedAt: p.country_changed_at ?? null,
-    },
-    progress: live.progress,
-    badges: (badges.results as { badge: string; earned_at: number }[]).map((b) => ({ badge: b.badge, at: b.earned_at })),
-    crew: (crew.results as { mission_id: number; account_id: string | null; name: string | null; country: string | null; km: number; taps: number }[]).map((c) => ({
-      missionId: c.mission_id,
-      accountId: c.account_id,
-      name: c.name,
-      country: c.country,
-      km: c.km,
-      taps: c.taps,
-    })),
-    today: { day: live.day, rows: live.rows },
-  };
-}
-
-/** Writes a save state to R2 and indexes it. Returns its id. */
-export async function saveState(env: Env, state: PlayerState, reason: string, admin: string | null): Promise<number> {
-  const file = `players/${state.key}/${state.at}-${crypto.randomUUID().slice(0, 8)}.json.gz`;
-  const bytes = await gzip(state);
-  await env.SNAPSHOTS.put(file, bytes, { httpMetadata: { contentType: "application/gzip" }, customMetadata: { reason } });
-  const row = await env.DB.prepare(
-    `INSERT INTO snapshots (kind, player_key, at, reason, admin, file, bytes) VALUES ('player', ?, ?, ?, ?, ?, ?) RETURNING id`,
-  )
-    .bind(state.key, state.at, reason.slice(0, 200), admin, file, bytes.byteLength)
-    .first<{ id: number }>();
-  // The files age out by the bucket's lifecycle rule; the index follows now and then.
-  if (Math.random() < 0.05) await env.DB.prepare(`DELETE FROM snapshots WHERE kind = 'player' AND at < ?`).bind(Date.now() - KEEP_MS).run();
-  return row!.id;
-}
-
-export async function loadState(env: Env, id: number): Promise<PlayerState | null> {
-  const row = await env.DB.prepare(`SELECT file FROM snapshots WHERE id = ? AND kind = 'player'`).bind(id).first<{ file: string }>();
-  if (!row) return null;
-  const obj = await env.SNAPSHOTS.get(row.file);
-  return obj ? gunzip<PlayerState>(obj.body) : null;
 }
 
 /** Puts back the ticked parts of a save state. Returns notes on anything it couldn't (a name someone else has taken). */
@@ -323,6 +257,9 @@ async function undoRoute(request: Request, env: Env, who: AdminWho): Promise<Res
   } catch {
     // an old or cut-short line: nothing to undo
   }
+  if (row?.target && detail.snapshot && (row.action === "merge" || row.action === "move-device")) {
+    return undoMove(env, who, Number(b.logId), row.target, row.action, detail as MoveDetail, reason, b.confirm);
+  }
   if (!row?.target || !detail.snapshot || !detail.parts?.length) return json({ error: "That change can't be undone from here." }, 400);
   const state = await loadState(env, detail.snapshot);
   if (!state) return json({ error: "Its save state has gone (they're kept 90 days)." }, 410);
@@ -332,6 +269,177 @@ async function undoRoute(request: Request, env: Env, who: AdminWho): Promise<Res
   const snapshot = await saveState(env, now, "before undo", who.email);
   const notes = await restore(env, state, detail.parts, who.email);
   await adminLog(env, who.email, "undo", row.target, reason, { undid: Number(b.logId), action: row.action, snapshot, parts: detail.parts, notes });
+  return json({ ok: true, snapshot, notes });
+}
+
+// ---------- Phase A1b-2 ----------
+
+const isPart = (p: unknown): p is StatePart => STATE_PARTS.some((x) => x.id === p);
+
+type SnapshotItemRow = { id: number; at: number; reason: string; admin: string | null; bytes: number; player_key: string };
+
+/** A save state and the player now, for the compare view. "now" carries the save state's day's km, so they line up. */
+async function stateRoute(env: Env, url: URL): Promise<Response> {
+  const id = Number(url.searchParams.get("id"));
+  const key = (url.searchParams.get("key") ?? "").slice(0, 80);
+  const snapshot = await env.DB.prepare(`SELECT id, at, reason, admin, bytes, player_key FROM snapshots WHERE id = ? AND kind = 'player'`)
+    .bind(id)
+    .first<SnapshotItemRow>();
+  if (!snapshot || snapshot.player_key !== key) return json({ error: "No such save state for this player" }, 404);
+  const then = await loadState(env, id);
+  if (!then) return json({ error: "Its file has gone (they're kept 90 days)." }, 410);
+  const now = await capture(env, key);
+  if (!now) return json({ error: "That player has gone." }, 404);
+  if (now.today.day !== then.today.day) now.today = { day: then.today.day, rows: await dayRowsOf(env, key, then.today.day) };
+  const { player_key: _key, ...item } = snapshot;
+  return json({ snapshot: item, then, now });
+}
+
+async function dayRowsOf(env: Env, key: string, day: string): Promise<DayRow[]> {
+  const account = isAccountKey(key);
+  const rows = (
+    await env.DB.prepare(
+      `SELECT device_id, account_id, km, tap_km, tap_moved_km, taps FROM daily_km WHERE day = ? AND ${account ? "account_id = ?" : "device_id = ? AND account_id IS NULL"}`,
+    )
+      .bind(day, account ? key.slice(2) : key)
+      .all<{ device_id: string; account_id: string | null; km: number; tap_km: number; tap_moved_km: number; taps: number }>()
+  ).results;
+  return rows.map((r) => ({ deviceId: r.device_id, accountId: r.account_id, km: r.km, tapKm: r.tap_km, tapMovedKm: r.tap_moved_km, taps: r.taps }));
+}
+
+/** Puts back the ticked parts of any of the player's save states. A save state is taken first, so Undo works. */
+async function restoreRoute(request: Request, env: Env, who: AdminWho): Promise<Response> {
+  const b = (await request.json().catch(() => ({}))) as { key?: unknown; snapshot?: unknown; parts?: unknown; reason?: unknown; confirm?: unknown };
+  const key = typeof b.key === "string" ? b.key.slice(0, 80) : "";
+  const reason = reasonOf(b.reason);
+  const parts = Array.isArray(b.parts) ? [...new Set(b.parts.filter(isPart))] : [];
+  if (!reason) return json({ error: "Give a reason: it goes in the log." }, 400);
+  if (parts.length === 0) return json({ error: "Tick at least one part to restore." }, 400);
+  const row = await env.DB.prepare(`SELECT player_key FROM snapshots WHERE id = ? AND kind = 'player'`).bind(Number(b.snapshot)).first<{ player_key: string }>();
+  if (!row || row.player_key !== key) return json({ error: "No such save state for this player" }, 404);
+  const state = await loadState(env, Number(b.snapshot));
+  if (!state) return json({ error: "Its file has gone (they're kept 90 days)." }, 410);
+  const before = await capture(env, key);
+  if (!before) return json({ error: "That player has gone." }, 404);
+  if (b.confirm !== before.profile.name) return json({ error: `Type the player's name (${before.profile.name}) to confirm.` }, 400);
+  const snapshot = await saveState(env, before, "before restore", who.email);
+  const notes = await restore(env, state, parts, who.email);
+  await adminLog(env, who.email, "restore", key, reason, { from: Number(b.snapshot), fromAt: state.at, snapshot, parts, notes });
+  return json({ ok: true, snapshot, notes });
+}
+
+/** What a merge or a move logs, so Undo can reverse it. */
+interface MoveDetail {
+  snapshot: number;
+  device: string;
+  /** merge: the guest's save state, put back on undo. */
+  guestSnapshot?: number;
+  /** move-device: the account the device's history moved to. */
+  into?: string;
+}
+
+const accountIdOf = (key: string) => (isAccountKey(key) ? key.slice(2) : null);
+const HISTORY = ["daily_km", "pings", "votes"];
+
+/**
+ * Merges a guest into an account, exactly as if they'd signed in there (decision 18): the higher level of each
+ * upgrade and the higher patch count, credits and km added, badges and crew credit combined, the device's km, pings
+ * and votes attached. The guest's browser, if it's used again, starts as a fresh guest (they should sign in there).
+ */
+async function mergeRoute(request: Request, env: Env, who: AdminWho): Promise<Response> {
+  const b = (await request.json().catch(() => ({}))) as { key?: unknown; into?: unknown; reason?: unknown; confirm?: unknown };
+  const key = typeof b.key === "string" ? b.key.slice(0, 80) : "";
+  const into = typeof b.into === "string" ? b.into.slice(0, 80) : "";
+  const reason = reasonOf(b.reason);
+  if (!reason) return json({ error: "Give a reason: it goes in the log." }, 400);
+  if (isAccountKey(key)) return json({ error: "Only a guest can be merged into an account." }, 400);
+  const accountId = accountIdOf(into);
+  if (!accountId) return json({ error: "Pick the account to merge into." }, 400);
+  const guest = await capture(env, key);
+  if (!guest) return json({ error: "No such guest (it may be signed in already)." }, 404);
+  if (b.confirm !== guest.profile.name) return json({ error: `Type the guest's name (${guest.profile.name}) to confirm.` }, 400);
+  const acct = await capture(env, into);
+  if (!acct) return json({ error: "No such account." }, 404);
+  const guestSnapshot = await saveState(env, guest, `before merge into ${acct.profile.name}`, who.email);
+  const snapshot = await saveState(env, acct, `before merge (guest ${guest.profile.name})`, who.email);
+  const stub = probe(env);
+  await stub.signIn(key, accountId); // the same merge as signing in; the guest's tabs reconnect as a fresh guest
+  await stub.adminSetPlayer(into, {}); // the account's open tabs see it at once
+  const detail: MoveDetail = { snapshot, device: key, guestSnapshot };
+  await adminLog(env, who.email, "merge", into, reason, { ...detail, guest: guest.profile.name, parts: MERGE_PARTS });
+  await adminLog(env, who.email, "merged-into", key, reason, { into, account: acct.profile.name });
+  return json({ ok: true, snapshot, into });
+}
+
+/**
+ * Moves one device's history (its km by day, pings and votes) from this account to another, and signs that device
+ * out. Credits, upgrades, badges and crew credit stay: they belong to the account, not the device.
+ */
+async function moveRoute(request: Request, env: Env, who: AdminWho): Promise<Response> {
+  const b = (await request.json().catch(() => ({}))) as { key?: unknown; device?: unknown; into?: unknown; reason?: unknown; confirm?: unknown };
+  const key = typeof b.key === "string" ? b.key.slice(0, 80) : "";
+  const into = typeof b.into === "string" ? b.into.slice(0, 80) : "";
+  const device = typeof b.device === "string" ? b.device.slice(0, 80) : "";
+  const reason = reasonOf(b.reason);
+  if (!reason) return json({ error: "Give a reason: it goes in the log." }, 400);
+  const from = accountIdOf(key);
+  const to = accountIdOf(into);
+  if (!from || !to) return json({ error: "Move a device from one account to another." }, 400);
+  if (from === to) return json({ error: "That's the same account." }, 400);
+  const db = env.DB;
+  const dev = await db.prepare(`SELECT id FROM devices WHERE id = ? AND account_id = ?`).bind(device, from).first();
+  if (!dev) return json({ error: "That device isn't signed in to this account." }, 404);
+  const before = await capture(env, key); // also flushes the Probe's queue, so the history is all in D1
+  const target = await capture(env, into);
+  if (!before || !target) return json({ error: "No such account." }, 404);
+  if (b.confirm !== before.profile.name) return json({ error: `Type the player's name (${before.profile.name}) to confirm.` }, 400);
+  const snapshot = await saveState(env, before, `before moving a device to ${target.profile.name}`, who.email);
+  await saveState(env, target, `before a device moved in from ${before.profile.name}`, who.email);
+  await db.batch([
+    db.prepare(`DELETE FROM sessions WHERE device_id = ?`).bind(device),
+    db.prepare(`UPDATE devices SET account_id = NULL WHERE id = ?`).bind(device),
+    ...HISTORY.map((t) => db.prepare(`UPDATE ${t} SET account_id = ? WHERE device_id = ? AND account_id = ?`).bind(to, device, from)),
+  ]);
+  const stub = probe(env);
+  await stub.adminSetPlayer(key, {}); // the device's tabs reconnect, signed out
+  await stub.adminSetPlayer(into, {});
+  const detail: MoveDetail = { snapshot, device, into };
+  await adminLog(env, who.email, "move-device", key, reason, { ...detail, to: target.profile.name });
+  await adminLog(env, who.email, "device-moved-in", into, reason, { device, from: key, account: before.profile.name });
+  return json({ ok: true, snapshot });
+}
+
+/** Undoes a merge (both players put back as they were, the device's history returned) or a move (the history moves back). */
+async function undoMove(env: Env, who: AdminWho, logId: number, target: string, action: string, d: MoveDetail, reason: string, confirm: unknown): Promise<Response> {
+  const now = await capture(env, target);
+  if (!now) return json({ error: "That account has gone." }, 404);
+  if (confirm !== now.profile.name) return json({ error: `Type the player's name (${now.profile.name}) to confirm.` }, 400);
+  const db = env.DB;
+  const acct = accountIdOf(target);
+  if (!acct) return json({ error: "That change can't be undone from here." }, 400);
+  const notes: string[] = [];
+  if (action === "merge") {
+    const [mine, guest] = await Promise.all([loadState(env, d.snapshot), d.guestSnapshot ? loadState(env, d.guestSnapshot) : null]);
+    if (!mine || !guest) return json({ error: "A save state for this merge has gone (they're kept 90 days)." }, 410);
+    const still = await db.prepare(`SELECT 1 FROM devices WHERE id = ? AND account_id IS NULL`).bind(d.device).first();
+    if (!still) return json({ error: "That device is signed in to an account now, so it can't go back to being a guest." }, 409);
+    const snapshot = await saveState(env, now, "before undo", who.email);
+    await db.batch(HISTORY.map((t) => db.prepare(`UPDATE ${t} SET account_id = NULL WHERE device_id = ? AND account_id = ?`).bind(d.device, acct)));
+    notes.push(...(await restore(env, mine, MERGE_PARTS, who.email)));
+    notes.push(...(await restore(env, guest, MERGE_PARTS, who.email)));
+    notes.push("Recruits the guest brought in stay with the account.");
+    await adminLog(env, who.email, "undo", target, reason, { undid: logId, action, snapshot, notes });
+    return json({ ok: true, snapshot, notes });
+  }
+  const to = accountIdOf(d.into ?? "");
+  if (!to) return json({ error: "That move can't be undone from here." }, 400);
+  const snapshot = await saveState(env, now, "before undo", who.email);
+  await db.batch(HISTORY.map((t) => db.prepare(`UPDATE ${t} SET account_id = ? WHERE device_id = ? AND account_id = ?`).bind(acct, d.device, to)));
+  const stub = probe(env);
+  await stub.adminSetPlayer(target, {});
+  await stub.adminSetPlayer(d.into!, {});
+  notes.push("The device stays signed out: its player signs in again to use it.");
+  await adminLog(env, who.email, "undo", target, reason, { undid: logId, action, snapshot, notes });
   return json({ ok: true, snapshot, notes });
 }
 
@@ -380,8 +488,19 @@ async function nameOffers(env: Env): Promise<Response> {
 export async function fixesPanel(request: Request, env: Env, action: string, who: AdminWho): Promise<Response | null> {
   const owner = who.role === "owner";
   if (action === "name-offers" && request.method === "GET") return nameOffers(env);
-  if (!["fix", "undo", "export"].includes(action)) return null;
+  if (!["fix", "undo", "export", "save-state", "restore", "merge", "move", "daily-save"].includes(action)) return null;
   if (!owner) return json({ error: "Only the owner can do that." }, 403);
+  if (action === "save-state" && request.method === "GET") return stateRoute(env, new URL(request.url));
+  if (action === "restore" && request.method === "POST") return restoreRoute(request, env, who);
+  if (action === "merge" && request.method === "POST") return mergeRoute(request, env, who);
+  if (action === "move" && request.method === "POST") return moveRoute(request, env, who);
+  if (action === "daily-save" && request.method === "POST") {
+    const b = (await request.json().catch(() => ({}))) as { day?: unknown; force?: unknown };
+    const day = typeof b.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(b.day) ? b.day : undefined;
+    const r = await dailySaveStates(env, { day, force: b.force === true });
+    await adminLog(env, who.email, "daily-save", null, null, r);
+    return json(r);
+  }
   if (action === "fix" && request.method === "POST") return fixRoute(request, env, who);
   if (action === "undo" && request.method === "POST") return undoRoute(request, env, who);
   if (action === "export" && request.method === "GET") return exportRoute(env, who, (new URL(request.url).searchParams.get("key") ?? "").slice(0, 80));
