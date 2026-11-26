@@ -15,6 +15,7 @@
 //   GET  /api/profile         this browser's player: name, country, total km, pings in the last 30 days
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
 //   POST /api/feedback        { token, kind, message, contact, page, info } (Turnstile) → "Report a bug or idea" (phase Q1a, worker/feedback.ts)
+//   POST /api/moderation/ack  { id } → the player tapped OK on a warning (phase A2a, worker/moderation.ts)
 //   /api/push/*, POST /api/notice   opt-in notifications: subscribe, switches, test, and what to show (phase Q1b-2, worker/push.ts)
 //   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
 //   GET  /c/<code>            the game with that crew link's link preview (phase S1; run_worker_first in wrangler.jsonc)
@@ -56,6 +57,7 @@ import { betaReport, credits, leaderboard, playersReport, profile, tour } from "
 import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
+import { ackWarning, heldNow, pruneModeration, standingFor } from "./moderation";
 
 export { Probe } from "./probe";
 
@@ -92,6 +94,7 @@ export default {
     if (path === "/api/profile" && request.method === "GET") return profile(request, env, await probe(env).boardDay());
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
     if (path === "/api/feedback" && request.method === "POST") return sendFeedback(request, env, turnstileOk);
+    if (path === "/api/moderation/ack" && request.method === "POST") return ackWarning(request, env);
     if (path === "/api/notice" && request.method === "POST") return pushRoute(request, env, "notice");
     if (path.startsWith("/api/push/")) return pushRoute(request, env, path.slice("/api/push/".length));
     if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);
@@ -116,6 +119,7 @@ export default {
         .catch((err) => console.error("daily save state failed", err)),
     );
     ctx.waitUntil(gameSaveNow(env, "daily", "daily", null).catch((err) => console.error("daily game save state failed", err)));
+    ctx.waitUntil(pruneModeration(env).catch((err) => console.error("moderation prune failed", err))); // phase A2a: kept 1 year
   },
 } satisfies ExportedHandler<Env>;
 
@@ -158,6 +162,7 @@ async function session(request: Request, env: Env): Promise<Response> {
     crew: row.crew,
     account: signedIn ? accountInfo(signedIn.account) : null,
     emailSignIn: emailReady(env) || env.DEV_SIGN_IN_LINKS === "1",
+    standing: (await standingFor(env, request, id, signedIn?.account.id ?? null)).standing,
   };
   return json(body, 200, {}, cookies);
 }
@@ -179,6 +184,12 @@ async function connect(request: Request, env: Env, url: URL): Promise<Response> 
   const signedIn = await readSession(request, env);
   headers.delete("X-Account-Id");
   if (signedIn) headers.set("X-Account-Id", signedIn.account.id);
+  // Phase A2a: timed out or banned → the Probe credits nothing until then; and when the last hold ended.
+  headers.delete("X-Hold-Until");
+  headers.delete("X-Hold-Ended");
+  const { standing, ended } = await standingFor(env, request, id, signedIn?.account.id ?? null);
+  if (standing.hold) headers.set("X-Hold-Until", String(standing.hold.until ?? Number.MAX_SAFE_INTEGER));
+  if (ended) headers.set("X-Hold-Ended", String(ended));
   // The player's time zone from Cloudflare's location, for the Night Shift badge (never from the browser).
   headers.delete("X-Timezone");
   const tz = (request.cf as IncomingRequestCfProperties | undefined)?.timezone;
@@ -214,13 +225,15 @@ async function ping(request: Request, env: Env): Promise<Response> {
   const id = await readDevice(request, env.DEVICE_SECRET);
   if (!id) return fail("no-device", 401);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown };
+  const signedIn = await readSession(request, env);
+  // Phase A2a: timed out or banned players can't ping.
+  if (await heldNow(env, request, id, signedIn?.account.id ?? null)) return fail("paused", 403);
   // The per-network daily cap (phase 9a), before the bot check so a capped network doesn't cost a Turnstile call.
   const ticket = await capCheck(request, env, "ping");
   if (!ticket) return fail("busy-network", 429);
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "ping"))) {
     return fail("bot-check", 403);
   }
-  const signedIn = await readSession(request, env);
   const row = signedIn ? null : await env.DB.prepare(`SELECT name FROM devices WHERE id = ?`).bind(id).first<{ name: string }>();
   const name = signedIn?.account.name ?? row?.name ?? "a crew member";
   const result = await probe(env).ping(id, signedIn?.account.id ?? null, name);
@@ -240,12 +253,14 @@ async function vote(request: Request, env: Env): Promise<Response> {
   if (!id) return fail("no-device", 401);
   const body = (await request.json().catch(() => ({}))) as { token?: unknown; round?: unknown; option?: unknown };
   if (typeof body.round !== "string" || body.round.length > 20 || !Number.isInteger(body.option)) return fail("closed", 400);
+  const signedIn = await readSession(request, env);
+  // Phase A2a: timed out or banned players can't vote.
+  if (await heldNow(env, request, id, signedIn?.account.id ?? null)) return fail("paused", 403);
   const ticket = await capCheck(request, env, "vote");
   if (!ticket) return fail("busy-network", 429);
   if (typeof body.token !== "string" || body.token.length > 4096 || !(await turnstileOk(body.token, request, env, "vote"))) {
     return fail("bot-check", 403);
   }
-  const signedIn = await readSession(request, env);
   const result = await probe(env).castVote(id, signedIn?.account.id ?? null, body.round, body.option as number);
   if (result.ok) await capCount(env, ticket);
   return json(result);

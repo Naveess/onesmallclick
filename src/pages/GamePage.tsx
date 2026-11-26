@@ -34,6 +34,8 @@ export function GamePage() {
   // THRUST also boosts the probe in the flight view, with its "+km".
   // Maintenance mode (phase A1c-2): THRUST and the vote grey out (Ping and upgrades say so when pressed).
   const frozen = probe.maintenance !== null;
+  // Phase A2a: this player is timed out (a ban shows the ban screen instead): THRUST and the vote grey out.
+  const held = player.standing.hold !== null && (player.standing.hold.until === null || player.standing.hold.until > Date.now());
   const onThrust = () => {
     const km = thrust();
     flight.current?.boost(km);
@@ -133,7 +135,7 @@ export function GamePage() {
               leftS={view.voteLeftS}
               closesAt={probe.vote.closesAt}
               onVote={(i) => void castVote(i)}
-              busy={player.voting || connection !== "live" || frozen}
+              busy={player.voting || connection !== "live" || frozen || held}
             />
           ) : (
           <VoteCard
@@ -145,7 +147,7 @@ export function GamePage() {
             leftS={view.voteLeftS}
             closesAt={probe.vote.closesAt}
             onVote={(i) => void castVote(i)}
-            busy={player.voting || connection !== "live" || frozen}
+            busy={player.voting || connection !== "live" || frozen || held}
           />
         );
         const orbit = view.orbit ? { at: probe.arrivedAt!, destName: view.destName, onCredits: openArrival } : null;
@@ -167,7 +169,7 @@ export function GamePage() {
               {signal}
               {askPing}
               <section className="home__thrust" aria-label="Thrust">
-                <ThrustButton frozen={frozen} onThrust={onThrust} />
+                <ThrustButton frozen={frozen || held} onThrust={onThrust} />
                 <div className="home__rates">
                   <span className="num">
                     +{units.fine(view.tapKm)} <small>per tap</small>
@@ -220,7 +222,7 @@ export function GamePage() {
             <div className="home__columns">
               {signal}
               <section className="home__thrust home__thrust--wide" aria-label="Thrust">
-                <ThrustButton frozen={frozen} onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
+                <ThrustButton frozen={frozen || held} onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
                 <div className="home__rates">
                   <span className="num">
                     +{units.fine(view.tapKm)} <small>per click</small>

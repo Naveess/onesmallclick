@@ -6,6 +6,7 @@ import { int } from "../game/format";
 import { ArrivalScreen } from "./ArrivalScreen";
 import { BetaBanner } from "./BetaBanner";
 import { MaintenanceBanner } from "./MaintenanceBanner";
+import { BanScreen, PausedBanner, WarningDialog } from "./Standing";
 import { Link } from "../router";
 import { DISCORD_INVITE } from "../../shared/community";
 import { STILLS } from "../sprites";
@@ -40,6 +41,9 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
   const reveal = useProbeReveal(ready, view.probeId, probe.stop);
   const openUpgrades = () => setUpgradesOpen(true);
   const guest = player.known && !player.account;
+  // Phase A2a: timed out or banned (until it runs out), and the oldest warning still to acknowledge.
+  const hold = player.standing.hold && (player.standing.hold.until === null || player.standing.hold.until > Date.now()) ? player.standing.hold : null;
+  const warning = hold?.kind === "ban" ? null : (player.standing.warnings[0] ?? null);
 
   // Phase G1: after real progress (an upgrade, a badge or 500 clicks), one toast a day asks a guest to sign in.
   // Never in safe mode, the signal's last minute, or over another screen or toast.
@@ -190,11 +194,14 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
 
           {probe.maintenance ? (
             <MaintenanceBanner message={probe.maintenance.message} />
-          ) : (
+          ) : hold?.kind === "timeout" ? (
+            <PausedBanner hold={hold} signedIn={!!player.account} />
+          ) : hold ? null : (
             <BetaBanner signedIn={!!player.account} hasBadge={player.badges.some((b) => b.id === "early-beta")} safe={safe} />
           )}
 
-          {children({ wide, openUpgrades })}
+          {hold?.kind === "ban" ? <BanScreen hold={hold} signedIn={!!player.account} /> : children({ wide, openUpgrades })}
+          {warning && <WarningDialog warning={warning} />}
 
           {!wide ? (
             <footer className="game-foot">

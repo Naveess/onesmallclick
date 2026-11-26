@@ -5,6 +5,7 @@
 
 import { FEEDBACK_KEEP_DONE_MS, FEEDBACK_MAX, isFeedbackKind, type FeedbackItem, type FeedbackKind } from "../shared/feedback";
 import { readSession } from "./auth";
+import { readDevice } from "./device";
 import { capCheck, capCount } from "./caps";
 
 type Verify = (token: string, request: Request, env: Env, action: "feedback") => Promise<boolean>;
@@ -27,17 +28,24 @@ export async function sendFeedback(request: Request, env: Env, turnstileOk: Veri
     return fail("bot-check", 403);
   }
   const signedIn = body.contact === true ? await readSession(request, env) : null;
+  // Phase A2a: an appeal says who's appealing (the account when signed in, else the device), contact ticked or not.
+  let appellant: string | null = null;
+  if (body.kind === "appeal") {
+    const session = signedIn ?? (await readSession(request, env));
+    appellant = session ? `a:${session.account.id}` : await readDevice(request, env.DEVICE_SECRET);
+  }
   const page = clip(body.page, 200).replace(/[?#].*$/, "") || null; // the path only: no query, no crew codes
   const info = clip(body.info, 300) || null;
   const now = Date.now();
   await env.DB.batch([
-    env.DB.prepare(`INSERT INTO feedback (at, kind, message, page, info, account_id) VALUES (?, ?, ?, ?, ?, ?)`).bind(
+    env.DB.prepare(`INSERT INTO feedback (at, kind, message, page, info, account_id, player_key) VALUES (?, ?, ?, ?, ?, ?, ?)`).bind(
       now,
       body.kind as FeedbackKind,
       message,
       page,
       info,
       signedIn?.account.id ?? null,
+      appellant,
     ),
     env.DB.prepare(`DELETE FROM feedback WHERE done_at IS NOT NULL AND done_at < ?`).bind(now - FEEDBACK_KEEP_DONE_MS),
   ]);
@@ -55,11 +63,15 @@ type Row = {
   done_at: number | null;
   email: string | null;
   name: string | null;
+  player_key: string | null;
+  appellant: string | null;
 };
 
 /** /admin: every open item (newest first, up to 100), then the last 20 done ones. */
 export async function feedbackReport(env: Env): Promise<{ open: number; items: FeedbackItem[] }> {
-  const select = `SELECT f.id, f.at, f.kind, f.message, f.page, f.info, f.done_at, a.email, a.name
+  const select = `SELECT f.id, f.at, f.kind, f.message, f.page, f.info, f.done_at, a.email, a.name, f.player_key,
+                    CASE WHEN f.player_key LIKE 'a:%' THEN (SELECT name FROM accounts WHERE id = substr(f.player_key, 3))
+                         ELSE (SELECT name FROM devices WHERE id = f.player_key) END AS appellant
                   FROM feedback f LEFT JOIN accounts a ON a.id = f.account_id`;
   const [, open, done, count] = await env.DB.batch<Row & { n?: number }>([
     env.DB.prepare(`DELETE FROM feedback WHERE done_at IS NOT NULL AND done_at < ?`).bind(Date.now() - FEEDBACK_KEEP_DONE_MS),
@@ -75,6 +87,7 @@ export async function feedbackReport(env: Env): Promise<{ open: number; items: F
     page: r.page,
     info: r.info,
     contact: r.name !== null ? { email: r.email, name: r.name } : null,
+    appellant: r.player_key ? { key: r.player_key, name: r.appellant } : null,
     doneAt: r.done_at,
   });
   return { open: count.results[0]?.n ?? 0, items: [...open.results, ...done.results].map(item) };

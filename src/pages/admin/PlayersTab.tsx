@@ -5,6 +5,7 @@ import { PixelButton } from "../../components/PixelButton";
 import { Window } from "../../components/Window";
 import { int } from "../../game/format";
 import { Fixes, LogLine, SaveStates } from "./Fixes";
+import { Moderation } from "./Moderation";
 
 // Phase A1a: the Players tab. Find anyone (search, or a list), then one screen with everything about them, and
 // private notes. From A1b-1: the fixes, their save states, name history, and Undo in the admin history (Fixes.tsx).
@@ -292,6 +293,7 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
         )}
       </Window>
 
+      <Moderation key={`m${version}`} p={p} onChanged={reload} />
       <Fixes key={version} p={p} onChanged={reload} onGone={() => setGone(true)} />
       <SaveStates key={`s${version}`} p={p} onChanged={reload} />
 

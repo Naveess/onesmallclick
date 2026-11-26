@@ -32,6 +32,16 @@ async function netHash(secret: string, day: number, net: string): Promise<string
   return [...new Uint8Array(mac).slice(0, 16)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * Phase A2a: a network ban's hash. Fixed (not per day), so a ban can last up to 7 days; it's only ever stored for a
+ * banned player's network (worker/moderation.ts), never for anyone else's, and can't be turned back into an address.
+ */
+export async function banHash(request: Request, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", enc.encode(`network-ban:${secret}`), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, enc.encode(network(request)));
+  return [...new Uint8Array(mac).slice(0, 16)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export interface CapTicket {
   day: number;
   hash: string;

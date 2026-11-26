@@ -1,0 +1,85 @@
+/* Phase A2a: the paused banner, the ban screen, the warning box and the hidden note (Standing.tsx). */
+
+.standing__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 6px;
+}
+
+/* Text-link buttons, with a 44px tap height (the footer's link style). */
+.standing__link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.standing-ban {
+  display: flex;
+  justify-content: center;
+  padding: 24px 2px 32px;
+}
+
+.standing-ban__window {
+  width: 100%;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px;
+}
+
+.standing-ban__label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--text-orange);
+}
+
+.standing-ban__title {
+  font: 700 24px/1.2 var(--font-ui);
+}
+
+.standing-ban__reason {
+  padding: 10px 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+.standing-ban__small,
+.standing-warn__small {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+.standing-ban__buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.standing-ban__buttons .standing__link {
+  align-self: center;
+}
+
+.standing-warn__reason {
+  padding: 10px 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  background: var(--well);
+  border: 2px solid var(--line-orange, var(--line-blue));
+}

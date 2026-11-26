@@ -1,0 +1,1 @@
+Checks was successful, maintenance mode turned off and on fine, tapping ping showed paused message, greyed out thrust, paused on flight viw, new save state exists, signal timer moved on too. 100% success rate. Lets start with A2

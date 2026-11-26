@@ -391,6 +391,11 @@ function Feedback({ adminKey }: { adminKey: string }) {
                   {f.contact.email ? ` · ${f.contact.email}` : " · signed in with Google (no email stored)"}
                 </p>
               )}
+              {f.appellant && (
+                <p className="admin__note">
+                  Appeal from {f.appellant.name ?? "a deleted player"} · <span className="admin__mono">{f.appellant.key}</span> (Players tab: search the name)
+                </p>
+              )}
               {f.info && <p className="admin__fb-info">{f.info}</p>}
               <PixelButton variant="outline" onClick={() => void mark(f.id, !f.doneAt)}>
                 {f.doneAt ? `Done ${when(f.doneAt)} · reopen` : "Mark done"}

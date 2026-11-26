@@ -29,7 +29,11 @@ import { NO_TECH, creditsFor, type CrewTech } from "../../shared/tech";
 import { factOfDay } from "./facts";
 import type { LiveVote, VoteResult } from "../../shared/votes";
 import { PRESTIGE_AT_KM, type Progress, type WelcomeBack } from "../../shared/upgrades";
-import { request, startProbe, type Connection } from "./probeClient";
+import { reconnect, request, startProbe, type Connection } from "./probeClient";
+import type { Hold, Standing } from "../../shared/moderation";
+
+/** Phase A2a: nothing to show. */
+const NO_STANDING: Standing = { hold: null, hidden: null, warnings: [] };
 import { UPGRADES, upgradeCost, type UpgradeKey, type UpgradeLevels } from "./rules";
 import { preloadTurnstile, turnstileToken } from "./turnstile";
 
@@ -109,6 +113,8 @@ export interface PlayerState {
   known: boolean;
   /** Email sign-in works here (phase G1: else the nudges say "Sign in with Google"). */
   emailSignIn: boolean;
+  /** Phase A2a: timed out or banned, hidden from the boards, warnings to acknowledge (from /api/session). */
+  standing: Standing;
   /** Credits now: the server's, plus auto-thrust since its last message, plus taps not yet credited. */
   credits: number;
   levels: UpgradeLevels;
@@ -300,6 +306,7 @@ function initialState(): GameState {
       account: null,
       known: false,
       emailSignIn: false,
+      standing: NO_STANDING,
       credits: 0,
       levels: { cold: 0, ion: 0, sail: 0, hands: 0, chant: 0 },
       patches: 0,
@@ -571,7 +578,10 @@ function startServer() {
   startProbe({
     onMessage,
     onConnection: (c) => set(compose(state, c)),
-    onSession: (info) => set({ ...state, player: { ...state.player, ...info, known: true } }),
+    onSession: (info) => {
+      set({ ...state, player: { ...state.player, ...info, standing: info.standing ?? NO_STANDING, known: true } });
+      watchHold(info.standing?.hold ?? null);
+    },
     onDropped: () => {
       // We can't know whether those batches were credited; drop them rather than count them twice.
       inFlight.clear();
@@ -651,6 +661,7 @@ function timeLeftText(s: number): string {
 export function thrust(): number {
   if (state.probe.safeSince !== null) return 0; // thrusters asleep
   if (state.probe.maintenance) return 0; // the game is frozen (phase A1c-2)
+  if (isHeld()) return 0; // timed out or banned (phase A2a)
   const km = state.player.tapKm;
   if (unconfirmedTaps() < MAX_PENDING_TAPS || state.connection === "live") pendingTaps += 1;
   set(compose(state));
@@ -717,6 +728,9 @@ export async function ping() {
     case "maintenance":
       frozenToast(true);
       break;
+    case "paused":
+      frozenToast(true);
+      break;
     case "busy-network":
       showToast({
         tier: null,
@@ -729,11 +743,44 @@ export async function ping() {
   }
 }
 
-/** Maintenance mode (phase A1c-2): says the game is paused and returns true (always, with `force`). */
+/**
+ * Maintenance mode (phase A1c-2), or this player timed out or banned (phase A2a): says so and returns true (always,
+ * with `force`).
+ */
 function frozenToast(force = false): boolean {
-  if (!force && !state.probe.maintenance) return false;
-  showToast({ tier: null, title: "Paused for maintenance", body: "Mission control is fixing something. Pings, votes and upgrades are back soon." });
+  const held = isHeld();
+  if (!force && !state.probe.maintenance && !held) return false;
+  if (held || (force && !state.probe.maintenance)) {
+    showToast({ tier: null, title: "Your account is paused", body: "Taps, pings, votes and upgrades don't count while it's paused. The note at the top says why." });
+  } else showToast({ tier: null, title: "Paused for maintenance", body: "Mission control is fixing something. Pings, votes and upgrades are back soon." });
   return true;
+}
+
+/** Phase A2a: timed out or banned right now. */
+export function isHeld(): boolean {
+  const h = state.player.standing.hold;
+  return h !== null && (h.until === null || h.until > Date.now());
+}
+
+let holdTimer: number | undefined;
+/** When a time out runs out, reconnect, so the server and the screen both see it's over. */
+function watchHold(hold: Hold | null) {
+  window.clearTimeout(holdTimer);
+  if (!hold || hold.until === null) return;
+  const ms = hold.until - Date.now() + 1000;
+  // setTimeout can't wait more than ~24.8 days; a time out is at most 14.
+  holdTimer = window.setTimeout(() => reconnect(), Math.max(1000, Math.min(ms, 2 ** 31 - 1)));
+}
+
+/** Phase A2a: the player tapped OK on a warning. */
+export async function ackWarning(id: number) {
+  const standing = state.player.standing;
+  set({ ...state, player: { ...state.player, standing: { ...standing, warnings: standing.warnings.filter((w) => w.id !== id) } } });
+  try {
+    await fetch("/api/moderation/ack", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }), credentials: "same-origin" });
+  } catch {
+    // it shows again next visit
+  }
 }
 
 /** Today's vote: the invisible bot check, then the server. The tallies update for everyone. */
@@ -777,6 +824,9 @@ export async function castVote(index: number) {
       showToast({ tier: null, title: "Vote didn't go through", body: "The bot check failed. Please try again." });
       break;
     case "maintenance":
+      frozenToast(true);
+      break;
+    case "paused":
       frozenToast(true);
       break;
     case "busy-network":

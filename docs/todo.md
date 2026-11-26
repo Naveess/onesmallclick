@@ -11,9 +11,10 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - [ ] **Tonight (Nav, 26 Nov, prompts 125/128): check A1b on the live /admin** (it's deployed now, so no `npm run dev` needed). Sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. A1b-2 too: press Compare on a save state, tick a part and restore it; on a guest, try "Merge into an account"; on an account, "Move a device" (each has Undo in the account's history). Use a test account, not a real player.
-- **Next to build:** H, home v3 (Nav, 26 Nov: wants it deployed next; decisions 41–44 first; design group 3, docs/plan.md "H"), then A2 (decisions 36-40 first), then G2.
+- **Built, not deployed:** A2a (moderation; prompt 133; migration 0022). Deploy when Nav asks: backup, `npx wrangler d1 migrations apply onesmallclick --remote`, `npm run deploy`.
+- **Next to build:** H, home v3 (Nav, 26 Nov: wants it deployed next; decisions 41–44 first; design group 3, docs/plan.md "H"), then A2b (messages) and A2c (flags and names), then G2.
 - **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1415-pre-a1c.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 132, next migration 0022.** Run `git pull` first: other sessions push here too.
+- **Next prompt 134, next migration 0023.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -83,7 +84,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
     - Known quirk (since 8a): if a device signs out (or is merged or moved) and plays as a guest the same day, those km still add to the account's row for that day. Harmless before launch; fix with A2 if it matters.
     - Opening one player from a daily file downloads the whole day's file; fine for hundreds of players, slow for tens of thousands (split the file by key prefix then).
   - [x] **A1c (LIVE 26 Nov, prompt 131, `c042d4a4`):** the game's save states, maintenance mode, the probe rewind, docs/runbook.md. The one-button rollback of both the probe and D1 waits until after launch (the runbook does it in two steps until then).
-  - [ ] **A2:** decisions 36-40 first.
+  - [ ] **A2:** decisions 36-40 and 45 decided (prompt 133). A2a (moderation) built, not deployed; A2b (messages: inbox, banner, push, Discord, templates, gifts) and A2c (the Flags queue, Report name, the name blocklist) next.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.
 - [ ] **Q2–Q6, after Q1:**
   - Q2: settings, the first-visit guide, haptics and sound;

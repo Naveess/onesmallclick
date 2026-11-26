@@ -1,5 +1,7 @@
 // Accounts and sign-in (phase 8a), shared by the browser and the Worker.
 
+import type { Standing } from "./moderation";
+
 /** Your account, as /api/session describes it (null for guests). */
 export interface AccountInfo {
   name: string;
@@ -22,6 +24,8 @@ export interface SessionInfo {
   account: AccountInfo | null;
   /** Email sign-in works here (phase G1: the nudges say "Sign in with Google" while it doesn't). */
   emailSignIn?: boolean;
+  /** Phase A2a: time out, ban, hidden from the boards, warnings to acknowledge. */
+  standing?: Standing;
 }
 
 /** POST /api/auth/email. In local development the link comes back in `devLink` instead of an email. */

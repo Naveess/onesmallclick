@@ -416,15 +416,15 @@ const OPERATOR = { name: "websitesbynavee.co.uk", url: "https://websitesbynavee.
 const CONTACT_EMAIL = "naveessharma@gmail.com";
 const mailto = `<a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>`;
 const operatorLink = `<a href="${OPERATOR.url}" rel="noopener">${OPERATOR.name}</a>`;
-const LEGAL_UPDATED = "20 November 2026";
-// The privacy page alone changed in phase S1 (crew links and share counts).
-const PRIVACY_UPDATED = "25 November 2026";
+const LEGAL_UPDATED = "26 November 2026";
+// The privacy page: phase S1 (crew links and share counts), then phase A2a (moderation records, appeals).
+const PRIVACY_UPDATED = "26 November 2026";
 
-/** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML. */
+/** A page of titled sections in windows (privacy, terms): paragraphs are trusted HTML; an optional third item is an anchor id. */
 function sectionsHtml(id, sections) {
   return sections
     .map(
-      ([title, paras], i) => `      <section class="window prose" aria-labelledby="${id}-${i}">
+      ([title, paras, anchor], i) => `      <section class="window prose"${anchor ? ` id="${anchor}"` : ""} aria-labelledby="${id}-${i}">
         <h2 id="${id}-${i}" class="page__h2">${esc(title)}</h2>
 ${paras.map((p) => `        <p>${p}</p>`).join("\n")}
       </section>`,
@@ -451,11 +451,28 @@ const termsSections = [
     ],
   ],
   [
-    "Playing fair",
+    "Crew rules",
     [
-      "Push with your own taps. Don't use bots, scripts or auto-clickers, and don't use extra devices or accounts to get extra pings or votes.",
-      "To keep this fair the game limits taps per second, checks pings and votes for bots, and caps pings and votes from one network each day. If someone cheats anyway, we may remove the progress it earned or block the device or account.",
+      "Push with your own taps. No auto-clickers, bots, scripts or anything else that taps for you.",
+      "One player, one account. Don't use extra accounts or devices to farm km, pings, votes or crew-link recruits.",
+      "Be kind: in your name, on Discord and anywhere else you meet the crew.",
       "Don't attack, overload or try to break into the game or the people who play it.",
+      "To keep this fair the game limits taps per second, checks pings and votes for bots, and caps pings and votes from one network each day.",
+    ],
+    "crew-rules",
+  ],
+  [
+    "If the rules are broken",
+    [
+      "Mission control looks at what happened (nothing happens automatically) and may, depending on how serious it is:",
+      "<strong>Warn you:</strong> a message you tap OK on next time you play. It stays on your record. <strong>Pause your account</strong> for 1, 3, 7 or 14 days: you can look around, but taps, auto-thrust, pings, votes, upgrades and shares don't count, and it ends by itself. <strong>Hide you from the leaderboards:</strong> you still play and help the probe, but your name is off the boards. <strong>Ban the account</strong> and its devices, until we lift it; for a short time (at most 7 days) the network it plays from too. <strong>Remove km</strong> earned by cheating from the leaderboards, and if needed from the probe.",
+      "You're always told: the game shows what was done and why. There are no secret bans.",
+    ],
+  ],
+  [
+    "Appeals",
+    [
+      "If you think we got it wrong, use “Report a bug or idea” and pick <strong>Appeal</strong> (the paused and ban screens have a button for it), or ask on Discord. Say which decision and why. Every appeal is read, and a decision can be lifted or undone.",
     ],
   ],
   [
@@ -577,6 +594,14 @@ const privacySections = [
       "When you use “Report a bug or idea”, we keep what you write, which kind it is (bug, idea or other), the page you sent it from, your screen size and your browser (its user agent), so we can fix the problem. Nothing else about you comes with it.",
       "If you're signed in and tick “contact me”, we keep a link to your account so we can reply to its email address. Deleting your account removes that link.",
       "Each report is kept until we've dealt with it, then deleted 90 days later. It uses Turnstile and the same per-network daily count as Ping and the vote (20 reports a day).",
+      "An <strong>appeal</strong> is sent with who you are in the game (your account, or your device if you're a guest), even without “contact me”, so we can find your record.",
+    ],
+  ],
+  [
+    "Moderation records",
+    [
+      "If mission control warns, pauses, hides or bans a player (see the <a href=\"/terms#crew-rules\">crew rules</a>), we keep a record: what was done, the reason, when, until when, and when a warning was acknowledged. Records are kept for 1 year; a ban or hide that's still in force is kept while it is. Every action by mission control is also kept in an admin log for 1 year.",
+      "A ban can also cover the network it's played from, for at most 7 days. We never keep network addresses: when a banned player next visits, we keep a one-way code made from their network (it can't be turned back into the address) until the network ban ends, so other devices on that network can be stopped too.",
     ],
   ],
   [

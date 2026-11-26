@@ -11,6 +11,7 @@ import { int } from "../game/format";
 import { useGame } from "../game/store";
 import { Link } from "../router";
 import { ShareNudge } from "../components/ShareNudge";
+import { HiddenNote } from "../components/Standing";
 import { flagEmoji } from "../../shared/share";
 import { useDocumentTitle } from "./useDocumentTitle";
 import "./RanksPage.css";
@@ -106,6 +107,9 @@ export function RanksPage() {
               <p className="ranks__sub">Distance pushed today · resets {yourTime((Math.floor(Date.now() / 86_400_000) + 1) * 86_400_000)}</p>
             </div>
           </header>
+
+          {/* Phase A2a: hidden players are told (decision 38: no shadow bans). */}
+          {player.standing.hidden && <HiddenNote reason={player.standing.hidden.reason} signedIn={!!player.account} />}
 
           <div className="ranks__tabs" role="tablist" aria-label="Leaderboard">
             {(["players", "countries"] as const).map((b) => (

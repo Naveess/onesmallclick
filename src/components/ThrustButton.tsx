@@ -131,7 +131,7 @@ export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spac
     <div ref={hostRef} className={["thrust", lg && "thrust--lg", frozen && "thrust--frozen"].filter(Boolean).join(" ")}>
       <div className="thrust__ring" aria-hidden="true" />
       <div className="thrust__focus" aria-hidden="true" />
-      <button ref={buttonRef} type="button" className="thrust__button" aria-label={frozen ? "Thrust, paused for maintenance" : "Thrust"}
+      <button ref={buttonRef} type="button" className="thrust__button" aria-label={frozen ? "Thrust, paused" : "Thrust"}
         disabled={frozen}
         onPointerDown={onPointerDown}
         onClick={onClick}

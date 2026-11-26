@@ -290,3 +290,25 @@
   flex: none;
   accent-color: var(--text-blue);
 }
+
+/* Phase A2a: the Moderation card (src/pages/admin/Moderation.tsx). */
+.admin__h3 {
+  margin-top: 14px;
+  font: 700 15px/1.3 var(--font-ui);
+  color: var(--text);
+}
+
+.admin__mod {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin__mod--on {
+  color: var(--text);
+}
+
+.admin__mod-reason {
+  overflow-wrap: anywhere;
+  color: var(--text-soft);
+}

@@ -230,6 +230,8 @@ interface Attachment {
   seen?: number;
   /** The player's time zone, from Cloudflare's location for the connection (Night Shift). */
   tz?: string | null;
+  /** Phase A2a: timed out or banned until (real ms; MAX_SAFE_INTEGER for a ban), from the Worker at connect. */
+  held?: number;
 }
 
 /**
@@ -343,6 +345,11 @@ export class Probe extends DurableObject<Env> {
    * Kept in its own table, outside the game tables, so restoring the probe keeps it on.
    */
   private maint: { since: number; message: string; pausedAt: number | null } | null = null;
+  /**
+   * Phase A2a: players timed out or banned (key → real ms until), from their sockets (the Worker reads D1 at connect).
+   * While held, nothing is credited: no taps, no auto-thrust, no offline pay; purchases are refused.
+   */
+  private holds = new Map<string, number>();
   /** Raw tap km per minute (key: minute number): the crew pace, and the crew push that's balanced. */
   private pace = new Map<number, number>();
   /** Raw offline catch-up km per minute: counted in the crew push only, so one return doesn't swing the pace shown. */
@@ -590,6 +597,11 @@ export class Probe extends DurableObject<Env> {
     }
 
     this.loadMaintenance();
+    // Phase A2a: who's held, from the sockets that survived hibernation.
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (a?.held) this.holds.set(whoOf(a).key, a.held);
+    }
 
     this.reached = this.sql
       .exec<{ n: number; at: number }>(`SELECT n, at FROM milestone_reached WHERE mission_id = ? ORDER BY n`, this.mission.id)
@@ -2740,6 +2752,11 @@ export class Probe extends DurableObject<Env> {
   /** Pays auto-thrust for connected time since the last settle (in full; it already moved the probe). */
   private settleConnected(w: Who, p: ProgressEntry, dev: DeviceEntry, now: number) {
     if (now <= p.settledAt) return;
+    if (this.isHeld(w.key)) {
+      p.settledAt = now; // timed out or banned (phase A2a): the time passes unpaid
+      this.touch(w.key);
+      return;
+    }
     const auto = autoKmS(p.levels, p.patches);
     if (auto > 0) this.earn(w, p, dev, (auto * this.awakeMs(p.settledAt, now)) / 1000, false);
     p.settledAt = now;
@@ -2751,6 +2768,11 @@ export class Probe extends DurableObject<Env> {
    * Planet tech's extra offline minutes (E4b, Ceres) pay credits only: they never move the probe, so never trip speed.
    */
   private settleAway(w: Who, p: ProgressEntry, dev: DeviceEntry, now: number): Away | null {
+    if (this.isHeld(w.key)) {
+      p.settledAt = Math.max(p.settledAt, now); // timed out or banned (phase A2a): no offline pay
+      this.touch(w.key);
+      return null;
+    }
     const from = p.settledAt;
     const awayMs = Math.max(0, now - from);
     const auto = autoKmS(p.levels, p.patches);
@@ -2816,8 +2838,15 @@ export class Probe extends DurableObject<Env> {
     };
   }
 
+  /** Phase A2a: timed out or banned right now. */
+  private isHeld(key: string): boolean {
+    const until = this.holds.get(key);
+    return until !== undefined && Date.now() < until;
+  }
+
   /** After a purchase or a handover: every tab of this player carries its new auto-thrust. */
   private retag(key: string, auto: number) {
+    if (this.isHeld(key)) auto = 0; // a held player's thrusters don't push the probe
     for (const ws of this.ctx.getWebSockets()) {
       const a = ws.deserializeAttachment() as Attachment | null;
       if (a && whoOf(a).key === key) ws.serializeAttachment({ ...a, auto } satisfies Attachment);
@@ -2903,6 +2932,12 @@ export class Probe extends DurableObject<Env> {
     const deviceId = request.headers.get("X-Device-Id");
     if (!deviceId) return new Response("No device", { status: 400 });
     const w = who(deviceId, request.headers.get("X-Account-Id"));
+    // Phase A2a: the Worker read their standing from D1. Held: until when (real ms). Ended: when the last hold ended.
+    const heldHeader = Number(request.headers.get("X-Hold-Until"));
+    const held = Number.isFinite(heldHeader) && heldHeader > Date.now() ? heldHeader : undefined;
+    if (held) this.holds.set(w.key, held);
+    else this.holds.delete(w.key);
+    const ended = Number(request.headers.get("X-Hold-Ended"));
     await this.checkSignal();
     await this.checkVote();
     await this.checkMilestones();
@@ -2910,8 +2945,13 @@ export class Probe extends DurableObject<Env> {
     const now = this.now();
     const dev = await this.device(w, now);
     const p = this.prog(w.key, now);
+    // A hold that ended while they were away: that time isn't paid (only what came after it).
+    if (!held && Number.isFinite(ended) && ended > 0) {
+      const endedAt = Math.min(now, ended + this.clockOffsetMs);
+      if (endedAt > p.settledAt) p.settledAt = endedAt;
+    }
     // Connected auto-thrust is activity: it wakes a paused probe (before any catch-up is added to it).
-    if (autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now);
+    if (!held && autoKmS(p.levels, p.patches) > 0) await this.wake(deviceId, now);
     // Another tab (or device, on an account) is already here: it never left. Otherwise it's back from time away.
     const alreadyHere = this.onlineDevices().has(w.key);
     let away: Away | null = null;
@@ -2924,15 +2964,16 @@ export class Probe extends DurableObject<Env> {
     server.serializeAttachment({
       deviceId,
       accountId: w.accountId,
-      auto: autoKmS(p.levels, p.patches),
+      auto: held ? 0 : autoKmS(p.levels, p.patches),
       since: Date.now(),
       tz: request.headers.get("X-Timezone"),
+      ...(held ? { held } : {}),
     } satisfies Attachment);
     this.retune(now); // people here and auto-thrust changed
     const welcome = away ? await this.welcomeFor(p, away, now) : null;
 
     this.send(server, { t: "hello", now, probe: this.snapshot(now), me: this.me(p), welcome, ...this.today(dev) });
-    await this.checkBadges(w, dev, p, now); // anything earned before badges existed, or while away
+    if (!held) await this.checkBadges(w, dev, p, now); // anything earned before badges existed, or while away
     return new Response(null, { status: 101, webSocket: client });
   }
 
@@ -2961,6 +3002,7 @@ export class Probe extends DurableObject<Env> {
     if (msg.t === "buy" || msg.t === "prestige") {
       let ok = false;
       if (this.maint) ok = false; // maintenance (phase A1c-2): no purchases or handovers
+      else if (this.isHeld(w.key)) ok = false; // timed out or banned (phase A2a)
       else if (msg.t === "prestige") ok = this.prestige(w, p, now);
       else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(w, p, msg.key, now);
       this.send(ws, { t: "me", seq: msg.seq, ok, now, me: this.me(p) });
@@ -2971,6 +3013,8 @@ export class Probe extends DurableObject<Env> {
     }
 
     if (msg.t !== "taps" || !Number.isInteger(msg.n) || msg.n < 0 || msg.n > MAX_TAPS_PER_MESSAGE) return;
+    // Timed out or banned (phase A2a): taps count for nothing and don't wake the probe.
+    if (this.isHeld(w.key)) msg.n = 0;
     // Any tap batch is activity: it keeps the probe awake, or wakes it (decision 5).
     if (msg.n > 0) await this.wake(deviceId, now);
     if (msg.n > 0) await this.maybeStartBurn(); // an hour out: these taps already count for the burn
@@ -3804,6 +3848,49 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`DELETE FROM code_version WHERE at < ?`, Date.now() - 90 * DAY_MS);
     const dump = this.gameDump();
     this.ctx.waitUntil(saveGame(this.env, dump, "deploy", `new version ${id.slice(0, 8)} started`, null).catch((err) => console.error("deploy save state failed", err)));
+  }
+
+  /**
+   * Phase A2a: a player's standing changed (warned, timed out, hidden, banned or lifted). Their open screens are paid up
+   * to now (unless they were held) and reconnect, so the Worker reads the new standing and the screen shows it.
+   */
+  async adminReconnect(keys: string[], devices: string[]): Promise<void> {
+    const now = this.now();
+    const hit = (a: Attachment) => keys.includes(whoOf(a).key) || devices.includes(a.deviceId);
+    const settled = new Set<string>();
+    for (const ws of this.ctx.getWebSockets()) {
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (!a || !hit(a) || ws.readyState !== WebSocket.OPEN || this.dead.has(ws)) continue;
+      const w = whoOf(a);
+      if (settled.has(w.key)) continue;
+      settled.add(w.key);
+      this.settleConnected(w, this.prog(w.key, now), await this.device(w, now), now);
+    }
+    this.saveProgress();
+    this.dropDevice(hit, "standing changed by mission control");
+    this.retune(now);
+  }
+
+  /** Phase A2a: a player's daily_km rows on a day, with everything queued sent first. */
+  async adminDayRows(key: string, day: string): Promise<DayRow[]> {
+    await this.flushD1();
+    return this.dayRows(key, day);
+  }
+
+  /**
+   * Phase A2a: takes km off the probe's distance on this leg (a cheat's push; negative puts it back). Never below 0 or
+   * past the leg's end. Returns the km actually taken.
+   */
+  async adminTakeKm(km: number): Promise<number> {
+    const now = this.now();
+    this.rebase(now);
+    const before = this.mission.distanceKm;
+    this.mission.distanceKm = Math.max(0, Math.min(this.mission.routeKm, before - km));
+    this.track = [];
+    this.sql.exec(`DELETE FROM track`);
+    this.sample(true);
+    await this.adminCommit();
+    return before - this.mission.distanceKm;
   }
 
   /**

@@ -62,6 +62,12 @@ export function startProbe(h: Handlers) {
 }
 
 /** Sends the waiting taps now (used on the first message, so taps made while connecting count). */
+/** Phase A2a: reconnect now (a time out ran out), reading the session again on the way. */
+export function reconnect() {
+  if (ws) ws.close(4001, "standing");
+  else void connect();
+}
+
 export function flush() {
   if (!ws || ws.readyState !== WebSocket.OPEN) return;
   const n = handlers.takeTaps();
@@ -106,7 +112,7 @@ async function connect() {
     const res = await fetch("/api/session", { credentials: "same-origin", cache: "no-store" });
     if (!res.ok) throw new Error(`session ${res.status}`);
     const body = (await res.json().catch(() => ({}))) as Partial<SessionInfo>;
-    if (body.name) handlers.onSession({ name: body.name, crew: body.crew ?? 0, account: body.account ?? null });
+    if (body.name) handlers.onSession({ name: body.name, crew: body.crew ?? 0, account: body.account ?? null, standing: body.standing });
   } catch {
     retry();
     return;

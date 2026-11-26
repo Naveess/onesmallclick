@@ -23,9 +23,9 @@ const ERRORS: Record<string, string> = {
  * optional "contact me" (the account's email is looked up only if ticked). Turnstile and the per-network cap guard it.
  * A modal <dialog> built from the share sheet's window.
  */
-export function FeedbackDialog({ signedIn, onClose }: { signedIn: boolean; onClose: () => void }) {
+export function FeedbackDialog({ signedIn, onClose, initialKind = "bug" }: { signedIn: boolean; onClose: () => void; initialKind?: FeedbackKind }) {
   const ref = useRef<HTMLDialogElement>(null);
-  const [kind, setKind] = useState<FeedbackKind>("bug");
+  const [kind, setKind] = useState<FeedbackKind>(initialKind);
   const [message, setMessage] = useState("");
   const [contact, setContact] = useState(false);
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
@@ -96,7 +96,13 @@ export function FeedbackDialog({ signedIn, onClose }: { signedIn: boolean; onClo
             </fieldset>
             <label className="feedback__field">
               <span className="feedback__label">
-                {kind === "bug" ? "What happened, and what did you expect?" : kind === "idea" ? "What's your idea?" : "Your message"}
+                {kind === "bug"
+                  ? "What happened, and what did you expect?"
+                  : kind === "idea"
+                    ? "What's your idea?"
+                    : kind === "appeal"
+                      ? "Which decision, and why should we look again?"
+                      : "Your message"}
               </span>
               <textarea
                 className="feedback__text"
@@ -117,10 +123,17 @@ export function FeedbackDialog({ signedIn, onClose }: { signedIn: boolean; onClo
                 You can contact me about this (using my account's email)
               </label>
             )}
-            <p className="feedback__small">
-              The page you're on, your screen size and your browser are sent with it, to help fix bugs. Nothing else about
-              you{signedIn ? " unless you tick the box" : ""}.
-            </p>
+            {kind === "appeal" ? (
+              <p className="feedback__small">
+                An appeal about a warning, a pause, being hidden from the boards or a ban. It's sent with who you are in the
+                game (your account, or this device), so mission control can look at your record. Every appeal is read.
+              </p>
+            ) : (
+              <p className="feedback__small">
+                The page you're on, your screen size and your browser are sent with it, to help fix bugs. Nothing else about
+                you{signedIn ? " unless you tick the box" : ""}.
+              </p>
+            )}
             {error && (
               <p className="feedback__error" role="alert">
                 {error}
@@ -142,15 +155,26 @@ export function FeedbackDialog({ signedIn, onClose }: { signedIn: boolean; onClo
 }
 
 /** The footer's (and the crash screen's) "Report a bug or idea". `/?feedback` opens it (the contact page links there). */
-export function FeedbackButton({ signedIn, className, autoOpen = false }: { signedIn: boolean; className?: string; autoOpen?: boolean }) {
+export function FeedbackButton({
+  signedIn,
+  className,
+  autoOpen = false,
+  appeal = false,
+}: {
+  signedIn: boolean;
+  className?: string;
+  autoOpen?: boolean;
+  /** Phase A2a: "Appeal", opening the form on its Appeal option. */
+  appeal?: boolean;
+}) {
   const [open, setOpen] = useState(() => autoOpen && new URLSearchParams(window.location.search).has("feedback"));
   return (
     <>
       <button type="button" className={className} onClick={() => setOpen(true)} aria-haspopup="dialog">
-        Report a bug or idea
+        {appeal ? "Appeal" : "Report a bug or idea"}
       </button>
       {/* On <body>, so the footer's link-style button rules don't reach the dialog's buttons. */}
-      {open && createPortal(<FeedbackDialog signedIn={signedIn} onClose={() => setOpen(false)} />, document.body)}
+      {open && createPortal(<FeedbackDialog signedIn={signedIn} initialKind={appeal ? "appeal" : "bug"} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }

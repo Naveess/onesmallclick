@@ -12,11 +12,17 @@ import type { PlayersReport } from "../shared/nudges";
 import { BOARD_TOP, type Board, type BoardResult, type BoardRow, type CreditsInfo, type ProfileInfo, type TourInfo } from "../shared/boards";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
+import { HIDDEN_ACCOUNTS } from "./moderation";
 import { medalFor, type Medal } from "../shared/medals";
 
 const DAY_MS = 86_400_000;
 const CACHE_MS = 60_000;
 const cache = new Map<string, { at: number; rows: BoardRow[] }>();
+
+/** Phase A2a: someone was hidden, banned, lifted or had km removed: the boards are worked out again next time. */
+export function clearBoardCache() {
+  cache.clear();
+}
 
 function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -39,18 +45,18 @@ async function topRows(env: Env, board: Board, day: string): Promise<BoardRow[]>
     // Signed-in players only (decided for 8): their km from every device, today.
     const res = await env.DB.prepare(
       `SELECT a.name AS name, a.country AS cc, SUM(d.km) AS km FROM daily_km d JOIN accounts a ON a.id = d.account_id
-       WHERE d.day = ? GROUP BY a.id HAVING km > 0 ORDER BY km DESC, a.name LIMIT ?`,
+       WHERE d.day = ? AND a.id NOT IN (${HIDDEN_ACCOUNTS}) GROUP BY a.id HAVING km > 0 ORDER BY km DESC, a.name LIMIT ?`,
     )
-      .bind(day, BOARD_TOP)
+      .bind(day, Date.now(), BOARD_TOP)
       .all<{ name: string; cc: string | null; km: number }>();
     rows = res.results.map((r, i) => ({ rank: i + 1, cc: r.cc, name: r.name, km: r.km }));
   } else {
     // Signed-in crew only (Nav, prompt 91: it promotes signing up), each for their account's country.
     const res = await env.DB.prepare(
       `SELECT a.country AS cc, SUM(d.km) AS km FROM daily_km d JOIN accounts a ON a.id = d.account_id
-       WHERE d.day = ? GROUP BY cc HAVING cc IS NOT NULL AND km > 0 ORDER BY km DESC, cc`,
+       WHERE d.day = ? AND a.id NOT IN (${HIDDEN_ACCOUNTS}) GROUP BY cc HAVING cc IS NOT NULL AND km > 0 ORDER BY km DESC, cc`,
     )
-      .bind(day)
+      .bind(day, Date.now())
       .all<{ cc: string; km: number }>();
     rows = res.results.map((r, i) => ({ rank: i + 1, cc: r.cc, name: r.cc, km: r.km }));
   }

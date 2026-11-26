@@ -30,6 +30,7 @@ import {
 import { LEG_FACTS } from "../shared/content";
 import { readSession } from "./auth";
 import { readDevice } from "./device";
+import { heldNow } from "./moderation";
 
 const FACTS = LEG_FACTS;
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -101,6 +102,9 @@ export async function countShare(request: Request, env: Env): Promise<Response> 
   if (!sameOrigin(request)) return new Response(null, { status: 403 });
   const body = (await request.json().catch(() => ({}))) as { m?: unknown; v?: unknown };
   if (!isMoment(body.m) || !isChannel(body.v)) return new Response(null, { status: 400 });
+  // Phase A2a: a timed out or banned player's shares don't count.
+  const deviceId = env.DEVICE_SECRET ? await readDevice(request, env.DEVICE_SECRET) : null;
+  if (deviceId && (await heldNow(env, request, deviceId, (await readSession(request, env))?.account.id ?? null))) return new Response(null, { status: 204 });
   await count(env, "shares", body.m, body.v);
   return new Response(null, { status: 204 });
 }

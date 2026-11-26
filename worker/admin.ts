@@ -22,6 +22,7 @@ import { cookieValue, randomToken, readSession, sha256 } from "./auth";
 import { capCheck, capCount } from "./caps";
 import { fixesPanel } from "./fixes";
 import { gameSavesPanel } from "./gamesaves";
+import { moderationPanel } from "./moderation";
 
 const ADMIN_COOKIE = "osc_admin";
 const ADMIN_TTL_MS = 12 * 3_600_000;
@@ -402,6 +403,8 @@ export async function adminPanel(request: Request, env: Env, action: string, who
   if (fixed) return fixed;
   const saves = await gameSavesPanel(request, env, action, who); // phase A1c-1: game save states
   if (saves) return saves;
+  const mod = await moderationPanel(request, env, action, who); // phase A2a: warn, time out, hide, ban, remove km
+  if (mod) return mod;
   if (action === "log" && request.method === "GET") {
     const target = url.searchParams.get("target");
     const rows = target
