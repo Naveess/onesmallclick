@@ -37,6 +37,7 @@ Written 2026-11-18 from docs/brief.md, docs/design-brief.md, the design file and
 - [ ] **E4b: Collective rewards** (medals, planet tech, stamps, cosmetics, landing burn; part 1 before launch). Part 2 split in three (prompt 76): **2a medals, planet tech, stamps: LIVE 2026-11-25 (prompt 81, version 92aabd39, migration 0014, tag e4b2a-live)**; **2b the landing burn: LIVE 2026-11-25 (prompt 86, version d79ceb92, migration 0016, tag e4b2b-live)**; 2c cosmetics (needs the art in docs/todo.md). See "E4b part 2a status" and "E4b part 2b status" below.
 - [ ] **D: Desktop layouts** (added 2026-11-25, prompts 99–100): the desktop designs for 1o (the landing burn), 1k (the arrival and credits) and 1n (the new probe reveal) had been built as a centred phone column. **LIVE 2026-11-25 (prompt 102, version 3c1bb51c, tag d-live).** See "D: Desktop layouts" below.
 - [ ] **M: Miles** (added 2026-11-25, prompt 92): every distance and speed in the game and the crew emails shows km and miles side by side ("38,266 km / 23,777 mi"). **LIVE 2026-11-25 (prompt 104, version 7746bc10, tag m-live).** See "M: Miles status" below. Order agreed: G1, then the NASA postcard photos, then M, then G2.
+- [ ] **H: Home v3, a readability pass with ideas from Cookie Clicker** (added 2026-11-26): the game home redone from design group 3 (3a phone, 3b desktop): text on solid panels at readable sizes, one big number, THRUST above the fold on phones, the shop always in view (a dock on phones, a Shop column and "Your fleet" on desktop), a news ticker and the lucky comet. Split into H1 (layout), H2 (shop and fleet), H3 (ticker and comet). Decisions 41–44 first. See "H: Home v3" below.
 - [ ] **E5: Later ideas from the brief**
 - [ ] **B: Early beta and the launch wipe** (added 2026-11-25, prompts 82–83). Launch is planned for **15 December 2026** (it may move).
   - [x] **B1: the early-access banner and the Early Beta badge.** Built 2026-11-25 (prompts 82–83); **LIVE 2026-11-25** (prompt 84, version 451823e2, migration 0015, tag b1-live). See "B1 status" below.
@@ -1260,6 +1261,61 @@ Anything red also posts to Discord (Q5's error alerts).
 39. **Gifts in messages:** *(yes, credits or a badge, logged and undoable.)*
 40. **Records kept:** *(the admin log 1 year; moderation records 1 year; messages 90 days; player save states 90 days.)*
 
+## H: Home v3, a readability pass with ideas from Cookie Clicker (added 2026-11-26)
+
+**Why:** Nav found the game home clunky and hard to read on both phone and desktop (26 Nov). Looking at the live home at 390 and 1440:
+- most labels are 11px letter-spaced capitals, and in light mode they sit on top of the cloud texture;
+- on a phone THRUST is about two screens down, below the arrival estimate, the medal line, the flight view and the signal;
+- the upgrades are one small line of text;
+- desktop is a scatter of floating cards of different heights.
+
+Nav looked at Cookie Clicker for ideas ("don't copy it like for like").
+
+**The design:** group 3 in `design/OneSmallClick.dc.html`: **3a** (phone), **3b** (desktop 1440) and the "What changed and why" card. Groups 1 and 2 are unchanged. 1a/1b stay the reference for everything 3a/3b don't show: the states, the burn, safe mode and the idle pause. The new sprites are in `design/sprites/v3/`. They're drawn in code for now (PixelLab later) and every colour is in docs/tokens.css.
+
+**The rules (from the design's notes card):**
+1. **Text sits on solid panels**, never straight on the sky. The game home in light mode drops the cloud layer for a plain warm background (stars are already hidden in light).
+2. **Bigger, plainer text:** nothing under 13px, mostly 15–16px. No tiny letter-spaced capitals; labels are normal sentences. Numbers in VT323 at 20px or more. (The flight view's own small labels keep their size; they're part of the picture.)
+3. **One big number:** "Distance to Mars" (the leg's destination), VT323 46px on a phone and 48px on desktop, with crew speed and the arrival date under it. The KM | MI toggle goes next to it.
+4. **THRUST above the fold on a phone:** header, ticker, the big number, the flight view, then THRUST (196px), all within 390 × 844 above the dock. The "+km" pops up **where you tapped**, with a few sparks (keyboard: the middle). Reduced motion: no float, no sparks.
+5. **The shop is always there.** On a phone, a dock above the tab bar has the per-tap and auto lines plus credits on top, then the 5 upgrades as chips: sprite, short price, owned count, lit when you can afford one. Tapping a chip buys one. On desktop, a full Shop column (icon, name, effect, price, owned count in 40px numbers; lit with a blue edge when affordable). The full upgrades sheet (prestige, patches) stays and opens from the credits.
+6. **Your fleet** (desktop only): a row per upgrade, each with a dark strip where one sprite per owned upgrade bobs along (up to 14, then "+N more"), and the total it adds. "None yet" when you own none.
+7. **Mission news ticker:** one line under the header that changes every 6 seconds. It must use **real** events only (the mission log, milestones, pings saved, new records, the leg's facts). The lines in the design are examples, not data. This is Q4's "live crew ticker" brought forward: build it once.
+8. **Lucky comet** (the golden cookie idea): now and then a gold comet crosses the flight view. Catch it for 30 seconds of double **tap** power (not auto). Server rules: decision 43.
+
+**Where every live part goes** (3a/3b show the main ones; the rest keep their current behaviour in the new slots):
+
+| Live now | Phone (3a) | Desktop (3b) |
+|---|---|---|
+| Early-access banner, invite banner, maintenance banner, sign-in nudges | above the ticker | above the ticker, full width |
+| Big number, crew speed, arrival date, KM / MI | the hero, under the ticker | the Mission column, top |
+| Flight view (all states: final seconds, safe mode, idle pause, burn) | under the hero | the middle column, top (640 wide) |
+| THRUST, "+km per tap", "auto" | under the flight view; per-tap and auto move into the dock | Mission column, under the big number |
+| Medal pace line, arrival estimate | scroll, with the signal | Mission column, "We arrive at this pace on" |
+| Signal and Ping, safe mode | scroll, first panel | Mission column |
+| You've clicked | scroll | Mission column |
+| Crew goal (Q1a) | scroll, after You've clicked | Mission column, after You've clicked |
+| Upgrades | dock (+ the Shop panel in the scroll) | Shop column |
+| Vote, branch vote, burn card | scroll ("Crew vote") | right column, under the Shop |
+| Destination file (fact card, share) | scroll, in place of "Mars fact of the day" | right column, bottom |
+| Alerts card, share nudge | scroll, after the Destination file | right column, after the Destination file |
+| Ads | 320 × 50 at the end of the scroll | 728 × 90 centred under the columns, at least 150px from THRUST |
+| Report a bug, Discord, footer links | the end of the scroll | under the ad |
+
+**Widths:** 3b's three columns (340 + 640 + 380) from 1440 up. Above 1440 the layout is centred with a maximum width; the 1440p/2560 question is parked (Nav, 26 Nov). From 1024 to 1439: two columns (Mission + middle), with the Shop and crew panels in a row under them. Under 1024: the phone layout.
+
+**Split in three, each deployed on its own:**
+- **H1: Layout and readability** (no data change): the panels, text sizes, light-mode background, the big number, THRUST's place, the tap-position "+km", and every live part in its new slot. Desktop columns, with the old upgrades sheet still in use.
+- **H2: The shop dock, the Shop column and Your fleet** (no data change; the same upgrades and prices from `shared/upgrades.ts`, and the server still checks every buy).
+- **H3: The news ticker and the lucky comet** (decisions 42–43; may need a migration for the ticker's events).
+
+### Decisions for H (added 2026-11-26; recommendations in brackets)
+
+41. **Where H goes:** *(next, before A2. It's what every new player sees, and Reddit is sending people now. A2 still lands before launch on 15 Dec.)*
+42. **The ticker's events:** *(from the mission log, milestones, pings saved in the final hour, new daily records, new countries joining and the leg's facts; no player names unless they're signed in and on the leaderboard; at most one line every 6 seconds; it pauses when the tab is hidden.)*
+43. **The lucky comet:** *(the server decides when a comet appears for each player: at most one every 20–40 minutes of active play, none in safe mode, the idle pause, the final 60 seconds or the landing burn. A catch is checked on the server. It doubles tap power only for 30 seconds and still respects the tap cap. Not in the leaderboard's maths beyond the km it really adds.)*
+44. **The phone's dock:** *(tap a chip to buy one; long-press or the credits open the full upgrades sheet. The chips show a short price: 2.1k, 12k, 1.4M.)*
+
 ## The Grand Tour: expansion phases (E1–E5, planned in E0 on 2026-11-20)
 
 The plan is docs/expansion.md (prompt 43); the content drafts are content/campaign.json and content/facts/mars.json. Nav approved the E0 decisions on 2026-11-20 (prompt 44): docs/expansion.md, section 11. The Mars leg is the first players see, and its arrival is about 25–30 days after launch. So E4b's first half ships before launch, and E1, E2, E3 (Ceres and Vesta) and E4b's second half within the first 3 weeks after it (docs/expansion.md, section 12).
@@ -1537,6 +1593,8 @@ Also decided 2026-11-19 (evening): **the flight view** replaces the straight tra
 ### Before Q1 (added 2026-11-25): decisions 29–32 are listed in "Q: Quality of life, retention and community".
 
 ### Before A (added 2026-11-25): decisions 33–40 are listed in "A: The admin panel".
+
+### Before H (added 2026-11-26): decisions 41–44 are listed in "H: Home v3".
 
 ### Before phase 9
 19. **Workers Paid ($5/month) from launch?** *(Yes. Email Service needs it anyway, and the free plan's daily limits are too tight for a busy launch.)*
