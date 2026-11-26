@@ -3,17 +3,17 @@
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
 ## Start here (25 Nov, prompt 122)
-- **Everything built is live:** version `d6399cce` (tag `a1b-live`, prompt 128, 26 Nov). Live, newest first:
+- **Everything built is live:** version `c042d4a4` (tag `a1c-live`, prompt 131, 26 Nov). Live, newest first:
+  - **A1c** (prompts 128-131, no migration): game save states (hourly 7 days, daily, before every Game-tab control, each new version) and the /admin Save states tab with Restore the probe; maintenance mode (/admin › Game); Emergency: rewind the probe; docs/runbook.md.
   - **A1b** (prompts 124-127, migration 0021): the admin fixes, Undo, export, name history; player save states in R2 (bucket `onesmallclick-snapshots`, 90 days); compare and restore; the daily save state at 00:05 UTC (cron); save states at prestige, arrival and sign-in merges; merge a guest, move a device.
   - **A1a** (prompt 120, migration 0020): /admin needs your Google game sign-in (on `ADMIN_EMAILS`) plus the admin key; tabs Players, Game, Reports; search, lists and a page per player; every admin action logged.
   - **Q1b** (prompts 107-118, migration 0019): the Discord bot posting to #mission-log, install as an app, and opt-in alerts (signal final hour, landing burn, vote closing). Checked by Nav on a real iPhone.
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - [ ] **Tonight (Nav, 26 Nov, prompts 125/128): check A1b on the live /admin** (it's deployed now, so no `npm run dev` needed). Sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. A1b-2 too: press Compare on a save state, tick a part and restore it; on a guest, try "Merge into an account"; on an account, "Move a device" (each has Undo in the account's history). Use a test account, not a real player.
-- **Built, not deployed:** A1c-1 (prompt 129: game save states hourly, daily, before every Game-tab control and on each new version; the Save states tab; restore the probe). Deploy when Nav asks (backup, `npm run deploy`; no migration).
-- **Next to build:** A1c-2 (maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
-- **Backups (26 Nov, prompt 128):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1254-pre-a1b.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 130, next migration 0022.** Run `git pull` first: other sessions push here too.
+- **Next to build:** A2 (decisions 36-40 first), then G2.
+- **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1415-pre-a1c.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
+- **Next prompt 132, next migration 0022.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -74,12 +74,14 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - [ ] **Left over from A1b (later, small):**
     - After the first live night, check the 00:05 UTC daily save state ran (Workers Logs: "daily save state"; or the Players page's save states). On the free plan a big crowd could hit the 10 ms CPU limit; Workers Paid (from 30 Nov) lifts it. If it fails, that day is just missing.
     - ~~A Save states tab for the whole game~~ (built in A1c-1).
-    - A1c-1: restoring the probe to before an arrival doesn't undo D1's record of that leg (missions row, crew list, stamps). Rare; the runbook (A1c-2) will say what to do.
+    - A1c-1: restoring the probe to before an arrival doesn't undo D1's record of that leg (missions row, crew list, stamps), and the crew are paid the arrival rewards again when it re-arrives. docs/runbook.md section 3 says what to do; automate only if it ever happens.
+    - A1c-2: while frozen, the vote's and the landing burn's countdowns on screen keep ticking (the server moves them later when it ends, and the banner explains). Freeze them on screen too if it confuses anyone.
+    - A1c-2: the first time maintenance is used live, check the banner on a phone and that the signal deadline moved (Game tab).
     - Local checks: check-goal (like check-nudges) needs a fresh local game; run check-wipe first if it fails.
     - Undoing a merge leaves the guest's recruits with the account (rare; move them by hand in D1 if ever needed).
     - Known quirk (since 8a): if a device signs out (or is merged or moved) and plays as a guest the same day, those km still add to the account's row for that day. Harmless before launch; fix with A2 if it matters.
     - Opening one player from a daily file downloads the whole day's file; fine for hundreds of players, slow for tens of thousands (split the file by key prefix then).
-  - [ ] **A1c:** the game's save states, maintenance mode, docs/runbook.md. The emergency rollback waits until after launch (a runbook entry until then).
+  - [x] **A1c (LIVE 26 Nov, prompt 131, `c042d4a4`):** the game's save states, maintenance mode, the probe rewind, docs/runbook.md. The one-button rollback of both the probe and D1 waits until after launch (the runbook does it in two steps until then).
   - [ ] **A2:** decisions 36-40 first.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.
 - [ ] **Q2–Q6, after Q1:**
