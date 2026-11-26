@@ -338,3 +338,49 @@
     padding: 4px 2px;
   }
 }
+
+/* Prompt 141: the Messages list, one block per message, and the picker and collector rows. */
+.admin__msgs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+.admin__msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+.admin__msg strong {
+  color: var(--text);
+}
+
+.admin__msg-to {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-orange);
+}
+
+.admin__pick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.admin__pick .admin__link {
+  min-height: 44px;
+  text-align: left;
+}

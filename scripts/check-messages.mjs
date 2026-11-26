@@ -67,6 +67,9 @@ const admin = async (action, body) => {
   });
   return { status: res.status, ...(await res.json().catch(() => ({}))) };
 };
+/** A GET that answers with a list (the helper above would spread it into an object). */
+const adminList = async (action) =>
+  (await fetch(`${base}/api/admin/${action}`, { headers: { Authorization: `Bearer ${KEY}`, Origin: base } })).json();
 async function guest() {
   const b = browser();
   const s = await b.req("/api/session");
@@ -232,6 +235,25 @@ ev = v.messages.find((m) => m.id === everyId);
 check(ev?.takenBack === 2, "/admin shows them taken back");
 const log = sqlJson(`SELECT COUNT(*) AS n FROM admin_log WHERE action IN ('msg-send', 'msg-withdraw', 'gift-undo') AND at > ${Date.now() - 600000}`)[0].n;
 check(log >= 10, `every send, withdraw and undo is in the admin log (${log})`);
+
+// ---------- Prompt 141: the tab's list, one player from the tab, and taking an everyone gift back from one player ----------
+r = await admin("message-send", { key: d.key, title: "Just you", body: "From the tab.", reason: "check tab one player", view: "all" });
+check(r.status === 200 && r.messages.some((m) => m.toKey === null) && r.messages[0].toKey === d.key && r.messages[0].toName === d.name, "the tab sends to one player and lists everything, with who each went to");
+r = await admin("message-send", { key: null, title: "Second gift", body: "500 each.", gift: { credits: 500 }, reason: `check one take-back ${stamp}`, view: "all" });
+const secondId = r.messages[0].id;
+check((await d.req("/api/inbox/collect", { id: secondId })).ok === true, "player d collects the second everyone gift");
+check((await a.req("/api/inbox/collect", { id: secondId })).ok === true, "player a collects it too");
+const who = await adminList(`message-collectors?id=${secondId}`);
+check(Array.isArray(who) && who.length === 2 && who.some((c) => c.key === d.key && c.name === d.name && c.credits === 500), "Who collected it lists both, with names");
+r = await admin("gift-undo", { id: secondId, playerKey: d.key, reason: "check one", confirm: "wrong", view: "all" });
+check(r.status === 400, "taking it back from one player needs their name");
+r = await admin("gift-undo", { id: secondId, playerKey: d.key, reason: "check one", confirm: d.name, view: "all" });
+check(r.status === 200 && r.result.players === 1 && r.result.credits === 500, "taken back from that one player only");
+const who2 = await adminList(`message-collectors?id=${secondId}`);
+check(who2.find((c) => c.key === d.key)?.takenBackAt > 0 && who2.find((c) => c.key === a.key)?.takenBackAt === null, "the other collector keeps theirs");
+check((await e.req("/api/inbox/collect", { id: secondId })).ok === true, "and the gift stays open for everyone else");
+r = await admin("gift-undo", { id: secondId, playerKey: d.key, reason: "again", confirm: d.name });
+check(r.status === 400, "taking it back twice is refused");
 
 // Cross-site POSTs are refused.
 const xs = await fetch(`${base}/api/inbox/collect`, { method: "POST", headers: { Origin: "https://evil.example", "Content-Type": "application/json" }, body: "{}" });

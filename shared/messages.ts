@@ -86,6 +86,20 @@ export interface AdminMessage {
   takenBack: number;
 }
 
+/** GET /api/admin/message-collectors ?id=: who collected an everyone gift (prompt 141). */
+export interface GiftCollector {
+  /** The key it was collected under (taking it back from this player sends this). */
+  key: string;
+  /** Where it is now: a guest who signed in since is their account. */
+  nowKey: string;
+  name: string | null;
+  collectedAt: number;
+  credits: number | null;
+  badgeNew: boolean;
+  takenBackAt: number | null;
+  takenBackCredits: number | null;
+}
+
 /** GET /api/admin/messages ?key= (one player's) or none (the everyone ones). */
 export interface AdminMessagesView {
   messages: AdminMessage[];

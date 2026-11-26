@@ -11,12 +11,15 @@
 //   POST /api/inbox/read    { ids } → marks them opened
 //   POST /api/inbox/collect { id }  → CollectResult (not while paused or banned)
 // /admin (owner; a moderator may send a message without a gift to one player, and withdraw it):
-//   GET  /api/admin/messages         ?key= → AdminMessagesView (one player's, or with no key the everyone ones)
+//   GET  /api/admin/messages         ?key= → AdminMessagesView (one player's); no key: the Messages tab's (all recent,
+//                                    to everyone and to single players, each with who it went to)
+//   GET  /api/admin/message-collectors ?id= → GiftCollector[] (who collected an everyone gift; prompt 141)
 //   POST /api/admin/message-send     { key | null, title, body, template?, gift?, reason } → AdminMessagesView
 //   POST /api/admin/message-withdraw { id, reason } → hidden from anyone who hasn't opened it; no more collecting
 //   POST /api/admin/gift-undo        { id, reason, confirm?, takeBack? } → one player: takes the collected gift back
 //        (typed name) or stops it; everyone: stops further collecting, and with takeBack (typed TAKE THE GIFT BACK)
-//        takes it back from everyone who collected it.
+//        takes it back from everyone who collected it; with playerKey (an everyone gift), from that one player only
+//        (their name typed; the gift stays open for everyone else).
 
 import { BADGE_INFO, type BadgeId } from "../shared/badges";
 import { isAccountKey, type AdminWho } from "../shared/admin";
@@ -33,6 +36,7 @@ import {
   type AdminMessagesView,
   type CollectResult,
   type Gift,
+  type GiftCollector,
   type InboxItem,
   type InboxView,
 } from "../shared/messages";
@@ -293,16 +297,18 @@ async function view(env: Env, key: string | null): Promise<AdminMessagesView> {
   const rows = (
     key
       ? await db.prepare(`SELECT * FROM messages WHERE to_key = ? ORDER BY at DESC LIMIT 100`).bind(key).all<MessageRow>()
-      : await db.prepare(`SELECT * FROM messages WHERE to_key IS NULL ORDER BY at DESC LIMIT 100`).all<MessageRow>()
+      : await db.prepare(`SELECT * FROM messages ORDER BY at DESC LIMIT 100`).all<MessageRow>()
   ).results;
-  const name = key ? await nameOf(env, key) : null;
+  const names = new Map<string, string | null>();
+  for (const m of rows) if (m.to_key !== null && !names.has(m.to_key)) names.set(m.to_key, await nameOf(env, m.to_key));
   const messages: AdminMessage[] = [];
   for (const m of rows) {
     let one: ReadRow | null = null;
     let reads = 0;
     let collected = 0;
     let takenBack = 0;
-    if (key) {
+    const single = m.to_key !== null;
+    if (single) {
       one = await db
         .prepare(
           `SELECT MAX(read_at) AS read_at, MAX(collected_at) AS collected_at, SUM(collected_credits) AS collected_credits,
@@ -325,7 +331,7 @@ async function view(env: Env, key: string | null): Promise<AdminMessagesView> {
     messages.push({
       id: m.id,
       toKey: m.to_key,
-      toName: name,
+      toName: m.to_key === null ? null : (names.get(m.to_key) ?? null),
       title: m.title,
       body: m.body,
       template: m.template,
@@ -341,16 +347,16 @@ async function view(env: Env, key: string | null): Promise<AdminMessagesView> {
       collectedCredits: one?.collected_credits ?? null,
       takenBackAt: one?.taken_back_at ?? null,
       takenBackCredits: one?.taken_back_credits ?? null,
-      reads: key ? (one?.read_at ? 1 : 0) : reads,
-      collected: key ? (one?.collected_at ? 1 : 0) : collected,
-      takenBack: key ? (one?.taken_back_at ? 1 : 0) : takenBack,
+      reads: single ? (one?.read_at ? 1 : 0) : reads,
+      collected: single ? (one?.collected_at ? 1 : 0) : collected,
+      takenBack: single ? (one?.taken_back_at ? 1 : 0) : takenBack,
     });
   }
   return { messages, templates: MESSAGE_TEMPLATES, templatesApproved: TEMPLATES_APPROVED };
 }
 
 async function send(request: Request, env: Env, who: AdminWho): Promise<Response> {
-  const b = (await request.json().catch(() => ({}))) as { key?: unknown; title?: unknown; body?: unknown; template?: unknown; gift?: unknown; reason?: unknown };
+  const b = (await request.json().catch(() => ({}))) as { key?: unknown; title?: unknown; body?: unknown; template?: unknown; gift?: unknown; reason?: unknown; view?: unknown };
   const key = typeof b.key === "string" && b.key ? b.key.slice(0, 80) : null;
   const title = text(b.title, MESSAGE_TITLE_MAX);
   const body = text(b.body, MESSAGE_BODY_MAX);
@@ -384,11 +390,11 @@ async function send(request: Request, env: Env, who: AdminWho): Promise<Response
   // One player: their open screens reconnect, so the envelope shows the new message straight away. Everyone's screens
   // pick it up the next time they connect (opening the game, or coming back to its tab).
   if (key !== null) await probe(env).adminReconnect([key], isAccountKey(key) ? [] : [key]);
-  return json(await view(env, key));
+  return json(await view(env, viewKey(b.view, key)));
 }
 
 async function withdraw(request: Request, env: Env, who: AdminWho): Promise<Response> {
-  const b = (await request.json().catch(() => ({}))) as { id?: unknown; reason?: unknown };
+  const b = (await request.json().catch(() => ({}))) as { id?: unknown; reason?: unknown; view?: unknown };
   const reason = text(b.reason, 300);
   if (!Number.isInteger(b.id)) throw new MsgError("id");
   if (reason.length < 3) throw new MsgError("Say why (for the log).");
@@ -398,7 +404,7 @@ async function withdraw(request: Request, env: Env, who: AdminWho): Promise<Resp
   if (m.withdrawn_at !== null) throw new MsgError("It's already withdrawn.");
   await env.DB.prepare(`UPDATE messages SET withdrawn_at = ?, withdrawn_by = ? WHERE id = ?`).bind(Date.now(), who.email, m.id).run();
   await adminLog(env, who.email, "msg-withdraw", m.to_key, reason, { id: m.id });
-  return json(await view(env, m.to_key));
+  return json(await view(env, viewKey(b.view, m.to_key)));
 }
 
 /**
@@ -461,7 +467,7 @@ async function takeBack(env: Env, m: MessageRow, rows: { player_key: string; col
 }
 
 async function giftUndo(request: Request, env: Env, who: AdminWho): Promise<Response> {
-  const b = (await request.json().catch(() => ({}))) as { id?: unknown; reason?: unknown; confirm?: unknown; takeBack?: unknown };
+  const b = (await request.json().catch(() => ({}))) as { id?: unknown; reason?: unknown; confirm?: unknown; takeBack?: unknown; playerKey?: unknown; view?: unknown };
   const reason = text(b.reason, 300);
   if (!Number.isInteger(b.id)) throw new MsgError("id");
   if (reason.length < 3) throw new MsgError("Say why (for the log).");
@@ -478,6 +484,20 @@ async function giftUndo(request: Request, env: Env, who: AdminWho): Promise<Resp
   ).results;
   const stop = db.prepare(`UPDATE messages SET gift_stopped_at = COALESCE(gift_stopped_at, ?), gift_stopped_by = COALESCE(gift_stopped_by, ?) WHERE id = ?`).bind(now, who.email, m.id);
 
+  // Prompt 141: an everyone gift, taken back from one player who collected it (the gift stays open for the rest).
+  if (m.to_key === null && typeof b.playerKey === "string") {
+    const row = collected.find((r) => r.player_key === b.playerKey);
+    if (!row) throw new MsgError("That player hasn't collected it, or it's already been taken back.");
+    const holder = (await nowHeldBy(env, [row.player_key])).get(row.player_key) ?? row.player_key;
+    const name = await nameOf(env, holder);
+    if (b.confirm !== name) throw new MsgError(`Type the player's name (${name}) to confirm.`);
+    const before = await capture(env, holder);
+    const save = before ? await saveState(env, before, `before gift undo (message ${m.id})`, who.email) : null;
+    const result = await takeBack(env, m, [row]);
+    await adminLog(env, who.email, "gift-undo", holder, reason, { id: m.id, everyone: true, onePlayer: true, ...result, saveState: save });
+    return json({ ...(await view(env, viewKey(b.view))), result });
+  }
+
   if (m.to_key !== null) {
     // One player: not collected yet → it can't be any more; collected → take it back (their name typed), save state first.
     await stop.run();
@@ -491,7 +511,7 @@ async function giftUndo(request: Request, env: Env, who: AdminWho): Promise<Resp
       result = await takeBack(env, m, collected);
     }
     await adminLog(env, who.email, "gift-undo", m.to_key, reason, { id: m.id, ...result, saveState: save });
-    return json({ ...(await view(env, m.to_key)), result });
+    return json({ ...(await view(env, viewKey(b.view, m.to_key))), result });
   }
 
   // Everyone: stop further collecting; take it back from those who collected only when asked, with the phrase.
@@ -502,16 +522,65 @@ async function giftUndo(request: Request, env: Env, who: AdminWho): Promise<Resp
   await stop.run();
   const result = b.takeBack === true ? await takeBack(env, m, collected) : { players: 0, credits: 0, short: 0 };
   await adminLog(env, who.email, "gift-undo", null, reason, { id: m.id, everyone: true, takeBack: b.takeBack === true, ...result });
-  return json({ ...(await view(env, null)), result });
+  return json({ ...(await view(env, viewKey(b.view))), result });
+}
+
+/**
+ * Which list a POST answers with: the player page's card gets that player's (the default), the Messages tab sends
+ * `view: "all"` for the tab's list.
+ */
+function viewKey(v: unknown, fallback: string | null = null): string | null {
+  if (v === "all") return null;
+  return fallback;
+}
+
+/** Who collected an everyone gift (prompt 141), newest first, with their names now. */
+async function collectors(env: Env, id: number): Promise<GiftCollector[]> {
+  const rows = (
+    await env.DB.prepare(
+      `SELECT player_key, collected_at, collected_credits, badge_new, taken_back_at, taken_back_credits FROM message_reads
+       WHERE message_id = ? AND collected_at IS NOT NULL ORDER BY collected_at DESC LIMIT 500`,
+    )
+      .bind(id)
+      .all<{
+        player_key: string;
+        collected_at: number;
+        collected_credits: number | null;
+        badge_new: number | null;
+        taken_back_at: number | null;
+        taken_back_credits: number | null;
+      }>()
+  ).results;
+  const holder = await nowHeldBy(env, rows.map((r) => r.player_key));
+  const out: GiftCollector[] = [];
+  for (const r of rows) {
+    const nowKey = holder.get(r.player_key) ?? r.player_key;
+    out.push({
+      key: r.player_key,
+      nowKey,
+      name: await nameOf(env, nowKey),
+      collectedAt: r.collected_at,
+      credits: r.collected_credits,
+      badgeNew: r.badge_new === 1,
+      takenBackAt: r.taken_back_at,
+      takenBackCredits: r.taken_back_credits,
+    });
+  }
+  return out;
 }
 
 /** The message routes, or null for anything else. */
 export async function messagesPanel(request: Request, env: Env, action: string, who: AdminWho): Promise<Response | null> {
-  if (!["messages", "message-send", "message-withdraw", "gift-undo"].includes(action)) return null;
+  if (!["messages", "message-collectors", "message-send", "message-withdraw", "gift-undo"].includes(action)) return null;
   try {
     if (action === "messages" && request.method === "GET") {
       const key = new URL(request.url).searchParams.get("key");
       return json(await view(env, key ? key.slice(0, 80) : null));
+    }
+    if (action === "message-collectors" && request.method === "GET") {
+      const id = Number(new URL(request.url).searchParams.get("id"));
+      if (!Number.isInteger(id)) return json({ error: "id" }, 400);
+      return json(await collectors(env, id));
     }
     if (action === "message-send" && request.method === "POST") return await send(request, env, who);
     if (action === "message-withdraw" && request.method === "POST") return await withdraw(request, env, who);

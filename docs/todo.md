@@ -13,13 +13,13 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - [x] **A1b checked on the live /admin** (Nav, 26 Nov, prompt 136: fixes, Undo, save states, export, compare and restore, merge, move: all fine).
 - [x] **A2a checked on the live /admin** (Nav, 26 Nov, prompt 136: warn, time out, hide, ban, Lift: all fine).
-- **Nothing built is waiting to deploy.** A2b-1 is LIVE (prompt 140, version `7ad687ae`, tag `a2b1-live`): messages from mission control, the inbox, templates and gifts (docs/plan.md "A2b-1 status").
+- **Built, waiting to deploy: the prompt 141 Messages tab fixes** (send to one player from the tab; take an everyone gift back from one player; no migration). A2b-1 is LIVE (prompt 140, version `7ad687ae`, tag `a2b1-live`): messages from mission control, the inbox, templates and gifts (docs/plan.md "A2b-1 status").
 - [x] **Template texts approved** (Nav, prompt 140).
 - [ ] **Nav: check A2b-1 on the live /admin with a test account:** on its player page, Messages card, send a message with a small credits gift; on the game the envelope shows a count; open it and press Collect (the credits appear); back on /admin, "Undo the gift" (type the name). Also try a message to everyone from the Messages tab without a gift, and Withdraw it.
 - **Next to build (Nav changed the order, prompt 135; A2b-2 ON HOLD, Nav, prompt 140):** A2b-2 (the announcement banner, the push broadcast with a fourth alert switch "News from mission control", the Discord post), then A2c (the Flags queue, Report name, the name blocklist), then H, home v3 (decisions 41–44 first; design group 3, docs/plan.md "H"), then G2. Start A2b by explaining the plan and waiting for OK.
 - **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-2003-pre-a2b1.sql.enc` (prompt 140), in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
 - **Carrying on from another computer:** `git pull` (or clone Naveess/onesmallclick), `npm install`, and copy `.dev.vars` across by hand (it holds the secrets and is never in git; without it local dev and `npm run backup` won't work, though `npm run deploy` only needs `npx wrangler login`). Then open this file and docs/plan.md "A2".
-- **Next prompt 141, next migration 0024.** Run `git pull` first: other sessions push here too.
+- **Next prompt 142, next migration 0024.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
