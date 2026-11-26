@@ -2,7 +2,7 @@
 
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
-## Start here (25 Nov, prompt 122)
+## Start here (26 Nov, prompt 135)
 - **Everything built is live:** version `c8f57d04` (tag `a2a-live`, prompt 135, 26 Nov). Live, newest first:
   - **A2a** (prompts 132-135, migration 0022): moderation on the /admin player page (warn, time out 1/3/7/14 days, hide from the boards, ban, Lift, remove a cheat's km with Undo); what the player sees (warning box, paused banner, ban screen, hidden note); Appeal in "Report a bug or idea"; the crew rules on /terms. Also the Early Beta banner fix (closing it lasts 24 hours).
   - **A1c** (prompts 128-131, no migration): game save states (hourly 7 days, daily, before every Game-tab control, each new version) and the /admin Save states tab with Restore the probe; maintenance mode (/admin › Game); Emergency: rewind the probe; docs/runbook.md.
@@ -24,12 +24,12 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **At launch (00:00 UTC, when `endsAt` passes):** back up D1 (`npx wrangler d1 export onesmallclick --remote --output ../onesmallclick-backups/d1-onesmallclick-<date>-pre-launch.sql`).
 - [ ] **Run the wipe:** /admin → "Launch wipe (phase B2)", type WIPE EVERYTHING, confirm. Then check: the home shows mission day 1 and 0 km, the log says "Launch day", your profile has only Early Beta, the leaderboard is empty, the banner has gone.
 - [ ] **Redeploy once after `endsAt`** so How to play drops its early-access box (the content pages are built at deploy time).
-- [ ] **Before launch, if possible:** the phase G sign-in nudges (more Early Beta accounts) and 8d's opt-in box (so launch-day sign-ups can opt in to crew emails).
+- [ ] **Before launch, if possible:** A2b and A2c (the admin panel's messages and flags), H1 (the new home layout, since launch brings the most new players) and 8d's opt-in box (so launch-day sign-ups can opt in to crew emails). G1's sign-in nudges are already live.
 
 ## Checks for Nav (live now)
 - [x] **B1:** the early-access banner on a phone (prompt 87: looks fine).
 - [x] **2a, 2b and E2:** approved from screenshots of a local copy (prompt 92). The live versions show at the Mars arrival after launch.
-- [x] **Publish the Google sign-in app** (done by Nav 25 Nov, prompt 89; no logo, so no verification). It's in "Testing" (prompt 87), so only listed test users can sign in, and email sign-in is off until payday: new players can't make an account or get the Early Beta badge. Google Cloud console → Google Auth Platform → Audience → Publish app (In production). The app only asks for "openid email", so Google needs no verification. Then sign in from an account that isn't a test user to check. Branding (prompt 88): leave the logo off for now (a logo makes Google require verification); home page, privacy and terms links are the workers.dev ones. After the domain move, add onesmallclick.io as an authorised domain and switch the links; the logo (`design/brand/logo-120.png`) can go on then, with verification.
+- [x] **Publish the Google sign-in app** (done by Nav 25 Nov, prompt 89): it's In production, so anyone with a Google account can sign in. It only asks for "openid email", so it needs no verification. Branding (prompt 88): no logo for now (a logo makes Google require verification); the home page, privacy and terms links are the workers.dev ones. After the domain move, add onesmallclick.io as an authorised domain and switch the links; the logo (`design/brand/logo-120.png`) can go on then, with verification. Email sign-in stays off until payday.
 - [x] **Older checks (19–20 Nov):** "Back to the mission" on the account page, and the click count surviving a reload: screenshots sent (prompt 91), both fine.
 
 ## Payday (from Monday 30 Nov): domain, Email Service and Workers Paid
@@ -69,7 +69,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **G** (the full plan): the Invite crew button and Bring your crew card, the share nudge, sign-in nudges for guests (now also "sign in for the Early Beta badge" until launch), and the /admin Players card. Check as a guest and signed in, on a phone and a laptop: at most one toast a day, nothing in safe mode or the final 60 seconds. After a week, read the Players and K-factor cards and keep what works.
 - [x] **Q1a is live** (prompt 105, version `0b44dac0`, tag `q1a-live`; docs/plan.md "Q1a status"): times in each player's own timezone, the daily crew goal, and "Report a bug or idea" (migration 0018). Decisions 29–32 approved.
 - [x] **Q1b: install as an app with opt-in notifications (signal final hour, landing burn, vote closing), and the Discord bot.** Nav made the Discord server and webhook and set `DISCORD_WEBHOOK_URL` (prompt 107); the invite link is https://discord.gg/JPEree2vZF (never expires, prompt 112; in content/community.json). **Q1b is live and checked (prompts 112-118):** Nav confirmed the /admin test post reached #mission-log and the iPhone Add to Home Screen steps work. A real test alert arrived on Nav's phone too (prompt 119).
-- [ ] **H: Home v3** (docs/plan.md "H"; Nav, 26 Nov): design group 3 (3a phone, 3b desktop), ideas from Cookie Clicker. H1 layout and readability, H2 the shop dock, Shop column and Your fleet, H3 the news ticker (this is Q4's live crew ticker) and the lucky comet. Decisions 41–44 first. Sprites in design/sprites/v3/ (drawn in code; PixelLab versions later).
+- [ ] **H: Home v3** (docs/plan.md "H"; Nav, 26 Nov): design group 3 (3a phone, 3b desktop), ideas from Cookie Clicker. H1 layout and readability, H2 the shop dock, Shop column and Your fleet, H3 the news ticker (this is Q4's live crew ticker) and the lucky comet. After A2b and A2c (Nav, prompt 135). Decision 41 is decided; 42–44 first. Sprites in design/sprites/v3/ (drawn in code; PixelLab versions later).
 - [ ] **A1 and A2: the admin panel, before launch** (docs/plan.md "A"; Nav, 25 Nov), after Q1 and before G2. Decisions 33-35 approved (prompt 120); A1 is split into A1a (live, prompt 121), A1b and A1c:
   - A1: admin sign-in (your Google account plus `ADMIN_KEY`), find any player, the player page, fixes (reset, set values, add or remove rewards, name, country, merge, export, delete), save states for every player and the probe (R2), restore with a before-and-after view, the emergency rollback, maintenance mode and docs/runbook.md;
   - A2: warn, time out, hide from boards, ban, the Flags queue, "Report name", the name blocklist, messages (inbox, banner, push, Discord, templates, gifts), and the crew rules on the terms page.
@@ -92,7 +92,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - [ ] **Q2–Q6, after Q1:**
   - Q2: settings, the first-visit guide, haptics and sound;
   - Q3: random space events, the daily quiz, the postcard album, and a seasonal cosmetic for December (with or after 2c);
-  - Q4: the live crew ticker and emoji cheers;
+  - Q4: emoji cheers (the live crew ticker is built in H3);
   - Q5: retention (D1 and D7) in the Players card, and error alerts;
   - Q6 (after launch): science objectives, Season 2 and a supporter tip jar.
 - [ ] **E4b part 2c: cosmetics** (skies, THRUST trails, probe paints; unlocked at arrival, picked on the profile). Needs the art below; Mars's (Mars-dust sky, Red dust trail, Gold foil paint) before the first arrival, about mid-January.
