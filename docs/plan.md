@@ -1324,7 +1324,7 @@ Nav looked at Cookie Clicker for ideas ("don't copy it like for like").
 
 ### Decisions for H (added 2026-11-26; recommendations in brackets)
 
-41. **Where H goes:** *(next, before A2. It's what every new player sees, and Reddit is sending people now. A2 still lands before launch on 15 Dec.)*
+41. ~~**Where H goes**~~ **Decided (Nav, prompt 135): after A2b and A2c, then G2. A2 lands before launch on 15 Dec; H follows it.**
 42. **The ticker's events:** *(from the mission log, milestones, pings saved in the final hour, new daily records, new countries joining and the leg's facts; no player names unless they're signed in and on the leaderboard; at most one line every 6 seconds; it pauses when the tab is hidden.)*
 43. **The lucky comet:** *(the server decides when a comet appears for each player: at most one every 20–40 minutes of active play, none in safe mode, the idle pause, the final 60 seconds or the landing burn. A catch is checked on the server. It doubles tap power only for 30 seconds and still respects the tap cap. Not in the leaderboard's maths beyond the km it really adds.)*
 44. **The phone's dock:** *(tap a chip to buy one; long-press or the credits open the full upgrades sheet. The chips show a short price: 2.1k, 12k, 1.4M.)*
@@ -1651,8 +1651,9 @@ Prices were checked on 2026-11-18 from Cloudflare's docs and from pricing summar
 - **Workers Paid ($5/month)** is needed for Cloudflare Email Service and for launch traffic.
 - **Crew emails (8d):** the 3,000 emails a month included with Workers Paid cover about 1,500 opted-in players at two emails a leg. After that it's about $0.35 per 1,000.
 - **The domain:** the yearly cost of onesmallclick.io.
+- **Save states (A1):** R2's free tier (10 GB of storage, plus free monthly reads and writes) covers the daily player files, the hourly game files and the restores. Workers Paid also lifts the free plan's 10 ms CPU limit, which a big crowd could hit in the 00:05 daily save state.
 
-## Cloudflare resources the plan will need (none created yet)
+## Cloudflare resources the plan uses (all created unless marked "payday")
 
 | Phase | Resource | Who creates it |
 |---|---|---|
@@ -1661,3 +1662,6 @@ Prices were checked on 2026-11-18 from Cloudflare's docs and from pricing summar
 | 8 | Google OAuth client; email sender on onesmallclick.io; secrets | You |
 | 8d | The crew email sender (e.g. crew@onesmallclick.io) in Email Service | You, in the dashboard (Claude lists the steps) |
 | 9 | Custom domain on the Worker; AdSense | You |
+| Q1b | Secrets `DISCORD_WEBHOOK_URL` and `VAPID_PRIVATE_KEY` | You (done) |
+| A1a | Secret `ADMIN_EMAILS` | You (done) |
+| A1b–A1c | R2 bucket `onesmallclick-snapshots` (players/ kept 90 days; game/hourly/ 7 days, game/ 90 days), the 00:05 UTC and hourly cron triggers | You made the bucket; Claude added the lifecycle rules and crons (done) |
