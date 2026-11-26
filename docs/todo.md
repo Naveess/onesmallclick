@@ -11,10 +11,10 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - [ ] **Tonight (Nav, 26 Nov, prompts 125/128): check A1b on the live /admin** (it's deployed now, so no `npm run dev` needed). Sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. A1b-2 too: press Compare on a save state, tick a part and restore it; on a guest, try "Merge into an account"; on an account, "Move a device" (each has Undo in the account's history). Use a test account, not a real player.
-- **Built, not deployed:** A2a (moderation; prompt 133; migration 0022). Deploy when Nav asks: backup, `npx wrangler d1 migrations apply onesmallclick --remote`, `npm run deploy`.
+- **Built, not deployed:** A2a (moderation; prompt 133; migration 0022) and the Early Beta banner fix (prompt 134: closing it lasts 24 hours, so it's back on desktop). Deploy when Nav asks: backup, `npx wrangler d1 migrations apply onesmallclick --remote`, `npm run deploy`.
 - **Next to build:** H, home v3 (Nav, 26 Nov: wants it deployed next; decisions 41–44 first; design group 3, docs/plan.md "H"), then A2b (messages) and A2c (flags and names), then G2.
 - **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1415-pre-a1c.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 134, next migration 0023.** Run `git pull` first: other sessions push here too.
+- **Next prompt 135, next migration 0023.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
