@@ -8,9 +8,10 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **Q1b** (prompts 107-118, migration 0019): the Discord bot posting to #mission-log, install as an app, and opt-in alerts (signal final hour, landing burn, vote closing). Checked by Nav on a real iPhone.
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
-- **Next to build:** A1b (fixes and player save states; needs the R2 bucket `onesmallclick-snapshots`, which Claude can create when asked), then A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
+- **Built, not deployed:** A1b-1 (prompt 124: admin fixes, player save states in R2, Undo, export; migration 0021; the bucket exists). Deploy when Nav asks.
+- **Next to build:** A1b-2 (compare and partial restore, daily save states, move and merge devices), then A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
 - **Backups (25 Nov, prompt 122):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-25-2255-checkpoint-a1a.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 123, next migration 0021.** Run `git pull` first: other sessions push here too.
+- **Next prompt 125, next migration 0022.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -66,7 +67,8 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - A1: admin sign-in (your Google account plus `ADMIN_KEY`), find any player, the player page, fixes (reset, set values, add or remove rewards, name, country, merge, export, delete), save states for every player and the probe (R2), restore with a before-and-after view, the emergency rollback, maintenance mode and docs/runbook.md;
   - A2: warn, time out, hide from boards, ban, the Flags queue, "Report name", the name blocklist, messages (inbox, banner, push, Discord, templates, gifts), and the crew rules on the terms page.
   - [x] **A1a is live** (`ace47a54`, tag `a1a-live`): admin sign-in, the Players tab, the player page, the admin log.
-  - [ ] **A1b:** the fixes and player save states (R2 bucket `onesmallclick-snapshots`); starts recording name history.
+  - [ ] **A1b-1 (built 26 Nov, prompt 124, not deployed):** the fixes, player save states in R2 (bucket `onesmallclick-snapshots` created), Undo, export, name history (docs/plan.md "A1b-1 status"). To deploy: backup, migration 0021 `--remote`, `npm run deploy`.
+  - [ ] **A1b-2:** compare and partial restore, daily and big-moment save states, move and merge devices.
   - [ ] **A1c:** the game's save states, maintenance mode, docs/runbook.md. The emergency rollback waits until after launch (a runbook entry until then).
   - [ ] **A2:** decisions 36-40 first.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.

@@ -90,7 +90,110 @@ export interface PlayerDetail {
   sessions: { count: number; lastCreated: number | null };
   log: AdminLogItem[];
   notes: AdminNote[];
+  /** Phase A1b: name changes (recorded from A1b on), their save states, and the arrived legs crew credit can name. */
+  nameHistory: { at: number; oldName: string | null; newName: string; by: string }[];
+  snapshots: SnapshotItem[];
+  arrivedLegs: { missionId: number; stop: string | null }[];
 }
+
+// ---------- Phase A1b: save states and fixes ----------
+
+/** One save state in the index (the file is gzipped JSON in R2). */
+export interface SnapshotItem {
+  id: number;
+  at: number;
+  reason: string;
+  admin: string | null;
+  bytes: number;
+}
+
+/** A player's progress as a save state holds it (credits in thousandths, as the Probe keeps them). */
+export interface ProgressState {
+  creditsMilli: number;
+  levels: Record<string, number>;
+  patches: number;
+  kmSinceShift: number;
+}
+
+/** One daily_km row (a device's day). */
+export interface DayRow {
+  deviceId: string;
+  accountId: string | null;
+  km: number;
+  tapKm: number;
+  tapMovedKm: number;
+  taps: number;
+}
+
+/** One player's save state: everything a fix can change, so any fix can be undone. */
+export interface PlayerState {
+  v: 1;
+  key: PlayerKey;
+  at: number;
+  kind: "account" | "guest";
+  profile: { name: string; nameChosen: boolean | null; country: string | null; countryChangedAt: number | null };
+  progress: ProgressState | null;
+  badges: { badge: string; at: number }[];
+  crew: { missionId: number; accountId: string | null; name: string | null; country: string | null; km: number; taps: number }[];
+  /** Today's km and taps (by the probe's clock), per device. */
+  today: { day: string; rows: DayRow[] };
+}
+
+/** The parts of a save state a restore (or an undo) can put back. */
+export type StatePart = "credits" | "upgrades" | "prestige" | "today" | "badges" | "crew" | "name" | "country";
+export const STATE_PARTS: { id: StatePart; label: string }[] = [
+  { id: "credits", label: "Credits" },
+  { id: "upgrades", label: "Upgrades" },
+  { id: "prestige", label: "Patches (prestige)" },
+  { id: "today", label: "Today's km and taps" },
+  { id: "badges", label: "Badges" },
+  { id: "crew", label: "Crew credit for legs" },
+  { id: "name", label: "Name" },
+  { id: "country", label: "Country" },
+];
+
+/** Every fix the player page offers (owner only). Each needs a reason and saves a save state first. */
+export type Fix =
+  | { kind: "reset"; parts: ("credits" | "upgrades" | "prestige" | "today" | "badges" | "crew")[] }
+  | { kind: "set"; credits?: number; levels?: Record<string, number>; patches?: number }
+  | { kind: "badge"; badge: string; on: boolean }
+  | { kind: "crew"; missionId: number; on: boolean; km?: number }
+  | { kind: "name"; name: string; lock: boolean }
+  | { kind: "country"; country: string | null; clearCooldown: boolean }
+  | { kind: "signout" }
+  | { kind: "delete" };
+
+export type FixKind = Fix["kind"];
+
+/** Fixes that also ask for the player's name typed out (they're destructive), as an undo does. */
+export const CONFIRM_FIXES: FixKind[] = ["reset", "delete"];
+
+/** What each fix can change: an undo puts back these parts of the save state taken before it. */
+export function fixParts(fix: Fix): StatePart[] {
+  switch (fix.kind) {
+    case "reset":
+      return fix.parts;
+    case "set":
+      return [
+        ...(fix.credits !== undefined ? (["credits"] as const) : []),
+        ...(fix.levels ? (["upgrades"] as const) : []),
+        ...(fix.patches !== undefined ? (["prestige"] as const) : []),
+      ];
+    case "badge":
+      return ["badges"];
+    case "crew":
+      return ["crew"];
+    case "name":
+      return ["name"];
+    case "country":
+      return ["country"];
+    default:
+      return [];
+  }
+}
+
+/** A name an admin types by hand: lower-case letters, digits and underscores, 3–24 long. */
+export const isAdminName = (name: string) => /^[a-z0-9_]{3,24}$/.test(name);
 
 /** The admin log's reasons and notes: plain text, this long at most. */
 export const ADMIN_TEXT_MAX = 1000;

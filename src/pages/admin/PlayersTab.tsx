@@ -4,9 +4,10 @@ import { stopName } from "../../../shared/campaign";
 import { PixelButton } from "../../components/PixelButton";
 import { Window } from "../../components/Window";
 import { int } from "../../game/format";
+import { Fixes, LogLine, SaveStates } from "./Fixes";
 
 // Phase A1a: the Players tab. Find anyone (search, or a list), then one screen with everything about them, and
-// private notes. Read only for now: A1b adds the fixes and save states.
+// private notes. From A1b-1: the fixes, their save states, name history, and Undo in the admin history (Fixes.tsx).
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(path, { cache: "no-store" });
@@ -78,11 +79,14 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
+  const [version, setVersion] = useState(0);
+  const [gone, setGone] = useState(false);
   useEffect(() => {
-    setP(null);
     setError("");
     get<PlayerDetail>(`/api/admin/player?key=${encodeURIComponent(playerKey)}`).then(setP, (e: Error) => setError(e.message));
-  }, [playerKey]);
+  }, [playerKey, version]);
+  useEffect(() => setP(null), [playerKey]);
+  const reload = () => setVersion((v) => v + 1);
 
   const addNote = async (e: FormEvent) => {
     e.preventDefault();
@@ -100,6 +104,17 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
     }
   };
 
+  if (gone)
+    return (
+      <>
+        <p className="admin__note" role="status">
+          The account was deleted. Its save state stays 90 days.
+        </p>
+        <PixelButton variant="outline" onClick={onBack}>
+          ← Back to the list
+        </PixelButton>
+      </>
+    );
   if (error) return <p className="admin__error">{error}</p>;
   if (!p) return <p className="admin__note">Loading…</p>;
   const pr = p.profile;
@@ -166,6 +181,14 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
               {pr.crewCode ? `/c/${pr.crewCode}` : "none"} · {pr.recruits.recruits} of {pr.recruits.arrived} arrived · {pr.alerts ? "alerts on" : "no alerts"}
             </dd>
           </div>
+          {p.nameHistory.length > 0 && (
+            <div>
+              <dt>Name history</dt>
+              <dd>
+                {p.nameHistory.map((n) => `${n.oldName ?? "?"} → ${n.newName} (${when(n.at).slice(0, 10)}, ${n.by})`).join(" · ")}
+              </dd>
+            </div>
+          )}
           <div>
             <dt>Key</dt>
             <dd className="admin__mono">{p.key}</dd>
@@ -198,7 +221,7 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
               </dd>
             </div>
             <div>
-              <dt>Saved</dt>
+              <dt>As of</dt>
               <dd className="num">{when(p.progress.savedAt)}</dd>
             </div>
           </dl>
@@ -269,17 +292,23 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
         )}
       </Window>
 
-      <Window as="form" className="admin__card" aria-labelledby="pl-notes" onSubmit={addNote}>
+      <Fixes key={version} p={p} onChanged={reload} onGone={() => setGone(true)} />
+      <SaveStates p={p} />
+
+      <Window as="section" className="admin__card" aria-labelledby="pl-notes">
         <h2 id="pl-notes" className="admin__h2">
           Notes and history
         </h2>
-        <label className="admin__field">
-          <span className="label">Add a private note</span>
-          <textarea value={note} onChange={(e) => setNote(e.target.value.slice(0, ADMIN_TEXT_MAX))} rows={2} />
-        </label>
-        <PixelButton type="submit" disabled={busy || !note.trim()}>
-          Save note
-        </PixelButton>
+        {/* Its own form: the history's Undo lines below have forms of their own, and forms can't nest. */}
+        <form className="admin__fix" onSubmit={addNote}>
+          <label className="admin__field">
+            <span className="label">Add a private note</span>
+            <textarea value={note} onChange={(e) => setNote(e.target.value.slice(0, ADMIN_TEXT_MAX))} rows={2} />
+          </label>
+          <PixelButton type="submit" disabled={busy || !note.trim()}>
+            Save note
+          </PixelButton>
+        </form>
         {p.notes.map((n) => (
           <p key={n.id} className="admin__note">
             <strong>{when(n.at)}</strong> · {n.admin}: {n.text}
@@ -288,10 +317,7 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
         {p.log.length > 0 && (
           <ul className="admin__days">
             {p.log.map((l) => (
-              <li key={l.id}>
-                {when(l.at)} · {l.admin} · {l.action}
-                {l.reason ? ` · ${l.reason}` : ""}
-              </li>
+              <LogLine key={l.id} l={l} name={pr.name} onChanged={reload} />
             ))}
           </ul>
         )}

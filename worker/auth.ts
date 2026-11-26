@@ -146,7 +146,7 @@ export function accountInfo(a: AccountRow): AccountInfo {
 }
 
 /** A name no account has: the wanted one if it's free, else a numbered one. */
-async function freeName(env: Env, wanted: string): Promise<string> {
+export async function freeName(env: Env, wanted: string): Promise<string> {
   const taken = async (n: string) =>
     (await env.DB.prepare(`SELECT 1 FROM accounts WHERE name = ?`).bind(n).first()) !== null;
   if (isGeneratedName(wanted) && !(await taken(wanted))) return wanted;
@@ -460,6 +460,13 @@ async function chooseName(request: Request, env: Env): Promise<Response> {
   } catch {
     return json({ ok: false, reason: "taken" }, 409); // the UNIQUE name: someone took it meanwhile
   }
+  // Phase A1b: every name change is kept in the player's history (the admin panel shows it).
+  if (name !== s.account.name) {
+    await env.DB.prepare(`INSERT INTO name_history (player_key, at, old_name, new_name, changed_by) VALUES (?, ?, ?, ?, 'player')`)
+      .bind(`a:${s.account.id}`, Date.now(), s.account.name, name)
+      .run()
+      .catch(() => {});
+  }
   return json({ ok: true, name });
 }
 
@@ -495,15 +502,16 @@ async function signOut(request: Request, env: Env): Promise<Response> {
   return json({ ok: true }, 200, headers);
 }
 
-async function deleteAccount(request: Request, env: Env): Promise<Response> {
-  const s = await readSession(request, env);
-  if (!s) return json({ ok: false, reason: "signed-out" }, 401);
-  const id = s.account.id;
+/**
+ * Deletes an account: the player's own "Delete account", and (phase A1b) the admin panel's, which runs this same path.
+ * The account goes; the anonymous history stays (devices, km, pings and votes no longer point at it).
+ */
+export async function removeAccount(env: Env, id: string, email: string | null): Promise<void> {
   await probe(env).deleteAccount(id);
   // The account goes; the anonymous history stays (devices, km, pings and votes no longer point at it).
   await env.DB.batch([
     env.DB.prepare(`DELETE FROM sessions WHERE account_id = ?`).bind(id),
-    env.DB.prepare(`DELETE FROM login_tokens WHERE email = ?`).bind(s.account.email ?? ""),
+    env.DB.prepare(`DELETE FROM login_tokens WHERE email = ?`).bind(email ?? ""),
     env.DB.prepare(`UPDATE devices SET account_id = NULL WHERE account_id = ?`).bind(id),
     env.DB.prepare(`UPDATE daily_km SET account_id = NULL WHERE account_id = ?`).bind(id),
     env.DB.prepare(`UPDATE pings SET account_id = NULL WHERE account_id = ?`).bind(id),
@@ -519,8 +527,15 @@ async function deleteAccount(request: Request, env: Env): Promise<Response> {
     env.DB.prepare(`DELETE FROM recruits WHERE recruiter_key = ?`).bind(`a:${id}`),
     env.DB.prepare(`UPDATE feedback SET account_id = NULL WHERE account_id = ?`).bind(id), // phase Q1a: their "contact me" goes
     env.DB.prepare(`DELETE FROM push_subscriptions WHERE account_id = ?`).bind(id), // phase Q1b-2: their alerts go
+    env.DB.prepare(`DELETE FROM name_history WHERE player_key = ?`).bind(`a:${id}`), // phase A1b
     env.DB.prepare(`DELETE FROM accounts WHERE id = ?`).bind(id),
   ]);
+}
+
+async function deleteAccount(request: Request, env: Env): Promise<Response> {
+  const s = await readSession(request, env);
+  if (!s) return json({ ok: false, reason: "signed-out" }, 401);
+  await removeAccount(env, s.account.id, s.account.email);
   const headers = new Headers();
   headers.append("Set-Cookie", CLEAR_SESSION);
   headers.append("Set-Cookie", await freshDevice(request, env));

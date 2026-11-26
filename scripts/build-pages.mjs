@@ -608,7 +608,7 @@ const privacySections = [
       "Alerts are delivered by your browser's own push service (for example Google's, Mozilla's, Microsoft's or Apple's), only if you turn them on.",
       "Ping, the daily vote, the email sign-in and the feedback form use Cloudflare Turnstile, an invisible check that you're not a bot. It runs in your browser and Cloudflare processes signals from it for that check only. See Cloudflare's <a href=\"https://www.cloudflare.com/turnstile-privacy-policy/\" rel=\"noopener\">Turnstile Privacy Addendum</a>.",
       "Sign-in emails are sent with Cloudflare's Email Service. Google sees that you signed in to OneSmallClick if you use “Continue with Google”.",
-      "The database is backed up by Cloudflare, and as encrypted copies in our private Google Drive, in case something goes wrong with either. The copies are locked with a key only we hold, so Google can't read them, and each is deleted after 90 days.",
+      "The database is backed up by Cloudflare, and as encrypted copies in our private Google Drive, in case something goes wrong with either. The copies are locked with a key only we hold, so Google can't read them, and each is deleted after 90 days. We also keep save states of each player's progress (taken before we fix anything on an account, so a fix can be undone), stored with Cloudflare and deleted after 90 days.",
       "There are no ads, no analytics trackers and no Google scripts on our pages. We never sell your data and never post anything for you.",
     ],
   ],
@@ -616,7 +616,7 @@ const privacySections = [
     "Your choices",
     [
       "Sign out at any time: your progress stays with your account, and the device carries on as a new guest.",
-      "Delete your account from the sign-in page: your email, name, account progress and passport stamps are deleted straight away, and your name comes off the mission credits. Backups roll off on their own: Cloudflare's within 30 days, and our encrypted copies within 90 days. The km you pushed stay in the mission without your name.",
+      "Delete your account from the sign-in page: your email, name, account progress and passport stamps are deleted straight away, and your name comes off the mission credits. Backups roll off on their own: Cloudflare's within 30 days, and our encrypted copies and save states within 90 days. The km you pushed stay in the mission without your name.",
       `For a copy of your data, or anything else about privacy, email ${mailto}.`,
     ],
   ],

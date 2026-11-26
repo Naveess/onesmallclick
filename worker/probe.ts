@@ -11,6 +11,7 @@ import {
   type DiscordRow,
 } from "./discord";
 import { pushBatch } from "./push";
+import type { DayRow, ProgressState } from "../shared/admin";
 import type { PushKind } from "../shared/push";
 import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
@@ -3475,6 +3476,113 @@ export class Probe extends DurableObject<Env> {
   }
 
   /** Ends the open round with no result and no effect (its mission is gone). */
+  // ---------- Phase A1b: one player's save state and fixes (worker/fixes.ts calls these, after the admin checks) ----------
+
+  /** Pays a connected player up to now, so a save state or a fix starts from their true numbers. */
+  private async settlePlayer(key: string, now: number) {
+    for (const ws of this.ctx.getWebSockets()) {
+      if (ws.readyState !== WebSocket.OPEN || this.dead.has(ws)) continue;
+      const a = ws.deserializeAttachment() as Attachment | null;
+      if (!a) continue;
+      const w = whoOf(a);
+      if (w.key !== key) continue;
+      const p = this.prog(key, now);
+      this.settleConnected(w, p, await this.device(w, now), now);
+      return; // one settle covers all their tabs: settledAt is the player's
+    }
+  }
+
+  private hasProgress(key: string): boolean {
+    return this.progress.has(key) || this.sql.exec(`SELECT 1 FROM progress WHERE device_id = ?`, key).toArray().length > 0;
+  }
+
+  /** A player's daily_km rows on `day` (an account's by account_id; a guest's by device with no account). */
+  private async dayRows(key: string, day: string): Promise<DayRow[]> {
+    const account = key.startsWith("a:");
+    const rows = (
+      await this.env.DB.prepare(
+        `SELECT device_id, account_id, km, tap_km, tap_moved_km, taps FROM daily_km
+         WHERE day = ? AND ${account ? "account_id = ?" : "device_id = ? AND account_id IS NULL"}`,
+      )
+        .bind(day, account ? key.slice(2) : key)
+        .all<{ device_id: string; account_id: string | null; km: number; tap_km: number; tap_moved_km: number; taps: number }>()
+    ).results;
+    return rows.map((r) => ({ deviceId: r.device_id, accountId: r.account_id, km: r.km, tapKm: r.tap_km, tapMovedKm: r.tap_moved_km, taps: r.taps }));
+  }
+
+  /** A player's progress as it is now (the admin player page), without saving anything. */
+  async adminProgress(key: string): Promise<ProgressState | null> {
+    if (!this.hasProgress(key)) return null;
+    const p = this.prog(key, this.now());
+    return { creditsMilli: p.creditsMilli, levels: { ...p.levels }, patches: p.patches, kmSinceShift: p.kmSinceShift };
+  }
+
+  /** The Probe's half of a player's save state: their progress (paid up to now) and today's km and taps. */
+  async adminCapture(key: string): Promise<{ progress: ProgressState | null; day: string; rows: DayRow[] }> {
+    const now = this.now();
+    await this.settlePlayer(key, now);
+    await this.flushD1(); // so today's rows in D1 hold everything credited so far
+    const p = this.hasProgress(key) ? this.prog(key, now) : null;
+    const day = utcDay(now);
+    return {
+      progress: p && { creditsMilli: p.creditsMilli, levels: { ...p.levels }, patches: p.patches, kmSinceShift: p.kmSinceShift },
+      day,
+      rows: await this.dayRows(key, day),
+    };
+  }
+
+  /**
+   * Changes a player's progress and/or one day's km and taps, then drops what this object remembers about them and
+   * reconnects their tabs, so they see the change at once. With nothing to change it only does the last part (after
+   * the Worker changed their badges, name or country in D1). The time auto-thrust was paid up to is kept, so a player
+   * who is away still gets their offline pay.
+   */
+  async adminSetPlayer(
+    key: string,
+    change: { creditsMilli?: number; levels?: Record<string, number>; patches?: number; kmSinceShift?: number; day?: { day: string; rows: DayRow[] } },
+  ): Promise<void> {
+    const now = this.now();
+    await this.settlePlayer(key, now);
+    const int = (n: unknown, max = Number.MAX_SAFE_INTEGER) => Math.min(max, Math.max(0, Math.round(Number(n) || 0)));
+    if (change.creditsMilli !== undefined || change.levels || change.patches !== undefined || change.kmSinceShift !== undefined) {
+      const p = this.prog(key, now);
+      if (change.creditsMilli !== undefined) p.creditsMilli = int(change.creditsMilli);
+      if (change.levels) for (const k of UPGRADE_KEYS) if (change.levels[k] !== undefined) p.levels[k] = int(change.levels[k], MAX_LEVEL);
+      if (change.patches !== undefined) p.patches = int(change.patches);
+      if (change.kmSinceShift !== undefined) p.kmSinceShift = Math.max(0, Number(change.kmSinceShift) || 0);
+      this.touch(key, true);
+    }
+    if (change.day) {
+      const { day, rows } = change.day;
+      await this.flushD1();
+      // Anything still queued for them that day goes too (it's in the rows, or it's being reset).
+      const account = key.startsWith("a:");
+      const id = account ? key.slice(2) : key;
+      for (const [k, q] of this.d1Pending) {
+        if (q.day !== day || (account ? q.accountId !== id : q.deviceId !== id || q.accountId !== null)) continue;
+        this.d1Pending.delete(k);
+        this.dirtyQueue.add(k);
+      }
+      const db = this.env.DB;
+      await db.batch([
+        db.prepare(`DELETE FROM daily_km WHERE day = ? AND ${account ? "account_id = ?" : "device_id = ? AND account_id IS NULL"}`).bind(day, id),
+        ...rows.map((r) =>
+          db
+            .prepare(
+              `INSERT INTO daily_km (day, device_id, account_id, km, tap_km, tap_moved_km, taps) VALUES (?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT (day, device_id) DO UPDATE SET account_id = excluded.account_id, km = excluded.km, tap_km = excluded.tap_km,
+                 tap_moved_km = excluded.tap_moved_km, taps = excluded.taps`,
+            )
+            .bind(day, r.deviceId, r.accountId, r.km, r.tapKm, r.tapMovedKm, r.taps),
+        ),
+      ]);
+    }
+    this.saveProgress();
+    this.devices.delete(key);
+    this.dropDevice((a) => whoOf(a).key === key, "changed by mission control");
+    this.retune(now);
+  }
+
   private async abandonVote(now: number) {
     const v = this.vote;
     this.sql.exec(`UPDATE vote_round SET closed_at = ?, winner = -1 WHERE round = ?`, now, v.round);

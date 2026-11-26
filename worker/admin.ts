@@ -14,11 +14,13 @@
 //   GET  /api/admin/player      ?key= → PlayerDetail
 //   POST /api/admin/note        { key, text }
 //   GET  /api/admin/log         ?target= → AdminLogItem[] (the latest 100)
+//   Phase A1b: the fixes, undo, export and name offers are in worker/fixes.ts.
 
 import { BADGE_INFO, type BadgeId } from "../shared/badges";
-import { ADMIN_TEXT_MAX, isAccountKey, type AdminLogItem, type AdminRole, type AdminWho, type PlayerDetail, type PlayerList, type PlayerRow } from "../shared/admin";
+import { ADMIN_TEXT_MAX, isAccountKey, type AdminLogItem, type AdminRole, type AdminWho, type PlayerDetail, type PlayerList, type PlayerRow, type SnapshotItem } from "../shared/admin";
 import { cookieValue, randomToken, readSession, sha256 } from "./auth";
 import { capCheck, capCount } from "./caps";
+import { fixesPanel } from "./fixes";
 
 const ADMIN_COOKIE = "osc_admin";
 const ADMIN_TTL_MS = 12 * 3_600_000;
@@ -255,7 +257,7 @@ async function player(env: Env, key: string): Promise<Response> {
   // Whose rows: an account's are by account_id; a guest's by device_id.
   const col = account ? "account_id" : "device_id";
   const since = utcDay(Date.now() - 29 * DAY_MS);
-  const [devices, sessions, progress, badges, legs, days, pings, totals, votes, code, recruits, push, feedback, log, notes] = await db.batch([
+  const [devices, sessions, progress, badges, legs, days, pings, totals, votes, code, recruits, push, feedback, log, notes, names, snaps, arrived] = await db.batch([
     account
       ? db.prepare(`SELECT id, name, country, created_at, last_seen FROM devices WHERE account_id = ? ORDER BY last_seen DESC`).bind(id)
       : db.prepare(`SELECT id, name, country, created_at, last_seen FROM devices WHERE id = ?`).bind(id),
@@ -275,6 +277,10 @@ async function player(env: Env, key: string): Promise<Response> {
     account ? db.prepare(`SELECT COUNT(*) AS n FROM feedback WHERE account_id = ?`).bind(id) : db.prepare(`SELECT 0 AS n`),
     db.prepare(`SELECT * FROM admin_log WHERE target = ? ORDER BY at DESC LIMIT 50`).bind(key),
     db.prepare(`SELECT id, at, admin, text FROM admin_notes WHERE player_key = ? ORDER BY at DESC LIMIT 50`).bind(key),
+    // Phase A1b: name history, save states, and the legs crew credit can be given for.
+    db.prepare(`SELECT at, old_name, new_name, changed_by FROM name_history WHERE player_key = ? ORDER BY at DESC LIMIT 50`).bind(key),
+    db.prepare(`SELECT id, at, reason, admin, bytes FROM snapshots WHERE player_key = ? ORDER BY at DESC LIMIT 50`).bind(key),
+    db.prepare(`SELECT id, stop FROM missions WHERE arrived_at IS NOT NULL ORDER BY id`),
   ]);
   type R<T> = { results: T[] };
   const devs = (devices as R<{ id: string; name: string; country: string | null; created_at: number; last_seen: number }>).results;
@@ -293,7 +299,14 @@ async function player(env: Env, key: string): Promise<Response> {
       : await db.prepare(`SELECT name FROM devices WHERE id = ?`).bind(rec.recruiter_key).first<{ name: string }>();
     recruiterName = r?.name ?? null;
   }
-  const prog = (progress as R<Record<string, number>>).results[0];
+  const saved = (progress as R<Record<string, number>>).results[0];
+  // Phase A1b: the live numbers from the Probe (D1's copy can be a few minutes behind a fix); D1's copy if that fails.
+  const live = await env.PROBE.get(env.PROBE.idFromName("mission"))
+    .adminProgress(key)
+    .catch(() => null);
+  const prog = live
+    ? { credits_milli: live.creditsMilli, ...live.levels, patches: live.patches, km_since_shift: live.kmSinceShift, updated_at: Date.now() }
+    : saved;
   const pinged = new Set((pings as R<{ day: string }>).results.map((p) => p.day));
   const t = (totals as R<{ km: number; taps: number; pings: number }>).results[0];
   const s = (sessions as R<{ n: number; last: number | null }>).results[0];
@@ -349,6 +362,14 @@ async function player(env: Env, key: string): Promise<Response> {
     sessions: { count: s?.n ?? 0, lastCreated: s?.last ?? null },
     log: (log as R<AdminLogItem>).results,
     notes: (notes as R<{ id: number; at: number; admin: string; text: string }>).results,
+    nameHistory: (names as R<{ at: number; old_name: string | null; new_name: string; changed_by: string }>).results.map((n) => ({
+      at: n.at,
+      oldName: n.old_name,
+      newName: n.new_name,
+      by: n.changed_by,
+    })),
+    snapshots: (snaps as R<SnapshotItem>).results,
+    arrivedLegs: (arrived as R<{ id: number; stop: string | null }>).results.map((m) => ({ missionId: m.id, stop: m.stop })),
   };
   return json(out);
 }
@@ -376,6 +397,8 @@ export async function adminPanel(request: Request, env: Env, action: string, who
   if (action === "search" && request.method === "GET") return search(env, url);
   if (action === "player" && request.method === "GET") return player(env, (url.searchParams.get("key") ?? "").slice(0, 80));
   if (action === "note" && request.method === "POST") return addNote(request, env, who);
+  const fixed = await fixesPanel(request, env, action, who); // phase A1b: fixes, undo, export, name offers
+  if (fixed) return fixed;
   if (action === "log" && request.method === "GET") {
     const target = url.searchParams.get("target");
     const rows = target
