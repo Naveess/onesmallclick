@@ -1,0 +1,36 @@
+{
+  "_note": "Phase A2b-1: the message templates on /admin (decision 39). Picking one fills the title and text, which can still be edited before sending. {name} becomes the player's name (an everyone message says 'crew'). Drafted by Claude 2026-11-26 (prompt 139); approved: null until Nav approves the wording.",
+  "approved": null,
+  "templates": [
+    {
+      "id": "restored",
+      "label": "We've restored your progress",
+      "title": "Your progress is back",
+      "body": "Hi {name}, we found the problem with your account and put your progress back the way it was. Sorry about that, and thanks for your patience. If anything still looks wrong, tell us with \"Report a bug or idea\"."
+    },
+    {
+      "id": "paused",
+      "label": "Your account is paused",
+      "title": "About your account",
+      "body": "Hi {name}, your account has been paused for a while because of how it was being played. The pause banner says when it ends. The crew rules are on the terms page, and if you think it's a mistake you can appeal from \"Report a bug or idea\"."
+    },
+    {
+      "id": "welcome-back",
+      "label": "Welcome back",
+      "title": "Welcome back, {name}",
+      "body": "Good to see you again. The probe kept flying while you were away, and the crew could use your taps. See you on the THRUST button."
+    },
+    {
+      "id": "maintenance",
+      "label": "Maintenance tonight",
+      "title": "Maintenance tonight",
+      "body": "Hi {name}, mission control is doing some maintenance tonight. The game may pause for a short while, and the signal's deadline moves on by however long it takes, so nobody loses out."
+    },
+    {
+      "id": "thanks-report",
+      "label": "Thanks for the report",
+      "title": "Thanks for your report",
+      "body": "Hi {name}, thank you for telling us. We've read it and we're looking into it. Reports like yours help the whole crew."
+    }
+  ]
+}

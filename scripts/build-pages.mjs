@@ -605,6 +605,12 @@ const privacySections = [
     ],
   ],
   [
+    "Messages from mission control",
+    [
+      "Mission control can send messages to your in-game inbox (the envelope at the top of the game), to you or to all the crew. We keep each message, when you opened it, and whether you collected any gift it carried (credits or a badge), for 90 days, then delete them.",
+    ],
+  ],
+  [
     "Alerts and installing the app",
     [
       "If you turn on alerts, your browser gives us a push address: a web address from its own push service (Google's, Mozilla's, Microsoft's or Apple's). We keep it with a link to your device (and your account, if you're signed in), your three on/off switches, and how many alerts we sent you today, so we can send only the alerts you chose, at most 3 a day.",

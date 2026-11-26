@@ -3899,6 +3899,39 @@ export class Probe extends DurableObject<Env> {
    * the Worker changed their badges, name or country in D1). The time auto-thrust was paid up to is kept, so a player
    * who is away still gets their offline pay.
    */
+  /**
+   * Phase A2b-1: a gift from mission control's inbox, paid (or, with negative credits or `badgeOn: false`, taken back:
+   * the gift's Undo). Credits are added to what they have now (never below 0) and their open screens are told at once,
+   * without reconnecting; the badge row is the Worker's (D1), this only updates what the Probe remembers and tells them.
+   * Returns the credits actually added (less than asked when taking back more than they have).
+   */
+  async adminGift(gifts: { key: string; creditsMilli?: number; badge?: BadgeId; badgeOn?: boolean; at?: number }[]): Promise<number[]> {
+    const now = this.now();
+    const out: number[] = [];
+    for (const g of gifts) {
+      let applied = 0;
+      if (g.creditsMilli) {
+        await this.settlePlayer(g.key, now);
+        const p = this.prog(g.key, now);
+        const before = p.creditsMilli;
+        p.creditsMilli = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, before + Math.round(g.creditsMilli)));
+        applied = p.creditsMilli - before;
+        this.touch(g.key, true);
+        this.sendMe(g.key, p);
+      }
+      if (g.badge) {
+        const dev = this.devices.get(g.key);
+        if (dev) {
+          if (g.badgeOn === false) dev.badges.delete(g.badge);
+          else if (!dev.badges.has(g.badge)) dev.badges.set(g.badge, g.at ?? Date.now());
+          this.sendBadges(g.key, dev, g.badgeOn === false ? [] : [g.badge]);
+        }
+      }
+      out.push(applied);
+    }
+    return out;
+  }
+
   async adminSetPlayer(
     key: string,
     change: { creditsMilli?: number; levels?: Record<string, number>; patches?: number; kmSinceShift?: number; day?: { day: string; rows: DayRow[] } },

@@ -1,3 +1,4 @@
+import { PlayerMessages } from "./Messages";
 import { useEffect, useState, type FormEvent } from "react";
 import { ADMIN_TEXT_MAX, PLAYER_LISTS, type PlayerDetail, type PlayerList, type PlayerRow } from "../../../shared/admin";
 import { stopName } from "../../../shared/campaign";
@@ -296,6 +297,7 @@ function Player({ playerKey, onBack, onOpen }: { playerKey: string; onBack: () =
       <Moderation key={`m${version}`} p={p} onChanged={reload} />
       <Fixes key={version} p={p} onChanged={reload} onGone={() => setGone(true)} />
       <SaveStates key={`s${version}`} p={p} onChanged={reload} />
+      <PlayerMessages key={`msg${version}`} p={p} />
 
       <Window as="section" className="admin__card" aria-labelledby="pl-notes">
         <h2 id="pl-notes" className="admin__h2">

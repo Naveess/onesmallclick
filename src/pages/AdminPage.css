@@ -136,7 +136,7 @@
 }
 .admin__tabs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border: 2px solid var(--line);
   outline: 2px solid var(--outline);
 }
@@ -311,4 +311,30 @@
 .admin__mod-reason {
   overflow-wrap: anywhere;
   color: var(--text-soft);
+}
+
+/* Phase A2b-1: the message text on the Messages card and tab. */
+.admin__field textarea {
+  min-height: 120px;
+  width: 100%;
+  padding: 8px 10px;
+  font: 16px/1.4 var(--font-ui);
+  color: var(--text);
+  background: var(--field);
+  border: 2px solid var(--window-border);
+  border-radius: 0;
+  resize: vertical;
+}
+
+.admin__field textarea:focus-visible {
+  outline: 2px solid var(--text-blue);
+  outline-offset: 2px;
+}
+
+/* Five tabs at phone width: a little smaller so "Save states" and "Messages" fit. */
+@media (max-width: 430px) {
+  .admin__tab {
+    font-size: 13px;
+    padding: 4px 2px;
+  }
 }

@@ -26,6 +26,8 @@ export interface SessionInfo {
   emailSignIn?: boolean;
   /** Phase A2a: time out, ban, hidden from the boards, warnings to acknowledge. */
   standing?: Standing;
+  /** Phase A2b-1: how many messages from mission control are unopened (the envelope's count). */
+  inbox?: number;
 }
 
 /** POST /api/auth/email. In local development the link comes back in `devLink` instead of an email. */

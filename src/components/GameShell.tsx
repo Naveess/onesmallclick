@@ -5,6 +5,7 @@ import { LAUNCH, NUDGES, betaLine, ctaLabel, dismissedToday, fillNudge, signInHr
 import { int } from "../game/format";
 import { ArrivalScreen } from "./ArrivalScreen";
 import { BetaBanner } from "./BetaBanner";
+import { InboxButton } from "./Inbox";
 import { MaintenanceBanner } from "./MaintenanceBanner";
 import { BanScreen, PausedBanner, WarningDialog } from "./Standing";
 import { Link } from "../router";
@@ -177,6 +178,7 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
                   How to play
                 </Link>
                 <ThemeLink className="game-nav__item" />
+                <InboxButton unread={player.inbox} wide />
                 <Link href={player.account ? "/profile" : signInHref("chip")} className="pbtn pbtn--blue game-nav__signin">
                   {player.account ? player.name : guest ? NUDGES.chipWide : "Sign in"}
                 </Link>
@@ -184,6 +186,8 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
             ) : (
               <div className="game-head__side">
                 {safe ? <SafeChip /> : <HereNow online={probe.online} idling={probe.idling} />}
+                {/* Phase A2b-1: messages from mission control. */}
+                <InboxButton unread={player.inbox} />
                 {/* Prompt 42: the profile, one tap away on phones (the name button does this on wide screens). */}
                 <Link href="/profile" className="game-head__profile" aria-label="Your profile">
                   <PixelIcon name="user" size={18} tone="blue" />

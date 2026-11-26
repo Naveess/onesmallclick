@@ -112,7 +112,7 @@ async function connect() {
     const res = await fetch("/api/session", { credentials: "same-origin", cache: "no-store" });
     if (!res.ok) throw new Error(`session ${res.status}`);
     const body = (await res.json().catch(() => ({}))) as Partial<SessionInfo>;
-    if (body.name) handlers.onSession({ name: body.name, crew: body.crew ?? 0, account: body.account ?? null, standing: body.standing });
+    if (body.name) handlers.onSession({ name: body.name, crew: body.crew ?? 0, account: body.account ?? null, standing: body.standing, inbox: body.inbox });
   } catch {
     retry();
     return;

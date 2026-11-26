@@ -16,6 +16,7 @@
 //   POST /api/report          { message, stack, component, path } → a crash in the app, written to the Workers Logs (phase 9a)
 //   POST /api/feedback        { token, kind, message, contact, page, info } (Turnstile) → "Report a bug or idea" (phase Q1a, worker/feedback.ts)
 //   POST /api/moderation/ack  { id } → the player tapped OK on a warning (phase A2a, worker/moderation.ts)
+//   GET  /api/inbox, POST /api/inbox/read, POST /api/inbox/collect → messages from mission control (phase A2b-1, worker/messages.ts)
 //   /api/push/*, POST /api/notice   opt-in notifications: subscribe, switches, test, and what to show (phase Q1b-2, worker/push.ts)
 //   GET  /api/crew-link, POST /api/share, GET /api/crew/<code>   crew links and share counts (phase S1, worker/share.ts)
 //   GET  /c/<code>            the game with that crew link's link preview (phase S1; run_worker_first in wrangler.jsonc)
@@ -58,6 +59,7 @@ import { capCheck, capCount, capReport } from "./caps";
 import { deviceCookie, generateName, readDevice } from "./device";
 import { contentPage, countShare, crewInfo, crewLink, crewPage, shareReport } from "./share";
 import { ackWarning, heldNow, pruneModeration, standingFor } from "./moderation";
+import { inboxRoute, pruneMessages, unreadCount } from "./messages";
 
 export { Probe } from "./probe";
 
@@ -95,6 +97,7 @@ export default {
     if (path === "/api/report" && request.method === "POST") return crashReport(request, url);
     if (path === "/api/feedback" && request.method === "POST") return sendFeedback(request, env, turnstileOk);
     if (path === "/api/moderation/ack" && request.method === "POST") return ackWarning(request, env);
+    if (path === "/api/inbox" || path.startsWith("/api/inbox/")) return inboxRoute(request, env, path.slice("/api/inbox".length).replace(/^\//, ""));
     if (path === "/api/notice" && request.method === "POST") return pushRoute(request, env, "notice");
     if (path.startsWith("/api/push/")) return pushRoute(request, env, path.slice("/api/push/".length));
     if (path === "/api/crew-link" && request.method === "GET") return crewLink(request, env);
@@ -120,6 +123,7 @@ export default {
     );
     ctx.waitUntil(gameSaveNow(env, "daily", "daily", null).catch((err) => console.error("daily game save state failed", err)));
     ctx.waitUntil(pruneModeration(env).catch((err) => console.error("moderation prune failed", err))); // phase A2a: kept 1 year
+    ctx.waitUntil(pruneMessages(env).catch((err) => console.error("messages prune failed", err))); // phase A2b-1: kept 90 days
   },
 } satisfies ExportedHandler<Env>;
 
@@ -163,6 +167,7 @@ async function session(request: Request, env: Env): Promise<Response> {
     account: signedIn ? accountInfo(signedIn.account) : null,
     emailSignIn: emailReady(env) || env.DEV_SIGN_IN_LINKS === "1",
     standing: (await standingFor(env, request, id, signedIn?.account.id ?? null)).standing,
+    inbox: await unreadCount(env, id, signedIn?.account.id ?? null),
   };
   return json(body, 200, {}, cookies);
 }

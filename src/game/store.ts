@@ -21,6 +21,7 @@ import {
   type ServerMessage,
 } from "../../shared/mission";
 import type { AccountInfo } from "../../shared/account";
+import type { CollectResult, InboxItem, InboxView } from "../../shared/messages";
 import { BADGE_INFO, type BadgeId, type EarnedBadge } from "../../shared/badges";
 import { milestonesFor, type ReachedMilestone } from "../../shared/milestones";
 import { MOON_LEG_KM, probeFor, probeTag, stopName } from "../../shared/campaign";
@@ -115,6 +116,8 @@ export interface PlayerState {
   emailSignIn: boolean;
   /** Phase A2a: timed out or banned, hidden from the boards, warnings to acknowledge (from /api/session). */
   standing: Standing;
+  /** Phase A2b-1: unopened messages from mission control (the envelope's count, from /api/session). */
+  inbox: number;
   /** Credits now: the server's, plus auto-thrust since its last message, plus taps not yet credited. */
   credits: number;
   levels: UpgradeLevels;
@@ -307,6 +310,7 @@ function initialState(): GameState {
       known: false,
       emailSignIn: false,
       standing: NO_STANDING,
+      inbox: 0,
       credits: 0,
       levels: { cold: 0, ion: 0, sail: 0, hands: 0, chant: 0 },
       patches: 0,
@@ -579,7 +583,7 @@ function startServer() {
     onMessage,
     onConnection: (c) => set(compose(state, c)),
     onSession: (info) => {
-      set({ ...state, player: { ...state.player, ...info, standing: info.standing ?? NO_STANDING, known: true } });
+      set({ ...state, player: { ...state.player, ...info, standing: info.standing ?? NO_STANDING, inbox: info.inbox ?? 0, known: true } });
       watchHold(info.standing?.hold ?? null);
     },
     onDropped: () => {
@@ -780,6 +784,45 @@ export async function ackWarning(id: number) {
     await fetch("/api/moderation/ack", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }), credentials: "same-origin" });
   } catch {
     // it shows again next visit
+  }
+}
+
+// ---------- Phase A2b-1: messages from mission control ----------
+
+/** The inbox's messages (newest first). Opening the inbox reads them; null if it couldn't load. */
+export async function loadInbox(): Promise<InboxItem[] | null> {
+  try {
+    const res = await fetch("/api/inbox", { credentials: "same-origin", cache: "no-store" });
+    if (!res.ok) return null;
+    return ((await res.json()) as InboxView).items;
+  } catch {
+    return null;
+  }
+}
+
+/** These messages are opened: the envelope's count goes down. */
+export async function markRead(ids: number[]) {
+  if (ids.length === 0) return;
+  set({ ...state, player: { ...state.player, inbox: Math.max(0, state.player.inbox - ids.length) } });
+  try {
+    await fetch("/api/inbox/read", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }), credentials: "same-origin" });
+  } catch {
+    // they show as new again next visit
+  }
+}
+
+/** Collect a message's gift. The credits arrive over the socket (the Probe sends them), the badge as a badge toast. */
+export async function collectGift(id: number): Promise<CollectResult> {
+  try {
+    const res = await fetch("/api/inbox/collect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+      credentials: "same-origin",
+    });
+    return (await res.json()) as CollectResult;
+  } catch {
+    return { ok: false, error: "busy" };
   }
 }
 

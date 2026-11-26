@@ -23,6 +23,7 @@ import { capCheck, capCount } from "./caps";
 import { fixesPanel } from "./fixes";
 import { gameSavesPanel } from "./gamesaves";
 import { moderationPanel } from "./moderation";
+import { messagesPanel } from "./messages";
 
 const ADMIN_COOKIE = "osc_admin";
 const ADMIN_TTL_MS = 12 * 3_600_000;
@@ -405,6 +406,8 @@ export async function adminPanel(request: Request, env: Env, action: string, who
   if (saves) return saves;
   const mod = await moderationPanel(request, env, action, who); // phase A2a: warn, time out, hide, ban, remove km
   if (mod) return mod;
+  const msg = await messagesPanel(request, env, action, who); // phase A2b-1: messages and gifts
+  if (msg) return msg;
   if (action === "log" && request.method === "GET") {
     const target = url.searchParams.get("target");
     const rows = target

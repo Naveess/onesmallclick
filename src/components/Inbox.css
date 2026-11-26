@@ -1,0 +1,127 @@
+/* Phase A2b-1: the envelope in the game's header and the inbox (Inbox.tsx). Built from the pixel kit (no design screen). */
+
+.inbox-btn {
+  position: relative;
+  cursor: pointer;
+  font: inherit;
+}
+
+/* The unopened count: an orange chip on the envelope's corner (orange = signal, news). */
+.inbox-btn__count {
+  position: absolute;
+  top: -8px;
+  right: -9px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  font: 400 16px/1 var(--font-num);
+  color: var(--outline);
+  background: var(--orange);
+  border: 2px solid var(--outline);
+  pointer-events: none;
+}
+
+/* Desktop header: the count sits after the word, not on the icon. */
+.inbox-btn--wide .inbox-btn__count {
+  position: static;
+  margin-left: 2px;
+}
+
+.inbox.share-sheet {
+  width: 420px;
+}
+
+.inbox__empty {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text-soft);
+}
+
+.inbox__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inbox__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--well);
+  border: 2px solid var(--line-blue);
+}
+
+.inbox__item--new {
+  border-color: var(--orange);
+}
+
+.inbox__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.inbox__new {
+  font: 400 16px/1 var(--font-num);
+  letter-spacing: 0.08em;
+  color: var(--text-orange);
+}
+
+.inbox__title {
+  font: 700 17px/1.25 var(--font-ui);
+  color: var(--text);
+}
+
+.inbox__body {
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+  color: var(--text-soft);
+}
+
+.inbox__gift {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 2px solid var(--line-blue);
+}
+
+.inbox__gift-line,
+.inbox__collected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.inbox__gift-line {
+  color: var(--text-orange);
+}
+
+.inbox__collected {
+  min-height: 44px;
+  color: var(--text-blue);
+}
+
+.inbox__note {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+/* Phone header: keep the 44px tap areas of the envelope and the profile apart. */
+.game-head__side .inbox-btn {
+  margin-right: 8px;
+}
