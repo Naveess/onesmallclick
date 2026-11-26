@@ -9,9 +9,10 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - **Built, not deployed:** A1b-1 (prompt 124: admin fixes, player save states in R2, Undo, export; migration 0021; the bucket exists). Deploy when Nav asks.
+- [ ] **Tonight (Nav, 26 Nov, prompt 125): check A1b-1 locally.** `npm run dev`, open /admin, sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. Say "deploy" when happy.
 - **Next to build:** A1b-2 (compare and partial restore, daily save states, move and merge devices), then A1c (game save states, maintenance mode, docs/runbook.md), then A2 (decisions 36-40 first), then G2.
 - **Backups (25 Nov, prompt 122):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-25-2255-checkpoint-a1a.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 125, next migration 0022.** Run `git pull` first: other sessions push here too.
+- **Next prompt 126, next migration 0022.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
