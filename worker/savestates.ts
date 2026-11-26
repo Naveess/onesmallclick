@@ -11,7 +11,7 @@
 //
 // This module imports nothing from the Worker's routes, so the Probe can use it too.
 
-import { isAccountKey, type DayRow, type PlayerState, type ProgressState } from "../shared/admin";
+import { isAccountKey, type DayRow, type GameDump, type PlayerState, type ProgressState } from "../shared/admin";
 
 const KEEP_MS = 90 * 86_400_000;
 /** Keys per json_each() parameter (D1 caps a bound value's size). */
@@ -212,4 +212,49 @@ export async function dailySaveStates(env: Env, opts: { day?: string; force?: bo
   const states = await buildStates(env, keys, progress, day);
   if (opts.force) await env.DB.prepare(`DELETE FROM snapshots WHERE file = ?`).bind(file).run();
   return { day, players: await saveGroup(env, states, file, `daily (${day})`) };
+}
+
+// ---------- Phase A1c-1: game save states ----------
+//
+//   game/hourly/<time>.json.gz   every hour (the cron), deleted after 7 days (lifecycle rule expire-game-hourly)
+//   game/daily/<day>.json.gz     every day at 00:05 UTC, 90 days (expire-game)
+//   game/before/<time>.json.gz   before a Game-tab control, a reset, the launch wipe, a restore, or by hand, 90 days
+//   game/deploy/<time>.json.gz   the first time the Probe starts on a new deployed version, 90 days
+// Indexed in D1 `snapshots` as kind 'game' (no player), pruned at the same ages.
+
+export type GameSaveKind = "hourly" | "daily" | "before" | "deploy";
+
+const HOUR_KEEP_MS = 7 * 86_400_000;
+
+/** Writes a game save state and indexes it. Returns its id. */
+export async function saveGame(env: Env, dump: GameDump, kind: GameSaveKind, reason: string, admin: string | null): Promise<number> {
+  const name = kind === "daily" ? new Date(dump.probeNow).toISOString().slice(0, 10) : `${dump.at}-${crypto.randomUUID().slice(0, 8)}`;
+  const file = `game/${kind}/${name}.json.gz`;
+  const bytes = await gzip(dump);
+  await env.SNAPSHOTS.put(file, bytes, { httpMetadata: { contentType: "application/gzip" }, customMetadata: { reason } });
+  const db = env.DB;
+  if (kind === "daily") await db.prepare(`DELETE FROM snapshots WHERE kind = 'game' AND file = ?`).bind(file).run(); // a re-run replaces it
+  const row = await db
+    .prepare(`INSERT INTO snapshots (kind, player_key, at, reason, admin, file, bytes) VALUES ('game', NULL, ?, ?, ?, ?, ?) RETURNING id`)
+    .bind(dump.at, reason.slice(0, 200), admin, file, bytes.byteLength)
+    .first<{ id: number }>();
+  if (kind === "hourly" || Math.random() < 0.05) {
+    await db.batch([
+      db.prepare(`DELETE FROM snapshots WHERE kind = 'game' AND file LIKE 'game/hourly/%' AND at < ?`).bind(Date.now() - HOUR_KEEP_MS),
+      db.prepare(`DELETE FROM snapshots WHERE kind = 'game' AND at < ?`).bind(Date.now() - KEEP_MS),
+    ]);
+  }
+  return row!.id;
+}
+
+export async function loadGame(env: Env, id: number): Promise<GameDump | null> {
+  const row = await env.DB.prepare(`SELECT file FROM snapshots WHERE id = ? AND kind = 'game'`).bind(id).first<{ file: string }>();
+  if (!row) return null;
+  const obj = await env.SNAPSHOTS.get(row.file);
+  return obj ? gunzip<GameDump>(obj.body) : null;
+}
+
+/** Takes a game save state now (the cron, a Game-tab control, by hand). */
+export async function gameSaveNow(env: Env, kind: GameSaveKind, reason: string, admin: string | null): Promise<number> {
+  return saveGame(env, await probe(env).adminGameDump(), kind, reason, admin);
 }

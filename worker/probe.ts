@@ -11,8 +11,8 @@ import {
   type DiscordRow,
 } from "./discord";
 import { pushBatch } from "./push";
-import type { DayRow, ProgressState } from "../shared/admin";
-import { buildStates, saveGroup } from "./savestates";
+import type { DayRow, GameDump, ProgressState } from "../shared/admin";
+import { buildStates, saveGame, saveGroup } from "./savestates";
 import type { PushKind } from "../shared/push";
 import { GOAL_BONUS_CAP, GOAL_DAYS, goalBonus, goalTarget, type CrewGoal } from "../shared/goal";
 import { DurableObject } from "cloudflare:workers";
@@ -309,6 +309,9 @@ type QueueRow = {
   taps: number;
 };
 
+/** Phase A1c-1: the Probe's game tables, as a game save state copies them (not progress, d1_queue or the outboxes). */
+const GAME_TABLES = ["mission", "meta", "pace", "track", "milestone_reached", "vote_round", "crew_goal"];
+
 type ProgressRow = {
   device_id: string;
   credits_milli: number;
@@ -452,6 +455,8 @@ export class Probe extends DurableObject<Env> {
     this.sql.exec(`CREATE TABLE IF NOT EXISTS push_job (
       id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, day TEXT NOT NULL, round TEXT, at INTEGER NOT NULL,
       cursor INTEGER NOT NULL DEFAULT 0, fails INTEGER NOT NULL DEFAULT 0, done INTEGER NOT NULL DEFAULT 0)`);
+    // Phase A1c-1: each deployed version this object has started on (a game save state is taken on the first start).
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS code_version (id TEXT PRIMARY KEY, at INTEGER NOT NULL)`);
     // The Discord bot's queue (phase Q1b-1): posts wait here until they can be sent (worker/discord.ts).
     this.sql.exec(`CREATE TABLE IF NOT EXISTS discord_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, title TEXT NOT NULL, text TEXT NOT NULL,
@@ -612,6 +617,7 @@ export class Probe extends DurableObject<Env> {
     }
     await this.checkGoal();
     await this.scheduleAlarm();
+    this.saveOnNewVersion();
   }
 
   /** A new leg: Earth → Mars unless told otherwise (the launch reset, or a fresh object). */
@@ -3603,6 +3609,62 @@ export class Probe extends DurableObject<Env> {
         await saveGroup(env, states, `players/arrival/leg-${missionId}-${Date.now()}.json.gz`, `leg ${missionId} arrived`);
       })().catch((err) => console.error("arrival save state failed", err)),
     );
+  }
+
+  // ---------- Phase A1c-1: game save states (worker/gamesaves.ts and the cron call these) ----------
+
+  /** Writes what's in memory, then copies every game table (not players' progress, not the outboxes). */
+  private gameDump(): GameDump {
+    this.dirty = true;
+    this.save();
+    this.saveSignal();
+    this.saveProgress();
+    const tables: GameDump["tables"] = {};
+    for (const t of GAME_TABLES) tables[t] = this.sql.exec(`SELECT * FROM ${t}`).toArray() as GameDump["tables"][string];
+    return { v: 1, at: Date.now(), probeNow: this.now(), tables };
+  }
+
+  async adminGameDump(): Promise<GameDump> {
+    return this.gameDump();
+  }
+
+  /**
+   * Puts the game tables back from a game save state, then restarts this object so everything is read afresh from
+   * them (every tab reconnects). Players' progress isn't touched. The caller takes a save state first.
+   */
+  async adminGameRestore(dump: GameDump): Promise<{ ok: true }> {
+    await this.flushD1();
+    this.saveProgress();
+    for (const timer of [this.saveTimer, this.broadcastTimer]) if (timer !== undefined) clearTimeout(timer);
+    this.saveTimer = undefined;
+    this.dirty = false;
+    this.ctx.storage.transactionSync(() => {
+      for (const t of GAME_TABLES) {
+        const rows = dump.tables[t];
+        if (!rows) continue;
+        const known = new Set(this.sql.exec<{ name: string }>(`PRAGMA table_info(${t})`).toArray().map((c) => c.name));
+        this.sql.exec(`DELETE FROM ${t}`);
+        for (const r of rows) {
+          const cols = Object.keys(r).filter((c) => known.has(c));
+          if (cols.length === 0) continue;
+          this.sql.exec(`INSERT INTO ${t} (${cols.join(", ")}) VALUES (${cols.map(() => "?").join(", ")})`, ...cols.map((c) => r[c]));
+        }
+      }
+    });
+    await this.ctx.storage.sync();
+    // After this call returns: the object restarts on the restored tables (load() reads them all).
+    setTimeout(() => this.ctx.abort("restored from a game save state"), 50);
+    return { ok: true };
+  }
+
+  /** The first time this object starts on a new deployed version: a game save state of how the old version left it. */
+  private saveOnNewVersion() {
+    const id = this.env.CF_VERSION_METADATA?.id;
+    if (!id || this.sql.exec(`SELECT 1 FROM code_version WHERE id = ?`, id).toArray().length > 0) return;
+    this.sql.exec(`INSERT INTO code_version (id, at) VALUES (?, ?)`, id, Date.now());
+    this.sql.exec(`DELETE FROM code_version WHERE at < ?`, Date.now() - 90 * DAY_MS);
+    const dump = this.gameDump();
+    this.ctx.waitUntil(saveGame(this.env, dump, "deploy", `new version ${id.slice(0, 8)} started`, null).catch((err) => console.error("deploy save state failed", err)));
   }
 
   /**

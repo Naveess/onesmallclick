@@ -136,7 +136,7 @@
 }
 .admin__tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   border: 2px solid var(--line);
   outline: 2px solid var(--outline);
 }

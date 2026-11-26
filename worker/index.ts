@@ -42,7 +42,8 @@
 
 import { feedbackReport, markFeedback, sendFeedback } from "./feedback";
 import { pushRoute } from "./push";
-import { dailySaveStates } from "./savestates";
+import { dailySaveStates, gameSaveNow } from "./savestates";
+import { GAME_CONTROLS, gameSaveBefore } from "./gamesaves";
 import { adminLog, adminPanel, adminWho } from "./admin";
 import type { SessionInfo } from "../shared/account";
 import { LAST_SEEN_EVERY_MS, type PingResult } from "../shared/mission";
@@ -102,13 +103,19 @@ export default {
     return json({ error: "Not found" }, 404);
   },
 
-  // Phase A1b-2: the daily save state at 00:05 UTC (wrangler.jsonc triggers.crons): everyone who played yesterday, one file.
-  async scheduled(_controller, env, ctx) {
+  // The save states' crons (wrangler.jsonc triggers.crons). 00:05 UTC: everyone who played yesterday, one file (A1b-2),
+  // and the game's daily one (A1c-1). Every hour: the game's hourly one (A1c-1, kept 7 days).
+  async scheduled(controller, env, ctx) {
+    if (controller.cron === "0 * * * *") {
+      ctx.waitUntil(gameSaveNow(env, "hourly", "hourly", null).catch((err) => console.error("hourly game save state failed", err)));
+      return;
+    }
     ctx.waitUntil(
       dailySaveStates(env)
         .then((r) => console.log("daily save state", JSON.stringify(r)))
         .catch((err) => console.error("daily save state failed", err)),
     );
+    ctx.waitUntil(gameSaveNow(env, "daily", "daily", null).catch((err) => console.error("daily game save state failed", err)));
   },
 } satisfies ExportedHandler<Env>;
 
@@ -316,6 +323,8 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
       .json()
       .catch(() => null);
     await adminLog(env, who.email, action, null, null, detail);
+    // Phase A1c-1: a game save state before anything that changes the game.
+    if (GAME_CONTROLS.has(action)) await gameSaveBefore(env, action, who.email);
   }
 
   const stub = probe(env);

@@ -21,6 +21,7 @@ import { ADMIN_TEXT_MAX, isAccountKey, type AdminLogItem, type AdminRole, type A
 import { cookieValue, randomToken, readSession, sha256 } from "./auth";
 import { capCheck, capCount } from "./caps";
 import { fixesPanel } from "./fixes";
+import { gameSavesPanel } from "./gamesaves";
 
 const ADMIN_COOKIE = "osc_admin";
 const ADMIN_TTL_MS = 12 * 3_600_000;
@@ -399,6 +400,8 @@ export async function adminPanel(request: Request, env: Env, action: string, who
   if (action === "note" && request.method === "POST") return addNote(request, env, who);
   const fixed = await fixesPanel(request, env, action, who); // phase A1b: fixes, undo, export, name offers
   if (fixed) return fixed;
+  const saves = await gameSavesPanel(request, env, action, who); // phase A1c-1: game save states
+  if (saves) return saves;
   if (action === "log" && request.method === "GET") {
     const target = url.searchParams.get("target");
     const rows = target

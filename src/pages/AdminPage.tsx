@@ -9,6 +9,7 @@ import { Window } from "../components/Window";
 import { int } from "../game/format";
 import { useDocumentTitle, useNoIndex } from "./useDocumentTitle";
 import { PlayersTab } from "./admin/PlayersTab";
+import { SaveStatesTab } from "./admin/SaveStatesTab";
 import type { AdminWho } from "../../shared/admin";
 import "./AdminPage.css";
 
@@ -416,7 +417,7 @@ export function AdminPage() {
   const [draftKey, setDraftKey] = useState("");
   const [checking, setChecking] = useState(true);
   const [game, setGame] = useState<{ email: string | null; google: boolean } | null>(null);
-  const [tab, setTab] = useState<"players" | "game" | "reports">("players");
+  const [tab, setTab] = useState<"players" | "game" | "saves" | "reports">("players");
   const [state, setState] = useState<AdminState | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -538,15 +539,17 @@ export function AdminPage() {
                 {key} · owner · <button type="button" className="admin__link" onClick={() => void signOut()}>Sign out</button>
               </p>
               <div className="admin__tabs" role="tablist" aria-label="Admin sections">
-                {(["players", "game", "reports"] as const).map((t) => (
+                {(["players", "game", "saves", "reports"] as const).map((t) => (
                   <button key={t} type="button" role="tab" aria-selected={tab === t} className={tab === t ? "admin__tab admin__tab--on" : "admin__tab"} onClick={() => setTab(t)}>
-                    {t === "players" ? "Players" : t === "game" ? "Game" : "Reports"}
+                    {t === "players" ? "Players" : t === "game" ? "Game" : t === "saves" ? "Save states" : "Reports"}
                   </button>
                 ))}
               </div>
             </div>
 
             {tab === "players" && <PlayersTab />}
+
+            {tab === "saves" && <SaveStatesTab />}
 
             {tab === "reports" && (
               <>

@@ -265,3 +265,82 @@ export function diffStates(then: PlayerState, now: PlayerState): PartDiff[] {
 
 /** The parts a merge changes on the account (and puts back on both, if it's undone). */
 export const MERGE_PARTS: StatePart[] = ["credits", "upgrades", "prestige", "badges", "crew"];
+
+// ---------- Phase A1c-1: game save states ----------
+
+/** A copy of the Probe's game tables (not players' progress, not the outboxes): the probe, the leg, the clock, the
+ *  signal, the vote, the landing burn, milestones, pace and the crew goal. One gzipped file under game/ in R2. */
+export interface GameDump {
+  v: 1;
+  at: number;
+  /** The probe's clock when it was taken (real time plus the test offset). */
+  probeNow: number;
+  tables: Record<string, Record<string, string | number | null>[]>;
+}
+
+/** The words typed to restore the probe from a game save state. */
+export const GAME_RESTORE_PHRASE = "RESTORE THE PROBE";
+
+/** GET /api/admin/game-states: the game's save states, and the group files of player save states. */
+export interface GameStatesList {
+  game: SnapshotItem[];
+  groups: { file: string; reason: string; at: number; players: number }[];
+  restores: AdminLogItem[];
+}
+
+/** GET /api/admin/game-state: one game save state and the game now. */
+export interface GameCompare {
+  snapshot: SnapshotItem;
+  then: GameDump;
+  now: GameDump;
+}
+
+/** The parts of a game save state worth reading at a glance. */
+export function summarizeGame(d: GameDump) {
+  const missions = [...(d.tables.mission ?? [])].sort((a, b) => Number(a.id) - Number(b.id));
+  const m = missions[missions.length - 1] ?? {};
+  const vote = [...(d.tables.vote_round ?? [])].sort((a, b) => Number(a.opened_at) - Number(b.opened_at)).pop() ?? {};
+  const meta = new Map((d.tables.meta ?? []).map((r) => [String(r.key), Number(r.value)]));
+  const n = (v: unknown) => (v === null || v === undefined ? null : Number(v));
+  return {
+    missionId: n(m.id),
+    leg: `${m.from_stop ?? "earth"} → ${m.stop ?? "mars"}`,
+    distanceKm: n(m.distance_km) ?? 0,
+    legKm: n(m.leg_km),
+    arrivedAt: n(m.arrived_at),
+    signalDeadline: n(m.signal_deadline),
+    safeSince: n(m.safe_since),
+    pausedSince: n(m.paused_since),
+    burnStartedAt: n(m.burn_started_at),
+    clockOffsetH: (meta.get("clock_offset_ms") ?? 0) / 3_600_000,
+    voteRound: vote.round === undefined ? null : String(vote.round),
+    voteClosesAt: n(vote.closes_at),
+    voteWinner: n(vote.winner),
+    milestones: (d.tables.milestone_reached ?? []).filter((r) => r.mission_id === m.id).length,
+    legsArrived: missions.filter((r) => r.arrived_at !== null && r.arrived_at !== undefined).length,
+  };
+}
+
+/** A game save state against now, line by line, e.g. "distance 41,200,000 → 43,000,000 km". */
+export function diffGame(then: GameDump, now: GameDump): string[] {
+  const a = summarizeGame(then);
+  const b = summarizeGame(now);
+  const t = (ms: number | null) => (ms === null ? "none" : new Date(ms).toISOString().replace("T", " ").slice(0, 16) + " UTC");
+  const out: string[] = [];
+  const line = (what: string, x: string, y: string) => {
+    if (x !== y) out.push(`${what}: ${x} → ${y}`);
+  };
+  line("leg", `${a.missionId} (${a.leg})`, `${b.missionId} (${b.leg})`);
+  line("distance", `${fmt(a.distanceKm)} km`, `${fmt(b.distanceKm)} km`);
+  line("arrived", t(a.arrivedAt), t(b.arrivedAt));
+  line("signal deadline", t(a.signalDeadline), t(b.signalDeadline));
+  line("safe mode since", t(a.safeSince), t(b.safeSince));
+  line("idle since", t(a.pausedSince), t(b.pausedSince));
+  line("landing burn started", t(a.burnStartedAt), t(b.burnStartedAt));
+  line("test clock offset", `${a.clockOffsetH.toFixed(1)} h`, `${b.clockOffsetH.toFixed(1)} h`);
+  line("vote round", a.voteRound ?? "none", b.voteRound ?? "none");
+  line("vote closes", t(a.voteClosesAt), t(b.voteClosesAt));
+  line("milestones this leg", String(a.milestones), String(b.milestones));
+  line("legs arrived", String(a.legsArrived), String(b.legsArrived));
+  return out;
+}
