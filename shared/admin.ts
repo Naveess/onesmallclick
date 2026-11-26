@@ -280,12 +280,18 @@ export interface GameDump {
 
 /** The words typed to restore the probe from a game save state. */
 export const GAME_RESTORE_PHRASE = "RESTORE THE PROBE";
+/** Phase A1c-2: rewinding the Probe's whole storage (point-in-time recovery) needs this typed out. */
+export const PROBE_REWIND_PHRASE = "REWIND THE PROBE";
+/** How far back point-in-time recovery reaches: 30 days. */
+export const PROBE_REWIND_MAX_MIN = 30 * 24 * 60;
 
 /** GET /api/admin/game-states: the game's save states, and the group files of player save states. */
 export interface GameStatesList {
   game: SnapshotItem[];
   groups: { file: string; reason: string; at: number; players: number }[];
   restores: AdminLogItem[];
+  /** Phase A1c-2: rewinds of the Probe's storage, newest first; each one's detail holds the bookmark that undoes it. */
+  rewinds: AdminLogItem[];
 }
 
 /** GET /api/admin/game-state: one game save state and the game now. */

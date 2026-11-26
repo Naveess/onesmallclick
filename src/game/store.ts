@@ -14,6 +14,7 @@ import {
   setbackMs,
   type ArrivalInfo,
   type BadgeTier,
+  type MaintenanceInfo,
   type DeviceToday,
   type PingResult,
   type ProbeSnapshot,
@@ -92,6 +93,8 @@ export interface ProbeState {
   milestones: ReachedMilestone[];
   /** Today's crew goal (phase Q1a), or null before the server has sent it. */
   goal: CrewGoal | null;
+  /** Maintenance mode (phase A1c-2): the game is frozen, with mission control's message; null normally. */
+  maintenance: MaintenanceInfo | null;
 }
 
 /** This player's own state. */
@@ -289,6 +292,7 @@ function initialState(): GameState {
       missionId: server?.missionId ?? 0,
       milestones: server?.milestones ?? [],
       goal: server?.goal ?? null,
+      maintenance: server?.maintenance ?? null,
     },
     player: {
       name: "",
@@ -373,6 +377,7 @@ function compose(base: GameState, connection = base.connection): GameState {
         missionId: p.missionId,
         milestones: p.milestones ?? [],
         goal: p.goal ?? null,
+        maintenance: p.maintenance ?? null,
       }),
     },
     player: {
@@ -645,6 +650,7 @@ function timeLeftText(s: number): string {
 /** One tap of THRUST: shown straight away, sent in the next batch. Returns the km for the "+km" popup. */
 export function thrust(): number {
   if (state.probe.safeSince !== null) return 0; // thrusters asleep
+  if (state.probe.maintenance) return 0; // the game is frozen (phase A1c-2)
   const km = state.player.tapKm;
   if (unconfirmedTaps() < MAX_PENDING_TAPS || state.connection === "live") pendingTaps += 1;
   set(compose(state));
@@ -654,6 +660,7 @@ export function thrust(): number {
 /** Today's Ping: the invisible bot check, then the server. Shows a toast with the result. */
 export async function ping() {
   if (state.player.pingedToday || state.player.pinging) return;
+  if (frozenToast()) return;
   const setPinging = (pinging: boolean) => set({ ...state, player: { ...state.player, pinging } });
   setPinging(true);
   let result: PingResult;
@@ -707,6 +714,9 @@ export async function ping() {
     case "bot-check":
       showToast({ tier: null, title: "Ping didn't go through", body: "The bot check failed. Please try again." });
       break;
+    case "maintenance":
+      frozenToast(true);
+      break;
     case "busy-network":
       showToast({
         tier: null,
@@ -719,9 +729,17 @@ export async function ping() {
   }
 }
 
+/** Maintenance mode (phase A1c-2): says the game is paused and returns true (always, with `force`). */
+function frozenToast(force = false): boolean {
+  if (!force && !state.probe.maintenance) return false;
+  showToast({ tier: null, title: "Paused for maintenance", body: "Mission control is fixing something. Pings, votes and upgrades are back soon." });
+  return true;
+}
+
 /** Today's vote: the invisible bot check, then the server. The tallies update for everyone. */
 export async function castVote(index: number) {
   if (state.player.voteChoice !== null || state.player.voting || !server) return;
+  if (frozenToast()) return;
   const round = server.vote.round;
   const setVoting = (voting: boolean) => set({ ...state, player: { ...state.player, voting } });
   setVoting(true);
@@ -758,6 +776,9 @@ export async function castVote(index: number) {
     case "bot-check":
       showToast({ tier: null, title: "Vote didn't go through", body: "The bot check failed. Please try again." });
       break;
+    case "maintenance":
+      frozenToast(true);
+      break;
     case "busy-network":
       showToast({
         tier: null,
@@ -773,6 +794,7 @@ export async function castVote(index: number) {
 /** Asks the server for a purchase or a handover; the button waits for its answer. */
 function ask(what: UpgradeKey | "prestige") {
   if (state.player.buying !== null || state.connection !== "live") return;
+  if (frozenToast()) return;
   const seq = request((n) => (what === "prestige" ? { t: "prestige", seq: n } : { t: "buy", key: what, seq: n }));
   if (seq === null) return;
   buyingSeq = seq;

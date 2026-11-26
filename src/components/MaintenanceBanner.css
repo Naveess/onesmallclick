@@ -1,0 +1,33 @@
+/* Maintenance mode (phase A1c-2): the orange notice under the header, in the early-access banner's place. */
+
+.maint {
+  padding: 10px 12px;
+  margin: 2px 2px 12px;
+}
+
+.maint__line {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.maint__label {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-orange);
+}
+
+.maint__text {
+  overflow-wrap: anywhere;
+}
+
+.maint__small {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}

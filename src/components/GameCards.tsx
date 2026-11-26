@@ -51,6 +51,7 @@ export function ArrivalEstimate({
   wide = false,
   orbit = null,
   pace = null,
+  frozen = false,
 }: {
   arrivalAt: number | null;
   savedS: number;
@@ -59,6 +60,8 @@ export function ArrivalEstimate({
   orbit?: { at: number; destName: string; onCredits: () => void } | null;
   /** The medal we're on pace for (E4b part 1); null hides the line. */
   pace?: MedalPace | null;
+  /** Maintenance mode (phase A1c-2): the estimate is on hold because mission control paused the game. */
+  frozen?: boolean;
 }) {
   if (orbit) {
     return (
@@ -79,7 +82,7 @@ export function ArrivalEstimate({
       <h2 id="arrival-label" className="arrival__label">
         Live arrival estimate
       </h2>
-      <p className="arrival__lede">{arrivalAt === null ? "Probe idle: tap to wake it" : "At this pace we arrive"}</p>
+      <p className="arrival__lede">{frozen ? "Paused for maintenance" : arrivalAt === null ? "Probe idle: tap to wake it" : "At this pace we arrive"}</p>
       <p className="arrival__date">{arrivalAt === null ? "On hold" : longDate(arrivalAt)}</p>
       <p className="arrival__saved">
         <PixelIcon name="up" size={9} tone="blue" />

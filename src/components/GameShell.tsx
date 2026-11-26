@@ -5,6 +5,7 @@ import { LAUNCH, NUDGES, betaLine, ctaLabel, dismissedToday, fillNudge, signInHr
 import { int } from "../game/format";
 import { ArrivalScreen } from "./ArrivalScreen";
 import { BetaBanner } from "./BetaBanner";
+import { MaintenanceBanner } from "./MaintenanceBanner";
 import { Link } from "../router";
 import { DISCORD_INVITE } from "../../shared/community";
 import { STILLS } from "../sprites";
@@ -187,7 +188,11 @@ export function GameShell({ tab, children, sky }: GameShellProps) {
             )}
           </header>
 
-          <BetaBanner signedIn={!!player.account} hasBadge={player.badges.some((b) => b.id === "early-beta")} safe={safe} />
+          {probe.maintenance ? (
+            <MaintenanceBanner message={probe.maintenance.message} />
+          ) : (
+            <BetaBanner signedIn={!!player.account} hasBadge={player.badges.some((b) => b.id === "early-beta")} safe={safe} />
+          )}
 
           {children({ wide, openUpgrades })}
 

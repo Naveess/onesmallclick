@@ -23,6 +23,7 @@ const GOOGLE_ERRORS: Record<string, string> = {
   "google-cancelled": "Google sign-in was cancelled.",
   "google-failed": "Google sign-in didn't work. Please try again.",
   "no-device": "Open the game first, then sign in.",
+  maintenance: "Mission control is fixing something, so signing in is paused. Try again soon.",
 };
 
 const EMAIL_ERRORS: Record<Extract<EmailLinkResult, { ok: false }>["reason"], string> = {
@@ -31,6 +32,7 @@ const EMAIL_ERRORS: Record<Extract<EmailLinkResult, { ok: false }>["reason"], st
   "too-many": "That's a lot of links. Please wait a few minutes and try again.",
   unavailable: "Email sign-in opens soon. Use Google for now.",
   "no-device": "Open the game first, then sign in.",
+  maintenance: "Mission control is fixing something, so signing in is paused. Try again soon.",
 };
 
 async function post<T>(path: string, body: object = {}): Promise<{ status: number; data: T }> {
@@ -363,6 +365,7 @@ const CONFIRM_ERRORS: Record<Extract<ConfirmResult, { ok: false }>["reason"], st
   expired: "This link has expired (they last 15 minutes). Ask for a new one.",
   used: "This link has already been used. Ask for a new one if you need to.",
   "no-device": "Open the game first, then use the link again.",
+  maintenance: "Mission control is fixing something, so signing in is paused. Try this link again in a few minutes.",
 };
 
 export function ConfirmPage() {

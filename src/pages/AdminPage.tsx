@@ -2,7 +2,7 @@ import { FEEDBACK_KIND_NAMES, type FeedbackItem } from "../../shared/feedback";
 import { useEffect, useState, type FormEvent } from "react";
 import { BETA, BETA_ENDS_MS, LAUNCH_WIPE_PHRASE } from "../../shared/beta";
 import type { PlayersReport } from "../../shared/nudges";
-import { IDLE_PAUSE_MS, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
+import { IDLE_PAUSE_MS, MAINTENANCE_MESSAGE, MAINTENANCE_MESSAGE_MAX, arrivalAt, crewSpeed, probeClock, type AdminState } from "../../shared/mission";
 import { PixelButton } from "../components/PixelButton";
 import { Sky } from "../components/Sky";
 import { Window } from "../components/Window";
@@ -430,6 +430,8 @@ export function AdminPage() {
   const [seconds, setSeconds] = useState("70");
   const [give, setGive] = useState("100000");
   const [goalKm, setGoalKm] = useState("20000");
+  const [maintMessage, setMaintMessage] = useState("");
+  const [maintReason, setMaintReason] = useState("");
 
   const run = async (action: string, body?: object, k = key) => {
     setBusy(true);
@@ -565,6 +567,57 @@ export function AdminPage() {
             {tab === "game" && state && (
             <>
             <p className="admin__lede">Test controls for the shared probe. Every change reaches every open screen.</p>
+            <Window
+              as="form"
+              tone="orange"
+              className="admin__card"
+              aria-labelledby="admin-maint"
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                const on = !p!.maintenance || (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "message";
+                void run("maintenance", { on, message: maintMessage, reason: maintReason }).then((ok) => ok && setMaintReason(""));
+              }}
+            >
+              <h2 id="admin-maint" className="admin__h2">
+                Maintenance mode · {p!.maintenance ? "ON" : "off"}
+              </h2>
+              {p!.maintenance ? (
+                <p className="admin__note">
+                  Frozen since {when(p!.maintenance.since)}. Everyone sees: "{p!.maintenance.message}" Taps, pings, votes,
+                  upgrades and signing in are paused; the probe stands still. Switching off moves the signal, the vote
+                  and any landing burn later by however long it was on.
+                </p>
+              ) : (
+                <p className="admin__note">
+                  Freezes the game for a restore or a risky deploy: taps, pings, votes, upgrades and signing in stop, the
+                  probe stands still and everyone sees a banner. The signal, the vote and the burn don't count down. A game
+                  save state is taken first. It stays on through restarts, deploys and Restore the probe.
+                </p>
+              )}
+              <label className="admin__field">
+                <span className="label">Banner message (blank: the usual one)</span>
+                <input
+                  value={maintMessage}
+                  maxLength={MAINTENANCE_MESSAGE_MAX}
+                  placeholder={p!.maintenance?.message ?? MAINTENANCE_MESSAGE}
+                  onChange={(e) => setMaintMessage(e.target.value)}
+                />
+              </label>
+              <label className="admin__field">
+                <span className="label">Why (for the log)</span>
+                <input value={maintReason} onChange={(e) => setMaintReason(e.target.value)} required minLength={3} />
+              </label>
+              <div className="admin__row">
+                <PixelButton type="submit" variant={p!.maintenance ? undefined : "orange"} disabled={busy}>
+                  {p!.maintenance ? "Switch off: unfreeze the game" : "Switch on: freeze the game"}
+                </PixelButton>
+                {p!.maintenance && (
+                  <PixelButton type="submit" variant="outline" value="message" disabled={busy}>
+                    Change the message
+                  </PixelButton>
+                )}
+              </div>
+            </Window>
             <Window as="section" className="admin__card" aria-labelledby="admin-state">
               <h2 id="admin-state" className="admin__h2">
                 Mission {p!.missionId} · {p!.destination}

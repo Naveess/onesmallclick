@@ -12,6 +12,8 @@ interface ThrustButtonProps {
   hint?: string;
   /** Let the Space bar press THRUST from anywhere on the page (the wide layout). */
   spaceKey?: boolean;
+  /** Maintenance mode (phase A1c-2): greyed out, and taps do nothing. */
+  frozen?: boolean;
 }
 
 // Fast tapping could make hundreds of particles; cap what's on screen at once.
@@ -21,7 +23,7 @@ const MAX_POPUPS = 6;
 const PARTICLE_COLOURS = ["var(--text-blue)", "var(--text)", "var(--text-blue-bright)", "var(--text-orange)"];
 
 /** The big THRUST button, with the design's particles and "+km" popup (both off with reduced motion). */
-export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spaceKey = false }: ThrustButtonProps) {
+export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spaceKey = false, frozen = false }: ThrustButtonProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const live = useRef({ particles: 0 });
@@ -83,7 +85,9 @@ export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spac
     };
   };
 
-  const press = () => burst(onThrust());
+  const press = () => {
+    if (!frozen) burst(onThrust());
+  };
 
   // A mouse fires THRUST the moment it goes down, not on release, so the "+km" appears straight away.
   // Touch still fires on the click (on release), so a scroll that starts on THRUST doesn't count.
@@ -124,10 +128,11 @@ export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spac
 
   const lg = size === "lg";
   return (
-    <div ref={hostRef} className={lg ? "thrust thrust--lg" : "thrust"}>
+    <div ref={hostRef} className={["thrust", lg && "thrust--lg", frozen && "thrust--frozen"].filter(Boolean).join(" ")}>
       <div className="thrust__ring" aria-hidden="true" />
       <div className="thrust__focus" aria-hidden="true" />
-      <button ref={buttonRef} type="button" className="thrust__button" aria-label="Thrust"
+      <button ref={buttonRef} type="button" className="thrust__button" aria-label={frozen ? "Thrust, paused for maintenance" : "Thrust"}
+        disabled={frozen}
         onPointerDown={onPointerDown}
         onClick={onClick}
       >
@@ -139,7 +144,7 @@ export function ThrustButton({ onThrust, size = "md", hint = "tap to push", spac
             <PixelIcon name="up" size={lg ? 36 : 27} />
           </span>
           <span className="thrust__word">THRUST</span>
-          <span className="thrust__hint">{hint}</span>
+          <span className="thrust__hint">{frozen ? "paused" : hint}</span>
         </span>
       </button>
     </div>

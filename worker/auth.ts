@@ -261,10 +261,17 @@ async function freshDevice(request: Request, env: Env): Promise<string> {
 
 export async function auth(request: Request, env: Env, action: string, url: URL): Promise<Response> {
   if (!env.DEVICE_SECRET) return json({ error: "DEVICE_SECRET is not set" }, 503);
-  if (action === "google" && request.method === "GET") return googleStart(request, env, url);
+  if (action === "google" && request.method === "GET") {
+    if (await frozen(env)) return back(url, "?error=maintenance");
+    return googleStart(request, env, url);
+  }
   if (action === "google/callback" && request.method === "GET") return googleCallback(request, env, url);
   if (action === "names" && request.method === "GET") return nameOffers(request, env);
   if (request.method !== "POST" || !sameOrigin(request)) return json({ error: "Not found" }, 404);
+  // Phase A1c-2: no signing in while the game is frozen (it merges a guest's progress, which could clash with a restore).
+  if ((action === "email" || action === "confirm") && (await frozen(env))) {
+    return json({ ok: false, reason: "maintenance" } satisfies EmailLinkResult & ConfirmResult, 503);
+  }
   if (action === "email") return emailLink(request, env, url);
   if (action === "confirm") return confirm(request, env);
   if (action === "name") return chooseName(request, env);
@@ -272,6 +279,16 @@ export async function auth(request: Request, env: Env, action: string, url: URL)
   if (action === "sign-out") return signOut(request, env);
   if (action === "delete") return deleteAccount(request, env);
   return json({ error: "Not found" }, 404);
+}
+
+/** Is the game in maintenance mode (phase A1c-2)? If the probe can't be asked, sign-in carries on. */
+async function frozen(env: Env): Promise<boolean> {
+  try {
+    return (await probe(env).maintenance()) !== null;
+  } catch (err) {
+    console.error("maintenance check failed", err);
+    return false;
+  }
 }
 
 // --- Email link ---
@@ -446,6 +463,7 @@ async function googleCallback(request: Request, env: Env, url: URL): Promise<Res
     return failed("google-failed");
   }
   const email = claims.email && claims.email_verified ? claims.email.toLowerCase() : null;
+  if (await frozen(env)) return failed("maintenance"); // switched on mid-sign-in (phase A1c-2)
   const account = await findOrCreate(env, request, deviceId, { email, googleSub: claims.sub });
   return back(url, "", [clear, await completeSignIn(env, deviceId, account)]);
 }

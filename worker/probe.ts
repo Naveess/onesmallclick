@@ -44,6 +44,9 @@ import {
   type ProbeSnapshot,
   type ServerMessage,
   type ArrivalInfo,
+  MAINTENANCE_MESSAGE,
+  MAINTENANCE_MESSAGE_MAX,
+  type MaintenanceInfo,
 } from "../shared/mission";
 import { CREW_HALF_KM_S, CREW_TOP_KM_S, TODAY_PACE_MIN_MS, TODAY_PACE_MS } from "../shared/balance";
 import {
@@ -334,6 +337,12 @@ export class Probe extends DurableObject<Env> {
   private sql: SqlStorage;
   private mission!: Mission;
   private clockOffsetMs = 0;
+  /**
+   * Maintenance mode (phase A1c-2), or null. `since` is the probe's clock when it began; `pausedAt` is the pausedSince
+   * maintenance gave the probe (null when it was already paused, idle or in orbit, so it stays paused afterwards).
+   * Kept in its own table, outside the game tables, so restoring the probe keeps it on.
+   */
+  private maint: { since: number; message: string; pausedAt: number | null } | null = null;
   /** Raw tap km per minute (key: minute number): the crew pace, and the crew push that's balanced. */
   private pace = new Map<number, number>();
   /** Raw offline catch-up km per minute: counted in the crew push only, so one return doesn't swing the pace shown. */
@@ -457,6 +466,9 @@ export class Probe extends DurableObject<Env> {
       cursor INTEGER NOT NULL DEFAULT 0, fails INTEGER NOT NULL DEFAULT 0, done INTEGER NOT NULL DEFAULT 0)`);
     // Phase A1c-1: each deployed version this object has started on (a game save state is taken on the first start).
     this.sql.exec(`CREATE TABLE IF NOT EXISTS code_version (id TEXT PRIMARY KEY, at INTEGER NOT NULL)`);
+    // Phase A1c-2: maintenance mode, one row while it's on (not a game table: a probe restore leaves it alone).
+    this.sql.exec(`CREATE TABLE IF NOT EXISTS maintenance (
+      id INTEGER PRIMARY KEY CHECK (id = 1), since INTEGER NOT NULL, message TEXT NOT NULL, paused_at INTEGER)`);
     // The Discord bot's queue (phase Q1b-1): posts wait here until they can be sent (worker/discord.ts).
     this.sql.exec(`CREATE TABLE IF NOT EXISTS discord_out (
       id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER NOT NULL, title TEXT NOT NULL, text TEXT NOT NULL,
@@ -576,6 +588,8 @@ export class Probe extends DurableObject<Env> {
         filledAt: br.burn_filled_at,
       };
     }
+
+    this.loadMaintenance();
 
     this.reached = this.sql
       .exec<{ n: number; at: number }>(`SELECT n, at FROM milestone_reached WHERE mission_id = ? ORDER BY n`, this.mission.id)
@@ -1111,6 +1125,7 @@ export class Probe extends DurableObject<Env> {
       milestones: this.reached,
       burn: this.burnView(now),
       goal: this.goal && { ...this.goal, km: Math.round(this.goal.km) },
+      maintenance: this.maintView(),
     };
   }
 
@@ -1292,7 +1307,7 @@ export class Probe extends DurableObject<Env> {
     const raw = this.autoRaw(except);
     if (raw > 0 && m.pausedSince === null) m.lastActiveAt = Math.max(m.lastActiveAt, now);
     m.autoKmS = m.safeSince === null && m.pausedSince === null && !this.burn ? raw * this.factor(now, except) : 0;
-    if (this.burn) this.burnAccrue(now, raw); // during the burn, connected auto-thrust fills the bar instead
+    if (this.burn) this.burnAccrue(now, this.maint ? 0 : raw); // during the burn, connected auto-thrust fills the bar instead (not while frozen)
     this.scheduleSave();
     this.scheduleBroadcast();
   }
@@ -1521,13 +1536,14 @@ export class Probe extends DurableObject<Env> {
    */
   private async scheduleAlarm() {
     const m = this.mission;
-    let at = this.vote.closesAt;
+    // Maintenance (phase A1c-2): the vote waits too, so only midnight and the queues below wake the object.
+    let at = this.maint ? Infinity : this.vote.closesAt;
     // 00:00 UTC: the crew goal's new day (and yesterday's bonus), even while the probe is paused (phase Q1a).
     at = Math.min(at, (Math.floor(this.now() / DAY_MS) + 1) * DAY_MS);
     // An hour before the vote closes: the "vote closes in an hour" alert (phase Q1b-2), once per round.
     const voteHour = this.vote.closesAt - 3_600_000;
     const voteNoticed = this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = 'vote_notice_closes'`).toArray()[0]?.value;
-    if (voteHour > this.now() && voteNoticed !== this.vote.closesAt) at = Math.min(at, voteHour);
+    if (!this.maint && voteHour > this.now() && voteNoticed !== this.vote.closesAt) at = Math.min(at, voteHour);
     if (m.pausedSince === null) {
       if (m.safeSince === null && !this.burn) {
         at = Math.min(at, m.signalDeadline);
@@ -1635,6 +1651,7 @@ export class Probe extends DurableObject<Env> {
 
   /** Activity (a tap batch, connected auto-thrust, a ping): keeps the probe awake, and wakes it if it's paused, logging who did. */
   private async wake(deviceId: string, now: number) {
+    if (this.maint) return; // maintenance (phase A1c-2): only switching it off moves the probe again
     const m = this.mission;
     m.lastActiveAt = Math.max(m.lastActiveAt, now);
     if (m.pausedSince === null || m.arrivedAt !== null) return; // in orbit the probe waits for the branch vote
@@ -1671,6 +1688,7 @@ export class Probe extends DurableObject<Env> {
 
   /** A ping: once per UTC day per device, or per account when signed in; first one wins in a close race. */
   async ping(deviceId: string, accountId: string | null, name: string): Promise<PingResult> {
+    if (this.maint) return { ok: false, reason: "maintenance" };
     await this.checkSignal();
     const now = this.now();
     const m = this.mission;
@@ -2343,6 +2361,7 @@ export class Probe extends DurableObject<Env> {
 
   /** Closes the round if midnight has passed (from the alarm, or any message if the alarm is late). */
   private async checkVote() {
+    if (this.maint) return; // the vote waits while the game is frozen (phase A1c-2)
     this.voteHourNotice(); // an hour before it closes: the alert (phase Q1b-2)
     if (this.now() < this.vote.closesAt) return;
     await this.rollVote();
@@ -2411,6 +2430,7 @@ export class Probe extends DurableObject<Env> {
 
   /** A vote: once per round per device, or per account when signed in, while the round is open. */
   async castVote(deviceId: string, accountId: string | null, round: string, option: number): Promise<VoteResult> {
+    if (this.maint) return { ok: false, reason: "maintenance" };
     await this.checkVote();
     const v = this.vote;
     if (round !== v.round || !Number.isInteger(option) || option < 0 || option >= v.ids.length) {
@@ -2940,7 +2960,8 @@ export class Probe extends DurableObject<Env> {
 
     if (msg.t === "buy" || msg.t === "prestige") {
       let ok = false;
-      if (msg.t === "prestige") ok = this.prestige(w, p, now);
+      if (this.maint) ok = false; // maintenance (phase A1c-2): no purchases or handovers
+      else if (msg.t === "prestige") ok = this.prestige(w, p, now);
       else if (UPGRADE_KEYS.includes(msg.key)) ok = this.buy(w, p, msg.key, now);
       this.send(ws, { t: "me", seq: msg.seq, ok, now, me: this.me(p) });
       if (ok) this.sendMe(w.key, p, ws); // the player's other tabs and devices
@@ -2959,7 +2980,8 @@ export class Probe extends DurableObject<Env> {
     dev.tokens = Math.min(TAP_BUCKET, dev.tokens + ((real - dev.refilledAt) / 1000) * MAX_TAPS_PER_S);
     dev.refilledAt = real;
     // In safe mode the thrusters sleep: taps count for nothing until someone pings.
-    const taps = this.mission.safeSince === null ? Math.min(msg.n, Math.floor(dev.tokens)) : 0;
+    // Maintenance (phase A1c-2) too: the game is frozen, so taps count for nothing.
+    const taps = this.mission.safeSince === null && !this.maint ? Math.min(msg.n, Math.floor(dev.tokens)) : 0;
     dev.tokens -= taps;
 
     // "You've clicked": only the taps credited here count (not those over the cap, or in safe mode).
@@ -3657,6 +3679,123 @@ export class Probe extends DurableObject<Env> {
     return { ok: true };
   }
 
+  // ---------- Maintenance mode (phase A1c-2) ----------
+
+  private maintView(): MaintenanceInfo | null {
+    return this.maint && { since: this.maint.since, message: this.maint.message };
+  }
+
+  /** Is the game frozen? (The Worker asks before a sign-in, which merges a guest's progress.) */
+  async maintenance(): Promise<MaintenanceInfo | null> {
+    return this.maintView();
+  }
+
+  /** On start: maintenance survives restarts, deploys and probe restores (the restored game comes back frozen). */
+  private loadMaintenance() {
+    const r = this.sql
+      .exec<{ since: number; message: string; paused_at: number | null }>(`SELECT since, message, paused_at FROM maintenance WHERE id = 1`)
+      .toArray()[0];
+    this.maint = r ? { since: r.since, message: r.message, pausedAt: r.paused_at } : null;
+    if (this.maint) this.holdProbe();
+  }
+
+  /**
+   * The probe stands still while the game is frozen: paused, as in the idle pause (the signal timer and any setback
+   * wait with it), but nothing wakes it until maintenance ends. Already paused (idle, or in orbit): it stays as it was.
+   */
+  private holdProbe() {
+    const mt = this.maint!;
+    const m = this.mission;
+    if (m.pausedSince === null) {
+      const now = this.now();
+      this.rebase(now);
+      if (this.burn) this.burnAccrue(now, 0);
+      m.pausedSince = m.at;
+      m.autoKmS = 0;
+      mt.pausedAt = m.pausedSince;
+      this.saveSignal();
+      this.saveBurn();
+    } else if (m.pausedSince !== mt.pausedAt) {
+      mt.pausedAt = null;
+    }
+    this.sql.exec(`UPDATE maintenance SET paused_at = ? WHERE id = 1`, mt.pausedAt);
+  }
+
+  /**
+   * Ends the freeze. Every deadline moves later by how long it lasted, so nobody loses the signal, the vote or the
+   * landing burn to it: the signal (or the setback), the idle timer, the vote's close and the burn's landing time.
+   */
+  private endMaintenance() {
+    const mt = this.maint!;
+    const m = this.mission;
+    const now = this.now();
+    const span = Math.max(0, now - mt.since);
+    const meta = (key: string) => this.sql.exec<{ value: number }>(`SELECT value FROM meta WHERE key = ?`, key).toArray()[0]?.value;
+    const setMeta = (key: string, value: number) => this.sql.exec(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`, key, value);
+    if (mt.pausedAt !== null && m.pausedSince === mt.pausedAt) {
+      const before = m.signalDeadline;
+      if (m.safeSince !== null) m.safeSince += span;
+      else m.signalDeadline += span;
+      // The final-hour post was for this outage: it moves with it rather than going again.
+      if (meta("final_hour_deadline") === before) setMeta("final_hour_deadline", m.signalDeadline);
+      m.lastActiveAt = Math.min(now, m.lastActiveAt + span);
+      m.pausedSince = null;
+      m.at = Math.max(m.at, now); // it stood still: no distance or moving time to add
+    }
+    const closes = this.vote.closesAt;
+    this.vote.closesAt += span;
+    this.sql.exec(`UPDATE vote_round SET closes_at = ? WHERE round = ?`, this.vote.closesAt, this.vote.round);
+    if (meta("vote_notice_closes") === closes) setMeta("vote_notice_closes", this.vote.closesAt);
+    const b = this.burn;
+    if (b) {
+      b.startedAt += span;
+      b.landAt += span;
+      if (b.filledAt !== null) b.filledAt += span;
+      b.at = Math.max(b.at + span, now);
+      if (m.safeSince === null) m.signalDeadline = Math.max(m.signalDeadline, b.landAt + MINUTE_MS);
+    }
+    this.sql.exec(`DELETE FROM maintenance`);
+    this.maint = null;
+    this.retune(now);
+    this.saveSignal();
+    this.saveBurn();
+  }
+
+  /** Switches maintenance on (or changes its message while it's on) or off. The Worker logs it and takes a save state. */
+  async adminMaintenance(on: boolean, message?: string): Promise<AdminState> {
+    await this.checkSignal();
+    if (on) {
+      const text = (message ?? "").trim().slice(0, MAINTENANCE_MESSAGE_MAX) || MAINTENANCE_MESSAGE;
+      if (this.maint) {
+        this.maint.message = text;
+        this.sql.exec(`UPDATE maintenance SET message = ? WHERE id = 1`, text);
+      } else {
+        const since = this.now();
+        this.sql.exec(`INSERT OR REPLACE INTO maintenance (id, since, message, paused_at) VALUES (1, ?, ?, NULL)`, since, text);
+        this.maint = { since, message: text, pausedAt: null };
+        this.holdProbe();
+      }
+    } else if (this.maint) {
+      this.endMaintenance();
+    }
+    await this.scheduleAlarm();
+    this.broadcast();
+    return this.adminState();
+  }
+
+  /**
+   * Phase A1c-2: point-in-time recovery. The whole of this object's storage (the game and everyone's progress) goes
+   * back to `at` (real ms) or to `bookmark` (an earlier rewind's undo), when the object next starts; it restarts at
+   * once. Returns the bookmark used and the one that undoes it. Only on Cloudflare (local dev has no history).
+   */
+  async adminRewind(at: number | null, bookmark: string | null): Promise<{ undo: string; bookmark: string }> {
+    await this.flushD1(); // what's queued reaches D1 first (the runbook rewinds D1 to the same minute)
+    const target = bookmark ?? (await this.ctx.storage.getBookmarkForTime(at ?? Date.now()));
+    const undo = await this.ctx.storage.onNextSessionRestoreBookmark(target);
+    setTimeout(() => this.ctx.abort("rewound with point-in-time recovery"), 50);
+    return { undo, bookmark: target };
+  }
+
   /** The first time this object starts on a new deployed version: a game save state of how the old version left it. */
   private saveOnNewVersion() {
     const id = this.env.CF_VERSION_METADATA?.id;
@@ -3732,6 +3871,8 @@ export class Probe extends DurableObject<Env> {
   }
 
   private async adminCommit(): Promise<AdminState> {
+    // Maintenance (phase A1c-2): a test control that moved or restarted the probe leaves it frozen still.
+    if (this.maint) this.holdProbe();
     // First, so a clock jump pauses the probe (or loses the signal) part-way rather than coasting through.
     await this.checkSignal(); // also re-arms the alarm
     const now = this.now();

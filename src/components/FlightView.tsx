@@ -56,6 +56,8 @@ interface FlightViewProps {
   signalLeftS: number;
   /** The idle pause: nobody is tapping, so the probe waits (decision 5). */
   paused: boolean;
+  /** Maintenance mode (phase A1c-2): the probe is held by mission control, not idle. */
+  frozen?: boolean;
   /** This leg of the Grand Tour (phase 8c): where it's heading and where it started. */
   stop?: string;
   fromStop?: string;
@@ -109,6 +111,7 @@ export function FlightView({
   urgent,
   signalLeftS,
   paused,
+  frozen = false,
   stop = "mars",
   fromStop = "earth",
   orbit = false,
@@ -353,7 +356,15 @@ export function FlightView({
           </div>
         ) : paused ? (
           <div className="flight__chip flight__chip--idle">
-            PROBE IDLE<span>Tap THRUST to wake it.</span>
+            {frozen ? (
+              <>
+                PAUSED<span>For maintenance. Back soon.</span>
+              </>
+            ) : (
+              <>
+                PROBE IDLE<span>Tap THRUST to wake it.</span>
+              </>
+            )}
           </div>
         ) : null}
 

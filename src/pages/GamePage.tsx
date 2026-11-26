@@ -32,6 +32,8 @@ export function GamePage() {
   // The landing burn screen (1o), opened from the home card's "Join the burn".
   const [burnOpen, setBurnOpen] = useState(false);
   // THRUST also boosts the probe in the flight view, with its "+km".
+  // Maintenance mode (phase A1c-2): THRUST and the vote grey out (Ping and upgrades say so when pressed).
+  const frozen = probe.maintenance !== null;
   const onThrust = () => {
     const km = thrust();
     flight.current?.boost(km);
@@ -58,6 +60,7 @@ export function GamePage() {
           urgent: view.signalUrgent,
           signalLeftS: view.signalLeftS,
           paused: view.paused,
+          frozen,
           stop: probe.stop,
           fromStop: probe.fromStop,
           orbit: view.orbit,
@@ -94,6 +97,7 @@ export function GamePage() {
               arrivalBeforeAt={view.arrivalBeforeAt}
               setbackMs={view.setbackMs}
               paused={view.paused}
+              frozen={frozen}
               flight={<FlightView {...flightProps} />}
               pinged={player.pingedToday}
               pinging={player.pinging}
@@ -129,7 +133,7 @@ export function GamePage() {
               leftS={view.voteLeftS}
               closesAt={probe.vote.closesAt}
               onVote={(i) => void castVote(i)}
-              busy={player.voting || connection !== "live"}
+              busy={player.voting || connection !== "live" || frozen}
             />
           ) : (
           <VoteCard
@@ -141,7 +145,7 @@ export function GamePage() {
             leftS={view.voteLeftS}
             closesAt={probe.vote.closesAt}
             onVote={(i) => void castVote(i)}
-            busy={player.voting || connection !== "live"}
+            busy={player.voting || connection !== "live" || frozen}
           />
         );
         const orbit = view.orbit ? { at: probe.arrivedAt!, destName: view.destName, onCredits: openArrival } : null;
@@ -158,12 +162,12 @@ export function GamePage() {
               <h1 className="visually-hidden">OneSmallClick mission control</h1>
               {invite}
               {burnCard}
-              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
+              <ArrivalEstimate arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} frozen={frozen} />
               {track}
               {signal}
               {askPing}
               <section className="home__thrust" aria-label="Thrust">
-                <ThrustButton onThrust={onThrust} />
+                <ThrustButton frozen={frozen} onThrust={onThrust} />
                 <div className="home__rates">
                   <span className="num">
                     +{units.fine(view.tapKm)} <small>per tap</small>
@@ -193,7 +197,7 @@ export function GamePage() {
             {invite}
             {burnCard}
             <div className="home__top">
-              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} />
+              <ArrivalEstimate wide arrivalAt={view.arrivalAt} savedS={view.savedS} orbit={orbit} pace={view.pace} frozen={frozen} />
               <div className="home__statrow">
                 <dl className="home__stats">
                   <div>
@@ -216,7 +220,7 @@ export function GamePage() {
             <div className="home__columns">
               {signal}
               <section className="home__thrust home__thrust--wide" aria-label="Thrust">
-                <ThrustButton onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
+                <ThrustButton frozen={frozen} onThrust={onThrust} size="lg" hint="click or press space" spaceKey />
                 <div className="home__rates">
                   <span className="num">
                     +{units.fine(view.tapKm)} <small>per click</small>

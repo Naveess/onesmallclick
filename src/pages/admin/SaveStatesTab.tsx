@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ADMIN_TEXT_MAX, GAME_RESTORE_PHRASE, diffGame, summarizeGame, type GameCompare, type GameStatesList, type SnapshotItem } from "../../../shared/admin";
+import { ADMIN_TEXT_MAX, GAME_RESTORE_PHRASE, PROBE_REWIND_MAX_MIN, PROBE_REWIND_PHRASE, diffGame, summarizeGame, type GameCompare, type GameStatesList, type SnapshotItem } from "../../../shared/admin";
 import { PixelButton } from "../../components/PixelButton";
 import { Window } from "../../components/Window";
 import { int } from "../../game/format";
@@ -133,6 +133,8 @@ export function SaveStatesTab() {
         </Window>
       )}
 
+      <ProbeRewind rewinds={data.rewinds} onDone={load} />
+
       <Window as="section" className="admin__card" aria-labelledby="saves-groups">
         <h2 id="saves-groups" className="admin__h2">
           Player save states (whole days and arrivals)
@@ -151,6 +153,108 @@ export function SaveStatesTab() {
         )}
       </Window>
     </>
+  );
+}
+
+/**
+ * Phase A1c-2: the emergency rewind (point-in-time recovery). Everything in the Probe, players' progress too, back
+ * to a minute in the last 30 days. Each rewind's undo is listed. docs/runbook.md says when to use it and what to do
+ * with D1 alongside.
+ */
+function ProbeRewind({ rewinds, onDone }: { rewinds: GameStatesList["rewinds"]; onDone: () => void }) {
+  const [minutes, setMinutes] = useState("");
+  const [reason, setReason] = useState("");
+  const [typed, setTyped] = useState("");
+  const [undo, setUndo] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
+  const to = Number(minutes) > 0 ? Date.now() - Number(minutes) * 60_000 : null;
+  const go = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    setMsg("");
+    try {
+      const r = await post<{ undo: string; warning?: string }>("/api/admin/probe-rewind", {
+        ...(undo ? { bookmark: undo } : { minutesAgo: Number(minutes) }),
+        reason,
+        confirm: typed,
+      });
+      setMsg(r.warning ?? "Rewound. Every screen reconnects in a few seconds. Its undo is listed below.");
+      setTyped("");
+      setReason("");
+      setUndo(null);
+      onDone();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const detail = (l: GameStatesList["rewinds"][number]) => {
+    try {
+      return JSON.parse(l.detail ?? "{}") as { to?: number | null; undo?: string; undoOf?: boolean };
+    } catch {
+      return {};
+    }
+  };
+  return (
+    <Window as="form" tone="orange" className="admin__card" aria-labelledby="saves-rewind" onSubmit={go}>
+      <h2 id="saves-rewind" className="admin__h2">
+        Emergency: rewind the probe
+      </h2>
+      <p className="admin__note">
+        Cloudflare's own copy: everything in the probe, <strong>players' credits, upgrades and patches too</strong>, back to a minute in
+        the last 30 days. Only when a save state can't fix it (docs/runbook.md). Switch maintenance on first. Afterwards rewind the
+        database to the same minute (the runbook's Time Travel command), or today's km and pings won't match.
+      </p>
+      {undo ? (
+        <p className="admin__note">
+          Undoing a rewind: everything goes back to just before it.{" "}
+          <button type="button" className="admin__link" onClick={() => setUndo(null)}>
+            Cancel
+          </button>
+        </p>
+      ) : (
+        <label className="admin__field">
+          <span className="label">Minutes ago (1 to {int(PROBE_REWIND_MAX_MIN)})</span>
+          <input inputMode="numeric" value={minutes} onChange={(e) => setMinutes(e.target.value)} required />
+        </label>
+      )}
+      {!undo && to !== null && <p className="admin__note num">Back to {when(to)}</p>}
+      <label className="admin__field">
+        <span className="label">Why (for the log)</span>
+        <input value={reason} maxLength={ADMIN_TEXT_MAX} onChange={(e) => setReason(e.target.value)} required />
+      </label>
+      <label className="admin__field">
+        <span className="label">Type {PROBE_REWIND_PHRASE}</span>
+        <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" required />
+      </label>
+      <PixelButton type="submit" variant="orange" disabled={busy || typed !== PROBE_REWIND_PHRASE || !reason.trim()}>
+        {undo ? "Undo that rewind" : "Rewind the probe"}
+      </PixelButton>
+      {msg && <p className="admin__note" role="status">{msg}</p>}
+      {error && <p className="admin__error" role="alert">{error}</p>}
+      {rewinds.length > 0 && (
+        <ul className="admin__days">
+          {rewinds.map((l) => {
+            const d = detail(l);
+            return (
+              <li key={l.id}>
+                {when(l.at)} · {l.admin} · {d.undoOf ? "undo of a rewind" : d.to ? `back to ${when(d.to)}` : "rewind"}
+                {l.reason ? ` · ${l.reason}` : ""}{" "}
+                {d.undo && (
+                  <button type="button" className="admin__link" onClick={() => setUndo(d.undo!)}>
+                    Undo this
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Window>
   );
 }
 

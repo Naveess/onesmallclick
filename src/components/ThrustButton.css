@@ -184,3 +184,14 @@
   white-space: nowrap;
   pointer-events: none;
 }
+
+/* Maintenance mode (phase A1c-2): THRUST greys out and stops breathing. */
+.thrust--frozen .thrust__ring {
+  animation: none;
+  opacity: 0.2;
+}
+
+.thrust--frozen .thrust__button {
+  cursor: not-allowed;
+  filter: grayscale(1) brightness(0.7);
+}

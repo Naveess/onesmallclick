@@ -133,7 +133,19 @@ export interface ProbeSnapshot {
   milestones: ReachedMilestone[];
   /** Today's crew goal (phase Q1a, shared/goal.ts), or null before it's set. */
   goal?: CrewGoal | null;
+  /** Maintenance mode (phase A1c-2): the game is frozen and everyone sees the message, or null. */
+  maintenance?: MaintenanceInfo | null;
 }
+
+/** Maintenance mode (phase A1c-2): since when (the probe's clock) and the banner's message. */
+export interface MaintenanceInfo {
+  since: number;
+  message: string;
+}
+
+/** The banner's message unless /admin writes another. */
+export const MAINTENANCE_MESSAGE = "Mission control is fixing something. Back soon.";
+export const MAINTENANCE_MESSAGE_MAX = 200;
 
 /** This device's own numbers for today (UTC). */
 export interface DeviceToday {
@@ -165,7 +177,7 @@ export type PingResult =
       setbackMs: number;
       pingStreakDays: number;
     }
-  | { ok: false; reason: "already-pinged" | "just-saved" | "bot-check" | "busy-network" | "no-device" | "unavailable" };
+  | { ok: false; reason: "already-pinged" | "just-saved" | "bot-check" | "busy-network" | "no-device" | "unavailable" | "maintenance" };
 
 /** Browser → server. */
 export type ClientMessage =

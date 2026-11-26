@@ -18,6 +18,8 @@ interface SafeModeProps {
   setbackMs: number;
   /** The probe is paused for lack of players: the setback waits too. */
   paused: boolean;
+  /** Maintenance mode (phase A1c-2). */
+  frozen?: boolean;
   /** The flight view in its safe state (decided 2026-11-20, prompt 33: 1f uses the flight view). */
   flight: ReactNode;
   pinged: boolean;
@@ -54,6 +56,7 @@ export function SafeMode({
   arrivalBeforeAt,
   setbackMs,
   paused,
+  frozen = false,
   flight,
   pinged,
   pinging,
@@ -83,7 +86,7 @@ export function SafeMode({
       <div className="safe__flight">
         {flight}
         <p className="safe__foot">
-          <span>{paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
+          <span>{frozen ? "Paused for maintenance" : paused ? "Probe idle · waiting for the crew" : "Coasting · thrusters asleep"}</span>
           <span className="num">0 {unit}/s from crew</span>
         </p>
       </div>

@@ -400,6 +400,13 @@ async function admin(request: Request, env: Env, action: string): Promise<Respon
     return json(await stub.adminGive(me.id, me.accountId, km));
   }
   if (action === "close-vote") return json(await stub.adminCloseVote());
+  // Phase A1c-2: maintenance mode. Switching it on (or changing its message) or off; logged above, with a save state.
+  if (action === "maintenance") {
+    const b = body as { on?: unknown; message?: unknown; reason?: unknown };
+    if (typeof b.on !== "boolean") return json({ error: "on must be true or false" }, 400);
+    if (typeof b.reason !== "string" || b.reason.trim().length < 3) return json({ error: "Say why (a few words)" }, 400);
+    return json(await stub.adminMaintenance(b.on, typeof b.message === "string" ? b.message : undefined));
+  }
   if (action === "clear-vote") {
     const me = await mine();
     if (!me) return noDevice();

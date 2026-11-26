@@ -27,10 +27,10 @@ export interface SessionInfo {
 /** POST /api/auth/email. In local development the link comes back in `devLink` instead of an email. */
 export type EmailLinkResult =
   | { ok: true; devLink?: string }
-  | { ok: false; reason: "invalid-email" | "bot-check" | "too-many" | "unavailable" | "no-device" };
+  | { ok: false; reason: "invalid-email" | "bot-check" | "too-many" | "unavailable" | "no-device" | "maintenance" };
 
 /** POST /api/auth/confirm. */
-export type ConfirmResult = { ok: true } | { ok: false; reason: "invalid" | "expired" | "used" | "no-device" };
+export type ConfirmResult = { ok: true } | { ok: false; reason: "invalid" | "expired" | "used" | "no-device" | "maintenance" };
 
 /** GET /api/auth/names: three names to pick from (the first is the device's own when it's free). */
 export interface NameOffers {
