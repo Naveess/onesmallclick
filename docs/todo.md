@@ -3,7 +3,8 @@
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
 ## Start here (25 Nov, prompt 122)
-- **Everything built is live:** version `c042d4a4` (tag `a1c-live`, prompt 131, 26 Nov). Live, newest first:
+- **Everything built is live:** version `c8f57d04` (tag `a2a-live`, prompt 135, 26 Nov). Live, newest first:
+  - **A2a** (prompts 132-135, migration 0022): moderation on the /admin player page (warn, time out 1/3/7/14 days, hide from the boards, ban, Lift, remove a cheat's km with Undo); what the player sees (warning box, paused banner, ban screen, hidden note); Appeal in "Report a bug or idea"; the crew rules on /terms. Also the Early Beta banner fix (closing it lasts 24 hours).
   - **A1c** (prompts 128-131, no migration): game save states (hourly 7 days, daily, before every Game-tab control, each new version) and the /admin Save states tab with Restore the probe; maintenance mode (/admin › Game); Emergency: rewind the probe; docs/runbook.md.
   - **A1b** (prompts 124-127, migration 0021): the admin fixes, Undo, export, name history; player save states in R2 (bucket `onesmallclick-snapshots`, 90 days); compare and restore; the daily save state at 00:05 UTC (cron); save states at prestige, arrival and sign-in merges; merge a guest, move a device.
   - **A1a** (prompt 120, migration 0020): /admin needs your Google game sign-in (on `ADMIN_EMAILS`) plus the admin key; tabs Players, Game, Reports; search, lists and a page per player; every admin action logged.
@@ -11,10 +12,12 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
   - **M2** (tag `m2-live`): km first with a KM | MI toggle.
   - Earlier: Q1a (local times, crew goal, Report a bug or idea), M (miles), D (desktop layouts), the NASA postcard photos, G1 (sign-in nudges), 2b (landing burn), B1 (Early Beta) and B2 (the launch wipe, not run).
 - [ ] **Tonight (Nav, 26 Nov, prompts 125/128): check A1b on the live /admin** (it's deployed now, so no `npm run dev` needed). Sign in, open a player, make a fix (e.g. Set credits), then press Undo on it in "Notes and history". Also look at the Save states list and the Export link. A1b-2 too: press Compare on a save state, tick a part and restore it; on a guest, try "Merge into an account"; on an account, "Move a device" (each has Undo in the account's history). Use a test account, not a real player.
-- **Built, not deployed:** A2a (moderation; prompt 133; migration 0022) and the Early Beta banner fix (prompt 134: closing it lasts 24 hours, so it's back on desktop). Deploy when Nav asks: backup, `npx wrangler d1 migrations apply onesmallclick --remote`, `npm run deploy`.
-- **Next to build:** H, home v3 (Nav, 26 Nov: wants it deployed next; decisions 41–44 first; design group 3, docs/plan.md "H"), then A2b (messages) and A2c (flags and names), then G2.
-- **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1415-pre-a1c.sql.enc`, in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
-- **Next prompt 135, next migration 0023.** Run `git pull` first: other sessions push here too.
+- [ ] **Nav, when you're next on: try A2a on the live /admin with a test account** (not a real player): open its page, Warn it (the box shows on its screen), Time out 1 day (orange banner, THRUST greyed), Lift; Hide (note on /ranks), Lift. Ban only a throwaway account (the name must be typed), then Lift. And check the Early Beta banner is back on your desktop.
+- **Nothing built is waiting to deploy.**
+- **Next to build (Nav changed the order, prompt 135):** A2b (messages: inbox, banner, push, Discord, templates, gifts; decisions 38-40), then A2c (the Flags queue, Report name, the name blocklist), then H, home v3 (decisions 41–44 first; design group 3, docs/plan.md "H"), then G2. Start A2b by explaining the plan and waiting for OK.
+- **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-1729-pre-a2a.sql.enc` (prompt 135), in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
+- **Carrying on from another computer:** `git pull` (or clone Naveess/onesmallclick), `npm install`, and copy `.dev.vars` across by hand (it holds the secrets and is never in git; without it local dev and `npm run backup` won't work, though `npm run deploy` only needs `npx wrangler login`). Then open this file and docs/plan.md "A2".
+- **Next prompt 136, next migration 0023.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
@@ -84,7 +87,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
     - Known quirk (since 8a): if a device signs out (or is merged or moved) and plays as a guest the same day, those km still add to the account's row for that day. Harmless before launch; fix with A2 if it matters.
     - Opening one player from a daily file downloads the whole day's file; fine for hundreds of players, slow for tens of thousands (split the file by key prefix then).
   - [x] **A1c (LIVE 26 Nov, prompt 131, `c042d4a4`):** the game's save states, maintenance mode, the probe rewind, docs/runbook.md. The one-button rollback of both the probe and D1 waits until after launch (the runbook does it in two steps until then).
-  - [ ] **A2:** decisions 36-40 and 45 decided (prompt 133). A2a (moderation) built, not deployed; A2b (messages: inbox, banner, push, Discord, templates, gifts) and A2c (the Flags queue, Report name, the name blocklist) next.
+  - [ ] **A2:** decisions 36-40 and 45 decided (prompt 133). A2a (moderation) LIVE (prompt 135, `c8f57d04`); A2b (messages: inbox, banner, push, Discord, templates, gifts) and A2c (the Flags queue, Report name, the name blocklist) next.
 - [ ] **A3, after launch:** the Game tab, feature switches, the Health tab, the full Log tab, and Feedback and Flags together.
 - [ ] **Q2–Q6, after Q1:**
   - Q2: settings, the first-visit guide, haptics and sound;
