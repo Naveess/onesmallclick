@@ -2,7 +2,7 @@
 
 What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finished items are gone from here, and their history is in docs/changelog.md (one line per phase) and docs/plan.md (each phase's status). Tick items off as they're done, or move them into docs/plan.md when they become a phase.
 
-## Start here (26 Nov, prompt 135)
+## Start here (26 Nov, prompt 142)
 - **Everything built is live:** version `c8f57d04` (tag `a2a-live`, prompt 135, 26 Nov). Live, newest first:
   - **A2a** (prompts 132-135, migration 0022): moderation on the /admin player page (warn, time out 1/3/7/14 days, hide from the boards, ban, Lift, remove a cheat's km with Undo); what the player sees (warning box, paused banner, ban screen, hidden note); Appeal in "Report a bug or idea"; the crew rules on /terms. Also the Early Beta banner fix (closing it lasts 24 hours).
   - **A1c** (prompts 128-131, no migration): game save states (hourly 7 days, daily, before every Game-tab control, each new version) and the /admin Save states tab with Restore the probe; maintenance mode (/admin › Game); Emergency: rewind the probe; docs/runbook.md.
@@ -19,7 +19,7 @@ What's left, in the order it's needed. Rewritten 2026-11-25 (prompt 86): finishe
 - **Next to build (Nav changed the order, prompt 135; A2b-2 ON HOLD, Nav, prompt 140):** A2b-2 (the announcement banner, the push broadcast with a fourth alert switch "News from mission control", the Discord post), then A2c (the Flags queue, Report name, the name blocklist), then H, home v3 (decisions 41–44 first; design group 3, docs/plan.md "H"), then G2. Start A2b by explaining the plan and waiting for OK.
 - **Backups (26 Nov, prompt 131):** live D1 backed up and encrypted, latest `d1-onesmallclick-2026-11-26-2003-pre-a2b1.sql.enc` (prompt 140), in Drive (OneSmallClick > Backups) and in `Documents\onesmallclick-backups\encrypted\`. Code, docs and tags are on GitHub; art in Drive (OneSmallClick > Sprites). Run `npm run backup -- <label>` from Git Bash (PowerShell can't find openssl).
 - **Carrying on from another computer:** `git pull` (or clone Naveess/onesmallclick), `npm install`, and copy `.dev.vars` across by hand (it holds the secrets and is never in git; without it local dev and `npm run backup` won't work, though `npm run deploy` only needs `npx wrangler login`). Then open this file and docs/plan.md "A2".
-- **Next prompt 142, next migration 0024.** Run `git pull` first: other sessions push here too.
+- **Next prompt 143, next migration 0024.** Run `git pull` first: other sessions push here too.
 
 ## Launch day (15 Dec 2026, may move)
 - [ ] **If the date moves:** change `endsAt`, `launchLabel` and `launchShort` in content/beta.json, and the date in its `body` and `badgeHowGuest` lines ("15 December", "15 Dec"), then deploy. Early Beta badges are given until `endsAt`, and the banner shows until then.
